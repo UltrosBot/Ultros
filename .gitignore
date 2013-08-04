@@ -33,3 +33,22 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+# PyCharm
+*.idea
+
+# Ultros-specific
+plugins/data/items/*.yml
+plugins/data/rroulette/stats.yml
+plugins/data/tell/*.yml
+plugins/data/urltitlefetcher/*.yml
+plugins/data/awaylower/*.yml
+topics.css
+topics.html
+topics.txt
+output.log
+config/settings.yml
+config/*.ini
+
+# Other
+*~

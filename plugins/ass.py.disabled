@@ -1,0 +1,29 @@
+# coding=utf-8
+import re
+
+class plugin(object):
+    """
+    Weird-ass person => Weird ass-person
+    """
+
+    hooks = {
+        "privmsg": "privmsg"
+    }
+
+    def __init__(self, irc):
+        #TODO: Allow enabling/disabling per channel, like other plugins
+        #TODO: Make saving/loading of settings actually work in other plugins
+        self.irc = irc
+        self.regex = re.compile(r"(\w+)-ass (\w+)")
+
+    def privmsg(self, data):
+        user = data['user']
+        channel = data['channel']
+        message = data['message']
+
+        if re.search(self.regex, message) is None:
+            return
+
+        self.irc.sendmsg(channel, "%s: %s" % (user, re.sub(self.regex, r"\1 ass-\2", message)))
+
+    name = "Ass"

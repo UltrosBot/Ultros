@@ -1,0 +1,69 @@
+connectionLost
+ - reason
+
+signedOn
+
+channelJoined
+ - channel
+
+privmsg
+ - user
+ - host
+ - channel
+ - message
+
+channelLeft
+ - channel
+
+ctcpQuery
+ - user
+ - host
+ - target
+ - type
+ - message
+
+modechanged
+ - user
+ - host
+ - channel
+ - set
+ - modes
+ - args
+
+kickedBot
+ - channel
+ - kicker
+ - message
+
+nickedBot
+ - oldnick
+ - newnick
+
+userJoined
+ - user
+ - channel
+
+userParted
+ - user
+ - channel
+
+userKicked
+ - kickee
+ - kicker
+ - channel
+ - message
+
+userQuit
+ - user
+ - host
+ - message
+
+topicChanged
+ - user
+ - host
+ - topic
+ - channel
+
+userNicked
+ - oldnick
+ - newnick
