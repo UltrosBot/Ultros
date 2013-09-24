@@ -1,20 +1,24 @@
 # coding=utf-8
-from twisted.internet import reactor, protocol
-from twisted.internet.protocol import Factory
+
+from utils.log import getLogger
+
 from twisted.words.protocols import irc
+from twisted.internet import ssl
 
-class Bot(irc.IRCClient):
 
-    def __init__(self):
-        pass
+class Protocol(irc.IRCClient):
+
+    def __init__(self, factory, config):
+        # Some notes for implementation..
+        #  reactor.connectSSL(host, port, factory, ssl.ClientContextFactory()) can be used for SSL
+        #  Quakenet uses AUTH username password
+        self.factory = factory
+        self.config = config
+        self.log = getLogger("IRC")
+        self.log.info("Setting up..")
 
     def receivedMOTD(self, motd):
         """ Called when we receive the MOTD. """
-
-        pass
-
-    def connectionLost(self, reason):
-        """ Supposedly called when we lose connection, but I'm really not sure if the factory handles that instead. """
 
         pass
 
@@ -148,19 +152,3 @@ class Bot(irc.IRCClient):
 
         elif not command == "PONG":
             pass  # Do we really need to print these?
-
-class BotFactory(protocol.ClientFactory):
-    protocol = Bot
-
-    def __init__(self):
-        pass  # We should load settings and stuff here
-
-    def clientConnectionLost(self, connector, reason):
-        """ Called when the client loses connection """
-
-        pass
-
-    def clientConnectionFailed(self, connector, reason):
-        """ Called when the client fails to connect """
-
-        pass

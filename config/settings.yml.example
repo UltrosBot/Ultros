@@ -1,3 +1,19 @@
+# Ultros is able to use various different types of protocols.
+# These protocols must all be based on Twisted's Protocols.
+# Ultros ships with the "irc" protocol, for connecting via IRC.
+# Developers may create their own Protocol objects for connecting to other services, such as Steam.
+
+# Specify the names of the protocols to use for connections here.
+protocols:
+  - irc
+
+# Any protocol-specific configuration goes in its own configuration file in the "protocols" folder.
+# This will include connection information, so make sure you fill the file out!
+
+#################################################################################
+# OLD SETTINGS                                                                  #
+#################################################################################
+
 # General bot settings
 bot:
   # Admin password (for the login command)
@@ -6,26 +22,6 @@ bot:
   control_character: "."
   # Folder to store knowledgebase in
   data_folder: data
-  # Nickname
-  nickname: MCBlockit_Testing
-  # Nickserv password
-  nickserv_password: nickserv_password_here
-
-# Channels to join automatically
-# Make sure you surround them in ""!
-channels: 
-  - "#mcblockit-test"
-
-# Connection information
-connection:
-  # Server address
-  host: irc.archivesmc.com
-  # Server password, if any
-  password: ""
-  # Server port
-  port: 6667
-  # Use server password?
-  use_password: false
 
 # Knowledgebase generation settings
 faq:

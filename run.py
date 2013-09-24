@@ -1,15 +1,20 @@
 # coding=utf-8
-from system.irc import *
-import os
 
-if not os.path.exists("config/settings.yml"):
-    print "Couldn't find settings.yml!"
-    print "  Copy the settings.yml.example to settings.yml and edit it as required."
-    print "  After that, run the bot again."
-    exit(1)
+from utils.log import getLogger, open_log, close_log
+from system.factory_manager import Manager
 
-factory = BotFactory()  # Create the factory. We could do all setup there, including connection.
+open_log("output.log")
+
+logger = getLogger("System")
+
+logger.info("Starting up..")
+
+try:
+    manager = Manager()
 # reactor.connectTCP(
 #     settings["connection"]["host"],
 #     settings["connection"]["port"],
 #     factory, 120)
+
+finally:
+    close_log("output.log")
