@@ -1,9 +1,0 @@
-feedname:
-    url: 'http://website.ext/path/to/feed.ext'
-    auth:
-        username: ''
-        password: ''
-        use: false
-    channels:
-        - '#test'
-    custom-string: false

@@ -1,9 +1,6 @@
-McBlockit---Helpbot
+Ultros
 ===================
 
-<p align="center" style="border: 1px solid black; border-radius: 5px;">
-  <img src="http://i.imgur.com/Aa8grxp.png"/>
-</p>
+![Stylistic image of source code](http://i.imgur.com/Aa8grxp.png)
 
-Originally the helperbot for MCBlockit IRC (#mcblockit on Freenode), this bot has become sort of widely varied. Some people may know it as Ultros.
-
+A rewrite of the helperbot originally written for MCBlockit IRC (#mcblockit on Freenode).
