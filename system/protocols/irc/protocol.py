@@ -64,6 +64,8 @@ class Protocol(irc.IRCClient):
 
         def doSignOn(self):
             if self.identity["authentication"].lower() == "nickserv":
+                self.msg(self.identity["auth_target"], "IDENTIFY %s %s" % (self.identity["auth_name"], self.identity["auth_pass"]))
+            elif self.identity["authentication"].lower() == "ns-old":
                 self.msg(self.identity["auth_target"], "IDENTIFY %s" % self.identity["auth_pass"])
             elif self.identity["authentication"].lower() == "auth":
                 self.sendLine("AUTH %s %s" % (self.identity["auth_name"], self.identity["auth_pass"]))
