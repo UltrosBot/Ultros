@@ -8,6 +8,7 @@ from utils.log import getLogger
 from utils.config import Config
 from utils.misc import output_exception
 from system.factory import Factory
+from twisted.internet import reactor
 
 
 class Manager(object):
@@ -15,6 +16,8 @@ class Manager(object):
     Manager for keeping track of multiple factories - one per protocol.
 
     This is so that the bot can connect to multiple services at once, and have them communicate with each other.
+
+    It is currently not planned to have multiple instances of a single factory.
     """
 
     factories = {}
@@ -63,3 +66,5 @@ class Manager(object):
             except Exception:
                 self.logger.error("Unable to create factory for the '%s' protocol!" % protocol)
                 output_exception(self.logger, logging.ERROR)
+
+        reactor.run()

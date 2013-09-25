@@ -5,10 +5,8 @@ import importlib
 
 from twisted.internet import protocol, reactor, ssl
 
-from utils.config import Config
 from utils.misc import output_exception
 from utils.log import getLogger
-
 
 
 class Factory(protocol.ClientFactory):
@@ -18,6 +16,7 @@ class Factory(protocol.ClientFactory):
         self.logger = getLogger("F: " + protocol_name)
         self.config = config
         self.manager = manager
+
         try:
             current_protocol = importlib.import_module("system.protocols.%s.protocol" % protocol_name)
         except ImportError:

@@ -3,10 +3,19 @@
 from utils.log import getLogger
 
 from twisted.words.protocols import irc
-from twisted.internet import ssl
+from twisted.internet import reactor, ssl
 
 
 class Protocol(irc.IRCClient):
+
+    factory = None
+    config = None
+    log = None
+
+    networking = {}
+    identity = {}
+
+    nickname = ""
 
     def __init__(self, factory, config):
         # Some notes for implementation..
@@ -17,30 +26,65 @@ class Protocol(irc.IRCClient):
         self.log = getLogger("IRC")
         self.log.info("Setting up..")
 
+        self.networking = config["network"]
+        self.identity = config["identity"]
+
+        self.nickname = self.identity["nick"]
+
+        if self.networking["ssl"]:
+            self.log.debug("Connecting with SSL")
+            reactor.connectSSL(
+                self.networking["address"],
+                self.networking["port"],
+                self.factory,
+                ssl.ClientContextFactory(),
+                120
+            )
+        else:
+            self.log.debug("Connecting without SSL")
+            reactor.connectTCP(
+                self.networking["address"],
+                self.networking["port"],
+                self.factory,
+                120
+            )
+
+    def __call__(self):
+        return self
+
     def receivedMOTD(self, motd):
         """ Called when we receive the MOTD. """
-
-        pass
-
-    @property
-    def nickname(self):
-        """ This has to exist or Twisted can't get our nick. Needs reimplemented. """
-        return None
+        self.log.info(" ===   MOTD   === ")
+        for line in motd:
+            self.log.info(line)
+        self.log.info(" === END MOTD ===")
 
     def signedOn(self):
         """ Called once we've connected and done our handshake with the IRC server. """
 
+        def doSignOn(self):
+            if self.identity["authentication"].lower() == "nickserv":
+                self.msg(self.identity["auth_target"], "IDENTIFY %s" % self.identity["auth_pass"])
+            elif self.identity["authentication"].lower() == "auth":
+                self.sendLine("AUTH %s %s" % (self.identity["auth_name"], self.identity["auth_pass"]))
+            elif self.identity["authentication"].lower() == "password":
+                self.sendLine("PASS %s:%s" % (self.identity["auth_name"], self.identity["auth_pass"]))
+
+        def doChannelJoins(self):
+            for channel in self.config["channels"]:
+                self.join(channel["name"], channel["key"])
+
+        reactor.callLater(5, doSignOn, self)
+        reactor.callLater(10, doChannelJoins, self)
         pass
 
     def joined(self, channel):
         """ Called when we join a channel. """
+        self.log.info("Joined channel: %s" % channel)
 
-        pass
-
-    def privmsg(self, user, channel, msg):
+    def privmsg(self, user, channel, message):
         """ Called when we receive a message - channel or private. """
-
-        pass
+        self.log.info("<%s:%s> %s" % (user, channel, message))
 
     def left(self, channel):
         """ Called when we part a channel. This could include opers using /sapart. """
