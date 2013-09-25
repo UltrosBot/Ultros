@@ -1,9 +1,9 @@
 # coding=utf-8
 
 from utils.log import getLogger
-
 from twisted.words.protocols import irc
 from twisted.internet import reactor, ssl
+import time
 
 
 class Protocol(irc.IRCClient):
@@ -80,7 +80,6 @@ class Protocol(irc.IRCClient):
 
         reactor.callLater(5, doSignOn, self)
         reactor.callLater(10, doChannelJoins, self)
-        pass
 
     def joined(self, channel):
         """ Called when we join a channel. """
@@ -90,55 +89,51 @@ class Protocol(irc.IRCClient):
         """ Called when we receive a message - channel or private. """
         self.log.info("<%s:%s> %s" % (user, channel, message))
 
+    def noticed(self, user, channel, message):
+        """ Called when we receive a notice - channel or private. """
+        self.log.info("-%s:%s- %s" % (user, channel, message))
+
     def left(self, channel):
         """ Called when we part a channel. This could include opers using /sapart. """
-
-        pass
+        self.log.info("Parted channel: %s" % channel)
 
     def ctcpQuery(self, user, me, messages):
         """ Called when someone does a CTCP query - channel or private. Needs some param analysis."""
-
-        pass
+        self.log.info("[%s] %s" % (user, messages))
 
     def modeChanged(self, user, channel, action, modes, args):
         """ Called when someone changes a mode. Action is a bool specifying whether the mode was being set or unset.
             Will probably need to do some testing, mostly to see whether this is called for umodes as well. """
-
-        pass
+        self.log.info("%s sets mode %s: %s%s %s" % (user, channel, "+" if action else "-", modes, args))
 
     def kickedFrom(self, channel, kicker, message):
         """ Called when we get kicked from a channel. """
-
-        pass
+        self.log.info("Kicked from %s by %s: %s" % (channel, kicker, message))
 
     def nickChanged(self, nick):
         """ Called when our nick is forcibly changed. """
-
-        pass
+        self.log.info("Nick changed to %s" % nick)
 
     def userJoined(self, user, channel):
         """ Called when someone else joins a channel we're in. """
-
-        pass
+        self.log.info("%s joined %s" % (user, channel))
 
     def userLeft(self, user, channel):
         """ Called when someone else leaves a channel we're in. """
-
-        pass
+        self.log.info("%s parted %s" % (user, channel))
 
     def userKicked(self, kickee, channel, kicker, message):
         """ Called when someone else is kicked from a channel we're in. """
-
-        pass
+        self.log.info("%s was kicked from %s by %s: %s" % (kickee, channel, kicker, message))
 
     def irc_QUIT(self, user, params):
         """ Called when someone else quits IRC. """
-
         quitMessage = params[0]
+        self.log.info("%s has left IRC: %s" % (user, quitMessage))
 
     def topicUpdated(self, user, channel, newTopic):
         """ Called when the topic is updated in a channel - also called when we join a channel. """
-
+        self.log.info("Topic for %s: %s (set by %s)" % (channel, newTopic, user))
         pass
 
     def irc_NICK(self, prefix, params):
@@ -146,6 +141,8 @@ class Protocol(irc.IRCClient):
 
         oldnick = prefix.split("!", 1)[0]
         newnick = params[0]
+
+        self.log.info("%s is now known as %s" % (oldnick, newnick))
 
     def irc_RPL_WHOREPLY(self, *nargs):
         """ Called when we get a WHO reply from the server. I'm seriously wondering if we even need this. """
@@ -192,11 +189,29 @@ class Protocol(irc.IRCClient):
             # Called when the server's done spamming us with NAMES replies.
             me, channel, message = params
 
+        elif command == "ERR_INVITEONLYCHAN":
+            self.log.warn("Unable to join %s - Channel is invite-only" % params[1])
+
         elif str(command) == "972":  # ERR_CANNOTDOCOMMAND
             pass  # Need to analyze the args of this. Called when some command we attempted can't be done.
 
-        elif str(command) in ["265", "266"]:  # RPL_LOCALUSERS, RPL_GLOBALUSERS
-            pass  # Usually just printed by clients, these are purely informational and probably not needed.
+        elif str(command) == "333":  # Channel creation details
+            self.log.info("%s created by %s (%s)" % (params[1],
+                                                     params[2],
+                                                     time.strftime("%a, %d %b %Y %H:%M:%S",
+                                                                   time.localtime(
+                                                                       float(params[3])
+                                                                   ))
+                                                     ))
 
-        elif not command == "PONG":
+        elif str(command) in ["265", "266"]:  # RPL_LOCALUSERS, RPL_GLOBALUSERS
+            self.log.info(params[3])  # Usually printed, these are purely informational and might not be needed.
+
+        elif str(command) == "396":  # VHOST was set
+            self.log.info("VHOST set to %s by %s" % (params[1], prefix))
+
+        elif command == "PONG":
             pass  # Do we really need to print these?
+
+        else:
+            self.log.debug("Unhandled: %s | %s | %s" % (prefix, command, params))

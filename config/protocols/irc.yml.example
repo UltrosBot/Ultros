@@ -8,7 +8,7 @@ identity: # Settings relating to identification and authentication
   authentication: None # This can be None, NickServ, NS-old Auth or Password.
                        # Use Auth if you're connecting to QuakeNet
                        # Use NS-old to omit the username when identifying with NickServ. If in doubt, use NickServ.
-                       # Note that using NS-old means that you must sign on as a registered NickServ user.
+                       # Note that using NS-old means that you must sign on as the user you want to login as.
   auth_name: Ultros # The username to use for authentication (If applicable)
   auth_pass: password # The password to use for authentication (If applicable)
   auth_target: NickServ # Only used for NickServ auth, change this if the network has renamed their NickServ.
