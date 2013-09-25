@@ -76,6 +76,8 @@ class Protocol(irc.IRCClient):
             for channel in self.config["channels"]:
                 self.join(channel["name"], channel["key"])
 
+        self.log.debug("Scheduling Deferreds for signing on and joining channels")
+
         reactor.callLater(5, doSignOn, self)
         reactor.callLater(10, doChannelJoins, self)
         pass
