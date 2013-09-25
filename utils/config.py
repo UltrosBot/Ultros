@@ -3,6 +3,7 @@ __author__ = "Gareth Coles"
 
 import yaml
 import logging
+import os
 
 from utils.misc import output_exception
 
@@ -10,19 +11,25 @@ from utils.misc import output_exception
 class Config(object):
 
     data = {}
+    exists = True
 
     def __init__(self, filename):
         self.logger = logging.getLogger("Config")
         self.filename = filename
-        self.reload()
+        self.exists = self.reload()
 
     def reload(self):
+        if not os.path.exists(self.filename):
+            self.logger.error("File not found: %s" % self.filename)
+            return False
         try:
             self.fh = open(self.filename, "r")
         except Exception:
             output_exception(self.logger, logging.ERROR)
+            return False
         else:
             self.data = yaml.safe_load(self.fh)
+            return True
 
     def __getitem__(self, y):
         return self.data.__getitem__(y)
