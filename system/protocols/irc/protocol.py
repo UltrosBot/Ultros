@@ -52,19 +52,20 @@ class Protocol(irc.IRCClient):
     def __call__(self):
         return self
 
-    def receivedMOTD(self, motd):
+    def receivedMOTD(self, motd):  # Not strictly PEP but Twisted demands capital letters
         """ Called when we receive the MOTD. """
         self.log.info(" ===   MOTD   === ")
         for line in motd:
             self.log.info(line)
         self.log.info(" === END MOTD ===")
 
-    def signedOn(self):
+    def signedOn(self):  # Not strictly PEP but Twisted demands capital letters
         """ Called once we've connected and done our handshake with the IRC server. """
 
-        def doSignOn(self):
+        def do_sign_on(self):
             if self.identity["authentication"].lower() == "nickserv":
-                self.msg(self.identity["auth_target"], "IDENTIFY %s %s" % (self.identity["auth_name"], self.identity["auth_pass"]))
+                self.msg(self.identity["auth_target"], "IDENTIFY %s %s" % (self.identity["auth_name"],
+                                                                           self.identity["auth_pass"]))
             elif self.identity["authentication"].lower() == "ns-old":
                 self.msg(self.identity["auth_target"], "IDENTIFY %s" % self.identity["auth_pass"])
             elif self.identity["authentication"].lower() == "auth":
@@ -72,14 +73,14 @@ class Protocol(irc.IRCClient):
             elif self.identity["authentication"].lower() == "password":
                 self.sendLine("PASS %s:%s" % (self.identity["auth_name"], self.identity["auth_pass"]))
 
-        def doChannelJoins(self):
+        def do_channel_joins(self):
             for channel in self.config["channels"]:
                 self.join(channel["name"], channel["key"])
 
         self.log.debug("Scheduling Deferreds for signing on and joining channels")
 
-        reactor.callLater(5, doSignOn, self)
-        reactor.callLater(10, doChannelJoins, self)
+        reactor.callLater(5, do_sign_on, self)
+        reactor.callLater(10, do_channel_joins, self)
 
     def joined(self, channel):
         """ Called when we join a channel. """
@@ -97,46 +98,46 @@ class Protocol(irc.IRCClient):
         """ Called when we part a channel. This could include opers using /sapart. """
         self.log.info("Parted channel: %s" % channel)
 
-    def ctcpQuery(self, user, me, messages):
+    def ctcpQuery(self, user, me, messages):  # Not strictly PEP but Twisted demands capital letters
         """ Called when someone does a CTCP query - channel or private. Needs some param analysis."""
         self.log.info("[%s] %s" % (user, messages))
 
-    def modeChanged(self, user, channel, action, modes, args):
+    def modeChanged(self, user, channel, action, modes, args):  # Not strictly PEP but Twisted demands capital letters
         """ Called when someone changes a mode. Action is a bool specifying whether the mode was being set or unset.
             Will probably need to do some testing, mostly to see whether this is called for umodes as well. """
         self.log.info("%s sets mode %s: %s%s %s" % (user, channel, "+" if action else "-", modes, args))
 
-    def kickedFrom(self, channel, kicker, message):
+    def kickedFrom(self, channel, kicker, message):  # Not strictly PEP but Twisted demands capital letters
         """ Called when we get kicked from a channel. """
         self.log.info("Kicked from %s by %s: %s" % (channel, kicker, message))
 
-    def nickChanged(self, nick):
+    def nickChanged(self, nick):  # Not strictly PEP but Twisted demands capital letters
         """ Called when our nick is forcibly changed. """
         self.log.info("Nick changed to %s" % nick)
 
-    def userJoined(self, user, channel):
+    def userJoined(self, user, channel):  # Not strictly PEP but Twisted demands capital letters
         """ Called when someone else joins a channel we're in. """
         self.log.info("%s joined %s" % (user, channel))
 
-    def userLeft(self, user, channel):
+    def userLeft(self, user, channel):  # Not strictly PEP but Twisted demands capital letters
         """ Called when someone else leaves a channel we're in. """
         self.log.info("%s parted %s" % (user, channel))
 
-    def userKicked(self, kickee, channel, kicker, message):
+    def userKicked(self, kickee, channel, kicker, message):  # Not strictly PEP but Twisted demands capital letters
         """ Called when someone else is kicked from a channel we're in. """
         self.log.info("%s was kicked from %s by %s: %s" % (kickee, channel, kicker, message))
 
-    def irc_QUIT(self, user, params):
+    def irc_QUIT(self, user, params):  # Not strictly PEP but Twisted demands capital letters
         """ Called when someone else quits IRC. """
         quitMessage = params[0]
         self.log.info("%s has left IRC: %s" % (user, quitMessage))
 
-    def topicUpdated(self, user, channel, newTopic):
+    def topicUpdated(self, user, channel, newTopic):  # Not strictly PEP but Twisted demands capital letters
         """ Called when the topic is updated in a channel - also called when we join a channel. """
         self.log.info("Topic for %s: %s (set by %s)" % (channel, newTopic, user))
         pass
 
-    def irc_NICK(self, prefix, params):
+    def irc_NICK(self, prefix, params):  # Not strictly PEP but Twisted demands capital letters
         """ Called when someone changes their nick. Surprisingly, twisted doesn't have a handler for this. """
 
         oldnick = prefix.split("!", 1)[0]
@@ -144,7 +145,7 @@ class Protocol(irc.IRCClient):
 
         self.log.info("%s is now known as %s" % (oldnick, newnick))
 
-    def irc_RPL_WHOREPLY(self, *nargs):
+    def irc_RPL_WHOREPLY(self, *nargs):  # Not strictly PEP but Twisted demands capital letters
         """ Called when we get a WHO reply from the server. I'm seriously wondering if we even need this. """
         data = nargs[1]
 
@@ -156,7 +157,7 @@ class Protocol(irc.IRCClient):
         status = data[6].strip("G").strip("H").strip("*")
         gecos = data[7] # Hops, realname
 
-    def irc_RPL_ENDOFWHO(self, *nargs):
+    def irc_RPL_ENDOFWHO(self, *nargs):  # Not strictly PEP but Twisted demands capital letters
         """ Called when the server's done spamming us with WHO replies. """
         data = nargs[1]
         channel = data[1]

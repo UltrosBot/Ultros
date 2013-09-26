@@ -1,24 +1,25 @@
-import re
-
+#coding=utf-8
 __author__ = 'rakiru'
+
+import re
 
 
 def lowercase_nickname(nick):
     return nick.lower().replace(u'{', u'[').replace(u'}', u']')
 
 
-def compare_nicknames(nickOne, nickTwo):
-    nickOne = lowercase_nickname(nickOne)
-    nickTwo = lowercase_nickname(nickTwo)
-    return nickOne == nickTwo
+def compare_nicknames(nickone, nicktwo):
+    nickone = lowercase_nickname(nickone)
+    nicktwo = lowercase_nickname(nicktwo)
+    return nickone == nicktwo
 
 
 def split_hostmask(hostmask):
-    posEx = hostmask.find(u'!')
-    posAt = hostmask.find(u'@')
-    if posEx <= 0 or posAt < 3 or posEx + 1 == posAt or posAt + 1 == len(hostmask): # All parts must be > 0 in length
+    posex = hostmask.find(u'!')
+    posat = hostmask.find(u'@')
+    if posex <= 0 or posat < 3 or posex + 1 == posat or posat + 1 == len(hostmask): # All parts must be > 0 in length
         raise Exception("Hostmask must be in the form '*!*@*'")
-    return [hostmask[0:posEx], hostmask[posEx + 1: posAt], hostmask[posAt + 1:]]
+    return [hostmask[0:posex], hostmask[posex + 1: posat], hostmask[posat + 1:]]
 
 
 def match_hostmask_part(user, mask):
@@ -31,13 +32,13 @@ def match_hostmask_part(user, mask):
 
 
 def match_hostmask(user, mask):
-    userSplit = split_hostmask(user)
-    maskSplit = split_hostmask(mask)
+    usersplit = split_hostmask(user)
+    masksplit = split_hostmask(mask)
     # Case-insensitive match for nickname
     # match_hostmask_part() does a regular lower() too which is fine for the other parts
-    userSplit[0] = lowercase_nickname(userSplit[0])
-    maskSplit[0] = lowercase_nickname(maskSplit[0])
+    usersplit[0] = lowercase_nickname(usersplit[0])
+    masksplit[0] = lowercase_nickname(masksplit[0])
     for x in xrange(3):
-        if not match_hostmask_part(userSplit[x], maskSplit[x]):
+        if not match_hostmask_part(usersplit[x], masksplit[x]):
             return False
     return True

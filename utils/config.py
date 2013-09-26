@@ -12,6 +12,7 @@ class Config(object):
 
     data = {}
     exists = True
+    fh = None
 
     def __init__(self, filename):
         self.logger = logging.getLogger("Config")

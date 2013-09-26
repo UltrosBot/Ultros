@@ -39,6 +39,7 @@ def getLogger(name, path=None, fmt="%(asctime)s | %(name)8s | %(levelname)8s | %
 
     return logger
 
+
 def open_log(path):
     path = "logs/" + path
     if not os.path.exists(os.path.dirname(path)):
@@ -75,5 +76,5 @@ def close_log(path):
     logger.addHandler(handler)
     del handler
 
-    logger.info("*** LOGFILE CLOSED: %s ***" % path)
+    logger.info("*** LOGFILE CLOSED: %s ***\n\n" % path)
     del logger

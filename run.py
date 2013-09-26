@@ -18,3 +18,4 @@ try:
 
 finally:
     close_log("output.log")
+    raw_input("Press enter to exit.")
