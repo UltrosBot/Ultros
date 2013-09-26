@@ -1,5 +1,6 @@
 # coding=utf-8
-import os, sys
+import os
+import sys
 import urllib2
 from time import sleep
 
@@ -32,6 +33,7 @@ downloads = {
 try:
     import mechanize
 except ImportError:
+    mechanize = None
     downloads["mechanize"] = ["http://pypi.python.org/packages/source/m/mechanize/mechanize-0.2.5.zip", "435KB"]
 else:
     del mechanize
@@ -40,6 +42,7 @@ else:
 try:
     import twisted
 except ImportError:
+    twisted = None
     downloads["twisted"] = ["http://pypi.python.org/packages/source/T/Twisted/Twisted-12.2.0.tar.bz2", "2.7MB"]
 else:
     del twisted
@@ -48,6 +51,7 @@ else:
 try:
     import yaml
 except ImportError:
+    yaml = None
     downloads["yaml"] = ["http://pyyaml.org/download/pyyaml/PyYAML-3.10.zip", "356KB"]
 else:
     del yaml
@@ -56,6 +60,7 @@ else:
 try:
     from zope import interface
 except ImportError:
+    interface = None
     downloads["zope.Interface"] = [
         "http://pypi.python.org/packages/source/z/zope.interface/zope.interface-3.8.0.tar.gz", "109KB"]
 else:
