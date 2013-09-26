@@ -3,9 +3,9 @@ __author__ = "Gareth Coles"
 
 import importlib
 
-from twisted.internet import protocol, reactor, ssl
+from twisted.internet import protocol  # , reactor, ssl
 
-from utils.misc import output_exception
+# from utils.misc import output_exception
 from utils.log import getLogger
 
 

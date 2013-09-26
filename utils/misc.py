@@ -25,4 +25,4 @@ def output_exception(logger, level=logging.ERROR):
     """
     exc_type, exc_value, exc_traceback = sys.exc_info()
     data = traceback.format_exception(exc_type, exc_value, exc_traceback)
-    _output_error(logger, "".join(data), level)#"\n".join(data), level)
+    _output_error(logger, "".join(data), level)  # "\n".join(data), level)

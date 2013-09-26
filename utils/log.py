@@ -1,7 +1,8 @@
 # coding=utf-8
 __author__ = "Gareth Coles"
 
-import logging, logging.handlers
+import logging
+import logging.handlers
 import sys
 import os
 

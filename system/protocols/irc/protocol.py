@@ -150,12 +150,12 @@ class Protocol(irc.IRCClient):
         data = nargs[1]
 
         channel = data[1]
-        ident = data[2] # Starts with a ~ if there's no identd present
+        ident = data[2]  # Starts with a ~ if there's no identd present
         host = data[3]
         server = data[4]
         nick = data[5]
         status = data[6].strip("G").strip("H").strip("*")
-        gecos = data[7] # Hops, realname
+        gecos = data[7]  # Hops, realname
 
     def irc_RPL_ENDOFWHO(self, *nargs):  # Not strictly PEP but Twisted demands capital letters
         """ Called when the server's done spamming us with WHO replies. """
