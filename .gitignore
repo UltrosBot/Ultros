@@ -42,6 +42,7 @@ topics.css
 topics.html
 topics.txt
 output.log
+*.log
 config/*.yml
 config/**/*.yml
 !config/*.yml.example
