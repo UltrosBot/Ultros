@@ -18,9 +18,11 @@ class Factory(protocol.ClientFactory):
         self.manager = manager
 
         try:
-            current_protocol = importlib.import_module("system.protocols.%s.protocol" % protocol_name)
+            current_protocol = importlib.import_module(
+                "system.protocols.%s.protocol" % protocol_name)
         except ImportError:
-            self.logger.error("Unable to import protocol %s, does it exist?" % protocol_name)
+            self.logger.error(
+                "Unable to import protocol %s, does it exist?" % protocol_name)
         else:
             self.protocol = current_protocol.Protocol(self, config)
 

@@ -34,7 +34,9 @@ try:
     import mechanize
 except ImportError:
     mechanize = None
-    downloads["mechanize"] = ["http://pypi.python.org/packages/source/m/mechanize/mechanize-0.2.5.zip", "435KB"]
+    downloads["mechanize"] = [
+        "http://pypi.python.org/packages/source/m/mechanize/mechanize-0.2.5.zip",
+        "435KB"]
 else:
     del mechanize
     print "Module mechanize already installed, not downloading"
@@ -43,7 +45,9 @@ try:
     import twisted
 except ImportError:
     twisted = None
-    downloads["twisted"] = ["http://pypi.python.org/packages/source/T/Twisted/Twisted-12.2.0.tar.bz2", "2.7MB"]
+    downloads["twisted"] = [
+        "http://pypi.python.org/packages/source/T/Twisted/Twisted-12.2.0.tar.bz2",
+        "2.7MB"]
 else:
     del twisted
     print "Module twisted already installed, not downloading"
@@ -52,7 +56,8 @@ try:
     import yaml
 except ImportError:
     yaml = None
-    downloads["yaml"] = ["http://pyyaml.org/download/pyyaml/PyYAML-3.10.zip", "356KB"]
+    downloads["yaml"] = ["http://pyyaml.org/download/pyyaml/PyYAML-3.10.zip",
+                         "356KB"]
 else:
     del yaml
     print "Module yaml already installed, not downloading"
@@ -62,7 +67,8 @@ try:
 except ImportError:
     interface = None
     downloads["zope.Interface"] = [
-        "http://pypi.python.org/packages/source/z/zope.interface/zope.interface-3.8.0.tar.gz", "109KB"]
+        "http://pypi.python.org/packages/source/z/zope.interface/zope.interface-3.8.0.tar.gz",
+        "109KB"]
 else:
     del interface
     print "Module zope.Interface already installed, not downloading"
@@ -172,12 +178,14 @@ def install_modules():
         if os.path.isdir(base_dir + element):
             print "Installing " + element + "..."
             sleep(3)
-            os.system("cd temp/" + element + " && " + python_command + " setup.py install")
+            os.system(
+                "cd temp/" + element + " && " + python_command + " setup.py install")
             print ""
 
 
 for element in downloads.keys():
-    downloaded[element] = download_file(downloads[element][0], downloads[element][1])
+    downloaded[element] = download_file(downloads[element][0],
+                                        downloads[element][1])
     print ""
 
 for element in downloads.keys():

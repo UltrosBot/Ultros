@@ -5,7 +5,6 @@ from utils.log import getLogger, open_log, close_log
 
 
 class Channel(object):
-
     users = []
     modes = {}
 

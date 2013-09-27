@@ -8,7 +8,6 @@ from utils.misc import output_exception
 
 
 class Data(object):
-
     def __init__(self, filename):
         self.logger = logging.getLogger("Data")
         try:

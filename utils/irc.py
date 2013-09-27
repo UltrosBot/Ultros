@@ -17,9 +17,11 @@ def compare_nicknames(nickone, nicktwo):
 def split_hostmask(hostmask):
     posex = hostmask.find(u'!')
     posat = hostmask.find(u'@')
-    if posex <= 0 or posat < 3 or posex + 1 == posat or posat + 1 == len(hostmask):  # All parts must be > 0 in length
+    if posex <= 0 or posat < 3 or posex + 1 == posat or posat + 1 == len(
+            hostmask):  # All parts must be > 0 in length
         raise Exception("Hostmask must be in the form '*!*@*'")
-    return [hostmask[0:posex], hostmask[posex + 1: posat], hostmask[posat + 1:]]
+    return [hostmask[0:posex], hostmask[posex + 1: posat],
+            hostmask[posat + 1:]]
 
 
 def match_hostmask_part(user, mask):

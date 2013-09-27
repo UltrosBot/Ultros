@@ -7,7 +7,6 @@ import sys
 
 
 def _output_error(logger, error, level):
-
     if "\n" in error:
         data = error.split("\n")
         for line in data:

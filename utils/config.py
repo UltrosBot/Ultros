@@ -9,7 +9,6 @@ from utils.misc import output_exception
 
 
 class Config(object):
-
     data = {}
     exists = True
     fh = None
@@ -35,8 +34,8 @@ class Config(object):
     def __getitem__(self, y):
         return self.data.__getitem__(y)
 
-    # def __setitem__(self, key, value):
-    #     return self.data.__setitem__(key, value)
-    #
-    # def __setattr__(self, key, value):
-    #     return self.data.__setattr__(key, value)
+        # def __setitem__(self, key, value):
+        #     return self.data.__setitem__(key, value)
+        #
+        # def __setattr__(self, key, value):
+        #     return self.data.__setattr__(key, value)

@@ -33,38 +33,46 @@ class Manager(object):
             self.logger.info("Loading global configuration..")
             self.main_config = Config("config/settings.yml")
             if not self.main_config.exists:
-                self.logger.error("Main configuration not found! Please correct this and try again.")
+                self.logger.error(
+                    "Main configuration not found! Please correct this and try again.")
                 return
         except IOError:
-            self.logger.error("Unable to load main configuration at config/settings.yml")
+            self.logger.error(
+                "Unable to load main configuration at config/settings.yml")
             self.logger.error("Please check that this file exists.")
             exit(1)
         except Exception:
-            self.logger.error("Unable to load main configuration at config/settings.yml")
+            self.logger.error(
+                "Unable to load main configuration at config/settings.yml")
             output_exception(self.logger, logging.ERROR)
             exit(1)
 
         for protocol in self.main_config["protocols"]:
             try:
-                self.logger.info("Loading configuration for the '%s' protocol.." % protocol)
+                self.logger.info(
+                    "Loading configuration for the '%s' protocol.." % protocol)
                 conf_location = "config/protocols/%s.yml" % protocol
                 config = Config(conf_location)
                 if not config.exists:
-                    self.logger.error("Configuration at '%s' not found!" % conf_location)
+                    self.logger.error(
+                        "Configuration at '%s' not found!" % conf_location)
                     continue
             except IOError:
-                self.logger.error("Unable to load configuration for the '%s' protocol." % protocol)
+                self.logger.error(
+                    "Unable to load configuration for the '%s' protocol." % protocol)
                 self.logger.error("Please check that this file exists.")
                 continue
             except Exception:
-                self.logger.error("Unable to load configuration for the '%s' protocol." % protocol)
+                self.logger.error(
+                    "Unable to load configuration for the '%s' protocol." % protocol)
                 output_exception(self.logger, logging.ERROR)
                 continue
 
             try:
                 self.factories[protocol] = Factory(protocol, config, self)
             except Exception:
-                self.logger.error("Unable to create factory for the '%s' protocol!" % protocol)
+                self.logger.error(
+                    "Unable to create factory for the '%s' protocol!" % protocol)
                 output_exception(self.logger, logging.ERROR)
 
         reactor.run()
