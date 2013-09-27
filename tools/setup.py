@@ -14,28 +14,13 @@ downloads = {
 
 }
 
-# try:
-#     import colorama
-# except ImportError:
-#     downloads["colorama"] = ["http://pypi.python.org/packages/source/c/colorama/colorama-0.2.4.zip", "21KB"]
-# else:
-#     del colorama
-#     print "Module colorama already installed, not downloading"
-
-# try:
-#     import dns.resolver as resolver
-# except ImportError:
-#     downloads["dnspython"] = ["http://www.dnspython.org/kits/1.9.4/dnspython-1.9.4.zip", "206KB"]
-# else:
-#     del resolver
-#     print "Module dnspython already installed, not downloading."
-
 try:
     import mechanize
 except ImportError:
     mechanize = None
     downloads["mechanize"] = [
-        "http://pypi.python.org/packages/source/m/mechanize/mechanize-0.2.5.zip",
+        "http://pypi.python.org/packages/source/m/mechanize/"
+        "mechanize-0.2.5.zip",
         "435KB"]
 else:
     del mechanize
@@ -46,7 +31,8 @@ try:
 except ImportError:
     twisted = None
     downloads["twisted"] = [
-        "http://pypi.python.org/packages/source/T/Twisted/Twisted-12.2.0.tar.bz2",
+        "http://pypi.python.org/packages/source/T/Twisted/"
+        "Twisted-12.2.0.tar.bz2",
         "2.7MB"]
 else:
     del twisted
@@ -56,7 +42,8 @@ try:
     import yaml
 except ImportError:
     yaml = None
-    downloads["yaml"] = ["http://pyyaml.org/download/pyyaml/PyYAML-3.10.zip",
+    downloads["yaml"] = ["http://pyyaml.org/download/pyyaml/"
+                         "PyYAML-3.10.zip",
                          "356KB"]
 else:
     del yaml
@@ -67,7 +54,8 @@ try:
 except ImportError:
     interface = None
     downloads["zope.Interface"] = [
-        "http://pypi.python.org/packages/source/z/zope.interface/zope.interface-3.8.0.tar.gz",
+        "http://pypi.python.org/packages/source/z/zope.interface/"
+        "zope.interface-3.8.0.tar.gz",
         "109KB"]
 else:
     del interface
@@ -81,22 +69,28 @@ os.system(python_command + " --version")
 
 print ""
 
-print "Welcome to the install script for the dependencies required to run the bot."
-print "Please note, this script will download some zipfiles, extract them to a temporary folder and install the" \
+print "Welcome to the install script for the dependencies required to run" \
+      " the bot."
+print "Please note, this script will download some zipfiles, extract them" \
+      " to a temporary folder and install the" \
       " contents."
-print "The install scripts within may, in fact, download additional data. Please be aware of this before continuing."
+print "The install scripts within may, in fact, download additional data. " \
+      "Please be aware of this before continuing."
 
 print ""
-print "--------------------------------------------------------------------------------------------------------" \
+print "-------------------------------------------------------------------" \
+      "-------------------------------------" \
       "----------"
 print ""
 
 print "This installer REQUIRES that your python executable is in your PATH."
-print "If it is not, you may specify it by placing it as an argument. For example.."
+print "If it is not, you may specify it by placing it as an argument. For e" \
+      "xample.."
 print ""
 print "C:\python26\python setup.py C:\python26\python"
 print ""
-print "This also allows you to install the packages for a different version of python."
+print "This also allows you to install the packages for a different version" \
+      " of python."
 print ""
 
 raw_input("Press enter to continue.")
@@ -179,7 +173,8 @@ def install_modules():
             print "Installing " + element + "..."
             sleep(3)
             os.system(
-                "cd temp/" + element + " && " + python_command + " setup.py install")
+                "cd temp/" + element + " && " + python_command +
+                " setup.py install")
             print ""
 
 
@@ -195,8 +190,10 @@ print ""
 print "I am about to install the modules."
 print "You will see a LOT of text scroll by."
 print ""
-print "Sometimes the Twisted install will fail; if it does, simply copy the contents of the build/lib folder"
-print " into your site-packages folder. If you're on windows, you could also manually install the MSI from the"
+print "Sometimes the Twisted install will fail; if it does, simply copy the " \
+      "contents of the build/lib folder"
+print " into your site-packages folder. If you're on windows, you could also" \
+      " manually install the MSI from the"
 print " Twisted website."
 print ""
 
@@ -221,7 +218,8 @@ def rm_rf(d):
         try:
             rm_rf_b(d)
         except:
-            print "Unable to remove folder %s! Please delete the remainder of the temp folder yourself." % d
+            print "Unable to remove folder %s! Please delete the remainder " \
+                  "of the temp folder yourself." % d
 
 
 def rm_rf_b(d):

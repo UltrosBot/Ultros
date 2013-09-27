@@ -51,14 +51,14 @@ class Protocol(irc.IRCClient):
         return self
 
     def receivedMOTD(self,
-                     motd):  
+                     motd):
         """ Called when we receive the MOTD. """
         self.log.info(" ===   MOTD   === ")
         for line in motd:
             self.log.info(line)
         self.log.info(" === END MOTD ===")
 
-    def signedOn(self):  
+    def signedOn(self):
         """
          Called once we've connected and done our handshake with the IRC server
         """
@@ -73,10 +73,10 @@ class Protocol(irc.IRCClient):
                          "IDENTIFY %s" % self.identity["auth_pass"])
             elif self.identity["authentication"].lower() == "auth":
                 self.sendLine("AUTH %s %s" % (
-                self.identity["auth_name"], self.identity["auth_pass"]))
+                    self.identity["auth_name"], self.identity["auth_pass"]))
             elif self.identity["authentication"].lower() == "password":
                 self.sendLine("PASS %s:%s" % (
-                self.identity["auth_name"], self.identity["auth_pass"]))
+                    self.identity["auth_name"], self.identity["auth_pass"]))
 
         def do_channel_joins(self):
             for channel in self.config["channels"]:
@@ -106,13 +106,13 @@ class Protocol(irc.IRCClient):
         self.log.info("Parted channel: %s" % channel)
 
     def ctcpQuery(self, user, me,
-                  messages):  
+                  messages):
         """ Called when someone does a CTCP query - channel or private.
         Needs some param analysis."""
         self.log.info("[%s] %s" % (user, messages))
 
     def modeChanged(self, user, channel, action, modes,
-                    args):  
+                    args):
         """ Called when someone changes a mode. Action is a bool specifying
         whether the mode was being set or unset.
             Will probably need to do some testing, mostly to see whether this
@@ -121,39 +121,39 @@ class Protocol(irc.IRCClient):
             user, channel, "+" if action else "-", modes, args))
 
     def kickedFrom(self, channel, kicker,
-                   message):  
+                   message):
         """ Called when we get kicked from a channel. """
         self.log.info("Kicked from %s by %s: %s" % (channel, kicker, message))
 
     def nickChanged(self,
-                    nick):  
+                    nick):
         """ Called when our nick is forcibly changed. """
         self.log.info("Nick changed to %s" % nick)
 
     def userJoined(self, user,
-                   channel):  
+                   channel):
         """ Called when someone else joins a channel we're in. """
         self.log.info("%s joined %s" % (user, channel))
 
     def userLeft(self, user,
-                 channel):  
+                 channel):
         """ Called when someone else leaves a channel we're in. """
         self.log.info("%s parted %s" % (user, channel))
 
     def userKicked(self, kickee, channel, kicker,
-                   message):  
+                   message):
         """ Called when someone else is kicked from a channel we're in. """
         self.log.info("%s was kicked from %s by %s: %s" % (
             kickee, channel, kicker, message))
 
     def irc_QUIT(self, user,
-                 params):  
+                 params):
         """ Called when someone else quits IRC. """
         quitmessage = params[0]
         self.log.info("%s has left IRC: %s" % (user, quitmessage))
 
     def topicUpdated(self, user, channel,
-                     newTopic):  
+                     newTopic):
         """ Called when the topic is updated in a channel -
         also called when we join a channel. """
         self.log.info(
@@ -161,7 +161,7 @@ class Protocol(irc.IRCClient):
         pass
 
     def irc_NICK(self, prefix,
-                 params):  
+                 params):
         """ Called when someone changes their nick.
         Surprisingly, twisted doesn't have a handler for this. """
 
@@ -171,7 +171,7 @@ class Protocol(irc.IRCClient):
         self.log.info("%s is now known as %s" % (oldnick, newnick))
 
     def irc_RPL_WHOREPLY(self,
-                         *nargs):  
+                         *nargs):
         """ Called when we get a WHO reply from the server.
         I'm seriously wondering if we even need this. """
         data = nargs[1]
@@ -185,7 +185,7 @@ class Protocol(irc.IRCClient):
         gecos = data[7]  # Hops, realname
 
     def irc_RPL_ENDOFWHO(self,
-                         *nargs):  
+                         *nargs):
         """ Called when the server's done spamming us with WHO replies. """
         data = nargs[1]
         channel = data[1]
@@ -224,7 +224,7 @@ class Protocol(irc.IRCClient):
                 "Unable to join %s - Channel is invite-only" % params[1])
 
         elif str(command) == "972":  # ERR_CANNOTDOCOMMAND
-            pass  # Need to analyze the args of this. 
+            pass  # Need to analyze the args of this.
             # Called when some command we attempted can't be done.
 
         elif str(command) == "333":  # Channel creation details

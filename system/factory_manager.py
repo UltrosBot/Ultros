@@ -15,7 +15,8 @@ class Manager(object):
     """
     Manager for keeping track of multiple factories - one per protocol.
 
-    This is so that the bot can connect to multiple services at once, and have them communicate with each other.
+    This is so that the bot can connect to multiple services at once, and have
+    them communicate with each other.
 
     It is currently not planned to have multiple instances of a single factory.
     """
@@ -34,7 +35,8 @@ class Manager(object):
             self.main_config = Config("config/settings.yml")
             if not self.main_config.exists:
                 self.logger.error(
-                    "Main configuration not found! Please correct this and try again.")
+                    "Main configuration not found! Please correct this and try"
+                    " again.")
                 return
         except IOError:
             self.logger.error(
@@ -59,12 +61,14 @@ class Manager(object):
                     continue
             except IOError:
                 self.logger.error(
-                    "Unable to load configuration for the '%s' protocol." % protocol)
+                    "Unable to load configuration for the '%s' protocol."
+                    % protocol)
                 self.logger.error("Please check that this file exists.")
                 continue
             except Exception:
                 self.logger.error(
-                    "Unable to load configuration for the '%s' protocol." % protocol)
+                    "Unable to load configuration for the '%s' protocol."
+                    % protocol)
                 output_exception(self.logger, logging.ERROR)
                 continue
 
@@ -72,7 +76,8 @@ class Manager(object):
                 self.factories[protocol] = Factory(protocol, config, self)
             except Exception:
                 self.logger.error(
-                    "Unable to create factory for the '%s' protocol!" % protocol)
+                    "Unable to create factory for the '%s' protocol!"
+                    % protocol)
                 output_exception(self.logger, logging.ERROR)
 
         reactor.run()

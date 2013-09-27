@@ -13,7 +13,8 @@ class Channel(object):
         open_log("irc/channels/%s" % name)
         self.irc = irc
         self.logger = getLogger("IRC", "irc/channels/%s" % name,
-                                "%(asctime)s | %(name)8s | " + name + " | %(message)s",
+                                "%(asctime)s | %(name)8s | " + name +
+                                " | %(message)s",
                                 "%d/%m %H:%M:%S")
 
     def __del__(self):
