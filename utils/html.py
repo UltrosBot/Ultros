@@ -6,9 +6,22 @@ import htmlentitydefs
 
 
 class HTMLTextExtractor(HTMLParser):
-    def __init__(self):
+    def __init__(self, newlines=True):
         HTMLParser.__init__(self)
         self.result = []
+        self.newlines = newlines
+
+    def handle_starttag(self, tag, attrs):
+        if self.newlines:
+            if tag == 'br':
+                self.result.append('\n')
+            elif tag == 'p':
+                self.result.append('\n')
+
+    def handle_endtag(self, tag):
+        if self.newlines:
+            if tag == 'p':
+                self.result.append('\n')
 
     def handle_data(self, d):
         self.result.append(d)
@@ -28,7 +41,7 @@ class HTMLTextExtractor(HTMLParser):
         return u''.join(self.result)
 
 
-def html_to_text(html):
-    s = HTMLTextExtractor()
+def html_to_text(html, newlines=True):
+    s = HTMLTextExtractor(newlines)
     s.feed(html)
     return s.get_text()
