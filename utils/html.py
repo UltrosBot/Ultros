@@ -4,10 +4,11 @@ __author__ = 'Gareth Coles'
 from HTMLParser import HTMLParser
 import htmlentitydefs
 
+
 class HTMLTextExtractor(HTMLParser):
     def __init__(self):
         HTMLParser.__init__(self)
-        self.result = [ ]
+        self.result = []
 
     def handle_data(self, d):
         self.result.append(d)

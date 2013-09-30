@@ -28,9 +28,9 @@ class Protocol(protocol.Protocol):
     VERSION_MINOR = 2
     VERSION_PATCH = 4
 
-    VERSION_DATA = (VERSION_MAJOR << 16) \
-                    | (VERSION_MINOR << 8) \
-                    | (VERSION_PATCH)
+    VERSION_DATA = (VERSION_MAJOR << 16)\
+        | (VERSION_MINOR << 8) \
+        | VERSION_PATCH
 
     # From the Mumble protocol documentation
     PREFIX_FORMAT = ">HI"
@@ -110,8 +110,8 @@ class Protocol(protocol.Protocol):
 
         version.version = Protocol.VERSION_DATA
         version.release = "%d.%d.%d" % (Protocol.VERSION_MAJOR,
-                                       Protocol.VERSION_MINOR,
-                                       Protocol.VERSION_PATCH)
+                                        Protocol.VERSION_MINOR,
+                                        Protocol.VERSION_PATCH)
         version.os = platform.system()
         version.os_version = "Mumble 1.2.3 Twisted Protocol"
 
@@ -160,8 +160,8 @@ class Protocol(protocol.Protocol):
         # If we have enough bytes to read the header, we do that
         while len(self.received) >= Protocol.PREFIX_LENGTH:
             msg_type, length = \
-                    struct.unpack(Protocol.PREFIX_FORMAT,
-                                  self.received[:Protocol.PREFIX_LENGTH])
+                struct.unpack(Protocol.PREFIX_FORMAT,
+                              self.received[:Protocol.PREFIX_LENGTH])
 
             full_length = Protocol.PREFIX_LENGTH + length
 
@@ -205,8 +205,7 @@ class Protocol(protocol.Protocol):
         length = len(msg_data)
 
         # Compile the data with the header
-        data = struct.pack(Protocol.PREFIX_FORMAT, msg_type, length) \
-                + msg_data
+        data = struct.pack(Protocol.PREFIX_FORMAT, msg_type, length) + msg_data
 
         # Send the data
         self.transport.write(data)
