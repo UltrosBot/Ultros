@@ -18,7 +18,7 @@ import Mumble_pb2
 from twisted.internet import reactor, protocol, ssl
 
 from utils.log import getLogger
-from utils.html import html_to_text
+# from utils.html import html_to_text
 
 log = logging.getLogger(__name__)
 
