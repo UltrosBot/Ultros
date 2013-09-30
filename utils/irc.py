@@ -50,13 +50,17 @@ def match_hostmask(user, mask):
     return True
 
 
-def format_string_irc(value, values):
-    ircvalues = {'BOLD' : constants.bold,
-                 'ITALIC' : constants.ital,
-                 'COLOUR' : constants.col,
-                 'COLOR' : constants.col,
-                 'REVERSE' : constants.reverse,
-                 'NORMAL' : constants.normal,
-                 'CTCP' : constants.ctcp}
-    mergedvalues = dict(ircvalues, **values)
+def format_string(value, values=None):
+    ircvalues = {'BOLD' : 'B',
+                 'ITALIC' : 'I',
+                 'COLOUR' : 'C',
+                 'COLOR' : 'C',
+                 'REVERSE' : 'R',
+                 'NORMAL' : 'N',
+                 'CTCP' : 'C'}
+    mergedvalues = None
+    if values is None:
+        mergedvalues = ircvalues
+    else:
+        mergedvalues = dict(ircvalues, **values)
     return value.format(**mergedvalues)
