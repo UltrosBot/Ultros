@@ -41,7 +41,7 @@ class HTMLTextExtractor(HTMLParser):
         return u''.join(self.result)
 
 
-def html_to_text(html, newlines=True):
+def html_to_text(html, newlines=False):
     s = HTMLTextExtractor(newlines)
     s.feed(html)
     return s.get_text()
