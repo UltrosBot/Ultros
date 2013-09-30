@@ -1,8 +1,9 @@
 # coding=utf-8
+from system import plugin
+
 __author__ = "Gareth Coles"
 
 import logging
-from system.plugins import g
 
 from system.factory import Factory
 from utils.log import getLogger
@@ -67,14 +68,9 @@ class Manager(object):
             name = info.name
             if name in self.main_config["plugins"]:
                 try:
-                    if isinstance(info.plugin_object, g.GlobalPlugin):
-                        self.plugman.activatePluginByName(info.name)
-                        info.plugin_object.add_variables(info, self)
-                        info.plugin_object.setup()
-                    else:
-                        self.logger.error("Plugin '%s' is not a global plugin!"
-                                          % name)
-                        continue
+                    self.plugman.activatePluginByName(info.name)
+                    info.plugin_object.add_variables(info, self)
+                    info.plugin_object.setup()
                 except Exception:
                     self.logger.warn("Unable to load plugin: %s v%s"
                                      % (name, info.version))

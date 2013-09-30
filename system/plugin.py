@@ -5,16 +5,11 @@ import logging
 from yapsy.IPlugin import IPlugin
 
 
-class GlobalPlugin(IPlugin):
+class Plugin(IPlugin):
     """
-    Super class for creating global plugins.
+    Super class for creating plugins.
 
-    Global plugins are plugins that interact with the factory manager and
-    accept all events. They can provide functionality to any of the protocols,
-    but protocol plugins are a much better idea if you want to support certain
-    events from them, such as the RPL_BANLIST from IRC protocols.GlobalPlugin
-
-    Inherit this class when you create your global plugin. You can override
+    Inherit this class when you create your plugin. You can override
     the following methods, but remember to call super() on them!
     - activate (self): Called on plugin load
      - It's best not to use this one. It gets called before the plugin info
@@ -35,7 +30,7 @@ class GlobalPlugin(IPlugin):
     factory_manager = None
 
     def __init__(self):
-        super(GlobalPlugin, self).__init__()
+        super(Plugin, self).__init__()
 
     def add_variables(self, info, factory_manager):
         """
