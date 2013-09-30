@@ -54,14 +54,14 @@ class Plugin(IPlugin):
         Called when the plugin is loaded.
         Not to be used for setup! You probably don't need this at all.
         """
-        super(GlobalPlugin, self).activate()
+        super(Plugin, self).activate()
 
     def deactivate(self):
         """
         Called when the plugin is unloaded.
         Use this for saving data or cleaning up.
         """
-        super(GlobalPlugin, self).deactivate()
+        super(Plugin, self).deactivate()
 
     def setup(self):
         """

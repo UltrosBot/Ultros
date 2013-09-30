@@ -1,6 +1,4 @@
 # coding=utf-8
-from system import plugin
-
 __author__ = "Gareth Coles"
 
 import logging
