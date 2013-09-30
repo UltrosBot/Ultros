@@ -8,13 +8,13 @@ import os
 
 
 logging.basicConfig(
-    format="%(asctime)s | %(name)8s | %(levelname)8s | %(message)s",
+    format="%(asctime)s | %(name)9s | %(levelname)8s | %(message)s",
     datefmt="%d %b %Y - %H:%M:%S",
     level=(logging.DEBUG if "--debug" in sys.argv else logging.INFO))
 
 
 def getLogger(name, path=None,
-              fmt="%(asctime)s | %(name)8s | %(levelname)8s | %(message)s",
+              fmt="%(asctime)s | %(name)9s | %(levelname)8s | %(message)s",
               datefmt="%d %b %Y - %H:%M:%S"):
     logger = logging.getLogger(name)
 

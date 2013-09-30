@@ -1,0 +1,6 @@
+network:
+  address: "localhost"
+  port: 64738
+identity:
+  username: "Ultros"
+  password: ""

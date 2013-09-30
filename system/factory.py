@@ -2,10 +2,11 @@
 __author__ = "Gareth Coles"
 
 import importlib
+import logging
 
 from twisted.internet import protocol  # , reactor, ssl
 
-# from utils.misc import output_exception
+from utils.misc import output_exception
 from utils.log import getLogger
 
 
@@ -22,7 +23,8 @@ class Factory(protocol.ClientFactory):
                 "system.protocols.%s.protocol" % protocol_name)
         except ImportError:
             self.logger.error(
-                "Unable to import protocol %s, does it exist?" % protocol_name)
+                "Unable to import protocol %s" % protocol_name)
+            output_exception(self.logger, logging.ERROR)
         else:
             self.protocol = current_protocol.Protocol(self, config)
 

@@ -50,8 +50,7 @@ class Protocol(irc.IRCClient):
     def __call__(self):
         return self
 
-    def receivedMOTD(self,
-                     motd):
+    def receivedMOTD(self, motd):
         """ Called when we receive the MOTD. """
         self.log.info(" ===   MOTD   === ")
         for line in motd:
