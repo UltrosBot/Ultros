@@ -18,7 +18,7 @@ import Mumble_pb2
 from twisted.internet import reactor, protocol, ssl
 
 from utils.log import getLogger
-# from utils.html import html_to_text
+from utils.html import html_to_text
 
 log = logging.getLogger(__name__)
 
@@ -71,6 +71,9 @@ class Protocol(protocol.Protocol):
 
     PING_REPEAT_TIME = 5
 
+    channels = {}
+    users = {}
+
     def __init__(self, factory, config):
         self.received = ""
         self.factory = factory
@@ -81,7 +84,7 @@ class Protocol(protocol.Protocol):
         self.username = config["identity"]["username"]
         self.password = config["identity"]["password"]
         self.networking = config["network"]
-        self.tokens = []
+        self.tokens = config["identity"]["tokens"]
 
         reactor.connectSSL(
             self.networking["address"],
@@ -95,13 +98,69 @@ class Protocol(protocol.Protocol):
         return self
 
     def recvProtobuf(self, msg_type, message):
-        self.log.debug("Received message '%s' (%d):\n%s"
-                       % (message.__class__, msg_type, str(message)))
+        if isinstance(message, Mumble_pb2.Version):
+            # version, release, os, os_version
+            self.log.info("Connected to Murmur v%s" % message.release)
+
+        elif isinstance(message, Mumble_pb2.CodecVersion):
+            # alpha, beta, prefer_alpha, opus
+            pass
+        elif isinstance(message, Mumble_pb2.CryptSetup):
+            # key, client_nonce, server_nonce
+            pass
+        elif isinstance(message, Mumble_pb2.ChannelState):
+            # channel_id, name, position, [parent]
+            if not message.name in self.channels:
+                self.channels[message.channel_id] = message.name
+                self.log.info("New channel: %s" % message.name)
+        elif isinstance(message, Mumble_pb2.PermissionQuery):
+            # channel_id, permissions
+            self.current_channel = message.channel_id
+            self.log.info("Current channel: %s" % self.channels[self.current_channel])
+        elif isinstance(message, Mumble_pb2.UserState):
+            # session, name,
+            # [user_id, suppress, hash, actor, self_mute, self_deaf]
+            if message.name and message.name not in self.users:
+                self.users[message.session] = message.name
+                self.log.info("User joined: %s" % message.name)
+            if message.name == self.username:
+                self.session = message.session
+        elif isinstance(message, Mumble_pb2.ServerSync):
+            # session, max_bandwidth, welcome_text, permissions
+            welcome_text = html_to_text(message.welcome_text, True)
+            self.log.info("===   Welcome message   ===")
+            for line in welcome_text.split("\n"):
+                self.log.info(line)
+            self.log.info("=== End welcome message ===")
+        elif isinstance(message, Mumble_pb2.ServerConfig):
+            # allow_html, message_length, image_message_length
+            self.allow_html = message.allow_html
+            pass
+        elif isinstance(message, Mumble_pb2.Ping):
+            # timestamp, good, late, lost, resync
+            pass
+        elif isinstance(message, Mumble_pb2.UserRemove):
+            # session
+            if message.session in self.users:
+                self.log.info("User left: %s" % self.users[message.session])
+                del self.users[message.session]
+        elif isinstance(message, Mumble_pb2.TextMessage):
+            # actor, channel_id, message
+            if message.actor in self.users:
+                msg = html_to_text(message.message, True)
+                for line in msg.split("\n"):
+                    self.log.info("<%s> %s" %
+                                  (self.users[message.actor], line
+                                   ))
+        else:
+            self.log.debug("Unknown message type: %s" % message.__class__)
+            self.log.debug("Received message '%s' (%d):\n%s"
+                           % (message.__class__, msg_type, str(message)))
 
     def connectionMade(self):
         self.log.info("Connected to server.")
 
-        # In the mumble protocol you must first send your current message
+        # In the mumble protocol you must first send your current version
         # and immediately after that the authentication data.
         #
         # The mumble server will respond with a version message right after
@@ -130,6 +189,13 @@ class Protocol(protocol.Protocol):
         # Then we initialize our ping handler
         self.init_ping()
 
+        # Then we mute ourselves to prevent errors with voice packets
+        message = Mumble_pb2.UserState()
+        message.self_mute = True
+        message.self_deaf = True
+
+        self.sendProtobuf(message)
+
     def init_ping(self):
         # Call ping every PING_REPEAT_TIME seconds.
         reactor.callLater(Protocol.PING_REPEAT_TIME, self.ping_handler)
@@ -142,14 +208,19 @@ class Protocol(protocol.Protocol):
         self.sendProtobuf(ping)
 
         self.init_ping()
-        self.msg("Test!")
 
-    def msg(self, message):
-        self.log.debug("Sending message: %s" % message)
+    def msg(self, message, target="channel", target_id=None):
+        if target_id is None and target == "channel":
+            target_id = self.current_channel
+
+        self.log.debug("Sending text message: %s" % message)
 
         msg = Mumble_pb2.TextMessage()  # session, channel_id, tree_id, message
         msg.message = message
-        msg.channel_id.append(0)
+        if target == "channel":
+            msg.channel_id.append(target_id)
+        else:
+            msg.session.append(target_id)
 
         # self.sendProtobuf(msg)
 
@@ -165,8 +236,8 @@ class Protocol(protocol.Protocol):
 
             full_length = Protocol.PREFIX_LENGTH + length
 
-            self.log.debug("Length: %d" % length)
-            self.log.debug("Message type: %d" % msg_type)
+            #self.log.debug("Length: %d" % length)
+            #self.log.debug("Message type: %d" % msg_type)
 
             # Check if this this a valid message ID
             if msg_type not in Protocol.MESSAGE_ID.values():
@@ -192,8 +263,8 @@ class Protocol(protocol.Protocol):
             except Exception:
                 self.log.error("Exception while handling data.")
                 # We abort on exception, because that's the proper thing to do
-                self.transport.loseConnection()
-                raise
+                #self.transport.loseConnection()
+                #raise
 
             self.received = self.received[full_length:]
 
