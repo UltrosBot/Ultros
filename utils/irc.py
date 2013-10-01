@@ -1,5 +1,5 @@
 #coding=utf-8
-from system.protocols.irc import constants
+#from system.protocols.irc import constants
 
 __author__ = 'rakiru'
 
@@ -51,13 +51,13 @@ def match_hostmask(user, mask):
 
 
 def format_string(value, values=None):
-    ircvalues = {'BOLD' : 'B',
-                 'ITALIC' : 'I',
-                 'COLOUR' : 'C',
-                 'COLOR' : 'C',
-                 'REVERSE' : 'R',
-                 'NORMAL' : 'N',
-                 'CTCP' : 'C'}
+    ircvalues = {'BOLD': 'B',
+                 'ITALIC': 'I',
+                 'COLOUR': 'C',
+                 'COLOR': 'C',
+                 'REVERSE': 'R',
+                 'NORMAL': 'N',
+                 'CTCP': 'C'}
     mergedvalues = None
     if values is None:
         mergedvalues = ircvalues
