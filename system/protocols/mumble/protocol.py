@@ -116,7 +116,8 @@ class Protocol(protocol.Protocol):
         elif isinstance(message, Mumble_pb2.PermissionQuery):
             # channel_id, permissions
             self.current_channel = message.channel_id
-            self.log.info("Current channel: %s" % self.channels[self.current_channel])
+            self.log.info("Current channel: %s"
+                          % self.channels[self.current_channel])
         elif isinstance(message, Mumble_pb2.UserState):
             # session, name,
             # [user_id, suppress, hash, actor, self_mute, self_deaf]
