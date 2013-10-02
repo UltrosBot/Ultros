@@ -142,11 +142,11 @@ class Protocol(protocol.Protocol):
                 user = self.users[message.session]
                 if message.HasField('channel_id'):
                     actor = self.users[message.actor]
-                    self.log.info("User moved channel: %s from %s to %s by %s" %
-                                  (user.name,
-                                   self.channels[user.channel_id],
-                                   self.channels[message.channel_id],
-                                   actor.name))
+                    self.log.info("User moved channel: %s from %s to %s by %s"
+                                  % (user.name,
+                                     self.channels[user.channel_id],
+                                     self.channels[message.channel_id],
+                                     actor.name))
                     user.channel_id = message.channel_id
                     # TODO: Fire event here
                 if message.HasField('mute'):
@@ -180,7 +180,8 @@ class Protocol(protocol.Protocol):
                     if message.self_mute:
                         self.log.info("User muted themselves: %s" % user.name)
                     else:
-                        self.log.info("User unmuted themselves: %s" % user.name)
+                        self.log.info("User unmuted themselves: %s" %
+                                      user.name)
                     user.self_mute = message.self_mute
                     # TODO: Fire event here
                 if message.HasField('self_deaf'):
