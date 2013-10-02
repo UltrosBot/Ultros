@@ -19,6 +19,7 @@ from twisted.internet import reactor, protocol, ssl
 
 from utils.log import getLogger
 from utils.html import html_to_text
+from user import User
 
 log = logging.getLogger(__name__)
 
@@ -121,11 +122,69 @@ class Protocol(protocol.Protocol):
         elif isinstance(message, Mumble_pb2.UserState):
             # session, name,
             # [user_id, suppress, hash, actor, self_mute, self_deaf]
-            if message.name and message.name not in self.users:
-                self.users[message.session] = message.name
+            if message.name and message.session not in self.users:
+                # Note: I'm not sure if message.name should ever be empty and not in self.users - rakiru
+                self.users[message.session] = User(message.name, message.channel_id, message.mute,
+                                                   message.deaf, message.suppress, message.self_mute,
+                                                   message.self_deaf, message.recording)
                 self.log.info("User joined: %s" % message.name)
-            if message.name == self.username:
-                self.session = message.session
+                # Store our session id
+                if message.name == self.username:
+                    self.session = message.session
+            else:
+                # Note: More than one state change can happen at once
+                # TODO: Remove the user.attr != message.attr check? Only relevant attributes are actually sent
+                user = self.users[message.session]
+                if message.HasField('channel_id') and user.channel_id != message.channel_id:
+                    actor = self.users[message.actor]
+                    self.log.info("User moved channel: %s from %s to %s by %s" % (
+                        user.name, self.channels[user.channel_id], self.channels[message.channel_id], actor.name))
+                    user.channel_id = message.channel_id
+                    #TODO: Fire event here
+                if message.HasField('mute') and user.mute != message.mute:
+                    actor = self.users[message.actor]
+                    if message.mute:
+                        self.log.info("User was muted: %s by %s" % (user.name, actor.name))
+                    else:
+                        self.log.info("User was unmuted: %s by %s" % (user.name, actor.name))
+                    user.mute = message.mute
+                    #TODO: Fire event here
+                if message.HasField('deaf') and user.deaf != message.deaf:
+                    actor = self.users[message.actor]
+                    if message.deaf:
+                        self.log.info("User was deafened: %s by %s" % (user.name, actor.name))
+                    else:
+                        self.log.info("User was undeafened: %s by %s" % (user.name, actor.name))
+                    user.deaf = message.deaf
+                    #TODO: Fire event here
+                if message.HasField('suppress') and user.suppress != message.suppress:
+                    if message.suppress:
+                        self.log.info("User was suppressed: %s" % user.name)
+                    else:
+                        self.log.info("User was unsuppressed: %s" % user.name)
+                    user.suppress = message.suppress
+                    #TODO: Fire event here
+                if message.HasField('self_mute') and user.self_mute != message.self_mute:
+                    if message.self_mute:
+                        self.log.info("User muted themselves: %s" % user.name)
+                    else:
+                        self.log.info("User unmuted themselves: %s" % user.name)
+                    user.self_mute = message.self_mute
+                    #TODO: Fire event here
+                if message.HasField('self_deaf') and user.self_deaf != message.self_deaf:
+                    if message.self_deaf:
+                        self.log.info("User deafened themselves: %s" % user.name)
+                    else:
+                        self.log.info("User undeafened themselves: %s" % user.name)
+                    user.self_deaf = message.self_deaf
+                    #TODO: Fire event here
+                if message.HasField('recording') and user.recording != message.recording:
+                    if message.recording:
+                        self.log.info("User started recording: %s" % user.name)
+                    else:
+                        self.log.info("User stopped recording: %s" % user.name)
+                    user.recording = message.recording
+                    #TODO: Fire event here
         elif isinstance(message, Mumble_pb2.ServerSync):
             # session, max_bandwidth, welcome_text, permissions
             welcome_text = html_to_text(message.welcome_text, True)
@@ -143,7 +202,7 @@ class Protocol(protocol.Protocol):
         elif isinstance(message, Mumble_pb2.UserRemove):
             # session
             if message.session in self.users:
-                self.log.info("User left: %s" % self.users[message.session])
+                self.log.info("User left: %s" % self.users[message.session].name)
                 del self.users[message.session]
         elif isinstance(message, Mumble_pb2.TextMessage):
             # actor, channel_id, message
@@ -151,7 +210,7 @@ class Protocol(protocol.Protocol):
                 msg = html_to_text(message.message, True)
                 for line in msg.split("\n"):
                     self.log.info("<%s> %s" %
-                                  (self.users[message.actor], line
+                                  (self.users[message.actor].name, line
                                    ))
         else:
             self.log.debug("Unknown message type: %s" % message.__class__)
