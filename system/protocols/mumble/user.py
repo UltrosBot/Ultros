@@ -3,8 +3,9 @@ __author__ = 'Sean'
 
 
 class User(object):
-    def __init__(self, name, channel_id, mute, deaf, suppress, self_mute,
-                 self_deaf, priority_speaker, recording):
+    def __init__(self, session, name, channel_id, mute, deaf, suppress,
+                 self_mute, self_deaf, priority_speaker, recording):
+        self.session = session
         self.name = name
         self.channel_id = channel_id
         self.mute = mute
@@ -14,3 +15,6 @@ class User(object):
         self.self_deaf = self_deaf
         self.priority_speaker = priority_speaker
         self.recording = recording
+
+    def __str__(self):
+        return u"%s (%s)" % (self.name, self.session)

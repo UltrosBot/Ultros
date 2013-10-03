@@ -145,16 +145,11 @@ class Protocol(protocol.Protocol):
             # session
             if message.session in self.users:
                 self.log.info("User left: %s" %
-                              self.users[message.session].name)
+                              self.users[message.session])
                 del self.users[message.session]
         elif isinstance(message, Mumble_pb2.TextMessage):
             # actor, channel_id, message
-            if message.actor in self.users:
-                msg = html_to_text(message.message, True)
-                for line in msg.split("\n"):
-                    self.log.info("<%s> %s" %
-                                  (self.users[message.actor].name, line
-                                   ))
+            self.handle_msg_textmessage(message)
         else:
             self.log.debug("Unknown message type: %s" % message.__class__)
             self.log.debug("Received message '%s' (%d):\n%s"
@@ -322,7 +317,8 @@ class Protocol(protocol.Protocol):
         if message.name and message.session not in self.users:
             # Note: I'm not sure if message.name should ever be empty and
             # not in self.users - rakiru
-            self.users[message.session] = User(message.name,
+            self.users[message.session] = User(message.session,
+                                               message.name,
                                                message.channel_id,
                                                message.mute,
                                                message.deaf,
@@ -341,67 +337,115 @@ class Protocol(protocol.Protocol):
             if message.HasField('channel_id'):
                 actor = self.users[message.actor]
                 self.log.info("User moved channel: %s from %s to %s by %s" %
-                              (user.name,
+                              (user,
                                self.channels[user.channel_id],
                                self.channels[message.channel_id],
-                               actor.name))
+                               actor))
                 user.channel_id = message.channel_id
                 # TODO: Fire event here
             if message.HasField('mute'):
                 actor = self.users[message.actor]
                 if message.mute:
-                    self.log.info("User was muted: %s by %s" % (user.name,
-                                                                actor.name))
+                    self.log.info("User was muted: %s by %s" % (user, actor))
                 else:
-                    self.log.info("User was unmuted: %s by %s" % (user.name,
-                                                                  actor.name))
+                    self.log.info("User was unmuted: %s by %s" % (user, actor))
                 user.mute = message.mute
                 # TODO: Fire event here
             if message.HasField('deaf'):
                 actor = self.users[message.actor]
                 if message.deaf:
-                    self.log.info("User was deafened: %s by %s" %
-                                  (user.name, actor.name))
+                    self.log.info("User was deafened: %s by %s" % (user,
+                                                                   actor))
                 else:
-                    self.log.info("User was undeafened: %s by %s" %
-                                  (user.name, actor.name))
+                    self.log.info("User was undeafened: %s by %s" % (user,
+                                                                     actor))
                 user.deaf = message.deaf
                 # TODO: Fire event here
             if message.HasField('suppress'):
                 if message.suppress:
-                    self.log.info("User was suppressed: %s" % user.name)
+                    self.log.info("User was suppressed: %s" % user)
                 else:
-                    self.log.info("User was unsuppressed: %s" % user.name)
+                    self.log.info("User was unsuppressed: %s" % user)
                 user.suppress = message.suppress
                 # TODO: Fire event here
             if message.HasField('self_mute'):
                 if message.self_mute:
-                    self.log.info("User muted themselves: %s" % user.name)
+                    self.log.info("User muted themselves: %s" % user)
                 else:
-                    self.log.info("User unmuted themselves: %s" % user.name)
+                    self.log.info("User unmuted themselves: %s" % user)
                 user.self_mute = message.self_mute
                 # TODO: Fire event here
             if message.HasField('self_deaf'):
                 if message.self_deaf:
-                    self.log.info("User deafened themselves: %s" % user.name)
+                    self.log.info("User deafened themselves: %s" % user)
                 else:
-                    self.log.info("User undeafened themselves: %s" % user.name)
+                    self.log.info("User undeafened themselves: %s" % user)
                 user.self_deaf = message.self_deaf
                 # TODO: Fire event here
             if message.HasField('priority_speaker'):
                 actor = self.users[message.actor]
                 if message.priority_speaker:
                     self.log.info("User was given priority speaker: %s by %s"
-                                  % (user.name, actor.name))
+                                  % (user, actor))
                 else:
                     self.log.info("User was revoked priority speaker: %s by %s"
-                                  % (user.name, actor.name))
+                                  % (user, actor))
                 user.priority_speaker = message.priority_speaker
                 # TODO: Fire event here
             if message.HasField('recording'):
                 if message.recording:
-                    self.log.info("User started recording: %s" % user.name)
+                    self.log.info("User started recording: %s" % user)
                 else:
-                    self.log.info("User stopped recording: %s" % user.name)
+                    self.log.info("User stopped recording: %s" % user)
                 user.recording = message.recording
                 # TODO: Fire event here
+
+    def handle_msg_textmessage(self, message):
+        if message.actor in self.users:
+            msg = html_to_text(message.message, True)
+            for line in msg.split("\n"):
+                self.log.info("<%s> %s" % (self.users[message.actor],
+                                           line))
+            # TODO: If you see this, I forgot to remove it before committing
+            if msg.startswith('!'):
+                cmd = msg[1:].lower()
+                if cmd == "users":
+                    self.print_users()
+                elif cmd == "channels":
+                    self.print_channels()
+
+    def print_users(self):
+        # TODO: Remove this debug function once user handling is complete
+        def print_indented(s):
+            print "----", s
+        for user in self.users.itervalues():
+            print user
+            print_indented("Channel: %s" % self.channels[user.channel_id]\
+                .__str__().encode('ascii', 'replace'))
+            print_indented("Mute: %s" % user.mute)
+            print_indented("Deaf: %s" % user.deaf)
+            print_indented("Suppressed: %s" % user.suppress)
+            print_indented("Self mute: %s" % user.self_mute)
+            print_indented("Self deaf: %s" % user.self_deaf)
+            print_indented("Priority speaker: %s" % user.priority_speaker)
+            print_indented("Recording: %s" % user.recording)
+
+    def print_channels(self):
+        # TODO: Remove this debug function once channel handling is complete
+        def get_children_channels(channel_id):
+            children = []
+            for cid,channel in self.channels.iteritems():
+                if channel.parent == channel_id:
+                    children.append(cid)
+            return children
+
+        def print_channel(channels, channel_id, depth=0):
+            print "----"*depth,\
+                self.channels[channel_id].__str__().encode('ascii', 'replace')
+            for chan in channels[channel_id]:
+                print_channel(channels, chan, depth + 1)
+
+        chans = {} # Assumes root channel is 0 - not sure if this is ever not
+        for cid,chan in self.channels.iteritems():
+            chans[cid] = get_children_channels(cid)
+        print_channel(chans, 0)
