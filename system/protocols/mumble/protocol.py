@@ -116,10 +116,33 @@ class Protocol(protocol.Protocol):
                 parent = None
                 if message.HasField('parent'):
                     parent = message.parent
+                links = []
+                if message.links:
+                    links = list(message.links)
+                    for link in links:
+                        self.log.debug("Channel link: %s to %s" %
+                                      (self.channels[link].name,
+                                       self.channels[message.channel_id].name))
                 self.channels[message.channel_id] = Channel(message.channel_id,
                                                             message.name,
-                                                            parent)
+                                                            parent,
+                                                            message.position,
+                                                            links)
                 self.log.info("New channel: %s" % message.name)
+            if message.links_add:
+                for link in message.links_add:
+                    self.channels[message.channel_id].add_link(link)
+                    self.log.info("Channel link added: %s to %s" %
+                                  (self.channels[link].name,
+                                   self.channels[message.channel_id].name))
+                    # TODO: Fire event
+            if message.links_remove:
+                for link in message.links_remove:
+                    self.channels[message.channel_id].remove_link(link)
+                    self.log.info("Channel link removed: %s from %s" %
+                                  (self.channels[link].name,
+                                   self.channels[message.channel_id].name))
+                    # TODO: Fire event
         elif isinstance(message, Mumble_pb2.PermissionQuery):
             # channel_id, permissions
             # TODO: Don't use this for current channel:
@@ -347,8 +370,9 @@ class Protocol(protocol.Protocol):
             # Handle the message
             try:
                 self.recvProtobuf(msg_type, msg)
-            except Exception:
+            except Exception as e:
                 self.log.error("Exception while handling data.")
+                self.log.debug(e)
                 # We abort on exception, because that's the proper thing to do
                 #self.transport.loseConnection()
                 #raise
