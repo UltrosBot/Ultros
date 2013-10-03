@@ -1,3 +1,4 @@
+# coding=utf-8
 __author__ = 'Sean'
 
 
@@ -8,6 +9,9 @@ class Channel(object):
         self.parent = parent
         self.position = position
         self.links = links
+
+    def __str__(self):
+        return "%s (%s)" % (self.name, self.channel_id)
 
     def add_link(self, channel_id):
         if channel_id not in self.links:
