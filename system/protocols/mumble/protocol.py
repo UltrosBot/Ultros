@@ -20,6 +20,7 @@ from twisted.internet import reactor, protocol, ssl
 from utils.log import getLogger
 from utils.html import html_to_text
 from user import User
+from channel import Channel
 
 log = logging.getLogger(__name__)
 
@@ -111,14 +112,24 @@ class Protocol(protocol.Protocol):
             pass
         elif isinstance(message, Mumble_pb2.ChannelState):
             # channel_id, name, position, [parent]
-            if not message.name in self.channels:
-                self.channels[message.channel_id] = message.name
+            if not message.channel_id in self.channels:
+                parent = None
+                if message.HasField('parent'):
+                    parent = message.parent
+                self.channels[message.channel_id] = Channel(message.channel_id,
+                                                            message.name,
+                                                            parent)
                 self.log.info("New channel: %s" % message.name)
         elif isinstance(message, Mumble_pb2.PermissionQuery):
             # channel_id, permissions
+            # TODO: Don't use this for current channel:
+            # This checks permission up through the tree of channels, so the
+            # last one is not always the current channel.
+            # UserState is not always received for channel change though (not
+            # on initial join, haven't tested self-move).
             self.current_channel = message.channel_id
             self.log.info("Current channel: %s"
-                          % self.channels[self.current_channel])
+                          % self.channels[self.current_channel].name)
         elif isinstance(message, Mumble_pb2.UserState):
             # session, name,
             # [user_id, suppress, hash, actor, self_mute, self_deaf]
@@ -144,8 +155,8 @@ class Protocol(protocol.Protocol):
                     actor = self.users[message.actor]
                     self.log.info("User moved channel: %s from %s to %s by %s"
                                   % (user.name,
-                                     self.channels[user.channel_id],
-                                     self.channels[message.channel_id],
+                                     self.channels[user.channel_id].name,
+                                     self.channels[message.channel_id].name,
                                      actor.name))
                     user.channel_id = message.channel_id
                     # TODO: Fire event here
