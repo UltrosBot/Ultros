@@ -295,8 +295,8 @@ class Protocol(protocol.Protocol):
                 links = list(message.links)
                 for link in links:
                     self.log.debug("Channel link: %s to %s" %
-                                   (self.channels[link].name,
-                                    self.channels[message.channel_id].name))
+                                   (self.channels[link],
+                                    self.channels[message.channel_id]))
             self.channels[message.channel_id] = Channel(message.channel_id,
                                                         message.name,
                                                         parent,
@@ -307,15 +307,15 @@ class Protocol(protocol.Protocol):
             for link in message.links_add:
                 self.channels[message.channel_id].add_link(link)
                 self.log.info("Channel link added: %s to %s" %
-                              (self.channels[link].name,
-                               self.channels[message.channel_id].name))
+                              (self.channels[link],
+                               self.channels[message.channel_id]))
                 # TODO: Fire event
         if message.links_remove:
             for link in message.links_remove:
                 self.channels[message.channel_id].remove_link(link)
                 self.log.info("Channel link removed: %s from %s" %
-                              (self.channels[link].name,
-                               self.channels[message.channel_id].name))
+                              (self.channels[link],
+                               self.channels[message.channel_id]))
                 # TODO: Fire event
 
     def handle_msg_userstate(self, message):
@@ -329,6 +329,7 @@ class Protocol(protocol.Protocol):
                                                message.suppress,
                                                message.self_mute,
                                                message.self_deaf,
+                                               message.priority_speaker,
                                                message.recording)
             self.log.info("User joined: %s" % message.name)
             # Store our session id
@@ -341,8 +342,8 @@ class Protocol(protocol.Protocol):
                 actor = self.users[message.actor]
                 self.log.info("User moved channel: %s from %s to %s by %s" %
                               (user.name,
-                               self.channels[user.channel_id].name,
-                               self.channels[message.channel_id].name,
+                               self.channels[user.channel_id],
+                               self.channels[message.channel_id],
                                actor.name))
                 user.channel_id = message.channel_id
                 # TODO: Fire event here
@@ -386,6 +387,16 @@ class Protocol(protocol.Protocol):
                 else:
                     self.log.info("User undeafened themselves: %s" % user.name)
                 user.self_deaf = message.self_deaf
+                # TODO: Fire event here
+            if message.HasField('priority_speaker'):
+                actor = self.users[message.actor]
+                if message.priority_speaker:
+                    self.log.info("User was given priority speaker: %s by %s"
+                                  % (user.name, actor.name))
+                else:
+                    self.log.info("User was revoked priority speaker: %s by %s"
+                                  % (user.name, actor.name))
+                user.priority_speaker = message.priority_speaker
                 # TODO: Fire event here
             if message.HasField('recording'):
                 if message.recording:
