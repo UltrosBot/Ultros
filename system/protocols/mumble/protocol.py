@@ -112,37 +112,7 @@ class Protocol(protocol.Protocol):
             pass
         elif isinstance(message, Mumble_pb2.ChannelState):
             # channel_id, name, position, [parent]
-            if not message.channel_id in self.channels:
-                parent = None
-                if message.HasField('parent'):
-                    parent = message.parent
-                links = []
-                if message.links:
-                    links = list(message.links)
-                    for link in links:
-                        self.log.debug("Channel link: %s to %s" %
-                                      (self.channels[link].name,
-                                       self.channels[message.channel_id].name))
-                self.channels[message.channel_id] = Channel(message.channel_id,
-                                                            message.name,
-                                                            parent,
-                                                            message.position,
-                                                            links)
-                self.log.info("New channel: %s" % message.name)
-            if message.links_add:
-                for link in message.links_add:
-                    self.channels[message.channel_id].add_link(link)
-                    self.log.info("Channel link added: %s to %s" %
-                                  (self.channels[link].name,
-                                   self.channels[message.channel_id].name))
-                    # TODO: Fire event
-            if message.links_remove:
-                for link in message.links_remove:
-                    self.channels[message.channel_id].remove_link(link)
-                    self.log.info("Channel link removed: %s from %s" %
-                                  (self.channels[link].name,
-                                   self.channels[message.channel_id].name))
-                    # TODO: Fire event
+            self.handle_msg_channelstate(message)
         elif isinstance(message, Mumble_pb2.PermissionQuery):
             # channel_id, permissions
             # TODO: Don't use this for current channel:
@@ -156,84 +126,7 @@ class Protocol(protocol.Protocol):
         elif isinstance(message, Mumble_pb2.UserState):
             # session, name,
             # [user_id, suppress, hash, actor, self_mute, self_deaf]
-            if message.name and message.session not in self.users:
-                # Note: I'm not sure if message.name should ever be empty and
-                # not in self.users - rakiru
-                self.users[message.session] = User(message.name,
-                                                   message.channel_id,
-                                                   message.mute,
-                                                   message.deaf,
-                                                   message.suppress,
-                                                   message.self_mute,
-                                                   message.self_deaf,
-                                                   message.recording)
-                self.log.info("User joined: %s" % message.name)
-                # Store our session id
-                if message.name == self.username:
-                    self.session = message.session
-            else:
-                # Note: More than one state change can happen at once
-                user = self.users[message.session]
-                if message.HasField('channel_id'):
-                    actor = self.users[message.actor]
-                    self.log.info("User moved channel: %s from %s to %s by %s"
-                                  % (user.name,
-                                     self.channels[user.channel_id].name,
-                                     self.channels[message.channel_id].name,
-                                     actor.name))
-                    user.channel_id = message.channel_id
-                    # TODO: Fire event here
-                if message.HasField('mute'):
-                    actor = self.users[message.actor]
-                    if message.mute:
-                        self.log.info("User was muted: %s by %s" %
-                                      (user.name, actor.name))
-                    else:
-                        self.log.info("User was unmuted: %s by %s" %
-                                      (user.name, actor.name))
-                    user.mute = message.mute
-                    # TODO: Fire event here
-                if message.HasField('deaf'):
-                    actor = self.users[message.actor]
-                    if message.deaf:
-                        self.log.info("User was deafened: %s by %s" %
-                                      (user.name, actor.name))
-                    else:
-                        self.log.info("User was undeafened: %s by %s" %
-                                      (user.name, actor.name))
-                    user.deaf = message.deaf
-                    # TODO: Fire event here
-                if message.HasField('suppress'):
-                    if message.suppress:
-                        self.log.info("User was suppressed: %s" % user.name)
-                    else:
-                        self.log.info("User was unsuppressed: %s" % user.name)
-                    user.suppress = message.suppress
-                    # TODO: Fire event here
-                if message.HasField('self_mute'):
-                    if message.self_mute:
-                        self.log.info("User muted themselves: %s" % user.name)
-                    else:
-                        self.log.info("User unmuted themselves: %s" %
-                                      user.name)
-                    user.self_mute = message.self_mute
-                    # TODO: Fire event here
-                if message.HasField('self_deaf'):
-                    if message.self_deaf:
-                        self.log.info("User deafened themselves: %s" %
-                                      user.name)
-                    else:
-                        self.log.info("User undeafened themselves: %s" %
-                                      user.name)
-                    user.self_deaf = message.self_deaf
-                    # TODO: Fire event here
-                if message.HasField('recording'):
-                    if message.recording:
-                        self.log.info("User started recording: %s" % user.name)
-                    else:
-                        self.log.info("User stopped recording: %s" % user.name)
-                    user.recording = message.recording
-                    # TODO: Fire event here
+            self.handle_msg_userstate(message)
         elif isinstance(message, Mumble_pb2.ServerSync):
             # session, max_bandwidth, welcome_text, permissions
             welcome_text = html_to_text(message.welcome_text, True)
@@ -391,3 +284,113 @@ class Protocol(protocol.Protocol):
 
         # Send the data
         self.transport.write(data)
+
+    def handle_msg_channelstate(self, message):
+        if not message.channel_id in self.channels:
+            parent = None
+            if message.HasField('parent'):
+                parent = message.parent
+            links = []
+            if message.links:
+                links = list(message.links)
+                for link in links:
+                    self.log.debug("Channel link: %s to %s" %
+                                   (self.channels[link].name,
+                                    self.channels[message.channel_id].name))
+            self.channels[message.channel_id] = Channel(message.channel_id,
+                                                        message.name,
+                                                        parent,
+                                                        message.position,
+                                                        links)
+            self.log.info("New channel: %s" % message.name)
+        if message.links_add:
+            for link in message.links_add:
+                self.channels[message.channel_id].add_link(link)
+                self.log.info("Channel link added: %s to %s" %
+                              (self.channels[link].name,
+                               self.channels[message.channel_id].name))
+                # TODO: Fire event
+        if message.links_remove:
+            for link in message.links_remove:
+                self.channels[message.channel_id].remove_link(link)
+                self.log.info("Channel link removed: %s from %s" %
+                              (self.channels[link].name,
+                               self.channels[message.channel_id].name))
+                # TODO: Fire event
+
+    def handle_msg_userstate(self, message):
+        if message.name and message.session not in self.users:
+            # Note: I'm not sure if message.name should ever be empty and
+            # not in self.users - rakiru
+            self.users[message.session] = User(message.name,
+                                               message.channel_id,
+                                               message.mute,
+                                               message.deaf,
+                                               message.suppress,
+                                               message.self_mute,
+                                               message.self_deaf,
+                                               message.recording)
+            self.log.info("User joined: %s" % message.name)
+            # Store our session id
+            if message.name == self.username:
+                self.session = message.session
+        else:
+            # Note: More than one state change can happen at once
+            user = self.users[message.session]
+            if message.HasField('channel_id'):
+                actor = self.users[message.actor]
+                self.log.info("User moved channel: %s from %s to %s by %s" %
+                              (user.name,
+                               self.channels[user.channel_id].name,
+                               self.channels[message.channel_id].name,
+                               actor.name))
+                user.channel_id = message.channel_id
+                # TODO: Fire event here
+            if message.HasField('mute'):
+                actor = self.users[message.actor]
+                if message.mute:
+                    self.log.info("User was muted: %s by %s" % (user.name,
+                                                                actor.name))
+                else:
+                    self.log.info("User was unmuted: %s by %s" % (user.name,
+                                                                  actor.name))
+                user.mute = message.mute
+                # TODO: Fire event here
+            if message.HasField('deaf'):
+                actor = self.users[message.actor]
+                if message.deaf:
+                    self.log.info("User was deafened: %s by %s" %
+                                  (user.name, actor.name))
+                else:
+                    self.log.info("User was undeafened: %s by %s" %
+                                  (user.name, actor.name))
+                user.deaf = message.deaf
+                # TODO: Fire event here
+            if message.HasField('suppress'):
+                if message.suppress:
+                    self.log.info("User was suppressed: %s" % user.name)
+                else:
+                    self.log.info("User was unsuppressed: %s" % user.name)
+                user.suppress = message.suppress
+                # TODO: Fire event here
+            if message.HasField('self_mute'):
+                if message.self_mute:
+                    self.log.info("User muted themselves: %s" % user.name)
+                else:
+                    self.log.info("User unmuted themselves: %s" % user.name)
+                user.self_mute = message.self_mute
+                # TODO: Fire event here
+            if message.HasField('self_deaf'):
+                if message.self_deaf:
+                    self.log.info("User deafened themselves: %s" % user.name)
+                else:
+                    self.log.info("User undeafened themselves: %s" % user.name)
+                user.self_deaf = message.self_deaf
+                # TODO: Fire event here
+            if message.HasField('recording'):
+                if message.recording:
+                    self.log.info("User started recording: %s" % user.name)
+                else:
+                    self.log.info("User stopped recording: %s" % user.name)
+                user.recording = message.recording
+                # TODO: Fire event here
