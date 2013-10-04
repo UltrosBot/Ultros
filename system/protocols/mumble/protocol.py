@@ -207,6 +207,16 @@ class Protocol(protocol.Protocol):
 
         self.init_ping()
 
+    def msg_channel(self, message, channel):
+        if isinstance(channel, Channel):
+            channel = channel.channel_id
+        self.msg(message, "channel", channel)
+
+    def msg_user(self, message, user):
+        if isinstance(user, User):
+            user = user.session
+        self.msg(message, "user", user)
+
     def msg(self, message, target="channel", target_id=None):
         if target_id is None and target == "channel":
             target_id = self.current_channel
@@ -220,7 +230,7 @@ class Protocol(protocol.Protocol):
         else:
             msg.session.append(target_id)
 
-        # self.sendProtobuf(msg)
+        self.sendProtobuf(msg)
 
     def dataReceived(self, recv):
         # Append our received data
@@ -413,6 +423,10 @@ class Protocol(protocol.Protocol):
                     self.print_users()
                 elif cmd == "channels":
                     self.print_channels()
+                elif cmd == "msgme":
+                    self.msg_user("msg_user() test using id", message.actor)
+                    self.msg_user("msg_user() test using User object",
+                                  self.users[message.actor])
 
     def print_users(self):
         # TODO: Remove this debug function once user handling is complete
