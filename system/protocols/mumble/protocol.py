@@ -434,7 +434,7 @@ class Protocol(protocol.Protocol):
             print "----", s
         for user in self.users.itervalues():
             print user
-            print_indented("Channel: %s" % self.channels[user.channel_id]\
+            print_indented("Channel: %s" % self.channels[user.channel_id]
                 .__str__().encode('ascii', 'replace'))
             print_indented("Mute: %s" % user.mute)
             print_indented("Deaf: %s" % user.deaf)
@@ -448,18 +448,18 @@ class Protocol(protocol.Protocol):
         # TODO: Remove this debug function once channel handling is complete
         def get_children_channels(channel_id):
             children = []
-            for cid,channel in self.channels.iteritems():
+            for cid, channel in self.channels.iteritems():
                 if channel.parent == channel_id:
                     children.append(cid)
             return children
 
         def print_channel(channels, channel_id, depth=0):
-            print "----"*depth,\
+            print "----" * depth,\
                 self.channels[channel_id].__str__().encode('ascii', 'replace')
             for chan in channels[channel_id]:
                 print_channel(channels, chan, depth + 1)
 
-        chans = {} # Assumes root channel is 0 - not sure if this is ever not
-        for cid,chan in self.channels.iteritems():
+        chans = {}  # Assumes root channel is 0 - not sure if this is ever not
+        for cid, chan in self.channels.iteritems():
             chans[cid] = get_children_channels(cid)
         print_channel(chans, 0)
