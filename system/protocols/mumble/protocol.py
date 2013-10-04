@@ -434,8 +434,8 @@ class Protocol(protocol.Protocol):
             print "----", s
         for user in self.users.itervalues():
             print user
-            print_indented("Channel: %s" % self.channels[user.channel_id]
-                .__str__().encode('ascii', 'replace'))
+            cn = self.channels[user.channel_id].__str__()
+            print_indented("Channel: %s" % cn.encode('ascii', 'replace'))
             print_indented("Mute: %s" % user.mute)
             print_indented("Deaf: %s" % user.deaf)
             print_indented("Suppressed: %s" % user.suppress)
