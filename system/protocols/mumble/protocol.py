@@ -175,7 +175,7 @@ class Protocol(protocol.Protocol):
             msg = Protocol.ID_MESSAGE[msg_type]()
             msg.ParseFromString(
                 self.received[Protocol.PREFIX_LENGTH:
-                Protocol.PREFIX_LENGTH + length])
+                              Protocol.PREFIX_LENGTH + length])
 
             # Handle the message
             try:
