@@ -3,6 +3,6 @@ Ultros
 
 Current build status: ![Current build status image](http://bamboo.gserv.me/plugins/servlet/buildStatusImage/ULTROS-ULTROS)
 
-[http://bamboo.gserv.me/browse/ULTROS-ULTROS](![Stylistic image of source code](http://i.imgur.com/3jkul51.png))
+![Stylistic image of source code](http://i.imgur.com/3jkul51.png) [http://bamboo.gserv.me/browse/ULTROS-ULTROS](Build listing)
 
 A rewrite of the helperbot originally written for MCBlockit IRC (#mcblockit on Freenode).
