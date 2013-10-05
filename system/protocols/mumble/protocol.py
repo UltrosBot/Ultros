@@ -19,8 +19,8 @@ from twisted.internet import reactor, protocol, ssl
 
 from utils.log import getLogger
 from utils.html import html_to_text
-from user import User
-from channel import Channel
+from system.protocols.mumble.user import User
+from system.protocols.mumble.channel import Channel
 
 log = logging.getLogger(__name__)
 
