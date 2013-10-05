@@ -107,9 +107,12 @@ class Protocol(protocol.Protocol):
         if isinstance(message, Mumble_pb2.Version):
             # version, release, os, os_version
             self.log.info("Connected to Murmur v%s" % message.release)
-
         # TODO: Throw event (General, post-setup)
-
+        elif isinstance(message, Mumble_pb2.Reject):
+            # version, release, os, os_version
+            self.log.info("Could not connect to server: %s - %s" %
+                          (message.type, message.reason))
+            # TODO: Kill connection, stop ping loop, etc
         elif isinstance(message, Mumble_pb2.CodecVersion):
             # alpha, beta, prefer_alpha, opus
 

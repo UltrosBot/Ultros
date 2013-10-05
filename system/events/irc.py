@@ -6,7 +6,7 @@ from system.events.base import BaseEvent
 class IRCEvent(BaseEvent):
     """
     An IRC event. This will only be thrown from the IRC protocol.
-    If an event subclasses this, chances are it's a protocol-agnostic event.
+    If an event subclasses this, chances are it's an IRC event.
     """
 
     def __init__(self, caller):
