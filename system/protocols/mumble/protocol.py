@@ -103,6 +103,105 @@ class Protocol(protocol.Protocol):
     def __call__(self):
         return self
 
+    def connectionMade(self):
+        self.log.info("Connected to server.")
+
+        # In the mumble protocol you must first send your current version
+        # and immediately after that the authentication data.
+        #
+        # The mumble server will respond with a version message right after
+        # this one.
+        version = Mumble_pb2.Version()
+
+        version.version = Protocol.VERSION_DATA
+        version.release = "%d.%d.%d" % (Protocol.VERSION_MAJOR,
+                                        Protocol.VERSION_MINOR,
+                                        Protocol.VERSION_PATCH)
+        version.os = platform.system()
+        version.os_version = "Mumble 1.2.3 Twisted Protocol"
+
+        # Here we authenticate
+        auth = Mumble_pb2.Authenticate()
+        auth.username = self.username
+        if self.password:
+            auth.password = self.password
+        for token in self.tokens:
+            auth.tokens.append(token)
+
+        # And now we send both packets one after another
+        self.sendProtobuf(version)
+        self.sendProtobuf(auth)
+
+        # Then we initialize our ping handler
+        self.init_ping()
+
+        # Then we mute ourselves to prevent errors with voice packets
+        message = Mumble_pb2.UserState()
+        message.self_mute = True
+        message.self_deaf = True
+
+        self.sendProtobuf(message)
+
+        # TODO: Throw event
+
+    def dataReceived(self, recv):
+        # Append our received data
+        self.received = self.received + recv
+
+        # If we have enough bytes to read the header, we do that
+        while len(self.received) >= Protocol.PREFIX_LENGTH:
+            msg_type, length = \
+                struct.unpack(Protocol.PREFIX_FORMAT,
+                              self.received[:Protocol.PREFIX_LENGTH])
+
+            full_length = Protocol.PREFIX_LENGTH + length
+
+            #self.log.debug("Length: %d" % length)
+            #self.log.debug("Message type: %d" % msg_type)
+
+            # Check if this this a valid message ID
+            if msg_type not in Protocol.MESSAGE_ID.values():
+                self.log.error('Message ID not available.')
+                self.transport.loseConnection()
+                return
+
+            # We need to check if we have enough bytes to fully read the
+            # message
+            if len(self.received) < full_length:
+                self.log.debug("Need to fill data")
+                return
+
+            # Read the specific message
+            msg = Protocol.ID_MESSAGE[msg_type]()
+            msg.ParseFromString(
+                self.received[Protocol.PREFIX_LENGTH:
+                Protocol.PREFIX_LENGTH + length])
+
+            # Handle the message
+            try:
+                self.recvProtobuf(msg_type, msg)
+            except Exception as e:
+                self.log.error("Exception while handling data.")
+                self.log.debug(e)
+                # We abort on exception, because that's the proper thing to do
+                #self.transport.loseConnection()
+                #raise
+
+            self.received = self.received[full_length:]
+
+    def sendProtobuf(self, message):
+        # We find the message ID
+        msg_type = Protocol.MESSAGE_ID[message.__class__]
+        # Serialize the message
+        msg_data = message.SerializeToString()
+        length = len(msg_data)
+
+        # Compile the data with the header
+        data = struct.pack(Protocol.PREFIX_FORMAT, msg_type, length) + msg_data
+
+        # Send the data
+        self.transport.write(data)
+
     def recvProtobuf(self, msg_type, message):
         if isinstance(message, Mumble_pb2.Version):
             # version, release, os, os_version
@@ -114,12 +213,12 @@ class Protocol(protocol.Protocol):
                           (message.type, message.reason))
             # TODO: Kill connection, stop ping loop, etc
         elif isinstance(message, Mumble_pb2.CodecVersion):
-            # alpha, beta, prefer_alpha, opus
+        # alpha, beta, prefer_alpha, opus
 
         # TODO: Throw event (Mumble, codec version)
             pass
         elif isinstance(message, Mumble_pb2.CryptSetup):
-            # key, client_nonce, server_nonce
+        # key, client_nonce, server_nonce
 
         # TODO: Throw event (Mumble, crypto setup)
             pass
@@ -175,48 +274,7 @@ class Protocol(protocol.Protocol):
             self.log.debug("Received message '%s' (%d):\n%s"
                            % (message.__class__, msg_type, str(message)))
 
-        # TODO: Throw event
-
-    def connectionMade(self):
-        self.log.info("Connected to server.")
-
-        # In the mumble protocol you must first send your current version
-        # and immediately after that the authentication data.
-        #
-        # The mumble server will respond with a version message right after
-        # this one.
-        version = Mumble_pb2.Version()
-
-        version.version = Protocol.VERSION_DATA
-        version.release = "%d.%d.%d" % (Protocol.VERSION_MAJOR,
-                                        Protocol.VERSION_MINOR,
-                                        Protocol.VERSION_PATCH)
-        version.os = platform.system()
-        version.os_version = "Mumble 1.2.3 Twisted Protocol"
-
-        # Here we authenticate
-        auth = Mumble_pb2.Authenticate()
-        auth.username = self.username
-        if self.password:
-            auth.password = self.password
-        for token in self.tokens:
-            auth.tokens.append(token)
-
-        # And now we send both packets one after another
-        self.sendProtobuf(version)
-        self.sendProtobuf(auth)
-
-        # Then we initialize our ping handler
-        self.init_ping()
-
-        # Then we mute ourselves to prevent errors with voice packets
-        message = Mumble_pb2.UserState()
-        message.self_mute = True
-        message.self_deaf = True
-
-        self.sendProtobuf(message)
-
-        # TODO: Throw event
+            # TODO: Throw event
 
     def init_ping(self):
         # Call ping every PING_REPEAT_TIME seconds.
@@ -232,108 +290,6 @@ class Protocol(protocol.Protocol):
         self.sendProtobuf(ping)
 
         self.init_ping()
-
-    def msg_channel(self, message, channel):
-
-        # TODO: Throw event
-        if isinstance(channel, Channel):
-            channel = channel.channel_id
-        self.msg(message, "channel", channel)
-
-        # TODO: Throw event
-
-    def msg_user(self, message, user):
-
-        # TODO: Throw event
-        if isinstance(user, User):
-            user = user.session
-        self.msg(message, "user", user)
-
-        # TODO: Throw event
-
-    def msg(self, message, target="channel", target_id=None):
-
-        # TODO: Throw event
-        if target_id is None and target == "channel":
-            target_id = self.ourself.channel_id
-
-        self.log.debug("Sending text message: %s" % message)
-
-        msg = Mumble_pb2.TextMessage()  # session, channel_id, tree_id, message
-        msg.message = message
-        if target == "channel":
-            msg.channel_id.append(target_id)
-        else:
-            msg.session.append(target_id)
-
-        self.sendProtobuf(msg)
-
-        # TODO: Throw event
-
-    def join_channel(self, channel):
-        if isinstance(channel, Channel):
-            channel = channel.channel_id
-        msg = Mumble_pb2.UserState()
-        msg.channel_id = channel
-        self.sendProtobuf(msg)
-
-    def dataReceived(self, recv):
-        # Append our received data
-        self.received = self.received + recv
-
-        # If we have enough bytes to read the header, we do that
-        while len(self.received) >= Protocol.PREFIX_LENGTH:
-            msg_type, length = \
-                struct.unpack(Protocol.PREFIX_FORMAT,
-                              self.received[:Protocol.PREFIX_LENGTH])
-
-            full_length = Protocol.PREFIX_LENGTH + length
-
-            #self.log.debug("Length: %d" % length)
-            #self.log.debug("Message type: %d" % msg_type)
-
-            # Check if this this a valid message ID
-            if msg_type not in Protocol.MESSAGE_ID.values():
-                self.log.error('Message ID not available.')
-                self.transport.loseConnection()
-                return
-
-            # We need to check if we have enough bytes to fully read the
-            # message
-            if len(self.received) < full_length:
-                self.log.debug("Need to fill data")
-                return
-
-            # Read the specific message
-            msg = Protocol.ID_MESSAGE[msg_type]()
-            msg.ParseFromString(
-                self.received[Protocol.PREFIX_LENGTH:
-                              Protocol.PREFIX_LENGTH + length])
-
-            # Handle the message
-            try:
-                self.recvProtobuf(msg_type, msg)
-            except Exception as e:
-                self.log.error("Exception while handling data.")
-                self.log.debug(e)
-                # We abort on exception, because that's the proper thing to do
-                #self.transport.loseConnection()
-                #raise
-
-            self.received = self.received[full_length:]
-
-    def sendProtobuf(self, message):
-        # We find the message ID
-        msg_type = Protocol.MESSAGE_ID[message.__class__]
-        # Serialize the message
-        msg_data = message.SerializeToString()
-        length = len(msg_data)
-
-        # Compile the data with the header
-        data = struct.pack(Protocol.PREFIX_FORMAT, msg_type, length) + msg_data
-
-        # Send the data
-        self.transport.write(data)
 
     def handle_msg_channelstate(self, message):
         if not message.channel_id in self.channels:
@@ -462,7 +418,7 @@ class Protocol(protocol.Protocol):
             for line in msg.split("\n"):
                 self.log.info("<%s> %s" % (self.users[message.actor],
                                            line))
-                # TODO: Throw event
+            # TODO: Throw event
             # TODO: If you see this, I forgot to remove it before committing
             if msg.startswith('!'):
                 cmd = msg[1:].lower().split(" ")[0]
@@ -486,6 +442,50 @@ class Protocol(protocol.Protocol):
                     else:
                         self.msg_user("Joining channel", message.actor)
                         self.join_channel(chan)
+
+    def msg(self, message, target="channel", target_id=None):
+
+        # TODO: Throw event
+        if target_id is None and target == "channel":
+            target_id = self.ourself.channel_id
+
+        self.log.debug("Sending text message: %s" % message)
+
+        msg = Mumble_pb2.TextMessage()  # session, channel_id, tree_id, message
+        msg.message = message
+        if target == "channel":
+            msg.channel_id.append(target_id)
+        else:
+            msg.session.append(target_id)
+
+        self.sendProtobuf(msg)
+
+        # TODO: Throw event
+
+    def msg_channel(self, message, channel):
+
+        # TODO: Throw event
+        if isinstance(channel, Channel):
+            channel = channel.channel_id
+        self.msg(message, "channel", channel)
+
+        # TODO: Throw event
+
+    def msg_user(self, message, user):
+
+        # TODO: Throw event
+        if isinstance(user, User):
+            user = user.session
+        self.msg(message, "user", user)
+
+        # TODO: Throw event
+
+    def join_channel(self, channel):
+        if isinstance(channel, Channel):
+            channel = channel.channel_id
+        msg = Mumble_pb2.UserState()
+        msg.channel_id = channel
+        self.sendProtobuf(msg)
 
     def print_users(self):
         # TODO: Remove this debug function once user handling is complete
