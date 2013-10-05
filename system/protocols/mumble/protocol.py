@@ -206,37 +206,37 @@ class Protocol(protocol.Protocol):
         if isinstance(message, Mumble_pb2.Version):
             # version, release, os, os_version
             self.log.info("Connected to Murmur v%s" % message.release)
-        # TODO: Throw event (General, post-setup)
+            # TODO: Throw event (General, post-setup)
         elif isinstance(message, Mumble_pb2.Reject):
             # version, release, os, os_version
             self.log.info("Could not connect to server: %s - %s" %
                           (message.type, message.reason))
             # TODO: Kill connection, stop ping loop, etc
         elif isinstance(message, Mumble_pb2.CodecVersion):
-        # alpha, beta, prefer_alpha, opus
+            # alpha, beta, prefer_alpha, opus
 
-        # TODO: Throw event (Mumble, codec version)
+            # TODO: Throw event (Mumble, codec version)
             pass
         elif isinstance(message, Mumble_pb2.CryptSetup):
-        # key, client_nonce, server_nonce
+            # key, client_nonce, server_nonce
 
-        # TODO: Throw event (Mumble, crypto setup)
+            # TODO: Throw event (Mumble, crypto setup)
             pass
         elif isinstance(message, Mumble_pb2.ChannelState):
             # channel_id, name, position, [parent]
             self.handle_msg_channelstate(message)
 
-        # TODO: Throw event (Mumble, channel state)
+            # TODO: Throw event (Mumble, channel state)
         elif isinstance(message, Mumble_pb2.PermissionQuery):
             # channel_id, permissions
             pass
-        # TODO: Throw event (Mumble, permissions query)
+            # TODO: Throw event (Mumble, permissions query)
         elif isinstance(message, Mumble_pb2.UserState):
             # session, name,
             # [user_id, suppress, hash, actor, self_mute, self_deaf]
             self.handle_msg_userstate(message)
 
-        # TODO: Throw event (Mumble, user state)
+            # TODO: Throw event (Mumble, user state)
         elif isinstance(message, Mumble_pb2.ServerSync):
             # session, max_bandwidth, welcome_text, permissions
             welcome_text = html_to_text(message.welcome_text, True)
@@ -245,17 +245,17 @@ class Protocol(protocol.Protocol):
                 self.log.info(line)
             self.log.info("=== End welcome message ===")
 
-        # TODO: Throw event (Mumble, server sync)
+            # TODO: Throw event (Mumble, server sync)
         elif isinstance(message, Mumble_pb2.ServerConfig):
             # allow_html, message_length, image_message_length
             self.allow_html = message.allow_html
 
-        # TODO: Throw event
+            # TODO: Throw event
         elif isinstance(message, Mumble_pb2.Ping):
             # timestamp, good, late, lost, resync
             pass
 
-        # TODO: Throw event
+            # TODO: Throw event
         elif isinstance(message, Mumble_pb2.UserRemove):
             # session
             if message.session in self.users:
@@ -263,12 +263,12 @@ class Protocol(protocol.Protocol):
                               self.users[message.session])
                 del self.users[message.session]
 
-        # TODO: Throw event
+            # TODO: Throw event
         elif isinstance(message, Mumble_pb2.TextMessage):
             # actor, channel_id, message
             self.handle_msg_textmessage(message)
 
-        # TODO: Throw event
+            # TODO: Throw event
         else:
             self.log.debug("Unknown message type: %s" % message.__class__)
             self.log.debug("Received message '%s' (%d):\n%s"
