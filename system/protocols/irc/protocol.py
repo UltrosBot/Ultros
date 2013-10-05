@@ -18,7 +18,7 @@ class Protocol(irc.IRCClient):
 
     def __init__(self, factory, config):
         # Some notes for implementation..
-        #  Quakenet uses AUTH username password
+        # Quakenet uses AUTH username password
         self.factory = factory
         self.config = config
         self.log = getLogger("IRC")
@@ -28,6 +28,8 @@ class Protocol(irc.IRCClient):
         self.identity = config["identity"]
 
         self.nickname = self.identity["nick"]
+
+        # TODO: Throw event (General, pre-connection)
 
         if self.networking["ssl"]:
             self.log.debug("Connecting with SSL")
@@ -47,6 +49,8 @@ class Protocol(irc.IRCClient):
                 120
             )
 
+        # TODO: Throw event (General, post-connection, pre-setup)
+
     def __call__(self):
         return self
 
@@ -56,6 +60,8 @@ class Protocol(irc.IRCClient):
         for line in motd:
             self.log.info(line)
         self.log.info(" === END MOTD ===")
+
+        # TODO: Throw event (IRC, MOTD)
 
     def signedOn(self):
         """
@@ -81,34 +87,48 @@ class Protocol(irc.IRCClient):
             for channel in self.config["channels"]:
                 self.join(channel["name"], channel["key"])
 
+            # TODO: Throw event (General, post-setup)
+
         self.log.debug(
             "Scheduling Deferreds for signing on and joining channels")
 
         reactor.callLater(5, do_sign_on, self)
         reactor.callLater(10, do_channel_joins, self)
 
+        # TODO: Throw event (General, pre-setup)
+
     def joined(self, channel):
         """ Called when we join a channel. """
         self.log.info("Joined channel: %s" % channel)
+
+        # TODO: Throw event (IRC, joined channel)
 
     def privmsg(self, user, channel, message):
         """ Called when we receive a message - channel or private. """
         self.log.info("<%s:%s> %s" % (user, channel, message))
 
+        # TODO: Throw event (General, received message - normal, [target])
+
     def noticed(self, user, channel, message):
         """ Called when we receive a notice - channel or private. """
         self.log.info("-%s:%s- %s" % (user, channel, message))
+
+        # TODO: Throw event (General, received message - notice, [target])
 
     def left(self, channel):
         """ Called when we part a channel.
         This could include opers using /sapart. """
         self.log.info("Parted channel: %s" % channel)
 
+        # TODO: Throw event (IRC, left channel)
+
     def ctcpQuery(self, user, me,
                   messages):
         """ Called when someone does a CTCP query - channel or private.
         Needs some param analysis."""
         self.log.info("[%s] %s" % (user, messages))
+
+        # TODO: Throw event (IRC, CTCP query)
 
     def modeChanged(self, user, channel, action, modes,
                     args):
@@ -119,25 +139,35 @@ class Protocol(irc.IRCClient):
         self.log.info("%s sets mode %s: %s%s %s" % (
             user, channel, "+" if action else "-", modes, args))
 
+        # TODO: Throw event (IRC, mode changed)
+
     def kickedFrom(self, channel, kicker,
                    message):
         """ Called when we get kicked from a channel. """
         self.log.info("Kicked from %s by %s: %s" % (channel, kicker, message))
+
+        # TODO: Throw event (IRC, kicked from channel)
 
     def nickChanged(self,
                     nick):
         """ Called when our nick is forcibly changed. """
         self.log.info("Nick changed to %s" % nick)
 
+        # TODO: Throw event (General, name changed)
+
     def userJoined(self, user,
                    channel):
         """ Called when someone else joins a channel we're in. """
         self.log.info("%s joined %s" % (user, channel))
 
+        # TODO: Throw event (IRC, user joined channel)
+
     def userLeft(self, user,
                  channel):
         """ Called when someone else leaves a channel we're in. """
         self.log.info("%s parted %s" % (user, channel))
+
+        # TODO: Throw event (IRC, user left channel)
 
     def userKicked(self, kickee, channel, kicker,
                    message):
@@ -145,11 +175,15 @@ class Protocol(irc.IRCClient):
         self.log.info("%s was kicked from %s by %s: %s" % (
             kickee, channel, kicker, message))
 
+        # TODO: Throw event (IRC, user kicked from channel)
+
     def irc_QUIT(self, user,
                  params):
         """ Called when someone else quits IRC. """
         quitmessage = params[0]
         self.log.info("%s has left IRC: %s" % (user, quitmessage))
+
+        # TODO: Throw event (General, user disconnected)
 
     def topicUpdated(self, user, channel,
                      newTopic):
@@ -157,7 +191,8 @@ class Protocol(irc.IRCClient):
         also called when we join a channel. """
         self.log.info(
             "Topic for %s: %s (set by %s)" % (channel, newTopic, user))
-        pass
+
+        # TODO: Throw event (IRC, topic updated)
 
     def irc_NICK(self, prefix,
                  params):
@@ -168,6 +203,8 @@ class Protocol(irc.IRCClient):
         newnick = params[0]
 
         self.log.info("%s is now known as %s" % (oldnick, newnick))
+
+        # TODO: Throw event (General, user changed their nick)
 
     def irc_RPL_WHOREPLY(self,
                          *nargs):
@@ -183,11 +220,15 @@ class Protocol(irc.IRCClient):
         status = data[6].strip("G").strip("H").strip("*")
         gecos = data[7]  # Hops, realname
 
+        # TODO: Throw event (IRC, WHO reply)
+
     def irc_RPL_ENDOFWHO(self,
                          *nargs):
         """ Called when the server's done spamming us with WHO replies. """
         data = nargs[1]
         channel = data[1]
+
+        # TODO: Throw event (IRC, end of WHO reply)
 
     def irc_unknown(self, prefix, command, params):
         """ Packets that aren't handled elsewhere get passed to this function.
@@ -200,9 +241,13 @@ class Protocol(irc.IRCClient):
             owner = params[3]
             btime = params[4]
 
+        # TODO: Throw event (IRC, ban list)
+
         elif command == "RPL_ENDOFBANLIST":
             # Called when the server's done spamming us with the ban list
             channel = params[1]
+
+        # TODO: Throw event (IRC, end of ban list)
 
         elif command == "RPL_NAMREPLY":
             # This is the response to a NAMES request.
@@ -214,17 +259,25 @@ class Protocol(irc.IRCClient):
             elif status == "*":  # Private channel
                 pass
 
+        # TODO: Throw event (IRC, NAMES reply)
+
         elif command == "RPL_ENDOFNAMES":
             # Called when the server's done spamming us with NAMES replies.
             me, channel, message = params
+
+        # TODO: Throw event (IRC, end of NAMES reply)
 
         elif command == "ERR_INVITEONLYCHAN":
             self.log.warn(
                 "Unable to join %s - Channel is invite-only" % params[1])
 
+        # TODO: Throw event (IRC, channel is invite-only)
+
         elif str(command) == "972":  # ERR_CANNOTDOCOMMAND
             pass  # Need to analyze the args of this.
             # Called when some command we attempted can't be done.
+
+        # TODO: Throw event (IRC, cannot do command)
 
         elif str(command) == "333":  # Channel creation details
             self.log.info("%s created by %s (%s)" %
@@ -237,16 +290,26 @@ class Protocol(irc.IRCClient):
                                ))
                            ))
 
+        # TODO: Throw event (IRC, channel creation details)
+
         elif str(command) in ["265", "266"]:  # RPL_LOCALUSERS, RPL_GLOBALUSERS
             self.log.info(params[
                 3])  # Usually printed, these are purely informational
 
+        # TODO: Throw event (IRC, LOCALUSERS reply and GLOBALUSERS reply)
+
         elif str(command) == "396":  # VHOST was set
             self.log.info("VHOST set to %s by %s" % (params[1], prefix))
+
+        # TODO: Throw event (IRC, VHOST set)
 
         elif command == "PONG":
             pass  # Do we really need to print these?
 
+        # TODO: Throw event (IRC, PONG) - Debatable
+
         else:
             self.log.debug(
                 "Unhandled: %s | %s | %s" % (prefix, command, params))
+
+            # TODO: Throw event (IRC, unhandled message event based on command)

@@ -88,6 +88,8 @@ class Protocol(protocol.Protocol):
         self.networking = config["network"]
         self.tokens = config["identity"]["tokens"]
 
+        # TODO: Throw event (General, post-setup, pre-connect)
+
         reactor.connectSSL(
             self.networking["address"],
             self.networking["port"],
@@ -95,6 +97,8 @@ class Protocol(protocol.Protocol):
             ssl.ClientContextFactory(),
             120
         )
+
+        # TODO: Throw event (General, post-connect)
 
     def __call__(self):
         return self
@@ -104,15 +108,23 @@ class Protocol(protocol.Protocol):
             # version, release, os, os_version
             self.log.info("Connected to Murmur v%s" % message.release)
 
+        # TODO: Throw event (General, post-setup)
+
         elif isinstance(message, Mumble_pb2.CodecVersion):
             # alpha, beta, prefer_alpha, opus
+
+        # TODO: Throw event (Mumble, codec version)
             pass
         elif isinstance(message, Mumble_pb2.CryptSetup):
             # key, client_nonce, server_nonce
+
+        # TODO: Throw event (Mumble, crypto setup)
             pass
         elif isinstance(message, Mumble_pb2.ChannelState):
             # channel_id, name, position, [parent]
             self.handle_msg_channelstate(message)
+
+        # TODO: Throw event (Mumble, channel state)
         elif isinstance(message, Mumble_pb2.PermissionQuery):
             # channel_id, permissions
             # TODO: Don't use this for current channel:
@@ -123,10 +135,14 @@ class Protocol(protocol.Protocol):
             self.current_channel = message.channel_id
             self.log.info("Current channel: %s"
                           % self.channels[self.current_channel].name)
+
+        # TODO: Throw event (Mumble, permissions query)
         elif isinstance(message, Mumble_pb2.UserState):
             # session, name,
             # [user_id, suppress, hash, actor, self_mute, self_deaf]
             self.handle_msg_userstate(message)
+
+        # TODO: Throw event (Mumble, user state)
         elif isinstance(message, Mumble_pb2.ServerSync):
             # session, max_bandwidth, welcome_text, permissions
             welcome_text = html_to_text(message.welcome_text, True)
@@ -134,26 +150,37 @@ class Protocol(protocol.Protocol):
             for line in welcome_text.split("\n"):
                 self.log.info(line)
             self.log.info("=== End welcome message ===")
+
+        # TODO: Throw event (Mumble, server sync)
         elif isinstance(message, Mumble_pb2.ServerConfig):
             # allow_html, message_length, image_message_length
             self.allow_html = message.allow_html
-            pass
+
+        # TODO: Throw event
         elif isinstance(message, Mumble_pb2.Ping):
             # timestamp, good, late, lost, resync
             pass
+
+        # TODO: Throw event
         elif isinstance(message, Mumble_pb2.UserRemove):
             # session
             if message.session in self.users:
                 self.log.info("User left: %s" %
                               self.users[message.session])
                 del self.users[message.session]
+
+        # TODO: Throw event
         elif isinstance(message, Mumble_pb2.TextMessage):
             # actor, channel_id, message
             self.handle_msg_textmessage(message)
+
+        # TODO: Throw event
         else:
             self.log.debug("Unknown message type: %s" % message.__class__)
             self.log.debug("Received message '%s' (%d):\n%s"
                            % (message.__class__, msg_type, str(message)))
+
+        # TODO: Throw event
 
     def connectionMade(self):
         self.log.info("Connected to server.")
@@ -194,9 +221,13 @@ class Protocol(protocol.Protocol):
 
         self.sendProtobuf(message)
 
+        # TODO: Throw event
+
     def init_ping(self):
         # Call ping every PING_REPEAT_TIME seconds.
         reactor.callLater(Protocol.PING_REPEAT_TIME, self.ping_handler)
+
+        # TODO: Throw event
 
     def ping_handler(self):
         self.log.debug("Sending ping")
@@ -208,16 +239,26 @@ class Protocol(protocol.Protocol):
         self.init_ping()
 
     def msg_channel(self, message, channel):
+
+        # TODO: Throw event
         if isinstance(channel, Channel):
             channel = channel.channel_id
         self.msg(message, "channel", channel)
 
+        # TODO: Throw event
+
     def msg_user(self, message, user):
+
+        # TODO: Throw event
         if isinstance(user, User):
             user = user.session
         self.msg(message, "user", user)
 
+        # TODO: Throw event
+
     def msg(self, message, target="channel", target_id=None):
+
+        # TODO: Throw event
         if target_id is None and target == "channel":
             target_id = self.current_channel
 
@@ -231,6 +272,8 @@ class Protocol(protocol.Protocol):
             msg.session.append(target_id)
 
         self.sendProtobuf(msg)
+
+        # TODO: Throw event
 
     def dataReceived(self, recv):
         # Append our received data
@@ -314,14 +357,14 @@ class Protocol(protocol.Protocol):
                 self.log.info("Channel link added: %s to %s" %
                               (self.channels[link],
                                self.channels[message.channel_id]))
-                # TODO: Fire event
+                # TODO: Throw event
         if message.links_remove:
             for link in message.links_remove:
                 self.channels[message.channel_id].remove_link(link)
                 self.log.info("Channel link removed: %s from %s" %
                               (self.channels[link],
                                self.channels[message.channel_id]))
-                # TODO: Fire event
+                # TODO: Throw event
 
     def handle_msg_userstate(self, message):
         if message.name and message.session not in self.users:
@@ -352,7 +395,7 @@ class Protocol(protocol.Protocol):
                                self.channels[message.channel_id],
                                actor))
                 user.channel_id = message.channel_id
-                # TODO: Fire event here
+                # TODO: Throw event
             if message.HasField('mute'):
                 actor = self.users[message.actor]
                 if message.mute:
@@ -360,7 +403,7 @@ class Protocol(protocol.Protocol):
                 else:
                     self.log.info("User was unmuted: %s by %s" % (user, actor))
                 user.mute = message.mute
-                # TODO: Fire event here
+                # TODO: Throw event
             if message.HasField('deaf'):
                 actor = self.users[message.actor]
                 if message.deaf:
@@ -370,28 +413,28 @@ class Protocol(protocol.Protocol):
                     self.log.info("User was undeafened: %s by %s" % (user,
                                                                      actor))
                 user.deaf = message.deaf
-                # TODO: Fire event here
+                # TODO: Throw event
             if message.HasField('suppress'):
                 if message.suppress:
                     self.log.info("User was suppressed: %s" % user)
                 else:
                     self.log.info("User was unsuppressed: %s" % user)
                 user.suppress = message.suppress
-                # TODO: Fire event here
+                # TODO: Throw event
             if message.HasField('self_mute'):
                 if message.self_mute:
                     self.log.info("User muted themselves: %s" % user)
                 else:
                     self.log.info("User unmuted themselves: %s" % user)
                 user.self_mute = message.self_mute
-                # TODO: Fire event here
+                # TODO: Throw event
             if message.HasField('self_deaf'):
                 if message.self_deaf:
                     self.log.info("User deafened themselves: %s" % user)
                 else:
                     self.log.info("User undeafened themselves: %s" % user)
                 user.self_deaf = message.self_deaf
-                # TODO: Fire event here
+                # TODO: Throw event
             if message.HasField('priority_speaker'):
                 actor = self.users[message.actor]
                 if message.priority_speaker:
@@ -401,14 +444,14 @@ class Protocol(protocol.Protocol):
                     self.log.info("User was revoked priority speaker: %s by %s"
                                   % (user, actor))
                 user.priority_speaker = message.priority_speaker
-                # TODO: Fire event here
+                # TODO: Throw event
             if message.HasField('recording'):
                 if message.recording:
                     self.log.info("User started recording: %s" % user)
                 else:
                     self.log.info("User stopped recording: %s" % user)
                 user.recording = message.recording
-                # TODO: Fire event here
+                # TODO: Throw event
 
     def handle_msg_textmessage(self, message):
         if message.actor in self.users:
@@ -416,6 +459,7 @@ class Protocol(protocol.Protocol):
             for line in msg.split("\n"):
                 self.log.info("<%s> %s" % (self.users[message.actor],
                                            line))
+                # TODO: Throw event
             # TODO: If you see this, I forgot to remove it before committing
             if msg.startswith('!'):
                 cmd = msg[1:].lower()
@@ -430,8 +474,8 @@ class Protocol(protocol.Protocol):
 
     def print_users(self):
         # TODO: Remove this debug function once user handling is complete
-        def print_indented(s):
-            print "----", s
+        def print_indented(s, times=1):
+            print ("\t" * times), s
         for user in self.users.itervalues():
             print user
             cn = self.channels[user.channel_id].__str__()
