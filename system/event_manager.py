@@ -8,7 +8,7 @@ from types import FunctionType
 
 __author__ = "Gareth Coles"
 
-from system.decorators import Singleton
+from system.decorators import Singleton, run_async
 
 
 @Singleton
@@ -158,6 +158,10 @@ class EventManager(object):
                 self.callbacks[key] = self._sort(done)
             else:
                 del self.callbacks[key]
+
+    @run_async
+    def run_callback_threaded(self, callback, event):
+        self.run_callback(callback, event)
 
     def run_callback(self, callback, event):
         if self.has_callback(callback):

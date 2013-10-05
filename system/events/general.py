@@ -11,3 +11,11 @@ class GeneralEvent(BaseEvent):
 
     def __init__(self, caller):
         super(GeneralEvent, self).__init__(caller)
+
+# Pre-connection
+# Post-connection, pre-setup
+# Pre-setup
+# Post-setup
+# Message received (+type)
+# Name changed (self)
+# Name changed (other)

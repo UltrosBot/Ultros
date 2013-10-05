@@ -11,3 +11,28 @@ class IRCEvent(BaseEvent):
 
     def __init__(self, caller):
         super(IRCEvent, self).__init__(caller)
+
+# MOTD
+# Joined channel (self)
+# Parted channel (self)
+# CTCP query
+# Kicked from channel (self)
+# Joined channel (other)
+# Parted channel (other)
+# Kicked from channel (other)
+# User disconnected
+# Topic updated
+# WHO reply
+# End of WHO reply
+# Ban list
+# End of ban list
+# NAMES reply
+# End of NAMES reply
+# Unable to join channel: invite-only
+# Unable to do command
+# Channel creation details
+# LOCALUSERS reply
+# GLOBALUSERS reply
+# VHOST set
+# PONG (do we need this?)
+# Unhandled message (+type)
