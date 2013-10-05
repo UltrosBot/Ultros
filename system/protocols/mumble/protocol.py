@@ -130,15 +130,7 @@ class Protocol(protocol.Protocol):
         # TODO: Throw event (Mumble, channel state)
         elif isinstance(message, Mumble_pb2.PermissionQuery):
             # channel_id, permissions
-            # TODO: Don't use this for current channel:
-            # This checks permission up through the tree of channels, so the
-            # last one is not always the current channel.
-            # UserState is not always received for channel change though (not
-            # on initial join, haven't tested self-move).
-            self.current_channel = message.channel_id
-            self.log.info("Current channel: %s"
-                          % self.channels[self.current_channel].name)
-
+            pass
         # TODO: Throw event (Mumble, permissions query)
         elif isinstance(message, Mumble_pb2.UserState):
             # session, name,
@@ -263,7 +255,7 @@ class Protocol(protocol.Protocol):
 
         # TODO: Throw event
         if target_id is None and target == "channel":
-            target_id = self.current_channel
+            target_id = self.ourself.channel_id
 
         self.log.debug("Sending text message: %s" % message)
 
@@ -277,6 +269,13 @@ class Protocol(protocol.Protocol):
         self.sendProtobuf(msg)
 
         # TODO: Throw event
+
+    def join_channel(self, channel):
+        if isinstance(channel, Channel):
+            channel = channel.channel_id
+        msg = Mumble_pb2.UserState()
+        msg.channel_id = channel
+        self.sendProtobuf(msg)
 
     def dataReceived(self, recv):
         # Append our received data
@@ -386,7 +385,7 @@ class Protocol(protocol.Protocol):
             self.log.info("User joined: %s" % message.name)
             # Store our session id
             if message.name == self.username:
-                self.session = message.session
+                self.ourself = self.users[message.session]
         else:
             # Note: More than one state change can happen at once
             user = self.users[message.session]
@@ -398,6 +397,7 @@ class Protocol(protocol.Protocol):
                                self.channels[message.channel_id],
                                actor))
                 user.channel_id = message.channel_id
+
                 # TODO: Throw event
             if message.HasField('mute'):
                 actor = self.users[message.actor]
@@ -465,7 +465,7 @@ class Protocol(protocol.Protocol):
                 # TODO: Throw event
             # TODO: If you see this, I forgot to remove it before committing
             if msg.startswith('!'):
-                cmd = msg[1:].lower()
+                cmd = msg[1:].lower().split(" ")[0]
                 if cmd == "users":
                     self.print_users()
                 elif cmd == "channels":
@@ -474,6 +474,18 @@ class Protocol(protocol.Protocol):
                     self.msg_user("msg_user() test using id", message.actor)
                     self.msg_user("msg_user() test using User object",
                                   self.users[message.actor])
+                elif cmd == "join":
+                    channame = msg[6:]
+                    chan = None
+                    for id, channel in self.channels.iteritems():
+                        if channel.name.lower() == channame.lower():
+                            chan = id
+                            break
+                    if chan is None:
+                        self.msg_user("Could not find channel", message.actor)
+                    else:
+                        self.msg_user("Joining channel", message.actor)
+                        self.join_channel(chan)
 
     def print_users(self):
         # TODO: Remove this debug function once user handling is complete
