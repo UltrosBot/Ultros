@@ -159,13 +159,19 @@ class EventManager(object):
             else:
                 del self.callbacks[key]
 
-    @run_async
-    def run_callback_threaded(self, callback, event):
-        self.run_callback(callback, event)
-
-    def run_callback(self, callback, event):
+    def run_callback(self, callback, event, threaded=False):
         if self.has_callback(callback):
+
             for cb in self.get_callbacks(callback):
+                if threaded:
+                    @run_async
+                    def go():
+                        """ Run the callback asynchronously """
+                        cb["function"](event)
+                else:
+                    def go():
+                        """ Run the callback synchronously """
+                        cb["function"](event)
                 try:
                     self.logger.debug("Running callback: %s" % cb)
                     if cb["filter"]:
@@ -178,17 +184,18 @@ class EventManager(object):
                             continue
                     if event.cancelled:
                         if cb["cancelled"]:
-                            cb["function"](event)
+                            go()
                         else:
                             self.logger.debug("Not running, event is cancelled"
                                               " and handler doesn't accept"
                                               " cancelled events")
                     else:
-                        cb["function"](event)
+                        go()
                 except Exception as e:
                     self.logger.warn("Error running callback '%s': %s" %
                                      (callback, e))
                     output_exception(self.logger, logging.WARN)
+        return event
 
 
 def manager():

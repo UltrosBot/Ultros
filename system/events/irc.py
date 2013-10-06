@@ -12,27 +12,331 @@ class IRCEvent(BaseEvent):
     def __init__(self, caller):
         super(IRCEvent, self).__init__(caller)
 
-# MOTD
-# Joined channel (self)
-# Parted channel (self)
-# CTCP query
-# Kicked from channel (self)
-# Joined channel (other)
-# Parted channel (other)
-# Kicked from channel (other)
-# User disconnected
-# Topic updated
-# WHO reply
-# End of WHO reply
-# Ban list
-# End of ban list
-# NAMES reply
-# End of NAMES reply
-# Unable to join channel: invite-only
-# Unable to do command
-# Channel creation details
-# LOCALUSERS reply
-# GLOBALUSERS reply
-# VHOST set
-# PONG (do we need this?)
-# Unhandled message (+type)
+
+class MOTDReceivedEvent(IRCEvent):
+    """
+    Thrown when the MOTD is received
+    """
+
+    motd = ""
+
+    def __init__(self, caller, motd):
+        self.motd = motd
+        super(MOTDReceivedEvent, self).__init__(caller)
+
+
+class ChannelJoinedEvent(IRCEvent):
+    """
+    Thrown when we join a channel
+    """
+
+    channel = None
+
+    def __init__(self, caller, channel):
+        self.channel = channel
+        super(ChannelJoinedEvent, self).__init__(caller)
+
+
+class ChannelPartedEvent(IRCEvent):
+    """
+    Thrown when we part a channel
+    """
+
+    channel = None
+
+    def __init__(self, caller, channel):
+        self.channel = channel
+        super(ChannelPartedEvent, self).__init__(caller)
+
+
+class KickedEvent(IRCEvent):
+    """
+    Thrown when we get kicked from a channel
+    """
+
+    channel = None
+    kicker = None
+
+    def __init__(self, caller, channel, kicker):
+        self.channel = channel
+        self.kicker = kicker
+        super(KickedEvent, self).__init__(caller)
+
+
+class UserJoinedEvent(IRCEvent):
+    """
+    Thrown when someone joins a channel we're in
+    """
+
+    channel = None
+    user = None
+
+    def __init__(self, caller, channel, user):
+        self.channel = channel
+        self.user = user
+        super(UserJoinedEvent, self).__init__(caller)
+
+
+class UserPartedEvent(IRCEvent):
+    """
+    Thrown when someone parts a channel we're in
+    """
+
+    channel = None
+    user = None
+
+    def __init__(self, caller, channel, user):
+        self.channel = channel
+        self.user = user
+        super(UserPartedEvent, self).__init__(caller)
+
+
+class UserKickedEvent(IRCEvent):
+    """
+    Thrown when someone is kicked from a channel we're in
+    """
+
+    channel = None
+    user = None
+    kicker = None
+    reason = ""
+
+    def __init__(self, caller, channel, user, kicker, reason):
+        self.channel = channel
+        self.user = user
+        self.kicker = kicker
+        self.reason = reason
+        super(UserKickedEvent, self).__init__(caller)
+
+
+class CTCPQueryEvent(IRCEvent):
+    """
+    Thrown when we receive a CTCP query
+    """
+
+    user = None
+    messages = []
+
+    def __init__(self, caller, user, messages):
+        self.user = user
+        self.messages = messages
+        super(CTCPQueryEvent, self).__init__(caller)
+
+
+class UserQuitEvent(IRCEvent):
+    """
+    Thrown when a user disconnects from the server - this is thrown BEFORE
+    we clean up the user object
+    """
+
+    user = None
+    message = ""
+
+    def __init__(self, caller, user, message):
+        self.user = user
+        self.message = message
+        super(UserQuitEvent, self).__init__(caller)
+
+
+class TopicUpdatedEvent(IRCEvent):
+    """
+    Thrown when the topic is updated - this includes on channel join!
+    """
+
+    channel = None
+    topic = ""
+
+    def __init__(self, caller, channel, topic):
+        self.channel = channel
+        self.topic = topic
+        super(TopicUpdatedEvent, self).__init__(caller)
+
+
+class WHOReplyEvent(IRCEvent):
+    """
+    Thrown when the server sends us a WHO reply chunk - this is essentially
+    just populating a user object, but the raw data is also available
+    """
+
+    channel = None
+    user = None
+    data = []
+
+    def __init__(self, caller, channel, user, data):
+        self.channel = channel
+        self.user = user
+        self.data = data
+        super(WHOReplyEvent, self).__init__(caller)
+
+
+class WHOReplyEndEvent(IRCEvent):
+    """
+    Thrown when the server is done sending WHO replies for a channel
+    """
+
+    channel = None
+
+    def __init__(self, caller, channel):
+        self.channel = channel
+        super(WHOReplyEndEvent, self).__init__(caller)
+
+
+class BanListEvent(IRCEvent):
+    """
+    Thrown when the server sends us a ban list reply chunk - It's advisable to
+    wait for the end of the ban list before actioning on the ban list because
+    this event is called synchronously, and you don't want to lock up the bot.
+
+    Instead, wait for the BanListEndEvent and make your hndler for it threaded.
+    """
+
+    channel = None
+    mask = ""
+    owner = ""
+    when = ""
+
+    def __init__(self, caller, channel, mask, owner, when):
+        self.channel = channel
+        self.mask = mask
+        self.owner = owner
+        self.when = when
+        super(BanListEvent, self).__init__(caller)
+
+
+class BanListEndEvent(IRCEvent):
+    """
+    Thrown when the server is done sending ban list replies for a channel
+    """
+
+    channel = None
+
+    def __init__(self, caller, channel):
+        self.channel = channel
+        super(BanListEndEvent, self).__init__(caller)
+
+
+class NAMESReplyEvent(IRCEvent):
+    """
+    Thrown when the server sends us a NAMES reply chunk
+    """
+
+    channel = None
+    status = "" # Channel status - @ for secret, * for private
+    names = []
+
+    def __init__(self, caller, channel, status, names):
+        self.channel = channel
+        self.status = status
+        self.names = names
+        super(NAMESReplyEvent, self).__init__(caller)
+
+
+class NAMESReplyEndEvent(IRCEvent):
+    """
+    Thrown when the server is done sending NAMES replies for a channel
+    """
+
+    channel = None
+    message = ""
+
+    def __init__(self, caller, channel, message):
+        self.channel = channel
+        self.message = message
+        super(NAMESReplyEndEvent, self).__init__(caller)
+
+
+class InviteOnlyChannelErrorEvent(IRCEvent):
+    """
+    Thrown when we are unable to join a channel because it's invite-only.
+
+    The channel is a string here as we don't create a channel object for
+    channels we weren't able to join.
+    """
+
+    channel = ""
+
+    def __init__(self, caller, channel):
+        self.channel = channel
+        super(InviteOnlyChannelErrorEvent, self).__init__(caller)
+
+
+class CannotDoCommandErrorEvent(IRCEvent):
+    """
+    Thrown when the server is unable to process a command we sent
+    """
+
+    # TODO: Analyze the args of this message
+
+
+class ChannelCreationDetailsEvent(IRCEvent):
+    """
+    Thrown when we receive the creation details for a channel
+    """
+
+    channel = None
+    user = None
+    when = ""
+
+    def __init__(self, caller, channel, user, when):
+        self.channel = channel
+        self.user = user
+        self.when = when
+        super(ChannelCreationDetailsEvent, self).__init__(caller)
+
+
+class LOCALUSERSReplyEvent(IRCEvent):
+    """
+    Thrown when the server sends us a LOCALUSERS reply, which is usually on
+    connect
+    """
+
+    # TODO: Analyze the args of this message
+
+
+class GLOBALUSERSReplyEvent(IRCEvent):
+    """
+    Thrown when the server sends us a GLOBALUSERS reply, which is usually on
+    connect
+    """
+
+    # TODO: Analyze the args of this message
+
+
+class VHOSTSetEvent(IRCEvent):
+    """
+    Thrown when we've been assigned a VHOST
+    """
+
+    vhost = ""
+    setter = None
+
+    def __init__(self, caller, vhost, setter):
+        self.vhost = vhost
+        self.setter = setter
+        super(VHOSTSetEvent, self).__init__(caller)
+
+
+class UnhandledMessageEvent(IRCEvent):
+    """
+    Thrown when we receive a message that hasn't been implemented by the IRC
+    protocol object yet
+    """
+
+    prefix = ""
+    command = ""
+    params = []
+
+    def __init__(self, caller, prefix, command, params):
+        self.prefix = prefix
+        self.command = command
+        self.params = params
+        super(UnhandledMessageEvent, self).__init__(caller)
+
+
+class PongEvent(IRCEvent):
+    """
+    Thrown when we get a PONG from the server. Why did we even implement this?
+    """
+
+    def __init__(self, caller):
+        super(PongEvent, self).__init__(caller)

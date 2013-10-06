@@ -27,3 +27,14 @@ class BaseEvent(object):
         """
 
         self.caller = caller
+
+
+class PluginEvent(BaseEvent):
+
+    """
+    This is an event specifically thrown from a plugin. It'll only be thrown
+    by a plugin, and plugins should only throw subclasses of this event.
+    """
+
+    def __init__(self, caller):
+        super(PluginEvent, self).__init__(caller)

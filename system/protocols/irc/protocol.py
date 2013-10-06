@@ -1,15 +1,20 @@
 # coding=utf-8
 
+import time
+
 from utils.log import getLogger
+from system.event_manager import EventManager
+from system.events import irc as irc_events
+
 from twisted.words.protocols import irc
 from twisted.internet import reactor, ssl
-import time
 
 
 class Protocol(irc.IRCClient):
     factory = None
     config = None
     log = None
+    event_manger = None
 
     networking = {}
     identity = {}
@@ -21,6 +26,7 @@ class Protocol(irc.IRCClient):
         # Quakenet uses AUTH username password
         self.factory = factory
         self.config = config
+        self.event_manager = EventManager.Instance()
         self.log = getLogger("IRC")
         self.log.info("Setting up..")
 
@@ -61,7 +67,8 @@ class Protocol(irc.IRCClient):
             self.log.info(line)
         self.log.info(" === END MOTD ===")
 
-        # TODO: Throw event (IRC, MOTD)
+        event = irc_events.MOTDReceivedEvent(self, motd)
+        self.event_manager.run_callback("IRC/MOTDReceived", event, True)
 
     def signedOn(self):
         """
@@ -101,7 +108,8 @@ class Protocol(irc.IRCClient):
         """ Called when we join a channel. """
         self.log.info("Joined channel: %s" % channel)
 
-        # TODO: Throw event (IRC, joined channel)
+        event = irc_events.ChannelJoinedEvent(self, channel)
+        self.event_manager.run_callback("IRC/ChannelJoined", event)
 
     def privmsg(self, user, channel, message):
         """ Called when we receive a message - channel or private. """
@@ -120,7 +128,8 @@ class Protocol(irc.IRCClient):
         This could include opers using /sapart. """
         self.log.info("Parted channel: %s" % channel)
 
-        # TODO: Throw event (IRC, left channel)
+        event = irc_events.ChannelPartedEvent(self, channel)
+        self.event_manager.run_callback("IRC/ChannelParted", event)
 
     def ctcpQuery(self, user, me,
                   messages):
