@@ -221,7 +221,7 @@ class NAMESReplyEvent(IRCEvent):
     """
 
     channel = None
-    status = "" # Channel status - @ for secret, * for private
+    status = ""  # Channel status - @ for secret, * for private
     names = []
 
     def __init__(self, caller, channel, status, names):

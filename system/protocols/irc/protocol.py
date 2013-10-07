@@ -107,7 +107,8 @@ class Protocol(irc.IRCClient):
     def joined(self, channel):
         """ Called when we join a channel. """
         self.log.info("Joined channel: %s" % channel)
-
+        
+        # TODO: Channel objects
         event = irc_events.ChannelJoinedEvent(self, channel)
         self.event_manager.run_callback("IRC/ChannelJoined", event)
 
