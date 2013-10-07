@@ -3,15 +3,30 @@ __author__ = "Gareth Coles"
 
 import yaml
 import logging
+import os
 
 from utils.misc import output_exception
+from utils.log import getLogger
 
 
 class Data(object):
     def __init__(self, filename):
-        self.logger = logging.getLogger("Data")
+        self.logger = getLogger("Data")
+        # Some sanitizing here to make sure people can't escape the data dirs
+        filename = filename.strip("../")
+        filename = filename.strip("/..")
+        filename = filename.strip("..")
+        filename = "data/" + filename
+        if not os.path.exists("data"):
+            self.logger.debug("Creating data directory..")
+            os.mkdir("data")
+        if not os.path.isdir("data"):
+            self.logger.debug("Renaming invalid data dir and creating a new "
+                              "one..")
+            os.rename("data", "data_")
+            os.mkdir("data")
         try:
-            self.fh = open(filename, "r")
+            self.fh = open(filename, "rw")
         except Exception:
             output_exception(self.logger, logging.ERROR)
         else:
