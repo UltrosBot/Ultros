@@ -1,0 +1,17 @@
+; I'll document this .plug since people are bound to look for examples here
+
+[Core]  ; Core plugin info
+; The name displayed to the user, which is also for the config of plugins to enable
+Name = Web
+; The folder containing your plugin. Alternatively, the name of your single-file without the .py
+Module = web
+
+[Documentation]  ; Documentation for your plugin
+; A description for your plugin
+Description = A plugin which provides both a REST API and (eventually) a web interface
+; The author of the plugin
+Author = Gareth Coles
+; Version of the plugin
+Version = 0.0.1
+; Where to find more info on the plugin. Make sure you can update the page at the link! (AKA don't use a pastebin)
+Website = https://github.com/McBlockitHelpbot/Ultros/tree/master/plugins/web
