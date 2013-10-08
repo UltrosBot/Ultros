@@ -14,7 +14,7 @@ class Factory(protocol.ClientFactory):
     protocol = None
 
     def __init__(self, protocol_name, config, manager):
-        self.logger = getLogger("F: " + protocol_name)
+        self.logger = getLogger("*" + protocol_name)
         self.config = config
         self.manager = manager
 
@@ -30,10 +30,8 @@ class Factory(protocol.ClientFactory):
 
     def clientConnectionLost(self, connector, reason):
         """ Called when the client loses connection """
-
-        pass
+        self.logger.warn("Lost connection: %s" % reason)
 
     def clientConnectionFailed(self, connector, reason):
         """ Called when the client fails to connect """
-
-        pass
+        self.logger.warn("Connection failed: %s" % reason)
