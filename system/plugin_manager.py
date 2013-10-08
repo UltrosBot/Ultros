@@ -56,7 +56,7 @@ class YamlPluginManagerSingleton(PluginManager):
         """
         # parse the information buffer to get info about the plugin
         try:
-            data = yaml.safe_load(infoFileObject)
+            data = yaml.load(infoFileObject)
         except Exception, e:
             logging.debug("Could not parse the plugin file '%s' "
                           "(exception raised was '%s')"
