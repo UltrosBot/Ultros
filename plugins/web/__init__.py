@@ -4,5 +4,5 @@ from system.plugin import Plugin
 
 
 class WebPlugin(Plugin):
-    
+
     pass
