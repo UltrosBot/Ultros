@@ -17,3 +17,10 @@ protocols:
 plugins:
   - Bridge
   - Web
+
+reconnections: # Settings for reconnecting on connection failures. Reconnection counters are not shared between protocols.
+  delay: 10 # How long to wait between reconnections in seconds.
+  attempts: 5 # How many times to attempt reconnecting
+  on-drop: yes # Whether to reconnect if we lose connection
+  on-failure: yes # Whether to reconnect if we fail to connect
+  reset-on-success: yes # Whether to reset the counter if we successfully reconnect
