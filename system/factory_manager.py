@@ -36,7 +36,7 @@ class Manager(object):
 
         try:
             self.logger.info("Loading global configuration..")
-            self.main_config = Config("config/settings.yml")
+            self.main_config = Config("settings.yml")
             if not self.main_config.exists:
                 self.logger.error(
                     "Main configuration not found! Please correct this and try"
@@ -57,13 +57,20 @@ class Manager(object):
 
         self.logger.info("Loading plugins..")
 
+        self.logger.debug("Configured plugins: %s"
+                          % ", ".join(self.main_config["plugins"]))
+
         self.plugman = PluginManagerSingleton.get()
-        self.plugman.setPluginPlaces(["plugins/global"])
+        self.plugman.setPluginPlaces(["plugins"])
         self.plugman.setPluginInfoExtension("plug")
+
+        self.logger.debug("Collecting plugins..")
         self.plugman.collectPlugins()
 
         for info in self.plugman.getAllPlugins():
             name = info.name
+            self.logger.debug("Checking if plugin '%s' is configured to load.."
+                              % name)
             if name in self.main_config["plugins"]:
                 try:
                     self.plugman.activatePluginByName(info.name)
@@ -86,7 +93,7 @@ class Manager(object):
             try:
                 self.logger.info(
                     "Loading configuration for the '%s' protocol.." % protocol)
-                conf_location = "config/protocols/%s.yml" % protocol
+                conf_location = "protocols/%s.yml" % protocol
                 config = Config(conf_location)
                 if not config.exists:
                     self.logger.error(

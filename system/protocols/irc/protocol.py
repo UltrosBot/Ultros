@@ -26,7 +26,7 @@ class Protocol(irc.IRCClient):
         # Quakenet uses AUTH username password
         self.factory = factory
         self.config = config
-        self.event_manager = EventManager.Instance()
+        self.event_manager = EventManager.instance()
         self.log = getLogger("IRC")
         self.log.info("Setting up..")
 
