@@ -128,14 +128,21 @@ class YamlPluginManagerSingleton(PluginManager):
         # collect additional (but usually quite useful) information
         if data["info"]:
             info = data["info"]
-            if info["author"]:
+
+            plugin_info.author = None
+            plugin_info.setVersion(None)
+            plugin_info.website = None
+            plugin_info.copyright = None
+            plugin_info.description = None
+
+            if "author" in info:
                 plugin_info.author = info["author"]
-            if info["version"]:
+            if "version" in info:
                 plugin_info.setVersion(info["version"])
-            if info["website"]:
+            if "website" in info:
                 plugin_info.website = info["website"]
-            if info["copyright"]:
+            if "copyright" in info:
                 plugin_info.copyright = info["copyright"]
-            if info["description"]:
+            if "description" in info:
                 plugin_info.description = info["description"]
         return plugin_info

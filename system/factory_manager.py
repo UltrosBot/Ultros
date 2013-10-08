@@ -9,7 +9,7 @@ from utils.config import Config
 from utils.misc import output_exception
 
 from twisted.internet import reactor
-from yapsy.PluginManager import PluginManagerSingleton
+from system.plugin_manager import YamlPluginManagerSingleton
 
 
 class Manager(object):
@@ -60,7 +60,7 @@ class Manager(object):
         self.logger.debug("Configured plugins: %s"
                           % ", ".join(self.main_config["plugins"]))
 
-        self.plugman = PluginManagerSingleton.get()
+        self.plugman = YamlPluginManagerSingleton.instance()
         self.plugman.setPluginPlaces(["plugins"])
         self.plugman.setPluginInfoExtension("plug")
 
@@ -84,6 +84,8 @@ class Manager(object):
                 else:
                     self.logger.info("Loaded plugin: %s v%s"
                                      % (name, info.version))
+                    if info.copyright:
+                        self.logger.info("Licensing: %s" % info.copyright)
 
         # Load up the protocols
 
