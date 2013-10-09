@@ -15,11 +15,11 @@ protocols:
 # List plugins to load below. Plugins are referred to by name, which you can
 # always find in that plugin's .plug file.
 plugins:
-  - Bridge
-  - Web
+  - Bridge  # Configurable message relaying between protocols or within a protocol
+  - Web  # Extensible REST API including an API-key-based security system
 
 reconnections: # Settings for reconnecting on connection failures. Reconnection counters are not shared between protocols.
-  delay: 10 # How long to wait between reconnections in seconds.
+  delay: 10 # How long to wait between reconnection attempts, in seconds.
   attempts: 5 # How many times to attempt reconnecting
   on-drop: yes # Whether to reconnect if we lose connection
   on-failure: yes # Whether to reconnect if we fail to connect
