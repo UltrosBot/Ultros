@@ -47,7 +47,6 @@ class Factory(protocol.ClientFactory):
                              % (self.r_delay, self.attempts, self.r_attempts))
             reactor.callLater(self.r_delay, connector.connect)
 
-
     def clientConnectionFailed(self, connector, reason):
         """ Called when the client fails to connect """
         self.logger.warn("Connection failed: %s" % reason.__str__())
@@ -60,4 +59,3 @@ class Factory(protocol.ClientFactory):
             self.logger.info("Reconnecting after %s seconds (attempt %s/%s)"
                              % (self.r_delay, self.attempts, self.r_attempts))
             reactor.callLater(self.r_delay, connector.connect)
-
