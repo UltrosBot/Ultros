@@ -1,0 +1,12 @@
+# Default permissions file.
+
+groups:
+  superadmin:
+    permissions:
+    - '*' # Everything
+
+users:
+  SuperAdmin:
+    group:
+    permissions:
+    - '*' # Everything

@@ -1,0 +1,14 @@
+# Example settings of the basic password-based authentication plugin
+# If you're not using the auth or permissions from this, you may as well just
+#  disable this plugin.
+
+settings:
+  superuser: # Settings for the superuser account
+    username: SuperAdmin
+    password: Super1337Pa$$wurd
+    use: yes # Disable this if you don't need the override
+  use-auth: yes # Use the authentication provider?
+  use-permissions: yes # Use the permissions provider?
+
+# Permissions themselves are not defined in this file;
+#  see data/plugins/auth/permissions.yml for that.

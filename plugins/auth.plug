@@ -1,0 +1,9 @@
+core:
+  name: Auth
+  module: auth
+info:
+  description: Default authentication and permissions plugin
+  author: Gareth Coles
+  version: 0.0.1
+  website: https://github.com/McBlockitHelpbot/Ultros/tree/master/plugins/auth
+  copyright: See Ultros' license
