@@ -237,6 +237,10 @@ class Protocol(protocol.Protocol):
             self.handle_msg_userstate(message)
 
             # TODO: Throw event (Mumble, user state)
+            # Is that necessary? ^ Events are thrown for each user state change
+            # anyway in handle_msg_userstate(), and if a plugin needs something
+            # we don't yet track, then we should add support for it instead of
+            # giving them raw user state information.
         elif isinstance(message, Mumble_pb2.ServerSync):
             # session, max_bandwidth, welcome_text, permissions
             welcome_text = html_to_text(message.welcome_text, True)
@@ -259,8 +263,10 @@ class Protocol(protocol.Protocol):
         elif isinstance(message, Mumble_pb2.UserRemove):
             # session
             if message.session in self.users:
+                user = self.users[message.session]
                 self.log.info("User left: %s" %
-                              self.users[message.session])
+                              user)
+                user.channel.remove_user(user)
                 del self.users[message.session]
 
             # TODO: Throw event
@@ -303,7 +309,8 @@ class Protocol(protocol.Protocol):
                     self.log.debug("Channel link: %s to %s" %
                                    (self.channels[link],
                                     self.channels[message.channel_id]))
-            self.channels[message.channel_id] = Channel(message.channel_id,
+            self.channels[message.channel_id] = Channel(self,
+                                                        message.channel_id,
                                                         message.name,
                                                         parent,
                                                         message.position,
@@ -328,9 +335,11 @@ class Protocol(protocol.Protocol):
         if message.name and message.session not in self.users:
             # Note: I'm not sure if message.name should ever be empty and
             # not in self.users - rakiru
-            self.users[message.session] = User(message.session,
+            self.users[message.session] = User(self,
+                                               message.session,
                                                message.name,
-                                               message.channel_id,
+                                               self.channels[
+                                                   message.channel_id],
                                                message.mute,
                                                message.deaf,
                                                message.suppress,
@@ -339,9 +348,17 @@ class Protocol(protocol.Protocol):
                                                message.priority_speaker,
                                                message.recording)
             self.log.info("User joined: %s" % message.name)
-            # Store our session id
+            # We can't just flow into the next section to deal with this, as
+            # that would count as a channel change, and it doesn't always work
+            # as expected anyway.
+            self.channels[message.channel_id].add_user(
+                self.users[message.session])
+            # Store our User object
             if message.name == self.username:
                 self.ourself = self.users[message.session]
+            else:
+                # TODO: Throw event - user join
+                pass
         else:
             # Note: More than one state change can happen at once
             user = self.users[message.session]
@@ -349,10 +366,12 @@ class Protocol(protocol.Protocol):
                 actor = self.users[message.actor]
                 self.log.info("User moved channel: %s from %s to %s by %s" %
                               (user,
-                               self.channels[user.channel_id],
+                               user.channel,
                                self.channels[message.channel_id],
                                actor))
-                user.channel_id = message.channel_id
+                user.channel.remove_user(user)
+                self.channels[message.channel_id].add_user(user)
+                user.channel = self.channels[message.channel_id]
 
                 # TODO: Throw event
             if message.HasField('mute'):
@@ -447,7 +466,7 @@ class Protocol(protocol.Protocol):
 
         # TODO: Throw event
         if target_id is None and target == "channel":
-            target_id = self.ourself.channel_id
+            target_id = self.ourself.channel.channel_id
 
         self.log.debug("Sending text message: %s" % message)
 
@@ -493,7 +512,7 @@ class Protocol(protocol.Protocol):
             print ("\t" * times), s
         for user in self.users.itervalues():
             print user
-            cn = self.channels[user.channel_id].__str__()
+            cn = user.channel.__str__()
             print_indented("Channel: %s" % cn.encode('ascii', 'replace'))
             print_indented("Mute: %s" % user.mute)
             print_indented("Deaf: %s" % user.deaf)
@@ -515,6 +534,13 @@ class Protocol(protocol.Protocol):
         def print_channel(channels, channel_id, depth=0):
             print "----" * depth,\
                 self.channels[channel_id].__str__().encode('ascii', 'replace')
+            #Print users, if any
+            if len(self.channels[channel_id].users) > 0:
+                print "    " * (depth + 1),"Users {"
+                for user in self.channels[channel_id].users:
+                    print "    " * (depth + 2),user
+                print "    " * (depth + 1),"}"
+            #Print sub-channels
             for chan in channels[channel_id]:
                 print_channel(channels, chan, depth + 1)
 

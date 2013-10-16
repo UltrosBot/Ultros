@@ -1,13 +1,16 @@
 # coding=utf-8
+from system.protocols.generic import user
+
 __author__ = 'Sean'
 
 
-class User(object):
-    def __init__(self, session, name, channel_id, mute, deaf, suppress,
-                 self_mute, self_deaf, priority_speaker, recording):
+class User(user.User):
+    def __init__(self, protocol, session, name, channel, mute, deaf,
+                 suppress, self_mute, self_deaf, priority_speaker, recording):
+        self.protocol = protocol
         self.session = session
         self.name = name
-        self.channel_id = channel_id
+        self.channel = channel
         self.mute = mute
         self.deaf = deaf
         self.suppress = suppress
