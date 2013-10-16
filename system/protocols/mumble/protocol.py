@@ -536,10 +536,10 @@ class Protocol(protocol.Protocol):
                 self.channels[channel_id].__str__().encode('ascii', 'replace')
             #Print users, if any
             if len(self.channels[channel_id].users) > 0:
-                print "    " * (depth + 1),"Users {"
+                print "    " * (depth + 1), "Users {"
                 for user in self.channels[channel_id].users:
-                    print "    " * (depth + 2),user
-                print "    " * (depth + 1),"}"
+                    print "    " * (depth + 2), user
+                print "    " * (depth + 1), "}"
             #Print sub-channels
             for chan in channels[channel_id]:
                 print_channel(channels, chan, depth + 1)
