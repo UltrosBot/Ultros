@@ -1,8 +1,10 @@
 # coding=utf-8
 __author__ = 'Sean'
 
+from system.protocols.generic import channel
 
-class Channel(object):
+
+class Channel(channel.Channel):
     def __init__(self, protocol, channel_id, name, parent, position, links):
         self.protocol = protocol
         self.channel_id = channel_id

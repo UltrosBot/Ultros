@@ -1,7 +1,7 @@
 # coding=utf-8
-from system.protocols.generic import user
-
 __author__ = 'Sean'
+
+from system.protocols.generic import user
 
 
 class User(user.User):
