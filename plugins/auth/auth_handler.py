@@ -3,4 +3,6 @@ __author__ = 'Gareth Coles'
 
 class authHandler(object):
 
-    pass
+    def __init__(self, config, plugin):
+        self.config = config
+        self.plugin = plugin

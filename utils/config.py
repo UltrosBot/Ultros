@@ -16,37 +16,9 @@ class Config(object):
 
     def __init__(self, filename):
         self.logger = getLogger("Config")
-        filename = filename.strip("../")
-        filename = filename.strip("/..")
+        # Some sanitizing here to make sure people can't escape the config dirs
         filename = filename.strip("..")
         self.filename = "config/" + filename
-        if not os.path.exists("config"):
-            self.logger.debug("Creating config directory..")
-            os.mkdir("config")
-            self.logger.error("Configuration directory not found!")
-            self.logger.info("I have created the directory for you, but it's "
-                             "empty. Please redownload the example configs "
-                             "from https://github.com/McBlockitHelpbot/Ultros "
-                             "and set them up before running the bot again.")
-            self.logger.info("Expect to see lots of errors scroll by now, and "
-                             "for the bot to quit.")
-            self.exists = False
-            return
-        if not os.path.isdir("config"):
-            self.logger.debug("Renaming invalid config dir and creating a new "
-                              "one")
-            os.rename("config", "config_")
-            os.mkdir("config")
-            self.logger.error("Configuration directory not found!")
-            self.logger.info("I have created the directory for you, but it's "
-                             "empty. Please redownload the example configs "
-                             "from https://github.com/McBlockitHelpbot/Ultros "
-                             "and set them up before running the bot again.")
-            self.logger.info("Expect to see lots of errors scroll by now, and "
-                             "for the bot to quit.")
-            self.exists = False
-            return
-        # Some sanitizing here to make sure people can't escape the config dirs
         self.exists = self.reload()
 
     def reload(self):

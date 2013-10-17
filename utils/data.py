@@ -10,11 +10,9 @@ from utils.log import getLogger
 
 
 class Data(object):
+
     def __init__(self, filename):
         self.logger = getLogger("Data")
-        # Some sanitizing here to make sure people can't escape the data dirs
-        filename = filename.strip("../")
-        filename = filename.strip("/..")
         filename = filename.strip("..")
         filename = "data/" + filename
         if not os.path.exists("data"):
@@ -25,12 +23,8 @@ class Data(object):
                               "one..")
             os.rename("data", "data_")
             os.mkdir("data")
-        try:
-            self.fh = open(filename, "rw")
-        except Exception:
-            output_exception(self.logger, logging.ERROR)
-        else:
-            self.data = yaml.safe_load(self.fh)
+        self.fh = open(filename, "rw")
+        self.data = yaml.safe_load(self.fh)
 
     def __getitem__(self, y):
         return self.data.__getitem__(y)

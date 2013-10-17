@@ -3,4 +3,6 @@ __author__ = 'Gareth Coles'
 
 class permissionsHandler(object):
 
-    pass
+    def __init__(self, config, plugin):
+        self.config = config
+        self.plugin = plugin

@@ -1,8 +1,11 @@
 # coding=utf-8
 __author__ = "Gareth Coles"
+
+from system.decorators import Singleton
 from utils.log import getLogger
 
 
+@Singleton
 class CommandManager(object):
     """
     This is the command manager. It's in charge of tracking commands that
@@ -99,7 +102,7 @@ class CommandManager(object):
         else:
             return True, None
 
-    def set_auth_handler(self, handler):
+    def add_auth_handler(self, handler):
         """
         Add an auth handler, provided it hasn't already been added.
 
