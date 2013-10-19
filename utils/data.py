@@ -2,10 +2,10 @@
 __author__ = "Gareth Coles"
 
 import yaml
-import logging
+#import logging
 import os
 
-from utils.misc import output_exception
+#from utils.misc import output_exception
 from utils.log import getLogger
 
 
