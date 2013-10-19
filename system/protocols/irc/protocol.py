@@ -334,17 +334,18 @@ class Protocol(irc.IRCClient):
         # TODO: Run user_channel_join() on everyone in channel
 
     def self_part_channel(self, channel):
-        # TODO: Run user_channel_part() on everyone in channel
+        for user in self.channels[channel].users:
+            self.user_channel_part(user)
+        del self.channels[channel]
 
-    def user_channel_part(self, nickname, ident, host, channel):
-        # Get user and channel objects
-        user = self.users["%s@%s" % (ident, host)]
+    def user_channel_part(self, user, channel):
+        # Get channel object
         chan = self.channels[channel]
         # Remove user from channel and channel from user
         user.remove_channel(chan)
         chan.remove_user(user)
         # Check if they've gone off our radar
-        self.user_check_lost_track(nickname)
+        self.user_check_lost_track(user)
 
     def user_channel_join(self, nickname, ident, host, channel):
         # If the user is not known about, create them.
