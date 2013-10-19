@@ -352,7 +352,7 @@ class Protocol(irc.IRCClient):
         key = "%s@%s" % (ident, host)
         user = None
         try:
-            user =  self.users[key]
+            user = self.users[key]
         except KeyError:
             user = User(self, nickname, ident, host)
             self.users[key] = user
