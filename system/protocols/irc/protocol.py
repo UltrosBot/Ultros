@@ -349,7 +349,8 @@ class Protocol(irc.IRCClient):
         for usr in self.users:
             if (usr.nickname == nickname and
                 usr.ident == ident and
-                usr.host == host):
+                usr.host == host
+            ):
                 user = usr
                 break
         else:
