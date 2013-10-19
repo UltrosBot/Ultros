@@ -1,6 +1,8 @@
 # coding=utf-8
 
 import time
+from system.protocols.irc.channel import Channel
+from system.protocols.irc.user import User
 
 from utils.log import getLogger
 from system.event_manager import EventManager
@@ -20,6 +22,9 @@ class Protocol(irc.IRCClient):
     identity = {}
 
     nickname = ""
+
+    channels = {}  # key is "#channel".lower()
+    users = {}  # key is ident@host
 
     def __init__(self, factory, config):
         # Some notes for implementation..
@@ -323,3 +328,39 @@ class Protocol(irc.IRCClient):
                 "Unhandled: %s | %s | %s" % (prefix, command, params))
 
             # TODO: Throw event (IRC, unhandled message event based on command)
+
+    def self_join_channel(self, channel):
+        self.channels[channel] = Channel(self, channel)
+        # TODO: Run user_channel_join() on everyone in channel
+
+    def self_part_channel(self, channel):
+        # TODO: Run user_channel_part() on everyone in channel
+
+    def user_channel_part(self, nickname, ident, host, channel):
+        # Get user and channel objects
+        user = self.users["%s@%s" % (ident, host)]
+        chan = self.channels[channel]
+        # Remove user from channel and channel from user
+        user.remove_channel(chan)
+        chan.remove_user(user)
+        # Check if they've gone off our radar
+        self.user_check_lost_track(nickname)
+
+    def user_channel_join(self, nickname, ident, host, channel):
+        # If the user is not known about, create them.
+        key = "%s@%s" % (ident, host)
+        user = None
+        try:
+            user =  self.users[key]
+        except KeyError:
+            user = User(self, nickname, ident, host)
+            self.users[key] = user
+        # Add user to channel and channel to user
+        chan = self.channels[channel]
+        user.add_channel(chan)
+        chan.add_user(user)
+
+    def user_check_lost_track(self, user):
+        if len(user.channels) == 0:
+            del self.users["%s@%s" % (user.ident, user.host)]
+            # TODO: Throw event: lost track of user

@@ -1,30 +1,26 @@
 # coding=utf-8
-__author__ = "Gareth Coles"
+__author__ = 'Sean'
 
-from utils.log import getLogger, open_log, close_log
+from system.protocols.generic import channel
 
 
-class Channel(object):
-    users = []
-    modes = {}
-
-    def __init__(self, irc, name):
+class Channel(channel.Channel):
+    def __init__(self, protocol, name):
+        self.protocol = protocol
         self.name = name
-        open_log("irc/channels/%s" % name)
-        self.irc = irc
-        self.logger = getLogger("IRC", "irc/channels/%s" % name,
-                                "%(asctime)s | %(name)8s | " + name +
-                                " | %(message)s",
-                                "%d/%m %H:%M:%S")
+        self.users = set()
 
-    def __del__(self):
-        close_log("irc/channels/%s" % self.name)
+    def __str__(self):
+        return self.name
 
-    def message(self, message):
-        pass
+    def add_user(self, user):
+        self.users.add(user)
 
-    def notice(self, message):
-        pass
-
-    def ctcp(self, prefix, data):
-        pass
+    def remove_user(self, user):
+        try:
+            self.users.remove(user)
+        except KeyError:
+            #According to PEP8, this is easier to read on two lines <_<
+            self.protocol.log.debug(
+                "Tried to remove non-existent user \"%s\" from channel \"%s\""
+                % (user, self))
