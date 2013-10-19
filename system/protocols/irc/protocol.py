@@ -24,7 +24,7 @@ class Protocol(irc.IRCClient):
     nickname = ""
 
     channels = {}  # key is "#channel".lower()
-    users = {}  # key is ident@host
+    users = []
 
     def __init__(self, factory, config):
         # Some notes for implementation..
@@ -331,37 +331,56 @@ class Protocol(irc.IRCClient):
 
     def self_join_channel(self, channel):
         self.channels[channel] = Channel(self, channel)
-        # TODO: Run user_channel_join() on everyone in channel
+
+    def channel_who_reply(self, nickname, ident, host, channel):
+        # Another function for naming sense and stuff, but really all we need
+        # to do is call user_channel_join() on them.
+        self.user_channel_join(nickname, ident, host, channel)
 
     def self_part_channel(self, channel):
-        for user in self.channels[channel].users:
-            self.user_channel_part(user)
-        del self.channels[channel]
+        for user in self.channels[channel.lower()].users:
+            self.user_channel_part(user, channel)
+        del self.channels[channel.lower()]
+
+    def user_channel_join(self, nickname, ident, host, channel):
+        # If the user is not known about, create them.
+        key = "%s@%s" % (ident, host)
+        user = None
+        for usr in self.users:
+            if (usr.nickname == nickname and
+                usr.ident == ident and
+                usr.host == host):
+                user = usr
+                break
+        else:
+            user = User(self, nickname, ident, host)
+            self.users.append(user)
+            # TODO: Throw event?: new user created - Only suggesting it so to
+            # - mirror the lost track of user one - can't see a use for it atm.
+        # Add user to channel and channel to user
+        chan = self.channels[channel.lower()]
+        user.add_channel(chan)
+        chan.add_user(user)
 
     def user_channel_part(self, user, channel):
         # Get channel object
-        chan = self.channels[channel]
+        chan = self.channels[channel.lower()]
         # Remove user from channel and channel from user
         user.remove_channel(chan)
         chan.remove_user(user)
         # Check if they've gone off our radar
         self.user_check_lost_track(user)
 
-    def user_channel_join(self, nickname, ident, host, channel):
-        # If the user is not known about, create them.
-        key = "%s@%s" % (ident, host)
-        user = None
-        try:
-            user = self.users[key]
-        except KeyError:
-            user = User(self, nickname, ident, host)
-            self.users[key] = user
-        # Add user to channel and channel to user
-        chan = self.channels[channel]
-        user.add_channel(chan)
-        chan.add_user(user)
-
     def user_check_lost_track(self, user):
         if len(user.channels) == 0:
-            del self.users["%s@%s" % (user.ident, user.host)]
+            self.users.remove(user)
             # TODO: Throw event: lost track of user
+
+# TODO: Call self_join_channel() when we join a channel
+# TODO: Call channel_who_reply() for every who reply after a channel join
+# - Shouldn't do anything bad if you feed it other who replies, but it could
+# - be made to deal with those better if needed.
+# TODO: Call self_part_channel() when we part a channel (or are kicked from it)
+# TODO: Call user_channel_join() when another user joins a channel
+# TODO: Call user_channel_part() when another user parts a channel (or kicked)
+# Note: Users aren't added to channels until a WHO reply is received for them.
