@@ -347,10 +347,9 @@ class Protocol(irc.IRCClient):
         key = "%s@%s" % (ident, host)
         user = None
         for usr in self.users:
-            if (usr.nickname == nickname and
-                usr.ident == ident and
-                usr.host == host
-            ):
+            if ((usr.nickname == nickname and
+                 usr.ident == ident and
+                 usr.host == host)):
                 user = usr
                 break
         else:
