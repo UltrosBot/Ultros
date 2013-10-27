@@ -2,10 +2,7 @@
 # If you're not using the auth or permissions from this, you may as well just
 #  disable this plugin.
 
-superuser: # Settings for the superuser account
-  username: SuperAdmin
-  password: Super1337Pa$$wurd
-  use: yes # Disable this if you don't need the override
+use-superuser: yes # Allow users to be set as superadmin?
 use-auth: yes # Use the authentication provider?
 use-permissions: yes # Use the permissions provider?
 

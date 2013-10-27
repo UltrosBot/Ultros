@@ -1,12 +1,12 @@
 # Default permissions file.
 
 groups:
-  superadmin:
+  default:
     permissions:
-    - '*' # Everything
+    - auth.login
 
 users:
   SuperAdmin:
     group:
     permissions:
-    - '*' # Everything
+    superadmin: yes
