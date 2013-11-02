@@ -8,6 +8,7 @@ from system.decorators import run_async
 from twisted.internet import reactor, protocol
 from threading import Lock
 
+
 class Protocol(protocol.Protocol):
 
     factory = None
