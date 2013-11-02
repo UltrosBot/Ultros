@@ -38,6 +38,10 @@ class Protocol(irc.IRCClient):
         self.networking = config["network"]
         self.identity = config["identity"]
 
+        if self.identity["authentication"].lower() == "password":
+            self.password = "%s:%s" % (self.identity["auth_name"],
+                                       self.identity["auth_pass"])
+
         self.nickname = self.identity["nick"]
 
         # TODO: Throw event (General, pre-connection)
