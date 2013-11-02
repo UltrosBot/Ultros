@@ -6,7 +6,7 @@ from utils.log import getLogger
 from system.decorators import run_async
 
 from twisted.internet import reactor, protocol
-
+from threading import Lock
 
 class Protocol(protocol.Protocol):
 
@@ -16,6 +16,8 @@ class Protocol(protocol.Protocol):
     event_manger = None
 
     command_responses = []
+    command_mutex = Lock()
+
     channels = {}
     users = []
 
@@ -48,55 +50,55 @@ class Protocol(protocol.Protocol):
         pass
 
     def send_command(self, command, args=None, output=True):
-        if not args:
-            args = {}
-        done = "%s" % command
+        with self.command_mutex:
+            if not args:
+                args = {}
+            done = "%s" % command
 
-        for pair in args.items():
-            done = "%s %s=%s" % (done, pair[0], utils.escape(pair[1]))
+            for pair in args.items():
+                done = "%s %s=%s" % (done, pair[0], utils.escape(pair[1]))
 
-        if output:  # Check this and debug output if false
-            self.log.info("-> %s" % done)
-        else:
-            self.log.debug("-> %s" % done)
+            if output:  # Check this and debug output if false
+                self.log.info("-> %s" % done)
+            else:
+                self.log.debug("-> %s" % done)
 
-        self.send(done)
+            self.send(done)
 
-        lines = []
-        error_line = ""
+            lines = []
+            error_line = ""
 
-        while True:
-            if not self.command_responses:
-                continue
+            while True:
+                if not self.command_responses:
+                    continue
 
-            element = self.command_responses.pop(0)
-            if element.lower().startswith("error"):
-                error_line = element
-                break
-            lines.append(element)
+                element = self.command_responses.pop(0)
+                if element.lower().startswith("error"):
+                    error_line = element
+                    break
+                lines.append(element)
 
-        parsed_lines = []
-        for line in lines:
-            if "|" in line:  # We've got an array of data
-                chunks = []
-                for chunk in line.split("|"):
-                    chunks.append(self.parse_words(chunk.split()))
-                parsed_lines.append(chunks)
-                continue
-            parsed_lines.append(self.parse_words(line.split()))
-
-        parsed_error = self.parse_words(error_line.split()[1:])
-        done_lines = parsed_lines
-
-        if command.lower().strip() == "clientlist":
+            parsed_lines = []
+            for line in lines:
+                if "|" in line:  # We've got an array of data
+                    chunks = []
+                    for chunk in line.split("|"):
+                        chunks.append(self.parse_words(chunk.split()))
+                    parsed_lines.append(chunks)
+                    continue
+                parsed_lines.append(self.parse_words(line.split()))
+            parsed_error = self.parse_words(error_line.split()[1:])
             done_lines = parsed_lines
-        elif len(parsed_lines) == 1:
-            done_lines = parsed_lines[0]
 
-        return {"error_msg": parsed_error["msg"],
-                "error_id": parsed_error["id"],
-                "data": done_lines,
-                "result": True if parsed_error["id"] == "0" else False}
+            if command.lower().strip() == "clientlist":
+                done_lines = parsed_lines
+            elif len(parsed_lines) == 1:
+                done_lines = parsed_lines[0]
+
+            return {"error_msg": parsed_error["msg"],
+                    "error_id": parsed_error["id"],
+                    "data": done_lines,
+                    "result": True if parsed_error["id"] == "0" else False}
 
     @run_async
     def send(self, data):
@@ -199,10 +201,14 @@ class Protocol(protocol.Protocol):
 
         r = self.send_command("clientlist", output=False)
 
+        self.log.debug(r)
+
         for client in r["data"][0]:
             self.log.debug("> %s: %s in %s"
                            % (client["clid"], client["client_nickname"],
                               channel_ids[client["cid"]]))
+
+        self.log.info("Ready!")
 
     def parse_words(self, words):
         done = {}
@@ -254,4 +260,5 @@ class Protocol(protocol.Protocol):
         if "" in splitdata:
             splitdata.remove("")
         for x in splitdata:
+            self.log.debug("<- %s" % x)
             self.do_parse(x)
