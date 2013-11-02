@@ -191,7 +191,7 @@ class Protocol(protocol.Protocol):
 
         for channel in r["data"]:
             channel_ids[channel["cid"]] = channel["channel_name"]
-            self.log.debug("> %s: %s (%s clients)" \
+            self.log.debug("> %s: %s (%s clients)"
                            % (channel["cid"], channel["channel_name"],
                               channel["total_clients"]))
 
@@ -200,9 +200,9 @@ class Protocol(protocol.Protocol):
         r = self.send_command("clientlist", output=False)
 
         for client in r["data"][0]:
-            self.log.debug("> %s: %s in %s" \
+            self.log.debug("> %s: %s in %s"
                            % (client["clid"], client["client_nickname"],
-                           channel_ids[client["cid"]]))
+                              channel_ids[client["cid"]]))
 
     def parse_words(self, words):
         done = {}
