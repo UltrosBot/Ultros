@@ -62,9 +62,6 @@ class Protocol(irc.IRCClient):
 
         # TODO: Throw event (General, post-connection, pre-setup)
 
-    def __call__(self):
-        return self
-
     def receivedMOTD(self, motd):
         """ Called when we receive the MOTD. """
         self.log.info(" ===   MOTD   === ")

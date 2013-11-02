@@ -1,7 +1,7 @@
 network:  # Network settings
-  address: "localhost"  # The address to connect to
+  address: localhost  # The address to connect to
   port: 64738  # The port to connect on
 identity:  # Identity settings. Who am I?
-  username: "Ultros"  # Username to connect with
-  password: ""  # Server password. You probably don't need this.
+  username: Ultros  # Username to connect with
+  password:   # Server password. You probably don't need this.
   tokens: []  # Auth tokens for locked-down channels.

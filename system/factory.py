@@ -38,6 +38,9 @@ class Factory(protocol.ClientFactory):
         else:
             self.protocol = current_protocol.Protocol(self, config)
 
+    def buildProtocol(self, addr):
+        return self.protocol
+
     def clientConnectionLost(self, connector, reason):
         """ Called when the client loses connection """
         self.logger.warn("Lost connection: %s" % reason.__str__())

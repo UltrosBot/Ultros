@@ -100,9 +100,6 @@ class Protocol(protocol.Protocol):
 
         # TODO: Throw event (General, post-connect)
 
-    def __call__(self):
-        return self
-
     def connectionMade(self):
         self.log.info("Connected to server.")
 

@@ -1,0 +1,15 @@
+# Due to Teamspeak's proprietary and closed-source nature, voice support is
+# impossible, which is a damn shame. The bot relies on ServerQuery; for this
+# reason, you'll most likely have to own the server you want to run it on, or
+# ask the owner to make you a ServerQuery login for it. You will not be
+# able to use Ultros on the public Teamspeak server.
+
+server:  # Network connection details
+  address: localhost  # Address to connect to
+  port: 10011  # ServerQuery port, not the usual client port
+  sid: 1  # Virtual server ID. Just use 1 if there's only one virtual server.
+identity:
+  nickname: Ultros  # Ultros will automatically set its name to this
+  username: serveradmin  # ServerQuery login name. You should make a separate
+                         # SQ account for this.
+  password: password  # ServerQuery password for the username above
