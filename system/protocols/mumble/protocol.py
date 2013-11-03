@@ -353,6 +353,27 @@ class Protocol(protocol.Protocol):
             # Store our User object
             if message.name == self.username:
                 self.ourself = self.users[message.session]
+                # User connection messages come after all channels have been
+                # given, so now is a safe time to attempt to join a channel.
+                try:
+                    conf = self.config["channel"]
+                    if "id" in conf and conf["id"]:
+                        if conf["id"] in self.channels:
+                            self.join_channel(self.channels[conf["id"]])
+                        else:
+                            self.log.warning("No channel with id '%s'" %
+                                             conf["id"])
+                    elif "name" in conf and conf["name"]:
+                        chan = self.find_channel_by_name(conf["name"])
+                        if chan is not None:
+                            self.join_channel(chan)
+                        else:
+                            self.log.warning("No channel with name '%s'" %
+                                             conf["name"])
+                    else:
+                        self.log.warning("No channel found in config")
+                except:
+                    self.log.warning("Config is missing 'channel' section")
             else:
                 # TODO: Throw event - user join
                 pass
@@ -435,7 +456,8 @@ class Protocol(protocol.Protocol):
                 self.log.info("<%s> %s" % (self.users[message.actor],
                                            line))
             # TODO: Throw event
-            # TODO: If you see this, I forgot to remove it before committing
+            # TODO: Remove this before proper release. An admin plugin with the
+            # - same functionality should be created.
             if msg.startswith('!'):
                 cmd = msg[1:].lower().split(" ")[0]
                 if cmd == "users":
@@ -502,6 +524,13 @@ class Protocol(protocol.Protocol):
         msg = Mumble_pb2.UserState()
         msg.channel_id = channel
         self.sendProtobuf(msg)
+
+    def find_channel_by_name(self, name):
+        name = name.lower()
+        for cid, channel in self.channels.iteritems():
+            if channel.name.lower() == name:
+                return channel
+        return None
 
     def print_users(self):
         # TODO: Remove this debug function once user handling is complete
