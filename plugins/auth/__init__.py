@@ -18,10 +18,13 @@ class AuthPlugin(Plugin):
     passwords = None
     permissions = None
 
+    commands = None
+
     auth_h = None
     perms_h = None
 
     def setup(self):
+        self.logger.debug("Entered setup method.")
         try:
             self.config = Config("plugins/auth.yml")
         except Exception:
@@ -36,20 +39,7 @@ class AuthPlugin(Plugin):
             self._disable_self()
             return
 
-        self.commands = CommandManager.get()
-
-        if self.config["use-auth"]:
-            try:
-                self.passwords = Data("plugins/auth/passwords.yml")
-            except Exception:
-                self.logger.error("Unable to load passwords. They will be"
-                                  " unavailable!")
-                output_exception(self.logger, logging.ERROR)
-            else:
-                self.auth_h = auth_handler.authHandler(self, self.passwords)
-                result = self.commands.add_auth_handler(self.auth_h)
-                if not result:
-                    self.logger.warn("Unable to set auth handler!")
+        self.commands = CommandManager.instance()
 
         if self.config["use-permissions"]:
             try:
@@ -64,6 +54,30 @@ class AuthPlugin(Plugin):
                 result = self.commands.set_permissions_handler(self.perms_h)
                 if not result:
                     self.logger.warn("Unable to set permissions handler!")
+
+        if self.config["use-auth"]:
+            try:
+                self.passwords = Data("plugins/auth/passwords.yml")
+                print "PAUSING"
+            except Exception:
+                self.logger.error("Unable to load user accounts. They will be"
+                                  " unavailable!")
+                output_exception(self.logger, logging.ERROR)
+            else:
+                self.auth_h = auth_handler.authHandler(self, self.passwords)
+                result = self.commands.add_auth_handler(self.auth_h)
+                if not result:
+                    self.logger.warn("Unable to set auth handler!")
+
+    def get_auth_handler(self):
+        if self.config["use-auth"]:
+            return self.auth_h
+        return None
+
+    def get_permissions_handler(self):
+        if self.config["use-permissions"]:
+            return self.perms_h
+        return None
 
     def deactivate(self):
         pass

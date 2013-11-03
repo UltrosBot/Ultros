@@ -11,6 +11,8 @@ from utils.misc import output_exception
 from twisted.internet import reactor
 from system.plugin_manager import YamlPluginManagerSingleton
 
+from system.command_manager import CommandManager
+
 
 class Manager(object):
     """
@@ -55,6 +57,9 @@ class Manager(object):
 
         # Load up the plugins
 
+        self.commands = CommandManager.instance()
+        self.commands.set_factory_manager(self)
+
         self.logger.info("Loading plugins..")
 
         self.logger.debug("Configured plugins: %s"
@@ -75,7 +80,9 @@ class Manager(object):
                 try:
                     self.plugman.activatePluginByName(info.name)
                     info.plugin_object.add_variables(info, self)
-                    info.plugin_object.setup()
+                    if hasattr(info.plugin_object, "setup"):
+                        self.logger.debug("Running setup method..")
+                        info.plugin_object.setup()
                 except Exception:
                     self.logger.warn("Unable to load plugin: %s v%s"
                                      % (name, info.version))

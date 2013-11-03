@@ -16,6 +16,7 @@ class CommandManager(object):
     commands = {}
     auth_handlers = []
     perm_handler = None
+    factory_manager = None
 
     # commands = {
     #   "command": {
@@ -25,9 +26,15 @@ class CommandManager(object):
     #   }
     # }
 
-    def __init__(self, factory_manager):
-        self.factory_manager = factory_manager
+    def __init__(self):
         self.logger = getLogger("Commands")
+
+    def set_factory_manager(self, factory_manager):
+        """
+        Set the factory manager. This should only ever be called by the
+        factory manager itself.
+        """
+        self.factory_manager = factory_manager
 
     def register_command(self, command, handler, owner, permission=None):
         """

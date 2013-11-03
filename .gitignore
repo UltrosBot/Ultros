@@ -47,6 +47,7 @@ config/*.yml
 config/**/*.yml
 !config/*.yml.example
 !config/**/*.yml.example
+data/
 
 # Other
 *~

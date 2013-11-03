@@ -34,6 +34,8 @@ class Singleton:
             self._instance = self._decorated()
             return self._instance
 
+    get = instance
+
     def __call__(self):
         raise TypeError('Singletons must be accessed through `Instance()`.')
 
