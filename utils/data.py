@@ -3,7 +3,6 @@ __author__ = "Gareth Coles"
 
 import yaml
 import os
-import logging
 
 from threading import Lock
 

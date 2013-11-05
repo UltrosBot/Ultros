@@ -202,7 +202,8 @@ class permissionsHandler(object):
         with self.data:
             if group in self.data["groups"]:
                 if permission not in self.data["groups"][group]["permissions"]:
-                    self.data["groups"][group]["permissions"].append(permission)
+                    self.data["groups"][group]["permissions"]\
+                        .append(permission)
                     return True
         return False
 
@@ -217,7 +218,8 @@ class permissionsHandler(object):
         with self.data:
             if group in self.data["groups"]:
                 if permission in self.data["groups"][group]["permissions"]:
-                    self.data["groups"][group]["permissions"].remove(permission)
+                    self.data["groups"][group]["permissions"]\
+                        .remove(permission)
                     return True
         return False
 
