@@ -63,34 +63,34 @@ class authHandler(object):
     def create_user(self, username, password):
         username = username.lower()
 
-        if username in self.data:
-            return False
+        with self.data:
+            if username in self.data:
+                return False
 
-        salt = mkpasswd(64, 21, 22, 21)
-        hash = self.hash(salt, password)
+            salt = mkpasswd(64, 21, 22, 21)
+            hashed = self.hash(salt, password)
 
-        self.data[username] = {
-            "password": hash,
-            "salt": salt
-        }
-
-        self.data.save()
+            self.data[username] = {
+                "password": hashed,
+                "salt": salt
+            }
 
         return True
 
     def delete_user(self, username):
         username = username.lower()
-        if username in self.data:
-            del self.data[username]
-            self.data.save()
-            return True
+        with self.data:
+            if username in self.data:
+                del self.data[username]
+                return True
         return False
 
     def login(self, user, protocol, username, password):
         username = username.lower()
-        if username not in self.data:
-            return False
-        user_data = self.data[username]
+        with self.data:
+            if username not in self.data:
+                return False
+            user_data = self.data[username]
         calculated = self.hash(username, user_data["salt"])
         real_hash = user_data["password"]
 

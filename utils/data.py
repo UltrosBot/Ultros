@@ -15,6 +15,8 @@ class Data(object):
     data = {}
 
     mutex = Lock()
+    context_mutex = Lock()
+    _context_guarded = False
 
     def __init__(self, filename):
         self.logger = getLogger("Data")
@@ -41,22 +43,47 @@ class Data(object):
         self.load()
 
     def load(self):
-        with self.mutex:
-            if not os.path.exists(self.filename):
-                open(self.filename, "w").close()
-            fh = open(self.filename, "r")
-            self.data = yaml.load(fh)
-            fh.close()
-            if not self.data:
-                self.data = {}
+        if not self._context_guarded:
+            with self.mutex:
+                self._load()
+        else:
+            self._load()
+
+    reload = load
+
+    def _load(self):
+        if not os.path.exists(self.filename):
+            open(self.filename, "w").close()
+        fh = open(self.filename, "r")
+        self.data = yaml.load(fh)
+        fh.close()
+        if not self.data:
+            self.data = {}
 
     def save(self):
-        with self.mutex:
-            data = yaml.dump(self.data)
-            fh = open(self.filename, "w")
-            fh.write(data)
-            fh.flush()
-            fh.close()
+        if not self._context_guarded:
+            with self.mutex:
+                self._save()
+        else:
+            self._save()
+
+    def _save(self):
+        data = yaml.dump(self.data)
+        fh = open(self.filename, "w")
+        fh.write(data)
+        fh.flush()
+        fh.close()
+
+    def __enter__(self):
+        with self.context_mutex:
+            self._context_guarded = True
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.save()
+        self._context_guarded = False
+        if exc_type is None:
+            return True
+        return False
 
     def __getitem__(self, y):
         return self.data.__getitem__(y)

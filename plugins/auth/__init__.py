@@ -58,7 +58,6 @@ class AuthPlugin(Plugin):
         if self.config["use-auth"]:
             try:
                 self.passwords = Data("plugins/auth/passwords.yml")
-                print "PAUSING"
             except Exception:
                 self.logger.error("Unable to load user accounts. They will be"
                                   " unavailable!")

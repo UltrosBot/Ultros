@@ -9,18 +9,17 @@ class permissionsHandler(object):
         self.data = data
         self.plugin = plugin
 
-        if not "users" in self.data:
-            self.data["users"] = {}
-        if not "groups" in self.data:
-            self.data["groups"] = {}
+        with self.data:
+            if not "users" in self.data:
+                self.data["users"] = {}
+            if not "groups" in self.data:
+                self.data["groups"] = {}
 
         if not len(self.data["groups"]):
             self.create_group("default")
             self.add_group_permissions("default",
                                        ["auth.logout",
                                         "bridge.relay"])
-
-        self.data.save()
 
     def find_username(self, username):
         username = username.lower()
@@ -42,83 +41,89 @@ class permissionsHandler(object):
     def check(self, permission, caller, source, protocol):
         permission = permission.lower()
 
+        if caller.authorized:
+            username = caller.auth_name
+            superuser = self.plugin.config["use-superuser"]
+            return self.user_has_permission(username, permission,
+                                            check_superadmin=superuser)
+        return False
+
     # User operations
     #  Modification
 
     def create_user(self, user):
         user = user.lower()
 
-        if not user in self.data["users"]:
-            newuser = {
-                "group": "default",
-                "permissions": [],
-                "options": {
-                    "superadmin": False
+        with self.data:
+            if not user in self.data["users"]:
+                newuser = {
+                    "group": "default",
+                    "permissions": [],
+                    "options": {
+                        "superadmin": False
+                    }
                 }
-            }
 
-            self.data["users"][user] = newuser
-            self.data.save()
+                self.data["users"][user] = newuser
 
-            self.plugin.logger.debug("User created: %s" % user)
+                self.plugin.logger.debug("User created: %s" % user)
 
-            return True
+                return True
         return False
 
     def remove_user(self, user):
         user = user.lower()
 
-        if not user in self.data["users"]:
-            return False
-        del self.data["users"][user]
-        self.data.save()
+        with self.data:
+            if not user in self.data["users"]:
+                return False
+            del self.data["users"][user]
         return True
 
     def set_user_option(self, user, option, value):
         user = user.lower()
         option = option.lower()
 
-        if user in self.data["users"]:
-            self.plugin.logger.debug("User exists!")
-            self.data["users"][user]["options"][option] = value
-            self.data.save()
+        with self.data:
+            if user in self.data["users"]:
+                self.plugin.logger.debug("User exists!")
+                self.data["users"][user]["options"][option] = value
+                self.plugin.logger.debug("Option %s set to %s for user %s."
+                                         % (option, value, user))
 
-            self.plugin.logger.debug("Option %s set to %s for user %s."
-                                     % (option, value, user))
-
-            return True
+                return True
         return False
 
     def add_user_permission(self, user, permission):
         user = user.lower()
         permission = permission.lower()
 
-        if user in self.data["users"]:
-            if permission not in self.data["users"]["permissions"]:
-                self.data["users"]["permissions"].append(permission)
-                self.data.save()
-                return True
+        with self.data:
+            if user in self.data["users"]:
+                if permission not in self.data["users"]["permissions"]:
+                    self.data["users"]["permissions"].append(permission)
+                    return True
         return False
 
     def remove_user_permission(self, user, permission):
         user = user.lower()
         permission = permission.lower()
 
-        if user in self.data["users"]:
-            if permission not in self.data["users"]["permissions"]:
-                self.data["users"]["permissions"].remove(permission)
-                self.data.save()
-                return True
+        with self.data:
+            if user in self.data["users"]:
+                if permission not in self.data["users"]["permissions"]:
+                    self.data["users"]["permissions"].remove(permission)
+                    return True
         return False
 
     def set_user_group(self, user, group):
         group = group.lower()
         user = user.lower()
 
-        if user in self.data["users"]:
-            self.data["users"][user]["group"] = group
-            self.data.save()
-            return True
+        with self.data:
+            if user in self.data["users"]:
+                self.data["users"][user]["group"] = group
+                return True
         return False
 
     #  Read-only
@@ -161,44 +166,44 @@ class permissionsHandler(object):
     def create_group(self, group):
         group = group.lower()
 
-        if not group in self.data["groups"]:
-            new_group = {
-                "permissions": [],
-                "options": {}
-            }
-            self.data["groups"][group] = new_group
-            self.data.save()
-            return True
+        with self.data:
+            if not group in self.data["groups"]:
+                new_group = {
+                    "permissions": [],
+                    "options": {}
+                }
+                self.data["groups"][group] = new_group
+                return True
         return False
 
     def remove_group(self, group):
         group = group.lower()
 
-        if group in self.data["groups"]:
-            del self.data["groups"][group]
-            self.data.save()
-            return True
+        with self.data:
+            if group in self.data["groups"]:
+                del self.data["groups"][group]
+                return True
         return False
 
     def set_group_option(self, group, option, value):
         group = group.lower()
         option = option.lower()
 
-        if group in self.data["groups"]:
-            self.data["groups"][group]["options"][option] = value
-            self.data.save()
-            return True
+        with self.data:
+            if group in self.data["groups"]:
+                self.data["groups"][group]["options"][option] = value
+                return True
         return False
 
     def add_group_permission(self, group, permission):
         group = group.lower()
         permission = permission.lower()
 
-        if group in self.data["groups"]:
-            if permission not in self.data["groups"][group]["permissions"]:
-                self.data["groups"][group]["permissions"].append(permission)
-                self.data.save()
-                return True
+        with self.data:
+            if group in self.data["groups"]:
+                if permission not in self.data["groups"][group]["permissions"]:
+                    self.data["groups"][group]["permissions"].append(permission)
+                    return True
         return False
 
     def add_group_permissions(self, group, permissions):
@@ -209,11 +214,11 @@ class permissionsHandler(object):
         group = group.lower()
         permission = permission.lower()
 
-        if group in self.data["groups"]:
-            if permission in self.data["groups"][group]["permissions"]:
-                self.data["groups"][group]["permissions"].remove(permission)
-                self.data.save()
-                return True
+        with self.data:
+            if group in self.data["groups"]:
+                if permission in self.data["groups"][group]["permissions"]:
+                    self.data["groups"][group]["permissions"].remove(permission)
+                    return True
         return False
 
     # Read-only
