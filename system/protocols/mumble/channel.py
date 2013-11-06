@@ -15,7 +15,7 @@ class Channel(channel.Channel):
         self.users = set()
 
     def __str__(self):
-        return u"%s (%s)" % (self.name, self.channel_id)
+        return "%s (%s)" % (self.name, self.channel_id)
 
     def add_link(self, channel_id):
         if channel_id not in self.links:

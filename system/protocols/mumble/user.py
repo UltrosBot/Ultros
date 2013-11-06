@@ -20,4 +20,4 @@ class User(user.User):
         self.recording = recording
 
     def __str__(self):
-        return u"%s (%s)" % (self.name, self.session)
+        return "%s (%s)" % (self.name, self.session)
