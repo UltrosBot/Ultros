@@ -100,6 +100,6 @@ def close_log(path):
 
     logger.info("*** LOGFILE CLOSED: %s ***\n\n" % path)
     logger.removeHandler(handler)
-    
+
     del handler
     del logger
