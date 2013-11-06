@@ -275,7 +275,13 @@ class Protocol(irc.IRCClient):
         # User-tracking stuff
         try:
             chan_obj = self.channels[channel.lower()]
-            self.channel_who_response(nick, ident, host, server, status, gecos, chan_obj)
+            self.channel_who_response(nick,
+                                      ident,
+                                      host,
+                                      server,
+                                      status,
+                                      gecos,
+                                      chan_obj)
         except KeyError:
             # We got a WHO reply for a channel we're not in - doesn't matter
             # - for user-tracking purposes.
@@ -381,7 +387,8 @@ class Protocol(irc.IRCClient):
         #TODO: Use rate-limited wrapping function for sending
         self.sendLine(query)
 
-    def get_user(self, nickname=None, ident=None, host=None, fullname=None, hostmask=None):
+    def get_user(self, nickname=None, ident=None, host=None, fullname=None,
+                 hostmask=None):
         if fullname:
             try:
                 nickname, ident, host = split_hostmask(fullname)
@@ -421,7 +428,8 @@ class Protocol(irc.IRCClient):
     def channel_modes_response(self, channel, modes):
         pass
 
-    def channel_who_response(self, nickname, ident, host, server, status, gecos, channel):
+    def channel_who_response(self, nickname, ident, host, server, status,
+                             gecos, channel):
         """User-tracking related
         :type channel: Channel
         """

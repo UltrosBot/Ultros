@@ -5,7 +5,8 @@ from system.protocols.generic import user
 
 
 class User(user.User):
-    def __init__(self, protocol, nickname, ident=None, host=None, realname=None, valid=False):
+    def __init__(self, protocol, nickname, ident=None, host=None,
+                 realname=None, valid=False):
         self.protocol = protocol
         self.nickname = nickname
         self.ident = ident
