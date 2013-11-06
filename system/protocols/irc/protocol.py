@@ -3,6 +3,7 @@
 import time
 from system.protocols.irc.channel import Channel
 from system.protocols.irc.user import User
+from utils.irc import compare_nicknames, match_hostmask, split_hostmask
 
 from utils.log import getLogger
 from system.event_manager import EventManager
@@ -121,10 +122,25 @@ class Protocol(irc.IRCClient):
     def joined(self, channel):
         """ Called when we join a channel. """
         self.log.info("Joined channel: %s" % channel)
+        chan_obj = Channel(self, channel)
+        self.channels[channel.lower()] = chan_obj
+        # User-tracking stuff
+        self.send_who(channel)
 
         # TODO: Channel objects
         event = irc_events.ChannelJoinedEvent(self, channel)
         self.event_manager.run_callback("IRC/ChannelJoined", event)
+
+    def left(self, channel):
+        """ Called when we part a channel.
+        This could include opers using /sapart. """
+        self.log.info("Parted channel: %s" % channel)
+        chan_obj = self.channels[channel.lower()]
+        # User-tracking stuff:
+        self.self_part_channel(chan_obj)
+
+        event = irc_events.ChannelPartedEvent(self, channel)
+        self.event_manager.run_callback("IRC/ChannelParted", event)
 
     def privmsg(self, user, channel, message):
         """ Called when we receive a message - channel or private. """
@@ -138,24 +154,14 @@ class Protocol(irc.IRCClient):
 
         # TODO: Throw event (General, received message - notice, [target])
 
-    def left(self, channel):
-        """ Called when we part a channel.
-        This could include opers using /sapart. """
-        self.log.info("Parted channel: %s" % channel)
-
-        event = irc_events.ChannelPartedEvent(self, channel)
-        self.event_manager.run_callback("IRC/ChannelParted", event)
-
-    def ctcpQuery(self, user, me,
-                  messages):
+    def ctcpQuery(self, user, me, messages):
         """ Called when someone does a CTCP query - channel or private.
         Needs some param analysis."""
         self.log.info("[%s] %s" % (user, messages))
 
         # TODO: Throw event (IRC, CTCP query)
 
-    def modeChanged(self, user, channel, action, modes,
-                    args):
+    def modeChanged(self, user, channel, action, modes, args):
         """ Called when someone changes a mode. Action is a bool specifying
         whether the mode was being set or unset.
             Will probably need to do some testing, mostly to see whether this
@@ -165,52 +171,73 @@ class Protocol(irc.IRCClient):
 
         # TODO: Throw event (IRC, mode changed)
 
-    def kickedFrom(self, channel, kicker,
-                   message):
+    def kickedFrom(self, channel, kicker, message):
         """ Called when we get kicked from a channel. """
         self.log.info("Kicked from %s by %s: %s" % (channel, kicker, message))
+        chan_obj = self.channels[channel.lower()]
+        # User-tracking stuff:
+        self.self_part_channel(chan_obj)
 
         # TODO: Throw event (IRC, kicked from channel)
 
-    def nickChanged(self,
-                    nick):
+    def nickChanged(self, nick):
         """ Called when our nick is forcibly changed. """
         self.log.info("Nick changed to %s" % nick)
 
         # TODO: Throw event (General, name changed)
 
-    def userJoined(self, user,
-                   channel):
+    def userJoined(self, user, channel):
         """ Called when someone else joins a channel we're in. """
         self.log.info("%s joined %s" % (user, channel))
 
         # TODO: Throw event (IRC, user joined channel)
 
-    def userLeft(self, user,
-                 channel):
+    def irc_JOIN(self, prefix, params):
+        """ Called on any join message
+        :param prefix: The user joining
+        :param params: The channel(s?) joined
+        """
+        irc.IRCClient.irc_JOIN(self, prefix, params)
+        # For some reason, userJoined only gives the user's nick
+        nickname, ident, host = split_hostmask(prefix)
+        if not compare_nicknames(nickname, self.nickname):
+            for chan in params:
+                chan = self.channels[chan.lower()]
+                self.user_join_channel(nickname, ident, host, chan)
+
+    def userLeft(self, user, channel):
         """ Called when someone else leaves a channel we're in. """
         self.log.info("%s parted %s" % (user, channel))
+        chan_obj = self.channels[channel.lower()]
+        user_obj = self.get_user(nickname=user)
+        # User-tracking stuff
+        self.user_channel_part(user_obj, chan_obj)
 
         # TODO: Throw event (IRC, user left channel)
 
-    def userKicked(self, kickee, channel, kicker,
-                   message):
+    def userKicked(self, kickee, channel, kicker, message):
         """ Called when someone else is kicked from a channel we're in. """
         self.log.info("%s was kicked from %s by %s: %s" % (
             kickee, channel, kicker, message))
+        kickee_obj = self.get_user(nickname=kickee)
+        # User-tracking stuff
+        self.user_channel_part(kickee_obj, channel)
 
         # TODO: Throw event (IRC, user kicked from channel)
 
-    def irc_QUIT(self, user,
-                 params):
+    def irc_QUIT(self, user, params):
         """ Called when someone else quits IRC. """
         quitmessage = params[0]
         self.log.info("%s has left IRC: %s" % (user, quitmessage))
+        # User-tracking stuff
+        user_obj = self.get_user(fullname=user)
+        temp_chans = set(user_obj.channels)
+        for channel in temp_chans:
+            self.user_channel_part(user_obj, channel)
 
         # TODO: Throw event (General, user disconnected)
 
-    def topicUpdated(self, user, channel,
-                     newTopic):
+    def topicUpdated(self, user, channel, newTopic):
         """ Called when the topic is updated in a channel -
         also called when we join a channel. """
         self.log.info(
@@ -218,20 +245,21 @@ class Protocol(irc.IRCClient):
 
         # TODO: Throw event (IRC, topic updated)
 
-    def irc_NICK(self, prefix,
-                 params):
+    def irc_NICK(self, prefix, params):
         """ Called when someone changes their nick.
         Surprisingly, twisted doesn't have a handler for this. """
 
         oldnick = prefix.split("!", 1)[0]
         newnick = params[0]
 
+        user_obj = self.get_user(nickname=oldnick)
+        user_obj.nickname = newnick
+
         self.log.info("%s is now known as %s" % (oldnick, newnick))
 
         # TODO: Throw event (General, user changed their nick)
 
-    def irc_RPL_WHOREPLY(self,
-                         *nargs):
+    def irc_RPL_WHOREPLY(self, *nargs):
         """ Called when we get a WHO reply from the server.
         I'm seriously wondering if we even need this. """
         data = nargs[1]
@@ -241,13 +269,21 @@ class Protocol(irc.IRCClient):
         host = data[3]
         server = data[4]
         nick = data[5]
-        status = data[6].strip("G").strip("H").strip("*")
+        status = data[6]  # .strip("G").strip("H").strip("*")
         gecos = data[7]  # Hops, realname
+
+        # User-tracking stuff
+        try:
+            chan_obj = self.channels[channel.lower()]
+            self.channel_who_response(nick, ident, host, server, status, gecos, chan_obj)
+        except KeyError:
+            # We got a WHO reply for a channel we're not in - doesn't matter
+            # - for user-tracking purposes.
+            pass
 
         # TODO: Throw event (IRC, WHO reply)
 
-    def irc_RPL_ENDOFWHO(self,
-                         *nargs):
+    def irc_RPL_ENDOFWHO(self, *nargs):
         """ Called when the server's done spamming us with WHO replies. """
         data = nargs[1]
         channel = data[1]
@@ -338,58 +374,83 @@ class Protocol(irc.IRCClient):
 
             # TODO: Throw event (IRC, unhandled message event based on command)
 
-    def self_join_channel(self, channel):
-        self.channels[channel] = Channel(self, channel)
+    def send_who(self, mask, operators_only=False):
+        query = "WHO %s" % mask
+        if operators_only:
+            query += " o"
+        #TODO: Use rate-limited wrapping function for sending
+        self.sendLine(query)
 
-    def channel_who_reply(self, nickname, ident, host, channel):
-        # Another function for naming sense and stuff, but really all we need
-        # to do is call user_channel_join() on them.
-        self.user_channel_join(nickname, ident, host, channel)
+    def get_user(self, nickname=None, ident=None, host=None, fullname=None, hostmask=None):
+        if fullname:
+            try:
+                nickname, ident, host = split_hostmask(fullname)
+            except:
+                return None
+        if ident:
+            ident = ident.lower()
+        if host:
+            host = host.lower()
+        for user in self.users:
+            if nickname and not compare_nicknames(nickname, user.nickname):
+                continue
+            if ident and ident != user.ident.lower():
+                continue
+            if host and host != user.host.lower():
+                continue
+            if hostmask and not match_hostmask(user.fullname, hostmask):
+                continue
+            return user
+        return None
 
     def self_part_channel(self, channel):
-        for user in self.channels[channel.lower()].users:
+        for user in channel.users:
             self.user_channel_part(user, channel)
         del self.channels[channel.lower()]
 
-    def user_channel_join(self, nickname, ident, host, channel):
-        # If the user is not known about, create them.
-        key = "%s@%s" % (ident, host)
-        user = None
-        for usr in self.users:
-            if ((usr.nickname == nickname and
-                 usr.ident == ident and
-                 usr.host == host)):
-                user = usr
-                break
-        else:
+    def user_join_channel(self, nickname, ident, host, channel):
+        user = self.get_user(nickname=nickname, ident=ident, host=host)
+        if user is None:
             user = User(self, nickname, ident, host)
             self.users.append(user)
-            # TODO: Throw event?: new user created - Only suggesting it so to
-            # - mirror the lost track of user one - can't see a use for it atm.
-        # Add user to channel and channel to user
-        chan = self.channels[channel.lower()]
-        user.add_channel(chan)
-        chan.add_user(user)
+        user.add_channel(channel)
+        channel.add_user(user)
+        # For convenience
+        return user
+
+    def channel_modes_response(self, channel, modes):
+        pass
+
+    def channel_who_response(self, nickname, ident, host, server, status, gecos, channel):
+        """User-tracking related
+        :type channel: Channel
+        """
+        # If the user is not known about, create them.
+        user = self.get_user(nickname=nickname, ident=ident, host=host)
+        if user is None:
+            user = self.user_join_channel(nickname, ident, host, channel)
+        if not (channel in user.channels and user in channel.users):
+            user.add_channel(channel)
+            channel.add_user(user)
+        # TODO: handle status
+        user.realname = gecos.split(" ")[-1]
 
     def user_channel_part(self, user, channel):
-        # Get channel object
-        chan = self.channels[channel.lower()]
+        """User-tracking related
+        :type channel: Channel
+        """
+        if not isinstance(user, User):
+            user = self.get_user(nickname=user)
         # Remove user from channel and channel from user
-        user.remove_channel(chan)
-        chan.remove_user(user)
+        user.remove_channel(channel)
+        channel.remove_user(user)
         # Check if they've gone off our radar
         self.user_check_lost_track(user)
 
     def user_check_lost_track(self, user):
+        """User-tracking related"""
         if len(user.channels) == 0:
+            self.log.debug("Lost track of user: %s" % user)
             self.users.remove(user)
+            user.valid = False
             # TODO: Throw event: lost track of user
-
-# TODO: Call self_join_channel() when we join a channel
-# TODO: Call channel_who_reply() for every who reply after a channel join
-# - Shouldn't do anything bad if you feed it other who replies, but it could
-# - be made to deal with those better if needed.
-# TODO: Call self_part_channel() when we part a channel (or are kicked from it)
-# TODO: Call user_channel_join() when another user joins a channel
-# TODO: Call user_channel_part() when another user parts a channel (or kicked)
-# Note: Users aren't added to channels until a WHO reply is received for them.
