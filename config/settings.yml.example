@@ -15,6 +15,7 @@ protocols:
 # List plugins to load below. Plugins are referred to by name, which you can
 # always find in that plugin's .plug file.
 plugins:
+  - Auth  # Configurable permissions and authentication system that ships with Ultros
   - Bridge  # Configurable message relaying between protocols or within a protocol
   - Web  # Extensible REST API including an API-key-based security system
 
