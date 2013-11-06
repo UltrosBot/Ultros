@@ -11,6 +11,8 @@ from system.events import irc as irc_events
 from twisted.words.protocols import irc
 from twisted.internet import reactor, ssl
 
+from kitchen.text.converters import to_bytes
+
 
 class Protocol(irc.IRCClient):
     factory = None
@@ -65,6 +67,12 @@ class Protocol(irc.IRCClient):
             )
 
         # TODO: Throw event (General, post-connection, pre-setup)
+
+    def send_unicode_line(self, data):
+        self.sendLine(to_bytes(data))
+
+    def send_unicode_msg(self, target, data, length=None):
+        self.msg(to_bytes(target), to_bytes(data), length)
 
     def receivedMOTD(self, motd):
         """ Called when we receive the MOTD. """
