@@ -15,10 +15,74 @@ class GeneralEvent(BaseEvent):
     def __init__(self, caller):
         super(GeneralEvent, self).__init__(caller)
 
-# Pre-connection
-# Post-connection, pre-setup
+
+class PreConnectEvent(GeneralEvent):
+    """
+    Thrown just before we connect. Includes the configuration of the protocol
+    that threw the event.
+    """
+
+    def __init__(self, caller, config):
+        self.config = config
+        super(PreConnectEvent, self).__init__(caller)
+
+
+class PostConnectEvent(GeneralEvent):
+    """
+    Thrown just after we connect, before we do any logging in or such.
+    Includes the configuration of the protocol that threw the event.
+    """
+
+    def __init__(self, caller, config):
+        self.config = config
+        super(PostConnectEvent, self).__init__(caller)
+
 # Pre-setup
 # Post-setup
-# Message received (+type)
+
+
+class PreMessageReceived(GeneralEvent):
+    """
+    Thrown when we receive a message, before we parse or otherwise do anything
+    with it. The following attributes are available..
+
+    - caller:    The protocol that received the message
+    - source:    The User object of the person that send the message
+    - target:    The User or Channel object of the message target.
+        This can also be None or a string. Do type-checking!
+    - message:   A string, containing the raw, un-parsed and un-sanitized
+        message. You can modify this if you need, but note that every other
+        plugin listening for this event will see the modified message.
+    - type:      The message type. This is a string, and may differ
+        between protocols.
+    - printable: A boolean that specifies whether the message should be
+        output in the logs. You can modify this; could be useful for things
+        like password inputs. Defaults to True.
+    """
+
+    def __init__(self, caller, source, target, message, typ, printable=True):
+        self.source = source
+        self.target = target
+        self.message = message
+        self.type = typ
+        self.printable = printable
+        super(PreMessageReceived, self).__init__(caller)
+
+
+class MessageReceived(GeneralEvent):
+    """
+    Thrown when we get a message. This is a "clean", parsed message, and you
+    can presume that it's already been printed to the log. See the
+    PreMessageReceived event for param info.
+    """
+
+    def __init__(self, caller, source, target, message, typ):
+        self.source = source
+        self.target = target
+        self.message = message
+        self.type = typ
+        super(MessageReceived, self).__init__(caller)
+
+
 # Name changed (self)
 # Name changed (other)
