@@ -1,4 +1,6 @@
 # coding=utf-8
+from system.protocols.irc.channel import Channel
+
 __author__ = 'Sean'
 
 from system.protocols.generic import user
@@ -14,6 +16,7 @@ class User(user.User):
         self.realname = realname
         self.valid = valid
         self.channels = set()
+        self._ranks = {}
 
     @property
     def fullname(self):
@@ -32,3 +35,11 @@ class User(user.User):
             self.protocol.log.debug(
                 "Tried to remove non-existent channel \"%s\" from user \"%s\""
                 % (channel, self))
+
+    def get_rank_in_channel(self, channel):
+        if not isinstance(channel, Channel):
+            channel = self.protocol.get_channel(channel)
+        try:
+            return self._ranks[channel]
+        except KeyError:
+            return None

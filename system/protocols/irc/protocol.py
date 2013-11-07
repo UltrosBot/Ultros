@@ -3,7 +3,7 @@
 import time
 from system.protocols.irc.channel import Channel
 from system.protocols.irc.user import User
-from utils.irc import compare_nicknames, match_hostmask, split_hostmask
+from utils.irc import IRCUtils
 
 from utils.log import getLogger
 from system.event_manager import EventManager
@@ -26,7 +26,7 @@ class Protocol(irc.IRCClient):
 
     nickname = ""
 
-    channels = {}  # key is "#channel".lower()
+    channels = {}  # key is lowercase "#channel" - use get/set/del_channel()
     users = []
 
     def __init__(self, factory, config):
@@ -37,6 +37,7 @@ class Protocol(irc.IRCClient):
         self.event_manager = EventManager.instance()
         self.log = getLogger("IRC")
         self.log.info("Setting up..")
+        self.utils = IRCUtils(self.log)
 
         self.networking = config["network"]
         self.identity = config["identity"]
@@ -123,7 +124,7 @@ class Protocol(irc.IRCClient):
         """ Called when we join a channel. """
         self.log.info("Joined channel: %s" % channel)
         chan_obj = Channel(self, channel)
-        self.channels[channel.lower()] = chan_obj
+        self.set_channel(channel, chan_obj)
         # User-tracking stuff
         self.send_who(channel)
 
@@ -135,7 +136,7 @@ class Protocol(irc.IRCClient):
         """ Called when we part a channel.
         This could include opers using /sapart. """
         self.log.info("Parted channel: %s" % channel)
-        chan_obj = self.channels[channel.lower()]
+        chan_obj = self.get_channel(channel)
         # User-tracking stuff:
         self.self_part_channel(chan_obj)
 
@@ -174,7 +175,7 @@ class Protocol(irc.IRCClient):
     def kickedFrom(self, channel, kicker, message):
         """ Called when we get kicked from a channel. """
         self.log.info("Kicked from %s by %s: %s" % (channel, kicker, message))
-        chan_obj = self.channels[channel.lower()]
+        chan_obj = self.get_channel(channel)
         # User-tracking stuff:
         self.self_part_channel(chan_obj)
 
@@ -199,16 +200,16 @@ class Protocol(irc.IRCClient):
         """
         irc.IRCClient.irc_JOIN(self, prefix, params)
         # For some reason, userJoined only gives the user's nick
-        nickname, ident, host = split_hostmask(prefix)
-        if not compare_nicknames(nickname, self.nickname):
+        nickname, ident, host = self.utils.split_hostmask(prefix)
+        if not self.utils.compare_nicknames(nickname, self.nickname):
             for chan in params:
-                chan = self.channels[chan.lower()]
+                chan = self.get_channel(chan)
                 self.user_join_channel(nickname, ident, host, chan)
 
     def userLeft(self, user, channel):
         """ Called when someone else leaves a channel we're in. """
         self.log.info("%s parted %s" % (user, channel))
-        chan_obj = self.channels[channel.lower()]
+        chan_obj = self.get_channel(channel)
         user_obj = self.get_user(nickname=user)
         # User-tracking stuff
         self.user_channel_part(user_obj, chan_obj)
@@ -274,7 +275,7 @@ class Protocol(irc.IRCClient):
 
         # User-tracking stuff
         try:
-            chan_obj = self.channels[channel.lower()]
+            chan_obj = self.get_channel(channel)
             self.channel_who_response(nick,
                                       ident,
                                       host,
@@ -304,6 +305,9 @@ class Protocol(irc.IRCClient):
             # prm is the param changed - don't bother parsing the value since
             # the it can be grabbed from self.supported with this:
             # self.supported.getFeature(prm)
+            if prm == "CASEMAPPING":
+                self.utils.case_mapping =\
+                    self.supported.getFeature("CASEMAPPING")[0]  # Tuple
             # TODO: Throw event?
 
     def irc_unknown(self, prefix, command, params):
@@ -397,11 +401,18 @@ class Protocol(irc.IRCClient):
         #TODO: Use rate-limited wrapping function for sending
         self.sendLine(query)
 
-    def get_user(self, nickname=None, ident=None, host=None, fullname=None,
+    def get_user(self, *args, **kwargs):
+        try:
+            return self.get_users(*args, **kwargs)[0]
+        except IndexError:
+            return None
+
+    def get_users(self, nickname=None, ident=None, host=None, fullname=None,
                  hostmask=None):
+        matches = []
         if fullname:
             try:
-                nickname, ident, host = split_hostmask(fullname)
+                nickname, ident, host = self.utils.split_hostmask(fullname)
             except:
                 return None
         if ident:
@@ -409,21 +420,38 @@ class Protocol(irc.IRCClient):
         if host:
             host = host.lower()
         for user in self.users:
-            if nickname and not compare_nicknames(nickname, user.nickname):
+            if (nickname and
+                    not self.utils.compare_nicknames(nickname, user.nickname)):
                 continue
             if ident and ident != user.ident.lower():
                 continue
             if host and host != user.host.lower():
                 continue
-            if hostmask and not match_hostmask(user.fullname, hostmask):
+            if (hostmask and
+                    not self.utils.match_hostmask(user.fullname, hostmask)):
                 continue
-            return user
-        return None
+            matches.append(user)
+        return matches
+
+    def get_channel(self, channel):
+        channel = self.utils.lowercase_nick_chan(channel)
+        try:
+            return self.channels[channel]
+        except KeyError:
+            return None
+
+    def set_channel(self, channel, channel_obj):
+        channel = self.utils.lowercase_nick_chan(channel)
+        self.channels[channel] = channel_obj
+
+    def del_channel(self, channel):
+        channel = self.utils.lowercase_nick_chan(channel)
+        del self.channels[channel]
 
     def self_part_channel(self, channel):
         for user in channel.users:
             self.user_channel_part(user, channel)
-        del self.channels[channel.lower()]
+        self.del_channel(channel)
 
     def user_join_channel(self, nickname, ident, host, channel):
         user = self.get_user(nickname=nickname, ident=ident, host=host)
