@@ -4,6 +4,7 @@ import re
 
 __author__ = 'rakiru'
 
+
 def split_hostmask(hostmask):
     posex = hostmask.find(u'!')
     posat = hostmask.find(u'@')
@@ -12,6 +13,7 @@ def split_hostmask(hostmask):
         raise Exception("Hostmask must be in the form '*!*@*'")
     return [hostmask[0:posex], hostmask[posex + 1: posat],
             hostmask[posat + 1:]]
+
 
 def format_string(value, values=None):
     ircvalues = {'BOLD': 'B',

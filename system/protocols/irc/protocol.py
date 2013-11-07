@@ -408,7 +408,7 @@ class Protocol(irc.IRCClient):
             return None
 
     def get_users(self, nickname=None, ident=None, host=None, fullname=None,
-                 hostmask=None):
+                  hostmask=None):
         matches = []
         if fullname:
             try:
