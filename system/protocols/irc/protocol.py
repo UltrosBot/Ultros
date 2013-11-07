@@ -296,6 +296,16 @@ class Protocol(irc.IRCClient):
 
         # TODO: Throw event (IRC, end of WHO reply)
 
+    def irc_RPL_ISUPPORT(self, prefix, params):
+        irc.IRCClient.irc_RPL_ISUPPORT(self, prefix, params)
+        for param in params[1:-1]:
+            self.log.debug("RPL_ISUPPORT received: %s" % param)
+            prm = param.split("=")[0].strip("-")
+            # prm is the param changed - don't bother parsing the value since
+            # the it can be grabbed from self.supported with this:
+            # self.supported.getFeature(prm)
+            # TODO: Throw event?
+
     def irc_unknown(self, prefix, command, params):
         """ Packets that aren't handled elsewhere get passed to this function.
         """
