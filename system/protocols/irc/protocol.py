@@ -456,7 +456,7 @@ class Protocol(irc.IRCClient):
     def user_join_channel(self, nickname, ident, host, channel):
         user = self.get_user(nickname=nickname, ident=ident, host=host)
         if user is None:
-            user = User(self, nickname, ident, host)
+            user = User(self, nickname, ident, host, is_tracked=True)
             self.users.append(user)
         user.add_channel(channel)
         channel.add_user(user)
@@ -498,5 +498,5 @@ class Protocol(irc.IRCClient):
         if len(user.channels) == 0:
             self.log.debug("Lost track of user: %s" % user)
             self.users.remove(user)
-            user.valid = False
+            user.is_tracked = False
             # TODO: Throw event: lost track of user
