@@ -115,7 +115,7 @@ class Protocol(protocol.Protocol):
                                         Protocol.VERSION_MINOR,
                                         Protocol.VERSION_PATCH)
         version.os = platform.system()
-        version.os_version = "Mumble 1.2.3 Twisted Protocol"
+        version.os_version = "Mumble %s Twisted Protocol" % version.release
 
         # Here we authenticate
         auth = Mumble_pb2.Authenticate()
