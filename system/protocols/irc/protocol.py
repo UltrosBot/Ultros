@@ -146,12 +146,26 @@ class Protocol(irc.IRCClient):
     def privmsg(self, user, channel, message):
         """ Called when we receive a message - channel or private. """
         self.log.info("<%s:%s> %s" % (user, channel, message))
+        user_obj = None
+        try:
+            user_obj = self._get_user_from_user_string(user)
+        except:
+            # Privmsg from the server itself and things (if that happens)
+            self.log.debug("Notice from irregular user: %s" % user)
+            user_obj = User(self, nickname=user, is_tracked=False)
 
         # TODO: Throw event (General, received message - normal, [target])
 
     def noticed(self, user, channel, message):
         """ Called when we receive a notice - channel or private. """
         self.log.info("-%s:%s- %s" % (user, channel, message))
+        user_obj = None
+        try:
+            user_obj = self._get_user_from_user_string(user)
+        except:
+            # Notices from the server itself and things
+            self.log.debug("Notice from irregular user: %s" % user)
+            user_obj = User(self, nickname=user, is_tracked=False)
 
         # TODO: Throw event (General, received message - notice, [target])
 
@@ -159,6 +173,13 @@ class Protocol(irc.IRCClient):
         """ Called when someone does a CTCP query - channel or private.
         Needs some param analysis."""
         self.log.info("[%s] %s" % (user, messages))
+        user_obj = None
+        try:
+            user_obj = self._get_user_from_user_string(user)
+        except:
+            # CTCP from the server itself and things (if that happens)
+            self.log.debug("CTCP from irregular user: %s" % user)
+            user_obj = User(self, nickname=user, is_tracked=False)
 
         # TODO: Throw event (IRC, CTCP query)
 
@@ -400,6 +421,13 @@ class Protocol(irc.IRCClient):
             query += " o"
         #TODO: Use rate-limited wrapping function for sending
         self.sendLine(query)
+
+    def _get_user_from_user_string(self, user_string, create_temp=True):
+        nick, ident, host = self.utils.split_hostmask(user_string)
+        user = self.get_user(nickname=nick, ident=ident, host=host)
+        if user is None and create_temp:
+            user = User(self, nick, ident, host, is_tracked=False)
+        return user
 
     def get_user(self, *args, **kwargs):
         try:
