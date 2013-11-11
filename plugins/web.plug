@@ -1,9 +1,0 @@
-core:
-  name: Web
-  module: web
-info:
-  description: A plugin which provides a REST API and (maybe) a web interface
-  author: Gareth Coles
-  version: 0.0.1
-  website: https://github.com/McBlockitHelpbot/Ultros/tree/master/plugins/web
-  copyright: See Ultros' license
