@@ -10,10 +10,11 @@ from system.event_manager import EventManager
 from system.events import irc as irc_events
 
 from twisted.words.protocols import irc
-from twisted.internet import reactor, ssl
+from twisted.internet import reactor
 
 from kitchen.text.converters import to_bytes
 
+ssl = None
 
 class Protocol(irc.IRCClient):
     factory = None
@@ -29,14 +30,25 @@ class Protocol(irc.IRCClient):
     channels = {}  # key is lowercase "#channel" - use get/set/del_channel()
     users = []
 
+    ssl = False
+
     def __init__(self, factory, config):
-        # Some notes for implementation..
-        # Quakenet uses AUTH username password
+        self.log = getLogger("IRC")
+        self.log.info("Setting up..")
+
+        try:
+            from twisted.internet import ssl
+        except ImportError:
+            ssl = False
+            self.ssl = False
+            self.log.info("Unable to import the SSL library. "
+                          "SSL will not be available.")
+        else:
+            self.ssl = True
+
         self.factory = factory
         self.config = config
         self.event_manager = EventManager.instance()
-        self.log = getLogger("IRC")
-        self.log.info("Setting up..")
         self.utils = IRCUtils(self.log)
 
         self.networking = config["network"]
@@ -50,7 +62,12 @@ class Protocol(irc.IRCClient):
 
         # TODO: Throw event (General, pre-connection)
 
-        if self.networking["ssl"]:
+        if self.networking["ssl"] and not self.ssl:
+            self.log.warn("SSL is not available but was requested in the "
+                          "configuration. Attempting to connect "
+                          "without SSL.")
+
+        if self.networking["ssl"] and self.ssl:
             self.log.debug("Connecting with SSL")
             reactor.connectSSL(
                 self.networking["address"],

@@ -10,7 +10,11 @@ __author__ = 'Gareth Coles'
 import os
 import urllib
 import urllib2
+import shutil
 import yaml
+
+from distutils.version import StrictVersion
+from utils.data import Data
 
 
 class Packages(object):
@@ -18,10 +22,14 @@ class Packages(object):
     """
     Class responsible for loading up plugin info, retrieving files
     and generally handling GitHub and the filesystem.
+
+    I was a little lazy in writing this - but plugins aren't really supposed
+    to use this anyway. Of course, that doesn't mean they can't!
     """
 
     data = {}
     packages = []
+    config = None
 
     base_file_url = "https://raw.github.com/McBlockitHelpbot/Ultros-contrib/" \
                     "master/"
@@ -34,6 +42,10 @@ class Packages(object):
         info_url = self.base_file_url + self.info_file
         response = urllib2.urlopen(info_url)
         data = response.read()
+
+        self.config = Data("packages.yml")
+        if len(self.config) == 0:
+            self.config["installed"] = {}
 
         self.data = yaml.load(data)
         self.packages = sorted(self.data.keys())
@@ -66,6 +78,58 @@ class Packages(object):
 
             return yaml.load(data)
         return None
+
+    def package_installed(self, package):
+        return package in self.config["installed"]
+
+    def install_package(self, package):
+        if self.package_installed(package):
+            raise ValueError("Package '%s' is already installed"
+                             % package)
+        info = self.get_package_info(package)
+        files = info["files"]
+
+        for file in files:
+            if os.path.exists(file):
+                raise ValueError("File `%s` conflicts with a core file or one "
+                                 "from another package" % file)
+
+        for file in files:
+            if file[-1] == "/":
+                os.mkdir(file)
+            else:
+                self._get_file(package + "/", file)
+
+        with self.config:
+            self.config["installed"][package] =\
+                info["current_version"]["number"]
+
+    def update_package(self, package):
+        if not self.package_installed(package):
+            raise ValueError("Package '%s' is not installed"
+                             % package)
+
+        self.uninstall_package(package)
+        self.install_package(package)
+
+    def uninstall_package(self, package):
+        if not self.package_installed(package):
+            raise ValueError("Package '%s' is not installed"
+                             % package)
+
+        info = self.get_package_info(package)
+        files = info["files"]
+        files.reverse()
+
+        for file in files:
+            if os.path.exists(file):
+                if os.path.isdir(file):
+                    shutil.rmtree(file)
+                else:
+                    os.remove(file)
+
+        with self.config:
+            del self.config["installed"][package]
 
     def __len__(self):
         return len(self.data)

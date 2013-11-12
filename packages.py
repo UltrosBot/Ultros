@@ -118,6 +118,8 @@ def main(args):
         print "=== Information ==="
         print "Name: %s" % info["name"]
         print "Latest version: v%s" % info["current_version"]["number"]
+        if packages.package_installed(package):
+            print "Installed: v%s" % packages.config["installed"][package]
         print "Files: %s" % len(info["files"])
         print "Documentation: %s" % info["documentation"]
         print ""
@@ -128,8 +130,47 @@ def main(args):
         print "- %s other versions." % len(versions.keys())
         print ""
         print info["current_version"]["info"]
-    else:
-        print "The '%s' operation isn't done yet." % operation
+    elif operation == "install":
+        if len(args) < 2:
+            print ">> Syntax: 'python packages.py install <package>'"
+            print ">> Try 'python packages.py help' if you're stuck"
+            return exit(1)
+
+        package = args[1]
+
+        print ">> Installing package '%s'." % package
+
+        if packages.package_installed(package):
+            print ">> Package is already installed. Nothing to do."
+            return exit(1)
+
+        try:
+            packages.install_package(package)
+        except Exception as e:
+            print ">> Error installing package: %s" % e
+            return exit(1)
+        print ">> Version %s installed successfully." \
+              % packages.config["installed"][package]
+    elif operation == "uninstall":
+        if len(args) < 2:
+            print ">> Syntax: 'python packages.py uninstall <package>'"
+            print ">> Try 'python packages.py help' if you're stuck"
+            return exit(1)
+
+        package = args[1]
+
+        print ">> Uninstalling package '%s'." % package
+
+        if not packages.package_installed(package):
+            print ">> Package is not installed. Nothing to do."
+            return exit(1)
+
+        try:
+            packages.uninstall_package(package)
+        except Exception as e:
+            print ">> Error uninstalling package: %s" % e
+            return exit(1)
+        print ">> Package uninstalled successfully."
 
 if __name__ == "__main__":
     args = sys.argv[1:]
