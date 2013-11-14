@@ -16,6 +16,7 @@ from kitchen.text.converters import to_bytes
 
 ssl = None
 
+
 class Protocol(irc.IRCClient):
     factory = None
     config = None

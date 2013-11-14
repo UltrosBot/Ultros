@@ -13,7 +13,6 @@ import urllib2
 import shutil
 import yaml
 
-from distutils.version import StrictVersion
 from utils.data import Data
 
 
