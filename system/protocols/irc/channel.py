@@ -10,6 +10,7 @@ class Channel(channel.Channel):
         self.protocol = protocol
         self.name = name
         self.users = set()
+        self._modes = {}
 
     def __str__(self):
         return self.name
@@ -25,3 +26,27 @@ class Channel(channel.Channel):
             self.protocol.log.debug(
                 "Tried to remove non-existent user \"%s\" from channel \"%s\""
                 % (user, self))
+
+    def set_mode(self, mode, arg=None):
+        """
+        Sets a mode to the channel, along with an optional parameter.
+        """
+        self._modes[mode] = arg
+
+    def remove_mode(self, mode):
+        try:
+            del self._modes[mode]
+        except KeyError:
+            self.protocol.log.debug(
+                "Tried to remove non-existent mode \"%s\" from channel \"%s\""
+                % (mode, self))
+
+    def get_mode(self, mode):
+        """
+        Returns the parameter of a mode.
+        Throws IndexError if mode doesn't exist.
+        """
+        return self._modes[mode]
+
+    def has_mode(self, mode):
+        return mode in self._modes

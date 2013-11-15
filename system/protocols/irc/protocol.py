@@ -4,6 +4,7 @@ import time
 import logging
 
 from system.protocols.irc.channel import Channel
+from system.protocols.irc.rank import Rank, Ranks
 from system.protocols.irc.user import User
 from utils.irc import IRCUtils
 
@@ -56,12 +57,10 @@ class Protocol(irc.IRCClient):
         self.event_manager = EventManager.instance()
         self.utils = IRCUtils(self.log)
         # Three dicts for easier lookup
-        self._rank_prefixes_by_mode = {}
-        self._rank_prefixes_by_symbol = {}
-        self._rank_prefixes_by_order = {}
+        self.ranks = Ranks()
         # Default prefixes in case the server doesn't send us a RPL_ISUPPORT
-        self._add_rank("o", "@", 0)
-        self._add_rank("v", "+", 1)
+        self.ranks.add_rank("o", "@", 0)
+        self.ranks.add_rank("v", "+", 1)
 
         self.networking = config["network"]
         self.identity = config["identity"]
@@ -188,6 +187,25 @@ class Protocol(irc.IRCClient):
             self.log.debug("Notice from irregular user: %s" % user)
             user_obj = User(self, nickname=user, is_tracked=False)
 
+        # TODO: Remove this piece of debugging code:
+        if message[0] == "!":
+            split = message.split(" ")
+            command = split[0][1:].lower()
+            args = split[1:]
+            if command == "breakpoint":
+                foo = "There is a breakpoint on this line for rakiru"
+            elif command == "users":
+                for user in self.users:
+                    print user
+                    for chan, ranks in user._ranks.iteritems():
+                        print chan
+                        for rank in ranks:
+                            print rank
+            elif command == "channels":
+                for channel in self.channels:
+                    print channel
+                    print channel._modes
+
         # TODO: Throw event (General, received message - normal, [target])
 
     def noticed(self, user, channel, message):
@@ -218,12 +236,17 @@ class Protocol(irc.IRCClient):
         # TODO: Throw event (IRC, CTCP query)
 
     def modeChanged(self, user, channel, action, modes, args):
-        """ Called when someone changes a mode. Action is a bool specifying
+        """
+        Called when someone changes a mode. Action is a bool specifying
         whether the mode was being set or unset.
-            Will probably need to do some testing, mostly to see whether this
-            is called for umodes as well. """
+        If it's a usermode, channel is the user being changed.
+
+        Note: If it's a user-mode, channel_obj is set to None.
+        """
         self.log.info("%s sets mode %s: %s%s %s" % (
             user, channel, "+" if action else "-", modes, args))
+
+        # Get user/channel objects
         try:
             user_obj = self._get_user_from_user_string(user)
         except:
@@ -233,14 +256,32 @@ class Protocol(irc.IRCClient):
         channel_obj = None
         if not self.utils.compare_nicknames(self.nickname, channel):
             channel_obj = self.get_channel(channel)
+
+        # Handle the mode changes
         for x in xrange(len(modes)):
-            # TODO: Finish this shit - my mind's derp atm
-            # Clean up above then actually store channel modes
-            # Certain channel modes (+o, etc) are currently stored as user
-            # ranks. Perhaps move them out of User and into Channel modes
-            # exclusively? Either way, as it currently stands, users cannot
-            # have more than one rank mode, which is obviously wrong.
-            pass
+            if channel_obj is None:
+                # User mode (almost definitely always ourself)
+                # TODO: Handle this (usermodes)
+                pass
+            elif modes[x] in self.ranks.modes:
+                # Rank channel mode
+                user_obj = self.get_user(args[x])
+                if user_obj:
+                    rank = self.ranks.by_mode(modes[x])
+                    if action:
+                        user_obj.add_rank_in_channel(channel, rank)
+                    else:
+                        user_obj.remove_rank_in_channel(channel, rank)
+                else:
+                    self.log.warning(
+                        "Rank mode %s set on invalid user %s in channel %s"
+                        % (modes[x], args[x], channel))
+            else:
+                # Other channel mode
+                if action:
+                    channel_obj.set_mode(modes[x], args[x])
+                else:
+                    channel_obj.remove_mode(modes[x])
 
         # TODO: Throw event (IRC, mode changed)
 
@@ -382,11 +423,9 @@ class Protocol(irc.IRCClient):
                     self.supported.getFeature("CASEMAPPING")[0]  # Tuple
             elif prm == "PREFIX":
                 # Remove the default prefixes before storing the new ones
-                self._rank_prefixes_by_mode = {}
-                self._rank_prefixes_by_symbol = {}
-                self._rank_prefixes_by_order = {}
+                self.ranks = Ranks()
                 for k, v in self.supported.getFeature("PREFIX").iteritems():
-                    self._add_rank(k, v[0], v[1])
+                    self.ranks.add_rank(k, v[0], v[1])
             # TODO: Throw event?
 
     def irc_unknown(self, prefix, command, params):
@@ -573,10 +612,9 @@ class Protocol(irc.IRCClient):
                 pass
             elif s == "*":
                 user.is_oper = True
-                pass
-            elif s in self._rank_prefixes_by_symbol.keys():
-                mode = self._rank_prefixes_by_symbol[s]["mode"]
-                user.set_rank_in_channel(channel, mode)
+            elif s in self.ranks.symbols:
+                rank = self.ranks.by_symbol(s)
+                user.add_rank_in_channel(channel, rank)
             else:
                 # A bunch of ircd-specific stuff can appear here. We have no
                 # need for it, but plugins could listen for WHO replies
@@ -606,15 +644,3 @@ class Protocol(irc.IRCClient):
             self.users.remove(user)
             user.is_tracked = False
             # TODO: Throw event: lost track of user
-
-    # TODO: Move rank stuff into separate class? Would allow rank logic such as
-    # - is_oper() to be in a central place, rather than in User and such.
-    def _add_rank(self, mode, symbol, order):
-        rank = {
-            "mode" : mode,
-            "symbol" : symbol,
-            "order" : order
-        }
-        self._rank_prefixes_by_mode[mode] = rank
-        self._rank_prefixes_by_symbol[symbol] = rank
-        self._rank_prefixes_by_order[order] = rank

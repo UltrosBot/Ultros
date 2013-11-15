@@ -37,17 +37,38 @@ class User(user.User):
                 "Tried to remove non-existent channel \"%s\" from user \"%s\""
                 % (channel, self))
 
-    def get_rank_in_channel(self, channel):
+    def get_ranks_in_channel(self, channel):
         if isinstance(channel, Channel):
             channel = channel.name
         channel = self.protocol.utils.lowercase_nick_chan(channel)
         try:
-            return self._ranks[channel]
+            return set(self._ranks[channel])
         except KeyError:
-            return None
+            return []
 
-    def set_rank_in_channel(self, channel, rank):
+    def get_highest_rank_in_channel(self, channel):
+        ranks = self.get_ranks_in_channel(channel)
+        highest_rank = None
+        for rank in ranks:
+            if rank["order"] > highest_rank:
+                highest_rank = rank
+        return highest_rank
+
+    def add_rank_in_channel(self, channel, rank):
         if isinstance(channel, Channel):
             channel = channel.name
         channel = self.protocol.utils.lowercase_nick_chan(channel)
-        self._ranks[channel] = rank
+        if not channel in self._ranks:
+            self._ranks[channel] = set()
+        self._ranks[channel].add(rank)
+
+    def remove_rank_in_channel(self, channel, rank):
+        if isinstance(channel, Channel):
+            channel = channel.name
+        channel = self.protocol.utils.lowercase_nick_chan(channel)
+        try:
+            self._ranks[channel].remove(rank)
+        except KeyError:
+            # Note: This can be thrown either by the dict lookup or the set
+            # - remove()
+            pass
