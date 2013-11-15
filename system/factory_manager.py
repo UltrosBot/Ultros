@@ -138,4 +138,3 @@ class Manager(object):
             del self.factories[protocol]
             return True
         return False
-
