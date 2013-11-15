@@ -1,4 +1,5 @@
 # coding=utf-8
+
 __author__ = 'Sean'
 
 from system.protocols.generic import channel
@@ -24,6 +25,3 @@ class Channel(channel.Channel):
             self.protocol.log.debug(
                 "Tried to remove non-existent user \"%s\" from channel \"%s\""
                 % (user, self))
-
-    def get_user_rank(self, user):
-        return user.get_rank_in_channel(self.name)

@@ -55,6 +55,13 @@ class Protocol(irc.IRCClient):
         self.config = config
         self.event_manager = EventManager.instance()
         self.utils = IRCUtils(self.log)
+        # Three dicts for easier lookup
+        self._rank_prefixes_by_mode = {}
+        self._rank_prefixes_by_symbol = {}
+        self._rank_prefixes_by_order = {}
+        # Default prefixes in case the server doesn't send us a RPL_ISUPPORT
+        self._add_rank("o", "@", 0)
+        self._add_rank("v", "+", 1)
 
         self.networking = config["network"]
         self.identity = config["identity"]
@@ -217,6 +224,23 @@ class Protocol(irc.IRCClient):
             is called for umodes as well. """
         self.log.info("%s sets mode %s: %s%s %s" % (
             user, channel, "+" if action else "-", modes, args))
+        try:
+            user_obj = self._get_user_from_user_string(user)
+        except:
+            # Mode change from the server itself and things
+            self.log.debug("Mode change from irregular user: %s" % user)
+            user_obj = User(self, nickname=user, is_tracked=False)
+        channel_obj = None
+        if not self.utils.compare_nicknames(self.nickname, channel):
+            channel_obj = self.get_channel(channel)
+        for x in xrange(len(modes)):
+            # TODO: Finish this shit - my mind's derp atm
+            # Clean up above then actually store channel modes
+            # Certain channel modes (+o, etc) are currently stored as user
+            # ranks. Perhaps move them out of User and into Channel modes
+            # exclusively? Either way, as it currently stands, users cannot
+            # have more than one rank mode, which is obviously wrong.
+            pass
 
         # TODO: Throw event (IRC, mode changed)
 
@@ -311,15 +335,15 @@ class Protocol(irc.IRCClient):
     def irc_RPL_WHOREPLY(self, *nargs):
         """ Called when we get a WHO reply from the server.
         I'm seriously wondering if we even need this. """
-        data = nargs[1]
+        data_ = nargs[1]
 
-        channel = data[1]
-        ident = data[2]  # Starts with a ~ if there's no identd present
-        host = data[3]
-        server = data[4]
-        nick = data[5]
-        status = data[6]  # .strip("G").strip("H").strip("*")
-        gecos = data[7]  # Hops, realname
+        channel = data_[1]
+        ident = data_[2]  # Starts with a ~ if there's no identd present
+        host = data_[3]
+        server = data_[4]
+        nick = data_[5]
+        status = data_[6]  # .strip("G").strip("H").strip("*")
+        gecos = data_[7]  # Hops, realname
 
         # User-tracking stuff
         try:
@@ -340,8 +364,8 @@ class Protocol(irc.IRCClient):
 
     def irc_RPL_ENDOFWHO(self, *nargs):
         """ Called when the server's done spamming us with WHO replies. """
-        data = nargs[1]
-        channel = data[1]
+        data_ = nargs[1]
+        channel = data_[1]
 
         # TODO: Throw event (IRC, end of WHO reply)
 
@@ -356,6 +380,13 @@ class Protocol(irc.IRCClient):
             if prm == "CASEMAPPING":
                 self.utils.case_mapping =\
                     self.supported.getFeature("CASEMAPPING")[0]  # Tuple
+            elif prm == "PREFIX":
+                # Remove the default prefixes before storing the new ones
+                self._rank_prefixes_by_mode = {}
+                self._rank_prefixes_by_symbol = {}
+                self._rank_prefixes_by_order = {}
+                for k, v in self.supported.getFeature("PREFIX").iteritems():
+                    self._add_rank(k, v[0], v[1])
             # TODO: Throw event?
 
     def irc_unknown(self, prefix, command, params):
@@ -519,6 +550,7 @@ class Protocol(irc.IRCClient):
         return user
 
     def channel_modes_response(self, channel, modes):
+        self.log.debug("Modes for %s: %s" % (channel, modes))
         pass
 
     def channel_who_response(self, nickname, ident, host, server, status,
@@ -534,6 +566,25 @@ class Protocol(irc.IRCClient):
             user.add_channel(channel)
             channel.add_user(user)
         # TODO: handle status
+        for s in status:
+            if s in "HG":
+                # Here/Gone
+                # TODO: Handle H/G status?
+                pass
+            elif s == "*":
+                user.is_oper = True
+                pass
+            elif s in self._rank_prefixes_by_symbol.keys():
+                mode = self._rank_prefixes_by_symbol[s]["mode"]
+                user.set_rank_in_channel(channel, mode)
+            else:
+                # A bunch of ircd-specific stuff can appear here. We have no
+                # need for it, but plugins could listen for WHO replies
+                # themselves if they really need, or we can add stuff if a
+                # proper use/specification is given.
+                self.log.debug(
+                    "Unexpected status in WHO response for user %s: %s" %
+                    (user, s))
         user.realname = gecos.split(" ")[-1]
 
     def user_channel_part(self, user, channel):
@@ -555,3 +606,15 @@ class Protocol(irc.IRCClient):
             self.users.remove(user)
             user.is_tracked = False
             # TODO: Throw event: lost track of user
+
+    # TODO: Move rank stuff into separate class? Would allow rank logic such as
+    # - is_oper() to be in a central place, rather than in User and such.
+    def _add_rank(self, mode, symbol, order):
+        rank = {
+            "mode" : mode,
+            "symbol" : symbol,
+            "order" : order
+        }
+        self._rank_prefixes_by_mode[mode] = rank
+        self._rank_prefixes_by_symbol[symbol] = rank
+        self._rank_prefixes_by_order[order] = rank

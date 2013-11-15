@@ -8,12 +8,13 @@ from system.protocols.generic import user
 
 class User(user.User):
     def __init__(self, protocol, nickname, ident=None, host=None,
-                 realname=None, is_tracked=False):
+                 realname=None, is_oper=False, is_tracked=False):
         self.protocol = protocol
         self.nickname = nickname
         self.ident = ident
         self.host = host
         self.realname = realname
+        self.is_oper = is_oper
         self.is_tracked = is_tracked
         self.channels = set()
         self._ranks = {}
@@ -37,9 +38,16 @@ class User(user.User):
                 % (channel, self))
 
     def get_rank_in_channel(self, channel):
-        if not isinstance(channel, Channel):
-            channel = self.protocol.get_channel(channel)
+        if isinstance(channel, Channel):
+            channel = channel.name
+        channel = self.protocol.utils.lowercase_nick_chan(channel)
         try:
             return self._ranks[channel]
         except KeyError:
             return None
+
+    def set_rank_in_channel(self, channel, rank):
+        if isinstance(channel, Channel):
+            channel = channel.name
+        channel = self.protocol.utils.lowercase_nick_chan(channel)
+        self._ranks[channel] = rank
