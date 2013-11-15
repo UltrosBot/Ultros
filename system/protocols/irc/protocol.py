@@ -67,8 +67,10 @@ class Protocol(irc.IRCClient):
         # TODO: Throw event (General, pre-connection)
 
         if self.networking["ssl"] and not self.ssl:
-            self.log.warn("SSL is not available but was requested in the "
-                          "configuration. ")
+            self.log.error("SSL is not available but was requested in the "
+                           "configuration.")
+            self.log.error("IRC will be unavailable until SSL is fixed or is"
+                           "disabled in the configuration.")
 
             self.factory.manager.remove_protocol("irc")
             del self.factory
