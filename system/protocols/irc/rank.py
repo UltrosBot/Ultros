@@ -37,6 +37,7 @@ class Rank(object):
     def __ne__(self, other):
         return self.order != other.order
 
+
 class Ranks(object):
     def __init__(self):
         self._ranks_by_mode = {}

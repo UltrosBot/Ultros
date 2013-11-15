@@ -4,7 +4,7 @@ import time
 import logging
 
 from system.protocols.irc.channel import Channel
-from system.protocols.irc.rank import Rank, Ranks
+from system.protocols.irc.rank import Ranks
 from system.protocols.irc.user import User
 from utils.irc import IRCUtils
 
