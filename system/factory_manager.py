@@ -132,3 +132,10 @@ class Manager(object):
                 output_exception(self.logger, logging.ERROR)
 
         reactor.run()
+
+    def remove_protocol(self, protocol):
+        if protocol in self.factories:
+            del self.factories[protocol]
+            return True
+        return False
+

@@ -1,11 +1,14 @@
 # coding=utf-8
 
 import time
+import logging
+
 from system.protocols.irc.channel import Channel
 from system.protocols.irc.user import User
 from utils.irc import IRCUtils
 
 from utils.log import getLogger
+from utils.misc import output_exception
 from system.event_manager import EventManager
 from system.events import irc as irc_events
 
@@ -13,8 +16,6 @@ from twisted.words.protocols import irc
 from twisted.internet import reactor
 
 from kitchen.text.converters import to_bytes
-
-ssl = None
 
 
 class Protocol(irc.IRCClient):
@@ -42,8 +43,10 @@ class Protocol(irc.IRCClient):
         except ImportError:
             ssl = False
             self.ssl = False
-            self.log.info("Unable to import the SSL library. "
+            self.log.warn("Unable to import the SSL library. "
                           "SSL will not be available.")
+
+            output_exception(self.log, logging.WARN)
         else:
             self.ssl = True
 
@@ -65,10 +68,13 @@ class Protocol(irc.IRCClient):
 
         if self.networking["ssl"] and not self.ssl:
             self.log.warn("SSL is not available but was requested in the "
-                          "configuration. Attempting to connect "
-                          "without SSL.")
+                          "configuration. ")
 
-        if self.networking["ssl"] and self.ssl:
+            self.factory.manager.remove_protocol("irc")
+            del self.factory
+            return
+
+        if self.networking["ssl"]:
             self.log.debug("Connecting with SSL")
             reactor.connectSSL(
                 self.networking["address"],
