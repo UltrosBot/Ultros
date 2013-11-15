@@ -40,6 +40,7 @@ class Protocol(irc.IRCClient):
 
         try:
             from twisted.internet import ssl
+            raise ImportError("For testing")
         except ImportError:
             ssl = False
             self.ssl = False
@@ -69,7 +70,7 @@ class Protocol(irc.IRCClient):
         if self.networking["ssl"] and not self.ssl:
             self.log.error("SSL is not available but was requested in the "
                            "configuration.")
-            self.log.error("IRC will be unavailable until SSL is fixed or is"
+            self.log.error("IRC will be unavailable until SSL is fixed or is "
                            "disabled in the configuration.")
 
             self.factory.manager.remove_protocol("irc")

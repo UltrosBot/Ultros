@@ -19,6 +19,9 @@ class Factory(protocol.ClientFactory):
         self.logger = getLogger("*" + protocol_name)
         self.config = config
         self.manager = manager
+        self.name = protocol_name
+        self.protocol_class = None
+        self.protocol = None
         manager_config = manager.main_config
         reconnections = manager_config["reconnections"]
         self.r_delay = int(reconnections["delay"])
@@ -27,16 +30,17 @@ class Factory(protocol.ClientFactory):
         self.r_on_failure = reconnections["on-failure"]
         self.r_reset = reconnections["reset-on-success"]
 
+    def setup(self):
         try:
             current_protocol = importlib.import_module(
-                "system.protocols.%s.protocol" % protocol_name)
+                "system.protocols.%s.protocol" % self.name)
             self.protocol_class = current_protocol
         except ImportError:
             self.logger.error(
-                "Unable to import protocol %s" % protocol_name)
+                "Unable to import protocol %s" % self.name)
             output_exception(self.logger, logging.ERROR)
         else:
-            self.protocol = current_protocol.Protocol(self, config)
+            self.protocol = current_protocol.Protocol(self, self.config)
 
     def buildProtocol(self, addr):
         return self.protocol

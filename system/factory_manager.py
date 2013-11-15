@@ -123,6 +123,7 @@ class Manager(object):
 
             try:
                 self.factories[protocol] = Factory(protocol, config, self)
+                self.factories[protocol].setup()
                 self.logger.info("Finished setting up protocol '%s'."
                                  % protocol)
             except Exception:
@@ -130,6 +131,11 @@ class Manager(object):
                     "Unable to create factory for the '%s' protocol!"
                     % protocol)
                 output_exception(self.logger, logging.ERROR)
+
+        if not len(self.factories):
+            self.logger.info("It seems like no protocols are active. Shutting "
+                             "down..")
+            return
 
         reactor.run()
 
