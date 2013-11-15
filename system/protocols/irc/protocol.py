@@ -161,7 +161,7 @@ class Protocol(irc.IRCClient):
         # User-tracking stuff
         self.send_who(channel)
 
-        # TODO: Channel objects
+        # TODO: Use channel object in event
         event = irc_events.ChannelJoinedEvent(self, channel)
         self.event_manager.run_callback("IRC/ChannelJoined", event)
 
@@ -604,7 +604,6 @@ class Protocol(irc.IRCClient):
         if not (channel in user.channels and user in channel.users):
             user.add_channel(channel)
             channel.add_user(user)
-        # TODO: handle status
         for s in status:
             if s in "HG":
                 # Here/Gone
