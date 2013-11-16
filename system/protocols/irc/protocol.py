@@ -566,7 +566,8 @@ class Protocol(irc.IRCClient):
 
             event = irc_events.ChannelCreationDetailsEvent(self, chan_obj,
                                                            user_obj, when)
-            self.event_manager.run_callback("IRC/ChannelCreationDetails", event)
+            self.event_manager.run_callback("IRC/ChannelCreationDetails",
+                                            event)
 
 ###############################################################################
 
