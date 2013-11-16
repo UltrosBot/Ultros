@@ -72,3 +72,7 @@ class User(user.User):
             # Note: This can be thrown either by the dict lookup or the set
             # - remove()
             pass
+
+    def respond(self, message):
+        message = message.replace("{CHARS}", self.protocol.control_chars)
+        self.protocol.send_notice(self.nickname, message)

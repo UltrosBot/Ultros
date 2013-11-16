@@ -18,7 +18,8 @@ class permissionsHandler(object):
         if not len(self.data["groups"]):
             self.create_group("default")
             self.add_group_permissions("default",
-                                       ["auth.logout",
+                                       ["auth.login",
+                                        "auth.logout",
                                         "bridge.relay"])
 
     def find_username(self, username):
@@ -40,6 +41,9 @@ class permissionsHandler(object):
 
     def check(self, permission, caller, source, protocol):
         permission = permission.lower()
+
+        if caller is None:
+            return self.group_has_permission("default", permission)
 
         if caller.authorized:
             username = caller.auth_name

@@ -2,6 +2,10 @@ __author__ = 'Sean'
 
 
 class User(object):
+
+    authorized = False
+    auth_name = ""
+
     def __init__(self):
         self.protocol = None
 

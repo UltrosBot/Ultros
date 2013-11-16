@@ -196,12 +196,7 @@ class Protocol(irc.IRCClient):
         Handles checking a message for a command.
         """
 
-        self.log.debug("Incoming command!")
-        self.log.debug("Control chars: %s" % self.control_chars)
-
         cc = self.control_chars.replace("{NICK}", self.nickname).lower()
-
-        self.log.debug("Parsed control chars: %s" % cc)
 
         if message.lower().startswith(cc):  # It's a command!
             # Some case-insensitive replacement here.
@@ -211,11 +206,28 @@ class Protocol(irc.IRCClient):
             split = replaced.split()
             command = split[0]
             args = split[1:]
-            self.log.debug("Command by %s on %s: %s [%s]"
-                           % (source.nickname, target, command,
-                              ", ".join(args)))
-            self.command_manager.run_command(command, source, target,
-                                             self, args)
+
+            self.log.info("%s ran the %s command in %s" % (source.nickname,
+                                                           command, target))
+
+            result = self.command_manager.run_command(command, source, target,
+                                                      self, args)
+            a, b = result
+            if a:
+                pass  # Command ran successfully
+            else:  # There's a problem
+                if b is True:  # Unable to authorize
+                    self.log.warn("%s is not authorized to use the %s "
+                                  "command"
+                                  % (source.nickname, command))
+                elif b is None:  # Command not found
+                    self.log.debug("Command not found: %s" % command)
+                    return False
+                else:  # Exception occured
+                    self.log.warn("An error occured while running the %s "
+                                  "command: %s" % (command, b))
+            return True
+        return False
 
     def privmsg(self, user, channel, message):
         """ Called when we receive a message - channel or private. """
@@ -251,19 +263,20 @@ class Protocol(irc.IRCClient):
                     print channel
                     print channel._modes
 
-        self.handle_command(user_obj, chan_obj, message)
+        if not self.handle_command(user_obj, chan_obj, message):
+            event = general_events.PreMessageReceived(self, user_obj, chan_obj,
+                                                      message, "message",
+                                                      printable=True)
+            self.event_manager.run_callback("PreMessageReceived", event)
+            if event.printable:
+                self.log.info("<%s:%s> %s" % (user_obj.nickname, channel,
+                                              event.message))
 
-        event = general_events.PreMessageReceived(self, user_obj, chan_obj,
-                                                  message, "message",
-                                                  printable=True)
-        self.event_manager.run_callback("PreMessageReceived", event)
-        if event.printable:
-            self.log.info("<%s:%s> %s" % (user_obj.nickname, channel,
-                                          event.message))
-
-        second_event = general_events.MessageReceived(self, user_obj, chan_obj,
-                                                      event.message, "message")
-        self.event_manager.run_callback("MessageReceived", second_event)
+            second_event = general_events.MessageReceived(self, user_obj,
+                                                          chan_obj,
+                                                          event.message,
+                                                          "message")
+            self.event_manager.run_callback("MessageReceived", second_event)
 
     def noticed(self, user, channel, message):
         """ Called when we receive a notice - channel or private. """
@@ -786,3 +799,12 @@ class Protocol(irc.IRCClient):
             self.users.remove(user)
             user.is_tracked = False
             # TODO: Throw event: lost track of user
+
+    #######################################################################
+    # Following this section are functions that are going to be used by   #
+    # the plugins and other parts of the system. For example, sending any #
+    # messages, joining channels, and so on.                              #
+    #######################################################################
+
+    def send_notice(self, target, message):
+        self.send_unicode_line(u"NOTICE %s :%s" % (target, message))

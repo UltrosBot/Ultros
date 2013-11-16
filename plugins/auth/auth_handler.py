@@ -50,7 +50,7 @@ class authHandler(object):
                                         "the superadmin account!")
         else:
             self.plugin.logger.warn("Unable to set permissions for the "
-                                    "superadmin account as the default "
+                                    "superadmin account as the bundled "
                                     "permissions system isn't being used.")
             self.plugin.logger.warn("Please do this manually!")
 
@@ -91,7 +91,7 @@ class authHandler(object):
             if username not in self.data:
                 return False
             user_data = self.data[username]
-        calculated = self.hash(username, user_data["salt"])
+        calculated = self.hash(user_data["salt"], password)
         real_hash = user_data["password"]
 
         if calculated == real_hash:

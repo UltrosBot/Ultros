@@ -68,6 +68,36 @@ class AuthPlugin(Plugin):
                 if not result:
                     self.logger.warn("Unable to set auth handler!")
 
+        self.logger.debug("Registering commands.")
+        self.commands.register_command("login", self.login_command,
+                                       self, "auth.login")
+        self.commands.register_command("logout", self.logout_command,
+                                       self, "auth.login")
+
+    def login_command(self, caller, source, args, protocol):
+        if len(args) < 2:
+            caller.respond("Usage: {CHARS}login <username> <password>")
+        else:
+            if self.auth_h.authorized(caller, source, protocol):
+                caller.respond("You're already logged in. "
+                               "Try logging out first!")
+                return
+            username = args[0]
+            password = args[1]
+
+            result = self.auth_h.login(caller, protocol, username, password)
+            if not result:
+                self.logger.warn("%s failed to login as %s" % (caller.nickname,
+                                                               username))
+                caller.respond("Invalid username or password!")
+            else:
+                self.logger.info("%s logged in as %s" % (caller.nickname,
+                                                         username))
+                caller.respond("You are now logged in as %s" % username)
+
+    def logout_command(self, caller, source, args, protocol):
+        pass
+
     def get_auth_handler(self):
         if self.config["use-auth"]:
             return self.auth_h

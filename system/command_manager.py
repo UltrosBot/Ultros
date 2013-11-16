@@ -1,6 +1,9 @@
 # coding=utf-8
 __author__ = "Gareth Coles"
 
+import logging
+
+from utils.misc import output_exception
 from system.decorators import Singleton
 from utils.log import getLogger
 
@@ -98,13 +101,30 @@ class CommandManager(object):
                         if self.perm_handler.check(self.commands
                                                    [command]["permission"],
                                                    caller, source, protocol):
-                            self.commands[command]["f"](caller, source,
-                                                        args, protocol)
+                            try:
+                                self.commands[command]["f"](caller, source,
+                                                            args, protocol)
+                            except Exception as e:
+                                output_exception(self.logger, logging.DEBUG)
+                                return False, e
+                        else:
+                            return False, True
                     else:
-                        return False, True
+                        if self.perm_handler.check(self.commands
+                                                   [command]["permission"],
+                                                   None, source, protocol):
+                            try:
+                                self.commands[command]["f"](caller, source,
+                                                            args, protocol)
+                            except Exception as e:
+                                output_exception(self.logger, logging.DEBUG)
+                                return False, e
+                        else:
+                            return False, True
             else:
                 self.commands[command]["f"](caller, source, args, protocol)
         except Exception as e:
+            output_exception(self.logger, logging.ERROR)
             return False, e
         else:
             return True, None
