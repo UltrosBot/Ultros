@@ -34,7 +34,9 @@ class Protocol(irc.IRCClient):
     nickname = ""
 
     channels = {}  # key is lowercase "#channel" - use get/set/del_channel()
+    # TODO: Make users a set()?
     users = []
+    own_user = None
 
     ssl = False
 
@@ -144,6 +146,12 @@ class Protocol(irc.IRCClient):
         """
          Called once we've connected and done our handshake with the IRC server
         """
+
+        # Reset users and channels when we connect, in case we still have them
+        # from a previous connection.
+        self.own_user = None
+        self.users = []
+        self.channels = {}
 
         def do_sign_on(self):
             if self.identity["authentication"].lower() == "nickserv":
@@ -410,6 +418,16 @@ class Protocol(irc.IRCClient):
         # user tracking here
 
         nickname, ident, host = self.utils.split_hostmask(prefix)
+        if self.utils.compare_nicknames(nickname, self.nickname):
+            if self.own_user is None:
+                # User-tracking stuff
+                self.own_user = User(self,
+                                     nickname,
+                                     ident,
+                                     host,
+                                     is_tracked=True)
+                self.users.append(self.own_user)
+        else:
 
         # There will only ever be one channel, so just get that. No need to
         # iterate.
