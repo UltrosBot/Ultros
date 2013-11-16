@@ -2,6 +2,7 @@
 
 import utils.teamspeak as utils
 
+from collections import deque
 from utils.log import getLogger
 from system.decorators import run_async
 
@@ -16,7 +17,7 @@ class Protocol(protocol.Protocol):
     log = None
     event_manger = None
 
-    command_responses = []
+    command_responses = deque()
     command_mutex = Lock()
 
     channels = {}
@@ -70,10 +71,10 @@ class Protocol(protocol.Protocol):
             error_line = ""
 
             while True:
-                if not self.command_responses:
+                if not len(self.command_responses):
                     continue
 
-                element = self.command_responses.pop(0)
+                element = self.command_responses.popleft()
                 if element.lower().startswith("error"):
                     error_line = element
                     break
