@@ -56,10 +56,12 @@ class KickedEvent(IRCEvent):
 
     channel = None
     kicker = None
+    message = ""
 
-    def __init__(self, caller, channel, kicker):
+    def __init__(self, caller, channel, kicker, message):
         self.channel = channel
         self.kicker = kicker
+        self.message = message
         super(KickedEvent, self).__init__(caller)
 
 
@@ -144,10 +146,12 @@ class TopicUpdatedEvent(IRCEvent):
     """
 
     channel = None
+    user = None
     topic = ""
 
-    def __init__(self, caller, channel, topic):
+    def __init__(self, caller, channel, user, topic):
         self.channel = channel
+        self.user = user
         self.topic = topic
         super(TopicUpdatedEvent, self).__init__(caller)
 
@@ -160,7 +164,7 @@ class WHOReplyEvent(IRCEvent):
 
     channel = None
     user = None
-    data = []
+    data = {}
 
     def __init__(self, caller, channel, user, data):
         self.channel = channel
@@ -265,7 +269,13 @@ class CannotDoCommandErrorEvent(IRCEvent):
     Thrown when the server is unable to process a command we sent
     """
 
-    # TODO: Analyze the args of this message
+    command = ""
+    message = ""
+
+    def __init__(self, caller, command, message):
+        self.command = command
+        self.message = message
+        super(CannotDoCommandErrorEvent, self).__init__(caller)
 
 
 class ChannelCreationDetailsEvent(IRCEvent):
@@ -290,7 +300,11 @@ class LOCALUSERSReplyEvent(IRCEvent):
     connect
     """
 
-    # TODO: Analyze the args of this message
+    message = ""
+
+    def __init__(self, caller, message):
+        self.message = message
+        super(LOCALUSERSReplyEvent, self).__init__(caller)
 
 
 class GLOBALUSERSReplyEvent(IRCEvent):
@@ -299,7 +313,11 @@ class GLOBALUSERSReplyEvent(IRCEvent):
     connect
     """
 
-    # TODO: Analyze the args of this message
+    message = ""
+
+    def __init__(self, caller, message):
+        self.message = message
+        super(GLOBALUSERSReplyEvent, self).__init__(caller)
 
 
 class VHOSTSetEvent(IRCEvent):
@@ -340,3 +358,37 @@ class PongEvent(IRCEvent):
 
     def __init__(self, caller):
         super(PongEvent, self).__init__(caller)
+
+
+class ModeChangedEvent(IRCEvent):
+    """
+    Thrown when a mode is changed.
+    """
+
+    user = None
+    channel = None
+    action = False
+    modes = ""
+    args = ""
+
+    def __init__(self, caller, user, channel, action, modes, args):
+        self.user = user
+        self.channel = channel
+        self.action = action
+        self.modes = modes
+        self.args = args
+        super(ModeChangedEvent, self).__init__(caller)
+
+
+class ISUPPORTReplyEvent(IRCEvent):
+    """
+    Thrown when we get an ISUPPORT from the server.
+    """
+
+    prefix = ""
+    params = []
+
+    def __init__(self, caller, prefix, params):
+        self.prefix = prefix
+        self.params = params
+        super(ISUPPORTReplyEvent, self).__init__(caller)

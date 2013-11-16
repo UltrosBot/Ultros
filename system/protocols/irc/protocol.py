@@ -23,7 +23,7 @@ class Protocol(irc.IRCClient):
     factory = None
     config = None
     log = None
-    event_manger = None
+    event_manager = None
 
     networking = {}
     identity = {}
@@ -78,8 +78,16 @@ class Protocol(irc.IRCClient):
             self.log.error("IRC will be unavailable until SSL is fixed or is "
                            "disabled in the configuration.")
 
+            # Clean up so everything can be garbage-collected
             self.factory.manager.remove_protocol("irc")
+
+            del self.event_manager
+            del self.utils
+            del self.ranks
+            del self.log
             del self.factory
+            del self.config
+
             return
 
         if self.networking["ssl"]:
@@ -160,8 +168,7 @@ class Protocol(irc.IRCClient):
         # User-tracking stuff
         self.send_who(channel)
 
-        # TODO: Use channel object in event
-        event = irc_events.ChannelJoinedEvent(self, channel)
+        event = irc_events.ChannelJoinedEvent(self, chan_obj)
         self.event_manager.run_callback("IRC/ChannelJoined", event)
 
     def left(self, channel):
@@ -172,19 +179,24 @@ class Protocol(irc.IRCClient):
         # User-tracking stuff:
         self.self_part_channel(chan_obj)
 
-        event = irc_events.ChannelPartedEvent(self, channel)
+        event = irc_events.ChannelPartedEvent(self, chan_obj)
         self.event_manager.run_callback("IRC/ChannelParted", event)
 
     def privmsg(self, user, channel, message):
         """ Called when we receive a message - channel or private. """
         self.log.info("<%s:%s> %s" % (user, channel, message))
         user_obj = None
+        chan_obj = None
         try:
             user_obj = self._get_user_from_user_string(user)
         except:
             # Privmsg from the server itself and things (if that happens)
             self.log.debug("Notice from irregular user: %s" % user)
             user_obj = User(self, nickname=user, is_tracked=False)
+
+        if channel != self.nickname:
+            # This is not a PM.
+            chan_obj = self.get_channel(channel)
 
         # TODO: Remove this piece of debugging code:
         if message[0] == "!":
@@ -211,12 +223,17 @@ class Protocol(irc.IRCClient):
         """ Called when we receive a notice - channel or private. """
         self.log.info("-%s:%s- %s" % (user, channel, message))
         user_obj = None
+        chan_obj = None
         try:
             user_obj = self._get_user_from_user_string(user)
         except:
             # Notices from the server itself and things
             self.log.debug("Notice from irregular user: %s" % user)
             user_obj = User(self, nickname=user, is_tracked=False)
+
+        if channel != self.nickname:
+            # This is not a PM.
+            chan_obj = self.get_channel(channel)
 
         # TODO: Throw event (General, received message - notice, [target])
 
@@ -232,7 +249,8 @@ class Protocol(irc.IRCClient):
             self.log.debug("CTCP from irregular user: %s" % user)
             user_obj = User(self, nickname=user, is_tracked=False)
 
-        # TODO: Throw event (IRC, CTCP query)
+        event = irc_events.CTCPQueryEvent(self, user_obj, messages)
+        self.event_manager.run_callback("IRC/CTCPQueryReceived", event)
 
     def modeChanged(self, user, channel, action, modes, args):
         """
@@ -282,16 +300,21 @@ class Protocol(irc.IRCClient):
                 else:
                     channel_obj.remove_mode(modes[x])
 
-        # TODO: Throw event (IRC, mode changed)
+        event = irc_events.ModeChangedEvent(self, user_obj, channel_obj,
+                                            action, modes, args)
+        self.event_manager.run_callback("IRC/ModeChanged", event)
 
     def kickedFrom(self, channel, kicker, message):
         """ Called when we get kicked from a channel. """
         self.log.info("Kicked from %s by %s: %s" % (channel, kicker, message))
+
+        user_obj = self.get_user(nickname=kicker)
         chan_obj = self.get_channel(channel)
         # User-tracking stuff:
         self.self_part_channel(chan_obj)
 
-        # TODO: Throw event (IRC, kicked from channel)
+        event = irc_events.KickedEvent(self, chan_obj, user_obj, message)
+        self.event_manager.run_callback("IRC/SelfKicked", event)
 
     def nickChanged(self, nick):
         """ Called when our nick is forcibly changed. """
@@ -301,22 +324,37 @@ class Protocol(irc.IRCClient):
 
     def userJoined(self, user, channel):
         """ Called when someone else joins a channel we're in. """
-        self.log.info("%s joined %s" % (user, channel))
+        self.log.info("%s joined %s" % (user.nickname, channel))
 
-        # TODO: Throw event (IRC, user joined channel)
+        event = irc_events.UserJoinedEvent(self, channel, user)
+        self.event_manager.run_callback("IRC/UserJoined", event)
 
     def irc_JOIN(self, prefix, params):
         """ Called on any join message
         :param prefix: The user joining
         :param params: The channel(s?) joined
         """
-        irc.IRCClient.irc_JOIN(self, prefix, params)
+        # irc.IRCClient.irc_JOIN(self, prefix, params)
+        # Removed as we can do this better than the library  -- g
         # For some reason, userJoined only gives the user's nick
+
         nickname, ident, host = self.utils.split_hostmask(prefix)
+
+        # There will only ever be one channel, so just get that. No need to
+        # iterate.
+        channel = params[-1]
+
+        chan = self.get_channel(channel)
+
         if not self.utils.compare_nicknames(nickname, self.nickname):
-            for chan in params:
-                chan = self.get_channel(chan)
-                self.user_join_channel(nickname, ident, host, chan)
+            user = self.user_join_channel(nickname, ident, host, chan)
+
+            # Since we're using our own function and the library doesn't
+            # actually do anything with this, we can simply supply the
+            # user and channel objects.
+            self.userJoined(user, chan)
+        else:
+            self.joined(channel)
 
     def userLeft(self, user, channel):
         """ Called when someone else leaves a channel we're in. """
@@ -326,17 +364,22 @@ class Protocol(irc.IRCClient):
         # User-tracking stuff
         self.user_channel_part(user_obj, chan_obj)
 
-        # TODO: Throw event (IRC, user left channel)
+        event = irc_events.UserPartedEvent(self, chan_obj, user_obj)
+        self.event_manager.run_callback("IRC/UserParted", event)
 
     def userKicked(self, kickee, channel, kicker, message):
         """ Called when someone else is kicked from a channel we're in. """
         self.log.info("%s was kicked from %s by %s: %s" % (
             kickee, channel, kicker, message))
         kickee_obj = self.get_user(nickname=kickee)
+        kicker_obj = self.get_user(nickname=kicker)
+        chan_obj = self.get_channel(channel)
         # User-tracking stuff
-        self.user_channel_part(kickee_obj, channel)
+        self.user_channel_part(kickee_obj, chan_obj)
 
-        # TODO: Throw event (IRC, user kicked from channel)
+        event = irc_events.UserKickedEvent(self, chan_obj, kickee_obj,
+                                           kicker_obj, message)
+        self.event_manager.run_callback("IRC/UserKicked", event)
 
     def irc_QUIT(self, user, params):
         """ Called when someone else quits IRC. """
@@ -356,7 +399,13 @@ class Protocol(irc.IRCClient):
         self.log.info(
             "Topic for %s: %s (set by %s)" % (channel, newTopic, user))
 
-        # TODO: Throw event (IRC, topic updated)
+        user_obj = self.get_user(nickname=user) or User(self, nickname=user,
+                                                        is_tracked=False)
+        chan_obj = self.get_channel(channel) or Channel(self, channel)
+
+        event = irc_events.TopicUpdatedEvent(self, chan_obj, user_obj,
+                                             newTopic)
+        self.event_manager.run_callback("IRC/TopicUpdated", event)
 
     def irc_NICK(self, prefix, params):
         """ Called when someone changes their nick.
@@ -397,17 +446,28 @@ class Protocol(irc.IRCClient):
                                       chan_obj)
         except KeyError:
             # We got a WHO reply for a channel we're not in - doesn't matter
-            # - for user-tracking purposes.
+            #   for user-tracking purposes.
             pass
+        else:
+            user_obj = self.get_user(nickname=nick)
+            data = {"ident": ident, "host": host, "server": server,
+                    "status": status, "gecos": gecos}
 
-        # TODO: Throw event (IRC, WHO reply)
+            event = irc_events.WHOReplyEvent(self, chan_obj, user_obj, data)
+            self.event_manager.run_callback("IRC/WHOReply", event)
 
     def irc_RPL_ENDOFWHO(self, *nargs):
         """ Called when the server's done spamming us with WHO replies. """
         data_ = nargs[1]
         channel = data_[1]
 
-        # TODO: Throw event (IRC, end of WHO reply)
+        try:
+            chan_obj = self.get_channel(channel)
+        except KeyError:
+            pass
+        else:
+            event = irc_events.WHOReplyEndEvent(self, chan_obj)
+            self.event_manager.run_callback("IRC/EndOfWHO", event)
 
     def irc_RPL_ISUPPORT(self, prefix, params):
         irc.IRCClient.irc_RPL_ISUPPORT(self, prefix, params)
@@ -415,7 +475,7 @@ class Protocol(irc.IRCClient):
             self.log.debug("RPL_ISUPPORT received: %s" % param)
             prm = param.split("=")[0].strip("-")
             # prm is the param changed - don't bother parsing the value since
-            # the it can be grabbed from self.supported with this:
+            # it can be grabbed from self.supported with this:
             # self.supported.getFeature(prm)
             if prm == "CASEMAPPING":
                 self.utils.case_mapping =\
@@ -425,7 +485,9 @@ class Protocol(irc.IRCClient):
                 self.ranks = Ranks()
                 for k, v in self.supported.getFeature("PREFIX").iteritems():
                     self.ranks.add_rank(k, v[0], v[1])
-            # TODO: Throw event?
+
+        event = irc_events.ISUPPORTReplyEvent(self, prefix, params)
+        self.event_manager.run_callback("IRC/ISUPPORT", event)
 
     def irc_unknown(self, prefix, command, params):
         """ Packets that aren't handled elsewhere get passed to this function.
@@ -433,83 +495,108 @@ class Protocol(irc.IRCClient):
 
         if command == "RPL_BANLIST":
             # This is a single entry in a channel's ban list.
-            channel = params[1]
-            mask = params[2]
-            owner = params[3]
-            btime = params[4]
+            _, channel, mask, owner, btime = params
+            chan_obj = self.get_channel(channel)
 
-        # TODO: Throw event (IRC, ban list)
+            event = irc_events.BanListEvent(self, chan_obj, mask, owner, btime)
+            self.event_manager.run_callback("IRC/BanListReply", event)
 
         elif command == "RPL_ENDOFBANLIST":
             # Called when the server's done spamming us with the ban list
             channel = params[1]
+            chan_obj = self.get_channel(channel)
 
-        # TODO: Throw event (IRC, end of ban list)
+            event = irc_events.BanListEndEvent(self, chan_obj)
+            self.event_manager.run_callback("IRC/EndOfBanList", event)
 
         elif command == "RPL_NAMREPLY":
             # This is the response to a NAMES request.
             # Also includes some data that has nothing to do with channel names
             me, status, channel, names = params
             users = names.split()
+            chan_obj = self.get_channel(channel) or Channel(self, channel)
+
             if status == "@":  # Secret channel
                 pass
             elif status == "*":  # Private channel
                 pass
 
-        # TODO: Throw event (IRC, NAMES reply)
+            event = irc_events.NAMESReplyEvent(self, chan_obj, status, users)
+            self.event_manager.run_callback("IRC/NAMESReply", event)
 
         elif command == "RPL_ENDOFNAMES":
             # Called when the server's done spamming us with NAMES replies.
             me, channel, message = params
+            chan_obj = self.get_channel(channel) or Channel(self, channel)
 
-        # TODO: Throw event (IRC, end of NAMES reply)
+            event = irc_events.NAMESReplyEndEvent(self, chan_obj, message)
+            self.event_manager.run_callback("IRC/EndOfNAMES", event)
 
         elif command == "ERR_INVITEONLYCHAN":
+            channel = params[1]
             self.log.warn(
-                "Unable to join %s - Channel is invite-only" % params[1])
+                "Unable to join %s - Channel is invite-only" % channel)
 
-        # TODO: Throw event (IRC, channel is invite-only)
+            event = irc_events.InviteOnlyChannelErrorEvent(self,
+                                                           Channel(self,
+                                                                   channel))
+            self.event_manager.run_callback("IRC/InviteOnlyError", event)
 
-        elif str(command) == "972":  # ERR_CANNOTDOCOMMAND
-            pass  # Need to analyze the args of this.
+        elif str(command) == "972" or str(command) == "ERR_UNKNOWNCOMMAND":
+            self.log.warn("Cannot do command '%s': %s" % (params[1],
+                                                          params[2]))
             # Called when some command we attempted can't be done.
 
-        # TODO: Throw event (IRC, cannot do command)
+            event = irc_events.CannotDoCommandErrorEvent(self, params[1],
+                                                         params[2])
 
         elif str(command) == "333":  # Channel creation details
+            _, channel, creator, when = params
             self.log.info("%s created by %s (%s)" %
-                          (params[1],
-                           params[2],
+                          (channel, creator,
                            time.strftime(
                                "%a, %d %b %Y %H:%M:%S",
                                time.localtime(
-                                   float(params[3])
+                                   float(when)
                                ))
                            ))
+            chan_obj = self.get_channel(channel)
+            user_obj = self.get_user(nickname=creator) \
+                or User(self, nickname=creator, is_tracked=False)
 
-        # TODO: Throw event (IRC, channel creation details)
+            event = irc_events.ChannelCreationDetailsEvent(self, chan_obj,
+                                                           user_obj, when)
+            self.event_manager.run_callback("IRC/ChannelCreationDetails", event)
+
+###############################################################################
 
         elif str(command) in ["265", "266"]:  # RPL_LOCALUSERS, RPL_GLOBALUSERS
-            self.log.info(params[
-                3])  # Usually printed, these are purely informational
+            # Usually printed, these are purely informational
+            self.log.info(params[3])
 
-        # TODO: Throw event (IRC, LOCALUSERS reply and GLOBALUSERS reply)
+            if str(command) == "265":  # LOCALUSERS
+                event = irc_events.LOCALUSERSReplyEvent(self, params[3])
+                self.event_manager.run_callback("IRC/LOCALUSERS", event)
+            else:
+                event = irc_events.GLOBALUSERSReplyEvent(self, params[3])
+                self.event_manager.run_callback("IRC/GLOBALUSERS", event)
 
         elif str(command) == "396":  # VHOST was set
             self.log.info("VHOST set to %s by %s" % (params[1], prefix))
 
-        # TODO: Throw event (IRC, VHOST set)
+            event = irc_events.VHOSTSetEvent(self, params[1], prefix)
+            self.event_manager.run_callback("IRC/VHOSTSet", event)
 
         elif command == "PONG":
-            pass  # Do we really need to print these?
-
-        # TODO: Throw event (IRC, PONG) - Debatable
+            event = irc_events.PongEvent(self)
+            self.event_manager.run_callback("IRC/Pong", event)
 
         else:
             self.log.debug(
                 "Unhandled: %s | %s | %s" % (prefix, command, params))
-
-            # TODO: Throw event (IRC, unhandled message event based on command)
+            event = irc_events.UnhandledMessageEvent(self, prefix, command,
+                                                     params)
+            self.event_manager.run_callback("IRC/UnhandledMessage", event)
 
     def send_who(self, mask, operators_only=False):
         query = "WHO %s" % mask
