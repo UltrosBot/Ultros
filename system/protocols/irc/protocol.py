@@ -188,9 +188,7 @@ class Protocol(irc.IRCClient):
         """ Called when we join a channel. """
         self.log.info("Joined channel: %s" % channel)
         chan_obj = Channel(self, channel)
-        self.set_channel(channel, chan_obj)
-        # User-tracking stuff
-        self.send_who(channel)
+        # Do user-tracking in irc_JOIN
 
         event = irc_events.ChannelJoinedEvent(self, chan_obj)
         self.event_manager.run_callback("IRC/ChannelJoined", event)
@@ -260,17 +258,21 @@ class Protocol(irc.IRCClient):
         else:
             channel_obj = self.get_channel(channel)
 
-        if not self.handle_command(user_obj, chan_obj, message):
-            event = general_events.PreMessageReceived(self, user_obj, chan_obj,
-                                                      message, "message",
+        if not self.handle_command(user_obj, channel_obj, message):
+            event = general_events.PreMessageReceived(self,
+                                                      user_obj,
+                                                      channel_obj,
+                                                      message,
+                                                      "message",
                                                       printable=True)
             self.event_manager.run_callback("PreMessageReceived", event)
             if event.printable:
                 self.log.info("<%s:%s> %s" % (user_obj.nickname, channel,
                                               event.message))
 
-            second_event = general_events.MessageReceived(self, user_obj,
-                                                          chan_obj,
+            second_event = general_events.MessageReceived(self,
+                                                          user_obj,
+                                                          channel_obj,
                                                           event.message,
                                                           "message")
             self.event_manager.run_callback("MessageReceived", second_event)
@@ -290,22 +292,24 @@ class Protocol(irc.IRCClient):
         else:
             channel_obj = self.get_channel(channel)
 
-        if channel != self.nickname:
-            # This is not a PM.
-            chan_obj = self.get_channel(channel)
-
-        event = general_events.PreMessageReceived(self, user_obj, chan_obj,
-                                                  message, "notice",
+        event = general_events.PreMessageReceived(self,
+                                                  user_obj,
+                                                  channel_obj,
+                                                  message,
+                                                  "notice",
                                                   printable=True)
         self.event_manager.run_callback("PreMessageReceived", event)
         if event.printable:
             self.log.info("-%s:%s- %s" % (user, channel, event.message))
 
-        second_event = general_events.MessageReceived(self, user_obj, chan_obj,
-                                                      event.message, "notice")
+        second_event = general_events.MessageReceived(self,
+                                                      user_obj,
+                                                      channel_obj,
+                                                      event.message,
+                                                      "notice")
         self.event_manager.run_callback("MessageReceived", second_event)
 
-    def ctcpQuery(self, user, me, messages):
+    def ctcpQuery(self, user, channel, messages):
         """ Called when someone does a CTCP query - channel or private.
         Needs some param analysis."""
         self.log.info("[%s] %s" % (user, messages))
@@ -385,11 +389,11 @@ class Protocol(irc.IRCClient):
         self.log.info("Kicked from %s by %s: %s" % (channel, kicker, message))
 
         user_obj = self.get_user(nickname=kicker)
-        chan_obj = self.get_channel(channel)
+        channel_obj = self.get_channel(channel)
         # User-tracking stuff:
         self.self_part_channel(channel_obj)
 
-        event = irc_events.KickedEvent(self, chan_obj, user_obj, message)
+        event = irc_events.KickedEvent(self, channel_obj, user_obj, message)
         self.event_manager.run_callback("IRC/SelfKicked", event)
 
     def nickChanged(self, nick):
@@ -413,37 +417,39 @@ class Protocol(irc.IRCClient):
         :param params: The channel(s?) joined
         """
         # irc.IRCClient.irc_JOIN(self, prefix, params)
-        # Removed as we can do this better than the library  -- g
+        # Removed as we can do this better than the library
+
         # For some reason, userJoined only gives the user's nick, so we do
         # user tracking here
 
-        nickname, ident, host = self.utils.split_hostmask(prefix)
-        if self.utils.compare_nicknames(nickname, self.nickname):
-            if self.own_user is None:
-                # User-tracking stuff
-                self.own_user = User(self,
-                                     nickname,
-                                     ident,
-                                     host,
-                                     is_tracked=True)
-                self.users.append(self.own_user)
-        else:
-
         # There will only ever be one channel, so just get that. No need to
         # iterate.
+
         channel = params[-1]
+        channel_obj = self.get_channel(channel)
+        if channel_obj is None:
+            channel_obj = Channel(self, channel)
+            self.set_channel(channel, channel_obj)
 
-        chan = self.get_channel(channel)
+        nickname, ident, host = self.utils.split_hostmask(prefix)
+        user_obj = self.user_join_channel(nickname,
+                                          ident,
+                                          host,
+                                          channel_obj)
 
-        if not self.utils.compare_nicknames(nickname, self.nickname):
-            user = self.user_join_channel(nickname, ident, host, chan)
-
+        if self.utils.compare_nicknames(nickname, self.nickname):
+            # User-tracking stuff
+            if self.own_user is None:
+                self.own_user = user_obj
+            self.send_who(channel)
+            # Call the self-joined-channel method manually, since we're no
+            # longer calling the super method.
+            self.joined(channel)
+        else:
             # Since we're using our own function and the library doesn't
             # actually do anything with this, we can simply supply the
             # user and channel objects.
-            self.userJoined(user, chan)
-        else:
-            self.joined(channel)
+            self.userJoined(user_obj, channel_obj)
 
     def userLeft(self, user, channel):
         """ Called when someone else leaves a channel we're in. """
@@ -464,10 +470,13 @@ class Protocol(irc.IRCClient):
         kicker_obj = self.get_user(nickname=kicker)
         channel_obj = self.get_channel(channel)
         # User-tracking stuff
-        self.user_channel_part(kickee_obj, chan_obj)
+        self.user_channel_part(kickee_obj, channel_obj)
 
-        event = irc_events.UserKickedEvent(self, chan_obj, kickee_obj,
-                                           kicker_obj, message)
+        event = irc_events.UserKickedEvent(self,
+                                           channel_obj,
+                                           kickee_obj,
+                                           kicker_obj,
+                                           message)
         self.event_manager.run_callback("IRC/UserKicked", event)
 
     def irc_QUIT(self, user, params):
@@ -541,10 +550,10 @@ class Protocol(irc.IRCClient):
             pass
         else:
             user_obj = self.get_user(nickname=nick)
-            data = {"ident": ident, "host": host, "server": server,
+            data_ = {"ident": ident, "host": host, "server": server,
                     "status": status, "gecos": gecos}
 
-            event = irc_events.WHOReplyEvent(self, chan_obj, user_obj, data)
+            event = irc_events.WHOReplyEvent(self, chan_obj, user_obj, data_)
             self.event_manager.run_callback("IRC/WHOReply", event)
 
     def irc_RPL_ENDOFWHO(self, *nargs):
