@@ -18,3 +18,7 @@ channels: # Initial channels to join. The bot will remember what channels it was
           # Remember, channel names must be surrounded in "quotes"
   - name: "#Ultros"
     key:
+
+control_chars: "." # What messages must be prefixed with to count as a command.
+                   # This doesn't have to be just one character!
+                   # You can also use {NICK} in place of the bot's current nick.

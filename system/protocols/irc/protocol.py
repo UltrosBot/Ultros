@@ -2,6 +2,7 @@
 
 import time
 import logging
+import re
 
 from system.protocols.irc.channel import Channel
 from system.protocols.irc.rank import Ranks
@@ -11,6 +12,7 @@ from utils.irc import IRCUtils
 from utils.log import getLogger
 from utils.misc import output_exception
 from system.event_manager import EventManager
+from system.command_manager import CommandManager
 from system.events import irc as irc_events
 from system.events import general as general_events
 
@@ -55,6 +57,7 @@ class Protocol(irc.IRCClient):
         self.factory = factory
         self.config = config
         self.event_manager = EventManager.instance()
+        self.command_manager = CommandManager.instance()
         self.utils = IRCUtils(self.log)
         # Three dicts for easier lookup
         self.ranks = Ranks()
@@ -64,6 +67,7 @@ class Protocol(irc.IRCClient):
 
         self.networking = config["network"]
         self.identity = config["identity"]
+        self.control_chars = config["control_chars"]
 
         if self.identity["authentication"].lower() == "password":
             self.password = "%s:%s" % (self.identity["auth_name"],
@@ -187,6 +191,32 @@ class Protocol(irc.IRCClient):
         event = irc_events.ChannelPartedEvent(self, chan_obj)
         self.event_manager.run_callback("IRC/ChannelParted", event)
 
+    def handle_command(self, source, target, message):
+        """
+        Handles checking a message for a command.
+        """
+
+        self.log.debug("Incoming command!")
+        self.log.debug("Control chars: %s" % self.control_chars)
+
+        cc = self.control_chars.replace("{NICK}", self.nickname).lower()
+
+        self.log.debug("Parsed control chars: %s" % cc)
+
+        if message.lower().startswith(cc):  # It's a command!
+            # Some case-insensitive replacement here.
+            regex = re.compile(re.escape(cc), re.IGNORECASE)
+            replaced = regex.sub("", message, count=1)
+            
+            split = replaced.split()
+            command = split[0]
+            args = split[1:]
+            self.log.debug("Command by %s on %s: %s [%s]"
+                           % (source.nickname, target, command,
+                              ", ".join(args)))
+            self.command_manager.run_command(command, source, target,
+                                             self, args)
+
     def privmsg(self, user, channel, message):
         """ Called when we receive a message - channel or private. """
 
@@ -221,12 +251,15 @@ class Protocol(irc.IRCClient):
                     print channel
                     print channel._modes
 
+        self.handle_command(user_obj, chan_obj, message)
+
         event = general_events.PreMessageReceived(self, user_obj, chan_obj,
                                                   message, "message",
                                                   printable=True)
         self.event_manager.run_callback("PreMessageReceived", event)
         if event.printable:
-            self.log.info("<%s:%s> %s" % (user, channel, event.message))
+            self.log.info("<%s:%s> %s" % (user_obj.nickname, channel,
+                                          event.message))
 
         second_event = general_events.MessageReceived(self, user_obj, chan_obj,
                                                       event.message, "message")
