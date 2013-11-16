@@ -551,7 +551,7 @@ class Protocol(irc.IRCClient):
         else:
             user_obj = self.get_user(nickname=nick)
             data_ = {"ident": ident, "host": host, "server": server,
-                    "status": status, "gecos": gecos}
+                     "status": status, "gecos": gecos}
 
             event = irc_events.WHOReplyEvent(self, chan_obj, user_obj, data_)
             self.event_manager.run_callback("IRC/WHOReply", event)
