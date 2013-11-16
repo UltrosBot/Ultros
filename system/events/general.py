@@ -22,6 +22,8 @@ class PreConnectEvent(GeneralEvent):
     that threw the event.
     """
 
+    config = None
+
     def __init__(self, caller, config):
         self.config = config
         super(PreConnectEvent, self).__init__(caller)
@@ -33,12 +35,37 @@ class PostConnectEvent(GeneralEvent):
     Includes the configuration of the protocol that threw the event.
     """
 
+    config = None
+
     def __init__(self, caller, config):
         self.config = config
         super(PostConnectEvent, self).__init__(caller)
 
-# Pre-setup
-# Post-setup
+
+class PreSetupEvent(GeneralEvent):
+    """
+    Thrown just before we do our setup, post-connect.
+    Includes the configuration of the protocol that threw the event.
+    """
+
+    config = None
+
+    def __init__(self, caller, config):
+        self.config = config
+        super(PreSetupEvent, self).__init__(caller)
+
+
+class PostSetupEvent(GeneralEvent):
+    """
+    Thrown after before we do our setup.
+    Includes the configuration of the protocol that threw the event.
+    """
+
+    config = None
+
+    def __init__(self, caller, config):
+        self.config = config
+        super(PostSetupEvent, self).__init__(caller)
 
 
 class PreMessageReceived(GeneralEvent):
@@ -60,6 +87,12 @@ class PreMessageReceived(GeneralEvent):
         like password inputs. Defaults to True.
     """
 
+    source = None
+    target = None
+    message = ""
+    type = ""
+    printable = True
+
     def __init__(self, caller, source, target, message, typ, printable=True):
         self.source = source
         self.target = target
@@ -76,6 +109,11 @@ class MessageReceived(GeneralEvent):
     PreMessageReceived event for param info.
     """
 
+    source = None
+    target = None
+    message = ""
+    type = ""
+
     def __init__(self, caller, source, target, message, typ):
         self.source = source
         self.target = target
@@ -84,5 +122,39 @@ class MessageReceived(GeneralEvent):
         super(MessageReceived, self).__init__(caller)
 
 
-# Name changed (self)
-# Name changed (other)
+class NameChangedSelf(GeneralEvent):
+    """
+    Thrown whenever our name is changed.
+    """
+
+    name = ""
+
+    def __init__(self, caller, name):
+        self.name = name
+        super(NameChangedSelf, self).__init__(caller)
+
+
+class NameChanged(GeneralEvent):
+    """
+    Thrown whenever someone else's name is changed.
+    """
+
+    old_name = ""
+    user = None
+
+    def __init__(self, caller, user, old_name):
+        self.old_name = old_name
+        self.user = user
+        super(NameChanged, self).__init__(caller)
+
+
+class UserDisconnected(GeneralEvent):
+    """
+    Thrown when a user disconects.
+    """
+
+    user = None
+
+    def __init__(self, caller, user):
+        self.user = user
+        super(UserDisconnected, self).__init__(caller)

@@ -12,6 +12,7 @@ from utils.log import getLogger
 from utils.misc import output_exception
 from system.event_manager import EventManager
 from system.events import irc as irc_events
+from system.events import general as general_events
 
 from twisted.words.protocols import irc
 from twisted.internet import reactor
@@ -70,7 +71,8 @@ class Protocol(irc.IRCClient):
 
         self.nickname = self.identity["nick"]
 
-        # TODO: Throw event (General, pre-connection)
+        event = general_events.PreConnectEvent(self, config)
+        self.event_manager.run_callback("PreConnect", event)
 
         if self.networking["ssl"] and not self.ssl:
             self.log.error("SSL is not available but was requested in the "
@@ -108,7 +110,8 @@ class Protocol(irc.IRCClient):
                 120
             )
 
-        # TODO: Throw event (General, post-connection, pre-setup)
+        event = general_events.PostConnectEvent(self, config)
+        self.event_manager.run_callback("PostConnect", event)
 
     def send_unicode_line(self, data):
         self.sendLine(to_bytes(data))
@@ -150,7 +153,8 @@ class Protocol(irc.IRCClient):
             for channel in self.config["channels"]:
                 self.join(channel["name"], channel["key"])
 
-            # TODO: Throw event (General, post-setup)
+            event = general_events.PostSetupEvent(self, self.config)
+            self.event_manager.run_callback("PostSetup", event)
 
         self.log.debug(
             "Scheduling Deferreds for signing on and joining channels")
@@ -158,7 +162,8 @@ class Protocol(irc.IRCClient):
         reactor.callLater(5, do_sign_on, self)
         reactor.callLater(10, do_channel_joins, self)
 
-        # TODO: Throw event (General, pre-setup)
+        event = general_events.PreSetupEvent(self, self.config)
+        self.event_manager.run_callback("PreSetup", event)
 
     def joined(self, channel):
         """ Called when we join a channel. """
@@ -184,7 +189,7 @@ class Protocol(irc.IRCClient):
 
     def privmsg(self, user, channel, message):
         """ Called when we receive a message - channel or private. """
-        self.log.info("<%s:%s> %s" % (user, channel, message))
+
         user_obj = None
         chan_obj = None
         try:
@@ -195,7 +200,6 @@ class Protocol(irc.IRCClient):
             user_obj = User(self, nickname=user, is_tracked=False)
 
         if channel != self.nickname:
-            # This is not a PM.
             chan_obj = self.get_channel(channel)
 
         # TODO: Remove this piece of debugging code:
@@ -217,11 +221,19 @@ class Protocol(irc.IRCClient):
                     print channel
                     print channel._modes
 
-        # TODO: Throw event (General, received message - normal, [target])
+        event = general_events.PreMessageReceived(self, user_obj, chan_obj,
+                                                  message, "message",
+                                                  printable=True)
+        self.event_manager.run_callback("PreMessageReceived", event)
+        if event.printable:
+            self.log.info("<%s:%s> %s" % (user, channel, event.message))
+
+        second_event = general_events.MessageReceived(self, user_obj, chan_obj,
+                                                      event.message, "message")
+        self.event_manager.run_callback("MessageReceived", second_event)
 
     def noticed(self, user, channel, message):
         """ Called when we receive a notice - channel or private. """
-        self.log.info("-%s:%s- %s" % (user, channel, message))
         user_obj = None
         chan_obj = None
         try:
@@ -235,7 +247,16 @@ class Protocol(irc.IRCClient):
             # This is not a PM.
             chan_obj = self.get_channel(channel)
 
-        # TODO: Throw event (General, received message - notice, [target])
+        event = general_events.PreMessageReceived(self, user_obj, chan_obj,
+                                                  message, "notice",
+                                                  printable=True)
+        self.event_manager.run_callback("PreMessageReceived", event)
+        if event.printable:
+            self.log.info("-%s:%s- %s" % (user, channel, event.message))
+
+        second_event = general_events.MessageReceived(self, user_obj, chan_obj,
+                                                      event.message, "notice")
+        self.event_manager.run_callback("MessageReceived", second_event)
 
     def ctcpQuery(self, user, me, messages):
         """ Called when someone does a CTCP query - channel or private.
@@ -320,7 +341,8 @@ class Protocol(irc.IRCClient):
         """ Called when our nick is forcibly changed. """
         self.log.info("Nick changed to %s" % nick)
 
-        # TODO: Throw event (General, name changed)
+        event = general_events.NameChangedSelf(self, nick)
+        self.event_manager.run_callback("NameChangedSelf", event)
 
     def userJoined(self, user, channel):
         """ Called when someone else joins a channel we're in. """
@@ -391,7 +413,8 @@ class Protocol(irc.IRCClient):
         for channel in temp_chans:
             self.user_channel_part(user_obj, channel)
 
-        # TODO: Throw event (General, user disconnected)
+        event = general_events.UserDisconnected(self, user_obj)
+        self.event_manager.run_callback("UserDisconnected", event)
 
     def topicUpdated(self, user, channel, newTopic):
         """ Called when the topic is updated in a channel -
@@ -419,7 +442,8 @@ class Protocol(irc.IRCClient):
 
         self.log.info("%s is now known as %s" % (oldnick, newnick))
 
-        # TODO: Throw event (General, user changed their nick)
+        event = general_events.NameChanged(self, user_obj, oldnick)
+        self.event_manager.run_callback("NameChanged", event)
 
     def irc_RPL_WHOREPLY(self, *nargs):
         """ Called when we get a WHO reply from the server.
