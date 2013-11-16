@@ -207,7 +207,7 @@ class Protocol(irc.IRCClient):
             # Some case-insensitive replacement here.
             regex = re.compile(re.escape(cc), re.IGNORECASE)
             replaced = regex.sub("", message, count=1)
-            
+
             split = replaced.split()
             command = split[0]
             args = split[1:]
