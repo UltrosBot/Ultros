@@ -44,6 +44,13 @@ class Protocol(irc.IRCClient):
 
         try:
             from twisted.internet import ssl
+            self.ssl = True
+        except ImportError:
+            ssl = False
+            self.ssl = False
+            self.log.warn("Unable to import the SSL library. "
+                          "SSL will not be available.")
+            output_exception(self.log, logging.WARN)
         except ImportError:
             ssl = False
             self.ssl = False
@@ -233,35 +240,17 @@ class Protocol(irc.IRCClient):
         """ Called when we receive a message - channel or private. """
 
         user_obj = None
-        chan_obj = None
         try:
             user_obj = self._get_user_from_user_string(user)
         except:
             # Privmsg from the server itself and things (if that happens)
             self.log.debug("Notice from irregular user: %s" % user)
             user_obj = User(self, nickname=user, is_tracked=False)
-
-        if channel != self.nickname:
-            chan_obj = self.get_channel(channel)
-
-        # TODO: Remove this piece of debugging code:
-        if message[0] == "!":
-            split = message.split(" ")
-            command = split[0][1:].lower()
-            args = split[1:]
-            if command == "breakpoint":
-                foo = "There is a breakpoint on this line for rakiru"
-            elif command == "users":
-                for user in self.users:
-                    print user
-                    for chan, ranks in user._ranks.iteritems():
-                        print chan
-                        for rank in ranks:
-                            print rank
-            elif command == "channels":
-                for channel in self.channels:
-                    print channel
-                    print channel._modes
+        channel_obj = None
+        if self.utils.compare_nicknames(channel, self.nickname):
+            channel_obj = user_obj
+        else:
+            channel_obj = self.get_channel(channel)
 
         if not self.handle_command(user_obj, chan_obj, message):
             event = general_events.PreMessageReceived(self, user_obj, chan_obj,
@@ -281,13 +270,17 @@ class Protocol(irc.IRCClient):
     def noticed(self, user, channel, message):
         """ Called when we receive a notice - channel or private. """
         user_obj = None
-        chan_obj = None
         try:
             user_obj = self._get_user_from_user_string(user)
         except:
             # Notices from the server itself and things
             self.log.debug("Notice from irregular user: %s" % user)
             user_obj = User(self, nickname=user, is_tracked=False)
+        channel_obj = None
+        if self.utils.compare_nicknames(channel, self.nickname):
+            channel_obj = user_obj
+        else:
+            channel_obj = self.get_channel(channel)
 
         if channel != self.nickname:
             # This is not a PM.
@@ -315,6 +308,11 @@ class Protocol(irc.IRCClient):
             # CTCP from the server itself and things (if that happens)
             self.log.debug("CTCP from irregular user: %s" % user)
             user_obj = User(self, nickname=user, is_tracked=False)
+        channel_obj = None
+        if self.utils.compare_nicknames(channel, self.nickname):
+            channel_obj = user_obj
+        else:
+            channel_obj = self.get_channel(channel)
 
         event = irc_events.CTCPQueryEvent(self, user_obj, messages)
         self.event_manager.run_callback("IRC/CTCPQueryReceived", event)
@@ -337,6 +335,9 @@ class Protocol(irc.IRCClient):
             # Mode change from the server itself and things
             self.log.debug("Mode change from irregular user: %s" % user)
             user_obj = User(self, nickname=user, is_tracked=False)
+        # Note: Unlike in privmsg/notice/ctcpQuery, channel_obj = None when
+        # the target is ourself, rather than a user object. Perhaps this should
+        # be changed for clarity?
         channel_obj = None
         if not self.utils.compare_nicknames(self.nickname, channel):
             channel_obj = self.get_channel(channel)
@@ -378,7 +379,7 @@ class Protocol(irc.IRCClient):
         user_obj = self.get_user(nickname=kicker)
         chan_obj = self.get_channel(channel)
         # User-tracking stuff:
-        self.self_part_channel(chan_obj)
+        self.self_part_channel(channel_obj)
 
         event = irc_events.KickedEvent(self, chan_obj, user_obj, message)
         self.event_manager.run_callback("IRC/SelfKicked", event)
@@ -393,6 +394,7 @@ class Protocol(irc.IRCClient):
     def userJoined(self, user, channel):
         """ Called when someone else joins a channel we're in. """
         self.log.info("%s joined %s" % (user.nickname, channel))
+        # Note: User tracking is done in irc_JOIN rather than here
 
         event = irc_events.UserJoinedEvent(self, channel, user)
         self.event_manager.run_callback("IRC/UserJoined", event)
@@ -404,7 +406,8 @@ class Protocol(irc.IRCClient):
         """
         # irc.IRCClient.irc_JOIN(self, prefix, params)
         # Removed as we can do this better than the library  -- g
-        # For some reason, userJoined only gives the user's nick
+        # For some reason, userJoined only gives the user's nick, so we do
+        # user tracking here
 
         nickname, ident, host = self.utils.split_hostmask(prefix)
 
@@ -441,7 +444,7 @@ class Protocol(irc.IRCClient):
             kickee, channel, kicker, message))
         kickee_obj = self.get_user(nickname=kickee)
         kicker_obj = self.get_user(nickname=kicker)
-        chan_obj = self.get_channel(channel)
+        channel_obj = self.get_channel(channel)
         # User-tracking stuff
         self.user_channel_part(kickee_obj, chan_obj)
 
@@ -726,11 +729,13 @@ class Protocol(irc.IRCClient):
         self.channels[channel] = channel_obj
 
     def del_channel(self, channel):
+        if isinstance(channel, Channel):
+            channel = channel.name
         channel = self.utils.lowercase_nick_chan(channel)
         del self.channels[channel]
 
     def self_part_channel(self, channel):
-        for user in channel.users:
+        for user in list(channel.users):
             self.user_channel_part(user, channel)
         self.del_channel(channel)
 
