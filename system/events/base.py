@@ -28,6 +28,9 @@ class BaseEvent(object):
 
         self.caller = caller
 
+    def __str__(self):
+        return "<%s at %s>" % (self.__class__.__name__, hex(id(self)))
+
 
 class PluginEvent(BaseEvent):
 

@@ -549,6 +549,7 @@ class Protocol(irc.IRCClient):
 
             event = irc_events.CannotDoCommandErrorEvent(self, params[1],
                                                          params[2])
+            self.event_manager.run_callback("IRC/CannotDoCommand", event)
 
         elif str(command) == "333":  # Channel creation details
             _, channel, creator, when = params
@@ -568,8 +569,6 @@ class Protocol(irc.IRCClient):
                                                            user_obj, when)
             self.event_manager.run_callback("IRC/ChannelCreationDetails",
                                             event)
-
-###############################################################################
 
         elif str(command) in ["265", "266"]:  # RPL_LOCALUSERS, RPL_GLOBALUSERS
             # Usually printed, these are purely informational
