@@ -41,7 +41,6 @@ class Protocol(irc.IRCClient):
 
         try:
             from twisted.internet import ssl
-            raise ImportError("For testing")
         except ImportError:
             ssl = False
             self.ssl = False
