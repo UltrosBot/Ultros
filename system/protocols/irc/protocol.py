@@ -4,6 +4,7 @@ import time
 import logging
 import re
 
+from system.protocols.irc import constants
 from system.protocols.irc.channel import Channel
 from system.protocols.irc.rank import Ranks
 from system.protocols.irc.user import User
@@ -774,10 +775,6 @@ class Protocol(irc.IRCClient):
         # For convenience
         return user
 
-    def channel_modes_response(self, channel, modes):
-        self.log.debug("Modes for %s: %s" % (channel, modes))
-        pass
-
     def channel_who_response(self, nickname, ident, host, server, status,
                              gecos, channel):
         """User-tracking related
@@ -838,3 +835,9 @@ class Protocol(irc.IRCClient):
 
     def send_notice(self, target, message):
         self.send_unicode_line(u"NOTICE %s :%s" % (target, message))
+
+    def send_privmsg(self, target, message):
+        self.send_unicode_line(u"PRIVMSG %s :%s" % (target, message))
+
+    def send_ctcp(self, target, message):
+        self.send_privmsg(target, constants.ctcp + message + constants.ctcp)
