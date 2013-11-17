@@ -4,6 +4,8 @@
 
 -------------------
 
+<sub>(I've seen enough hentai...)</sub>
+
 Ultros is an IRC/Mumble/Teamspeak/etc bot, extensible to pretty much any protocol, with a full-featured plugin system.
 
 Current build status: [![Current build status image](http://bamboo.gserv.me/plugins/servlet/buildStatusImage/ULTROS-ULTROS)](http://bamboo.gserv.me/browse/ULTROS-ULTROS) (Click for more info)
