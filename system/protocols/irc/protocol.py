@@ -375,7 +375,8 @@ class Protocol(irc.IRCClient):
         else:
             channel_obj = self.get_channel(channel)
 
-        event = irc_events.CTCPQueryEvent(self, user_obj, messages)
+        event = irc_events.CTCPQueryEvent(self, user_obj, channel_obj,
+                                          messages)
         self.event_manager.run_callback("IRC/CTCPQueryReceived", event)
 
     # endregion
