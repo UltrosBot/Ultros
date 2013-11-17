@@ -24,6 +24,27 @@ from kitchen.text.converters import to_bytes
 
 
 class Protocol(irc.IRCClient):
+    """
+    Internet Relay Chat server protocol.
+
+    Class layout:
+        - Private send/recv functions
+        - IRC message handling
+            - Initial connection
+            - Personal events (force-joined, kicked)
+            - Messages (privmsg, notice)
+            - User events (joining/leaving, nick changes)
+            - Channel events (modes, topic changes)
+            - Lower-level event handling (all JOIN messages)
+            - CTCP specific command handlers (ctcpQuery_VERSION)
+            - Other command replies (WHOREPLY, ISUPPORT)
+        - User/Channel functions (wrappers/helpers for _users and _channels)
+        - User-tracking
+        - Public API functions (send_notice, etc)
+    """
+
+    # region Init
+
     factory = None
     config = None
     log = None
@@ -53,13 +74,6 @@ class Protocol(irc.IRCClient):
             self.ssl = False
             self.log.warn("Unable to import the SSL library. "
                           "SSL will not be available.")
-            output_exception(self.log, logging.WARN)
-        except ImportError:
-            ssl = False
-            self.ssl = False
-            self.log.warn("Unable to import the SSL library. "
-                          "SSL will not be available.")
-
             output_exception(self.log, logging.WARN)
 
         self.factory = factory
@@ -125,21 +139,29 @@ class Protocol(irc.IRCClient):
         event = general_events.PostConnectEvent(self, config)
         self.event_manager.run_callback("PostConnect", event)
 
-    def send_unicode_line(self, data):
-        self.sendLine(to_bytes(data))
+    # endregion
 
-    def send_unicode_msg(self, target, data, length=None):
-        self.msg(to_bytes(target), to_bytes(data), length)
+    # region Private send/recv functions
 
-    def receivedMOTD(self, motd):
-        """ Called when we receive the MOTD. """
-        self.log.info(" ===   MOTD   === ")
-        for line in motd:
-            self.log.info(line)
-        self.log.info(" === END MOTD ===")
+    #######################################################################
+    # These generally shouldn't be used directly. Instead, the public API #
+    # functions should be used.                                           #
+    #######################################################################
 
-        event = irc_events.MOTDReceivedEvent(self, motd)
-        self.event_manager.run_callback("IRC/MOTDReceived", event, True)
+    def send_unicode_line(self, data_):
+        self.sendLine(to_bytes(data_))
+
+    def send_unicode_msg(self, target, data_, length=None):
+        self.msg(to_bytes(target), to_bytes(data_), length)
+
+    # endregion
+
+    # region Personal events
+
+    #######################################################################
+    # User events relating to self, such as being joined to a channel, or #
+    # having our nick changed.                                            #
+    #######################################################################
 
     def signedOn(self):
         """
@@ -202,6 +224,29 @@ class Protocol(irc.IRCClient):
 
         event = irc_events.ChannelPartedEvent(self, chan_obj)
         self.event_manager.run_callback("IRC/ChannelParted", event)
+
+    def kickedFrom(self, channel, kicker, message):
+        """ Called when we get kicked from a channel. """
+        self.log.info("Kicked from %s by %s: %s" % (channel, kicker, message))
+
+        user_obj = self.get_user(nickname=kicker)
+        channel_obj = self.get_channel(channel)
+        # User-tracking stuff:
+        self.self_part_channel(channel_obj)
+
+        event = irc_events.KickedEvent(self, channel_obj, user_obj, message)
+        self.event_manager.run_callback("IRC/SelfKicked", event)
+
+    def nickChanged(self, nick):
+        """ Called when our nick is forcibly changed. """
+        self.log.info("Nick changed to %s" % nick)
+
+        event = general_events.NameChangedSelf(self, nick)
+        self.event_manager.run_callback("NameChangedSelf", event)
+
+    # endregion
+
+    # region Message events
 
     def handle_command(self, source, target, message):
         """
@@ -328,79 +373,13 @@ class Protocol(irc.IRCClient):
         event = irc_events.CTCPQueryEvent(self, user_obj, messages)
         self.event_manager.run_callback("IRC/CTCPQueryReceived", event)
 
-    def modeChanged(self, user, channel, action, modes, args):
-        """
-        Called when someone changes a mode. Action is a bool specifying
-        whether the mode was being set or unset.
-        If it's a usermode, channel is the user being changed.
+    # endregion
 
-        Note: If it's a user-mode, channel_obj is set to None.
-        """
-        self.log.info("%s sets mode %s: %s%s %s" % (
-            user, channel, "+" if action else "-", modes, args))
+    # region User events
 
-        # Get user/channel objects
-        try:
-            user_obj = self._get_user_from_user_string(user)
-        except:
-            # Mode change from the server itself and things
-            self.log.debug("Mode change from irregular user: %s" % user)
-            user_obj = User(self, nickname=user, is_tracked=False)
-        # Note: Unlike in privmsg/notice/ctcpQuery, channel_obj = None when
-        # the target is ourself, rather than a user object. Perhaps this should
-        # be changed for clarity?
-        channel_obj = None
-        if not self.utils.compare_nicknames(self.nickname, channel):
-            channel_obj = self.get_channel(channel)
-
-        # Handle the mode changes
-        for x in xrange(len(modes)):
-            if channel_obj is None:
-                # User mode (almost definitely always ourself)
-                # TODO: Handle this (usermodes)
-                pass
-            elif modes[x] in self.ranks.modes:
-                # Rank channel mode
-                user_obj = self.get_user(args[x])
-                if user_obj:
-                    rank = self.ranks.by_mode(modes[x])
-                    if action:
-                        user_obj.add_rank_in_channel(channel, rank)
-                    else:
-                        user_obj.remove_rank_in_channel(channel, rank)
-                else:
-                    self.log.warning(
-                        "Rank mode %s set on invalid user %s in channel %s"
-                        % (modes[x], args[x], channel))
-            else:
-                # Other channel mode
-                if action:
-                    channel_obj.set_mode(modes[x], args[x])
-                else:
-                    channel_obj.remove_mode(modes[x])
-
-        event = irc_events.ModeChangedEvent(self, user_obj, channel_obj,
-                                            action, modes, args)
-        self.event_manager.run_callback("IRC/ModeChanged", event)
-
-    def kickedFrom(self, channel, kicker, message):
-        """ Called when we get kicked from a channel. """
-        self.log.info("Kicked from %s by %s: %s" % (channel, kicker, message))
-
-        user_obj = self.get_user(nickname=kicker)
-        channel_obj = self.get_channel(channel)
-        # User-tracking stuff:
-        self.self_part_channel(channel_obj)
-
-        event = irc_events.KickedEvent(self, channel_obj, user_obj, message)
-        self.event_manager.run_callback("IRC/SelfKicked", event)
-
-    def nickChanged(self, nick):
-        """ Called when our nick is forcibly changed. """
-        self.log.info("Nick changed to %s" % nick)
-
-        event = general_events.NameChangedSelf(self, nick)
-        self.event_manager.run_callback("NameChangedSelf", event)
+    #######################################################################
+    # Handlers for things such as users joining/parting channels.         #
+    #######################################################################
 
     def userJoined(self, user, channel):
         """ Called when someone else joins a channel we're in. """
@@ -409,46 +388,6 @@ class Protocol(irc.IRCClient):
 
         event = irc_events.UserJoinedEvent(self, channel, user)
         self.event_manager.run_callback("IRC/UserJoined", event)
-
-    def irc_JOIN(self, prefix, params):
-        """ Called on any join message
-        :param prefix: The user joining
-        :param params: The channel(s?) joined
-        """
-        # irc.IRCClient.irc_JOIN(self, prefix, params)
-        # Removed as we can do this better than the library
-
-        # For some reason, userJoined only gives the user's nick, so we do
-        # user tracking here
-
-        # There will only ever be one channel, so just get that. No need to
-        # iterate.
-
-        channel = params[-1]
-        channel_obj = self.get_channel(channel)
-        if channel_obj is None:
-            channel_obj = Channel(self, channel)
-            self.set_channel(channel, channel_obj)
-
-        nickname, ident, host = self.utils.split_hostmask(prefix)
-        user_obj = self.user_join_channel(nickname,
-                                          ident,
-                                          host,
-                                          channel_obj)
-
-        if self.utils.compare_nicknames(nickname, self.nickname):
-            # User-tracking stuff
-            if self.own_user is None:
-                self.own_user = user_obj
-            self.send_who(channel)
-            # Call the self-joined-channel method manually, since we're no
-            # longer calling the super method.
-            self.joined(channel)
-        else:
-            # Since we're using our own function and the library doesn't
-            # actually do anything with this, we can simply supply the
-            # user and channel objects.
-            self.userJoined(user_obj, channel_obj)
 
     def userLeft(self, user, channel):
         """ Called when someone else leaves a channel we're in. """
@@ -491,6 +430,71 @@ class Protocol(irc.IRCClient):
         event = general_events.UserDisconnected(self, user_obj)
         self.event_manager.run_callback("UserDisconnected", event)
 
+    # endregion
+
+    # region Channel events
+
+    #######################################################################
+    # Handlers for things such as channel mode changes and topic changes. #
+    #######################################################################
+
+    def modeChanged(self, user, channel, action, modes, args):
+        """
+        Called when someone changes a mode. Action is a bool specifying
+        whether the mode was being set or unset.
+        If it's a usermode, channel is the user being changed.
+
+        Note: If it's a user-mode, channel_obj is set to None. Eventually, this
+        method should be placed elsewhere and call user/channelModeChanged()
+        instead.
+        """
+        self.log.info("%s sets mode %s: %s%s %s" % (
+            user, channel, "+" if action else "-", modes, args))
+
+        # Get user/channel objects
+        try:
+            user_obj = self._get_user_from_user_string(user)
+        except:
+            # Mode change from the server itself and things
+            self.log.debug("Mode change from irregular user: %s" % user)
+            user_obj = User(self, nickname=user, is_tracked=False)
+            # Note: Unlike in privmsg/notice/ctcpQuery, channel_obj = None when
+        # the target is ourself, rather than a user object. Perhaps this should
+        # be changed for clarity?
+        channel_obj = None
+        if not self.utils.compare_nicknames(self.nickname, channel):
+            channel_obj = self.get_channel(channel)
+
+        # Handle the mode changes
+        for x in xrange(len(modes)):
+            if channel_obj is None:
+                # User mode (almost definitely always ourself)
+                # TODO: Handle this (usermodes)
+                pass
+            elif modes[x] in self.ranks.modes:
+                # Rank channel mode
+                user_obj = self.get_user(args[x])
+                if user_obj:
+                    rank = self.ranks.by_mode(modes[x])
+                    if action:
+                        user_obj.add_rank_in_channel(channel, rank)
+                    else:
+                        user_obj.remove_rank_in_channel(channel, rank)
+                else:
+                    self.log.warning(
+                        "Rank mode %s set on invalid user %s in channel %s"
+                        % (modes[x], args[x], channel))
+            else:
+                # Other channel mode
+                if action:
+                    channel_obj.set_mode(modes[x], args[x])
+                else:
+                    channel_obj.remove_mode(modes[x])
+
+        event = irc_events.ModeChangedEvent(self, user_obj, channel_obj,
+                                            action, modes, args)
+        self.event_manager.run_callback("IRC/ModeChanged", event)
+
     def topicUpdated(self, user, channel, newTopic):
         """ Called when the topic is updated in a channel -
         also called when we join a channel. """
@@ -504,6 +508,56 @@ class Protocol(irc.IRCClient):
         event = irc_events.TopicUpdatedEvent(self, chan_obj, user_obj,
                                              newTopic)
         self.event_manager.run_callback("IRC/TopicUpdated", event)
+
+    # endregion
+
+    # region Lower-level event handling
+
+    #######################################################################
+    # Lower-level event handling. For example, irc_JOIN is called for     #
+    # every JOIN message received, not just ones about other users. These #
+    # typically call the ones above, such as joined() and useJoined().    #
+    #######################################################################
+
+    def irc_JOIN(self, prefix, params):
+        """ Called on any join message
+        :param prefix: The user joining
+        :param params: The channel(s?) joined
+        """
+        # irc.IRCClient.irc_JOIN(self, prefix, params)
+        # Removed as we can do this better than the library
+
+        # For some reason, userJoined only gives the user's nick, so we do
+        # user tracking here
+
+        # There will only ever be one channel, so just get that. No need to
+        # iterate.
+
+        channel = params[-1]
+        channel_obj = self.get_channel(channel)
+        if channel_obj is None:
+            channel_obj = Channel(self, channel)
+            self.set_channel(channel, channel_obj)
+
+        nickname, ident, host = self.utils.split_hostmask(prefix)
+        user_obj = self.user_join_channel(nickname,
+                                          ident,
+                                          host,
+                                          channel_obj)
+
+        if self.utils.compare_nicknames(nickname, self.nickname):
+            # User-tracking stuff
+            if self.own_user is None:
+                self.own_user = user_obj
+            self.send_who(channel)
+            # Call the self-joined-channel method manually, since we're no
+            # longer calling the super method.
+            self.joined(channel)
+        else:
+            # Since we're using our own function and the library doesn't
+            # actually do anything with this, we can simply supply the
+            # user and channel objects.
+            self.userJoined(user_obj, channel_obj)
 
     def irc_NICK(self, prefix, params):
         """ Called when someone changes their nick.
@@ -519,6 +573,10 @@ class Protocol(irc.IRCClient):
 
         event = general_events.NameChanged(self, user_obj, oldnick)
         self.event_manager.run_callback("NameChanged", event)
+
+    # endregion
+
+    # region Other RPL_* handlers
 
     def irc_RPL_WHOREPLY(self, *nargs):
         """ Called when we get a WHO reply from the server.
@@ -587,6 +645,16 @@ class Protocol(irc.IRCClient):
 
         event = irc_events.ISUPPORTReplyEvent(self, prefix, params)
         self.event_manager.run_callback("IRC/ISUPPORT", event)
+
+    def receivedMOTD(self, motd):
+        """ Called when we receive the MOTD. """
+        self.log.info(" ===   MOTD   === ")
+        for line in motd:
+            self.log.info(line)
+        self.log.info(" === END MOTD ===")
+
+        event = irc_events.MOTDReceivedEvent(self, motd)
+        self.event_manager.run_callback("IRC/MOTDReceived", event, True)
 
     def irc_unknown(self, prefix, command, params):
         """ Packets that aren't handled elsewhere get passed to this function.
@@ -697,12 +765,14 @@ class Protocol(irc.IRCClient):
                                                      params)
             self.event_manager.run_callback("IRC/UnhandledMessage", event)
 
-    def send_who(self, mask, operators_only=False):
-        query = "WHO %s" % mask
-        if operators_only:
-            query += " o"
-        #TODO: Use rate-limited wrapping function for sending
-        self.sendLine(query)
+    # endregion
+
+    # region User/Channel functions
+
+    #######################################################################
+    # Functions for interacting with self._users and self._channels. Use  #
+    # these instead of accessing them directly.                           #
+    #######################################################################
 
     def _get_user_from_user_string(self, user_string, create_temp=True):
         nick, ident, host = self.utils.split_hostmask(user_string)
@@ -764,6 +834,10 @@ class Protocol(irc.IRCClient):
         for user in list(channel.users):
             self.user_channel_part(user, channel)
         self.del_channel(channel)
+
+    # endregion
+
+    # region User-tracking
 
     def user_join_channel(self, nickname, ident, host, channel):
         user = self.get_user(nickname=nickname, ident=ident, host=host)
@@ -827,10 +901,17 @@ class Protocol(irc.IRCClient):
             user.is_tracked = False
             # TODO: Throw event: lost track of user
 
+    # endregion
+
+    # region Public API functions
+
     #######################################################################
-    # Following this section are functions that are going to be used by   #
-    # the plugins and other parts of the system. For example, sending any #
-    # messages, joining channels, and so on.                              #
+    # Functions to be used by plugins and other parts of the system. For  #
+    # example, sending any messages, joining channels, and so on.         #
+    # Note: Some other public functions aren't here as they fit into      #
+    # other sections. These include:                                      #
+    #   - get_channel()                                                   #
+    #   - get_user() and get_users()                                      #
     #######################################################################
 
     def send_notice(self, target, message):
@@ -841,3 +922,12 @@ class Protocol(irc.IRCClient):
 
     def send_ctcp(self, target, message):
         self.send_privmsg(target, constants.ctcp + message + constants.ctcp)
+
+    def send_who(self, mask, operators_only=False):
+        query = u"WHO %s" % mask
+        if operators_only:
+            query += " o"
+        self.send_unicode_line(query)
+
+    # endregion
+    pass  # To make the last region work in PyCharm
