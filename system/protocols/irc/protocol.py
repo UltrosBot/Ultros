@@ -590,7 +590,8 @@ class Protocol(irc.IRCClient):
 
     def ctcpQuery_VERSION(self, user, channel, data_):
         user_obj = self._get_user_from_user_string(user, False)
-        self.send_ctcp_reply(user_obj, "VERSION", "Ultros v%s" % self.__version__)
+        self.send_ctcp_reply(user_obj, "VERSION", "Ultros v%s"
+                                                  % self.__version__)
 
     def ctcpQuery_SOURCE(self, user, channel, data_):
         user_obj = self._get_user_from_user_string(user, False)
