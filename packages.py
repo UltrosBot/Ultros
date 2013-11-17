@@ -25,6 +25,7 @@ except ImportError:
     exec d
     import pip
     print ""
+    del pip
 
 from utils.packages.packages import Packages
 
