@@ -45,6 +45,8 @@ class Protocol(irc.IRCClient):
 
     # region Init
 
+    __version__ = "1.0.0"
+
     factory = None
     config = None
     log = None
@@ -356,6 +358,9 @@ class Protocol(irc.IRCClient):
     def ctcpQuery(self, user, channel, messages):
         """ Called when someone does a CTCP query - channel or private.
         Needs some param analysis."""
+        # Call super() to handle specific commands appropriately
+        # TODO: Make this call last, in case a plugin wants to cancel it?
+        irc.IRCClient.ctcpQuery(self, user, channel, messages)
         self.log.info("[%s] %s" % (user, messages))
         user_obj = None
         try:
@@ -573,6 +578,23 @@ class Protocol(irc.IRCClient):
 
         event = general_events.NameChanged(self, user_obj, oldnick)
         self.event_manager.run_callback("NameChanged", event)
+
+    # endregion
+
+    # region CTCP specific command responses
+
+    #######################################################################
+    # Handlers for specific CTCP commands. These are dynamically found  . #
+    # and called by ctcpQuery() - simply adding one makes it used.        #
+    #######################################################################
+
+    def ctcpQuery_VERSION(self, user, channel, data_):
+        user_obj = self._get_user_from_user_string(user, False)
+        self.send_ctcp_reply(user_obj, "VERSION", "Ultros v%s" % self.__version__)
+
+    def ctcpQuery_SOURCE(self, user, channel, data_):
+        user_obj = self._get_user_from_user_string(user, False)
+        self.send_ctcp_reply(user_obj, "VERSION", "http://ultros.io")
 
     # endregion
 
@@ -920,8 +942,17 @@ class Protocol(irc.IRCClient):
     def send_privmsg(self, target, message):
         self.send_unicode_line(u"PRIVMSG %s :%s" % (target, message))
 
-    def send_ctcp(self, target, message):
+    def send_ctcp(self, target, command, args=None):
+        message = command
+        if args and len(args):
+            message = u"%s %s" % (command, args)
         self.send_privmsg(target, constants.ctcp + message + constants.ctcp)
+
+    def send_ctcp_reply(self, target, command, args=None):
+        message = command
+        if args and len(args):
+            message = u"%s %s" % (command, args)
+        self.send_notice(target, constants.ctcp + message + constants.ctcp)
 
     def send_who(self, mask, operators_only=False):
         query = u"WHO %s" % mask
