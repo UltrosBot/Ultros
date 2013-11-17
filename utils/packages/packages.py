@@ -8,9 +8,9 @@ management script.
 __author__ = 'Gareth Coles'
 
 import os
-import urllib
 import urllib2
 import shutil
+import urllib
 import yaml
 
 from utils.data import Data

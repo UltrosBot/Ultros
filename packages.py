@@ -12,6 +12,20 @@ packages, including their information and version history files.
 __author__ = 'Gareth Coles'
 
 import sys
+import urllib
+
+try:
+    import pip
+except ImportError:
+    url = "https://raw.github.com/pypa/pip/master/contrib/get-pip.py"
+    print "Installing pip.."
+    print ""
+    r = urllib.urlopen(url)
+    d = r.read()
+    exec d
+    import pip
+    print ""
+
 from utils.packages.packages import Packages
 
 operations = ["install", "update", "uninstall", "list", "list-installed",
