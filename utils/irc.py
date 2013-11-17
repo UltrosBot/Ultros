@@ -1,6 +1,7 @@
 #coding=utf-8
 #from system.protocols.irc import constants
 import re
+from system.protocols.irc import constants
 
 __author__ = 'rakiru'
 
@@ -16,13 +17,13 @@ def split_hostmask(hostmask):
 
 
 def format_string(value, values=None):
-    ircvalues = {'BOLD': 'B',
-                 'ITALIC': 'I',
-                 'COLOUR': 'C',
-                 'COLOR': 'C',
-                 'REVERSE': 'R',
-                 'NORMAL': 'N',
-                 'CTCP': 'C'}
+    ircvalues = {'BOLD': constants.bold,
+                 'ITALIC': constants.italic,
+                 'COLOUR': constants.colour,
+                 'COLOR': constants.color,
+                 'REVERSE': constants.reverse,
+                 'NORMAL': constants.normal,
+                 'CTCP': constants.ctcp}
     mergedvalues = None
     if values is None:
         mergedvalues = ircvalues

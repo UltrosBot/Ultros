@@ -1,11 +1,11 @@
 # coding=utf-8
 
 # Special IRC chars
-colour = "\3"  # Colour code
+colour = "\x03"  # Colour code
 color = colour
-bold = "\2"  # Bold code
-under = "\31"  # Underline code
-italic = "\29"  # Italics code
-reverse = "\22"  # Reverse code
-normal = "\15"  # Normalizing code
-ctcp = "\1"  # CTCP code
+bold = "\x02"  # Bold code
+under = "\x1F"  # Underline code
+italic = "\x1D"  # Italics code
+reverse = "\x16"  # Reverse code
+normal = "\x0F"  # Normalizing code
+ctcp = "\x01"  # CTCP code
