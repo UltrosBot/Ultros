@@ -947,13 +947,13 @@ class Protocol(irc.IRCClient):
         message = command
         if args and len(args):
             message = u"%s %s" % (command, args)
-        self.send_privmsg(target, constants.ctcp + message + constants.ctcp)
+        self.send_privmsg(target, constants.CTCP + message + constants.CTCP)
 
     def send_ctcp_reply(self, target, command, args=None):
         message = command
         if args and len(args):
             message = u"%s %s" % (command, args)
-        self.send_notice(target, constants.ctcp + message + constants.ctcp)
+        self.send_notice(target, constants.CTCP + message + constants.CTCP)
 
     def send_who(self, mask, operators_only=False):
         query = u"WHO %s" % mask

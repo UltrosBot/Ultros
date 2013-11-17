@@ -17,13 +17,28 @@ def split_hostmask(hostmask):
 
 
 def format_string(value, values=None):
-    ircvalues = {'BOLD': constants.bold,
-                 'ITALIC': constants.italic,
-                 'COLOUR': constants.colour,
-                 'COLOR': constants.color,
-                 'REVERSE': constants.reverse,
-                 'NORMAL': constants.normal,
-                 'CTCP': constants.ctcp}
+    ircvalues = {'BOLD': constants.BOLD,
+                 'ITALIC': constants.ITALIC,
+                 'COLOUR': constants.COLOUR,
+                 'REVERSE': constants.REVERSE,
+                 'NORMAL': constants.NORMAL,
+                 'CTCP': constants.CTCP,
+                 'COLOUR_WHITE': constants.COLOUR_WHITE,
+                 'COLOUR_BLACK': constants.COLOUR_BLACK,
+                 'COLOUR_BLUE': constants.COLOUR_BLUE,
+                 'COLOUR_GREEN': constants.COLOUR_GREEN,
+                 'COLOUR_RED_LIGHT': constants.COLOUR_RED_LIGHT,
+                 'COLOUR_BROWN': constants.COLOUR_BROWN,
+                 'COLOUR_PURPLE': constants.COLOUR_PURPLE,
+                 'COLOUR_ORANGE': constants.COLOUR_ORANGE,
+                 'COLOUR_YELLOW': constants.COLOUR_YELLOW,
+                 'COLOUR_GREEN_LIGHT': constants.COLOUR_GREEN_LIGHT,
+                 'COLOUR_CYAN': constants.COLOUR_CYAN,
+                 'COLOUR_CYAN_LIGHT': constants.COLOUR_CYAN_LIGHT,
+                 'COLOUR_BLUE_LIGHT': constants.COLOUR_BLUE_LIGHT,
+                 'COLOUR_PINK': constants.COLOUR_PINK,
+                 'COLOUR_GREY': constants.COLOUR_GREY,
+                 'COLOUR_GREY_LIGHT': constants.COLOUR_GREY_LIGHT}
     mergedvalues = None
     if values is None:
         mergedvalues = ircvalues
