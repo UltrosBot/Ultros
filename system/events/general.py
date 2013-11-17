@@ -122,6 +122,33 @@ class MessageReceived(GeneralEvent):
         super(MessageReceived, self).__init__(caller)
 
 
+class MessageSent(GeneralEvent):
+    """
+    Thrown when we send a message - plugins are free to catch this and even
+    modify the message before it actually gets sent out. The params available
+    are as follows..
+
+    caller     - As usual, the protocol that threw the event
+    type       - String describing what type of message this is
+    target     - Where the message is going; a string
+    message    - The actual message
+    parintable - A boolean specifying whether we should print the message...
+                 ... or not?
+    """
+
+    type = ""
+    target = ""
+    message = ""
+    printable = ""
+
+    def __init__(self, caller, typ, target, message, printable=True):
+        self.type = typ
+        self.target = target
+        self.message = message
+        self.printable = printable
+        super(MessageSent, self).__init__(caller)
+
+
 class NameChangedSelf(GeneralEvent):
     """
     Thrown whenever our name is changed.

@@ -150,11 +150,13 @@ class Protocol(irc.IRCClient):
     # functions should be used.                                           #
     #######################################################################
 
-    def send_unicode_line(self, data_):
-        self.sendLine(to_bytes(data_))
+    def sendLine(self, line):
+        """
+        Overriding this because fuck Twisted unicode support.
+        """
+        line = to_bytes(line)  # The magical line
 
-    def send_unicode_msg(self, target, data_, length=None):
-        self.msg(to_bytes(target), to_bytes(data_), length)
+        irc.IRCClient.sendLine(self, line)
 
     # endregion
 
@@ -939,28 +941,58 @@ class Protocol(irc.IRCClient):
     #######################################################################
 
     def send_notice(self, target, message):
-        self.send_unicode_line(u"NOTICE %s :%s" % (target, message))
+        event = general_events.MessageSent(self, "message", target, message)
+        self.event_manager.run_callback("MessageSent", event)
+
+        msg = event.message
+
+        if event.printable:
+            self.log.info("-> -%s- %s" % (target, msg))
+
+        self.sendLine(u"NOTICE %s :%s" % (target, msg))
+
+    def send_notice_no_event(self, target, message):
+        """
+        Sends a notice without printing it or firing an event.
+        """
+        self.sendLine(u"NOTICE %s :%s" % (target, message))
 
     def send_privmsg(self, target, message):
-        self.send_unicode_line(u"PRIVMSG %s :%s" % (target, message))
+        event = general_events.MessageSent(self, "notice", target, message)
+        self.event_manager.run_callback("MessageSent", event)
+
+        msg = event.message
+
+        if event.printable:
+            self.log.info("-> *%s* %s" % (target, msg))
+
+        self.sendLine(u"PRIVMSG %s :%s" % (target, msg))
+
+    def send_privmsg_no_event(self, target, message):
+        """
+        Sends a privmsg without printing it or firing an event.
+        """
+        self.sendLine(u"PRIVMSG %s :%s" % (target, message))
 
     def send_ctcp(self, target, command, args=None):
         message = command
         if args and len(args):
             message = u"%s %s" % (command, args)
-        self.send_privmsg(target, constants.CTCP + message + constants.CTCP)
+        self.send_privmsg_no_event(target, constants.CTCP + message +
+                                   constants.CTCP)
 
     def send_ctcp_reply(self, target, command, args=None):
         message = command
         if args and len(args):
             message = u"%s %s" % (command, args)
-        self.send_notice(target, constants.CTCP + message + constants.CTCP)
+        self.send_notice_no_event(target, constants.CTCP + message +
+                                  constants.CTCP)
 
     def send_who(self, mask, operators_only=False):
         query = u"WHO %s" % mask
         if operators_only:
             query += " o"
-        self.send_unicode_line(query)
+        self.sendLine(query)
 
     # endregion
     pass  # To make the last region work in PyCharm
