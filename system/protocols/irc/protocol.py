@@ -33,9 +33,9 @@ class Protocol(irc.IRCClient):
 
     nickname = ""
 
-    channels = {}  # key is lowercase "#channel" - use get/set/del_channel()
+    _channels = {}  # key is lowercase "#channel" - use get/set/del_channel()
     # TODO: Make users a set()?
-    users = []
+    _users = []
     own_user = None
 
     ssl = False
@@ -60,8 +60,6 @@ class Protocol(irc.IRCClient):
                           "SSL will not be available.")
 
             output_exception(self.log, logging.WARN)
-        else:
-            self.ssl = True
 
         self.factory = factory
         self.config = config
@@ -150,8 +148,8 @@ class Protocol(irc.IRCClient):
         # Reset users and channels when we connect, in case we still have them
         # from a previous connection.
         self.own_user = None
-        self.users = []
-        self.channels = {}
+        self._users = []
+        self._channels = {}
 
         def do_sign_on(self):
             if self.identity["authentication"].lower() == "nickserv":
@@ -730,7 +728,7 @@ class Protocol(irc.IRCClient):
             ident = ident.lower()
         if host:
             host = host.lower()
-        for user in self.users:
+        for user in self._users:
             if (nickname and
                     not self.utils.compare_nicknames(nickname, user.nickname)):
                 continue
@@ -747,19 +745,19 @@ class Protocol(irc.IRCClient):
     def get_channel(self, channel):
         channel = self.utils.lowercase_nick_chan(channel)
         try:
-            return self.channels[channel]
+            return self._channels[channel]
         except KeyError:
             return None
 
     def set_channel(self, channel, channel_obj):
         channel = self.utils.lowercase_nick_chan(channel)
-        self.channels[channel] = channel_obj
+        self._channels[channel] = channel_obj
 
     def del_channel(self, channel):
         if isinstance(channel, Channel):
             channel = channel.name
         channel = self.utils.lowercase_nick_chan(channel)
-        del self.channels[channel]
+        del self._channels[channel]
 
     def self_part_channel(self, channel):
         for user in list(channel.users):
@@ -770,7 +768,7 @@ class Protocol(irc.IRCClient):
         user = self.get_user(nickname=nickname, ident=ident, host=host)
         if user is None:
             user = User(self, nickname, ident, host, is_tracked=True)
-            self.users.append(user)
+            self._users.append(user)
         user.add_channel(channel)
         channel.add_user(user)
         # For convenience
@@ -828,7 +826,7 @@ class Protocol(irc.IRCClient):
         """User-tracking related"""
         if len(user.channels) == 0:
             self.log.debug("Lost track of user: %s" % user)
-            self.users.remove(user)
+            self._users.remove(user)
             user.is_tracked = False
             # TODO: Throw event: lost track of user
 
