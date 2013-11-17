@@ -23,9 +23,8 @@ except ImportError:
     r = urllib.urlopen(url)
     d = r.read()
     exec d
-    import pip
+    import pip  # flake8: noqa
     print ""
-    del pip
 
 from utils.packages.packages import Packages
 
