@@ -471,9 +471,9 @@ class Protocol(protocol.Protocol):
                 elif cmd == "join":
                     channame = msg[6:]
                     chan = None
-                    for id, channel in self.channels.iteritems():
+                    for _id, channel in self.channels.iteritems():
                         if channel.name.lower() == channame.lower():
-                            chan = id
+                            chan = _id
                             break
                     if chan is None:
                         self.msg_user("Could not find channel", message.actor)

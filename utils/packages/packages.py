@@ -88,16 +88,16 @@ class Packages(object):
         info = self.get_package_info(package)
         files = info["files"]
 
-        for file in files:
-            if os.path.exists(file):
+        for _file in files:
+            if os.path.exists(_file):
                 raise ValueError("File `%s` conflicts with a core file or one "
-                                 "from another package" % file)
+                                 "from another package" % _file)
 
-        for file in files:
+        for _file in files:
             if file[-1] == "/":
-                os.mkdir(file)
+                os.mkdir(_file)
             else:
-                self._get_file(package + "/", file)
+                self._get_file(package + "/", _file)
 
         with self.config:
             self.config["installed"][package] =\
@@ -120,12 +120,12 @@ class Packages(object):
         files = info["files"]
         files.reverse()
 
-        for file in files:
-            if os.path.exists(file):
-                if os.path.isdir(file):
-                    shutil.rmtree(file)
+        for _file in files:
+            if os.path.exists(_file):
+                if os.path.isdir(_file):
+                    shutil.rmtree(_file)
                 else:
-                    os.remove(file)
+                    os.remove(_file)
 
         with self.config:
             del self.config["installed"][package]

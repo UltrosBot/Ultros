@@ -151,7 +151,7 @@ class Protocol(irc.IRCClient):
         self._users = []
         self._channels = {}
 
-        def do_sign_on(self):
+        def do_sign_on():
             if self.identity["authentication"].lower() == "nickserv":
                 self.msg(self.identity["auth_target"],
                          "IDENTIFY %s %s" % (self.identity["auth_name"],
@@ -166,18 +166,18 @@ class Protocol(irc.IRCClient):
                 self.sendLine("PASS %s:%s" % (
                     self.identity["auth_name"], self.identity["auth_pass"]))
 
-        def do_channel_joins(self):
+        def do_channel_joins():
             for channel in self.config["channels"]:
                 self.join(channel["name"], channel["key"])
 
-            event = general_events.PostSetupEvent(self, self.config)
-            self.event_manager.run_callback("PostSetup", event)
+            _event = general_events.PostSetupEvent(self, self.config)
+            self.event_manager.run_callback("PostSetup", _event)
 
         self.log.debug(
             "Scheduling Deferreds for signing on and joining channels")
 
-        reactor.callLater(5, do_sign_on, self)
-        reactor.callLater(10, do_channel_joins, self)
+        reactor.callLater(5, do_sign_on)
+        reactor.callLater(10, do_channel_joins)
 
         event = general_events.PreSetupEvent(self, self.config)
         self.event_manager.run_callback("PreSetup", event)

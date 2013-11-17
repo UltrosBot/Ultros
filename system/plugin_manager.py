@@ -196,7 +196,6 @@ class PluginFileAnalyzerWithYamlInfoFile(PluginFileAnalyzerWithInfoFile):
                           "(exception raised was '%s')"
                           % (candidate_infofile, e))
             return None, None, None
-            return None, None, None
         # check if the basic info is available
         if not "core" in data:
             logging.debug("Plugin info file has no 'Core' section (in '%s')"
@@ -238,7 +237,7 @@ class PluginFileAnalyzerWithYamlInfoFile(PluginFileAnalyzerWithInfoFile):
             # parse the information file to get info about the plugin
             name, moduleName, data = self.getPluginNameAndModuleFromStream(open(candidate_infofile),candidate_infofile)
         if (name, moduleName, data) == (None, None, None):
-            return (None,None)
+            return None, None
         infos = {"name": name, "path": os.path.join(directory, moduleName)}
         return infos, data
 
@@ -321,6 +320,7 @@ class YamlPluginManagerSingleton(PluginManager):
             """
             specific_info_ext = plugin_info_ext is not None
             specific_locator = plugin_locator is not None
+            res = None
             if not specific_info_ext and not specific_locator:
                 # use the default behavior
                 res = YamlPluginFileLocator()
