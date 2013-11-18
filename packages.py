@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# coding=utf-8
+
 """
 Packages manager for Ultros. Pulls package info and files from the
 Ultros-contrib repo, which can be found at the following link..
