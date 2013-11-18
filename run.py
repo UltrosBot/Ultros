@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+import os
 import sys
 from kitchen.text.converters import getwriter
 
@@ -10,6 +11,9 @@ from system.factory_manager import Manager
 
 sys.stdout = getwriter('utf-8')(sys.stdout)
 sys.stderr = getwriter('utf-8')(sys.stderr)
+
+if not os.path.exists("logs"):
+    os.mkdir("logs")
 
 open_log("output.log")
 
