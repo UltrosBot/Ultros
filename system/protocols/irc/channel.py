@@ -50,3 +50,7 @@ class Channel(channel.Channel):
 
     def has_mode(self, mode):
         return mode in self._modes
+
+    def respond(self, message):
+        message = message.replace("{CHARS}", self.protocol.control_chars)
+        self.protocol.send_msg(self.name, message)

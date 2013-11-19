@@ -19,6 +19,9 @@ from twisted.internet import reactor, protocol, ssl
 
 from utils.log import getLogger
 from utils.html import html_to_text
+from system.command_manager import CommandManager
+from system.event_manager import EventManager
+from system.events import general as general_events
 from system.protocols.mumble.user import User
 from system.protocols.mumble.channel import Channel
 
@@ -83,12 +86,16 @@ class Protocol(protocol.Protocol):
         self.log = getLogger("Mumble")
         self.log.info("Setting up..")
 
+        self.command_manager = CommandManager.instance()
+        self.event_manager = EventManager.instance()
+
         self.username = config["identity"]["username"]
         self.password = config["identity"]["password"]
         self.networking = config["network"]
         self.tokens = config["identity"]["tokens"]
 
-        # TODO: Throw event (General, post-setup, pre-connect)
+        event = general_events.PreConnectEvent(self, config)
+        self.event_manager.run_callback("PreConnect", event)
 
         reactor.connectSSL(
             self.networking["address"],
@@ -98,7 +105,8 @@ class Protocol(protocol.Protocol):
             120
         )
 
-        # TODO: Throw event (General, post-connect)
+        event = general_events.PostConnectEvent(self, config)
+        self.event_manager.run_callback("PostConnect", event)
 
     def connectionMade(self):
         self.log.info("Connected to server.")
@@ -129,6 +137,9 @@ class Protocol(protocol.Protocol):
         self.sendProtobuf(version)
         self.sendProtobuf(auth)
 
+        event = general_events.PreSetupEvent(self, self.config)
+        self.event_manager.run_callback("PreSetup", event)
+
         # Then we initialize our ping handler
         self.init_ping()
 
@@ -138,8 +149,6 @@ class Protocol(protocol.Protocol):
         message.self_deaf = True
 
         self.sendProtobuf(message)
-
-        # TODO: Throw event
 
     def dataReceived(self, recv):
         # Append our received data
@@ -203,7 +212,8 @@ class Protocol(protocol.Protocol):
         if isinstance(message, Mumble_pb2.Version):
             # version, release, os, os_version
             self.log.info("Connected to Murmur v%s" % message.release)
-            # TODO: Throw event (General, post-setup)
+            event = general_events.PostSetupEvent(self, self.config)
+            self.event_manager.run_callback("PostSetup", event)
         elif isinstance(message, Mumble_pb2.Reject):
             # version, release, os, os_version
             self.log.info("Could not connect to server: %s - %s" %
@@ -282,8 +292,6 @@ class Protocol(protocol.Protocol):
     def init_ping(self):
         # Call ping every PING_REPEAT_TIME seconds.
         reactor.callLater(Protocol.PING_REPEAT_TIME, self.ping_handler)
-
-        # TODO: Throw event
 
     def ping_handler(self):
         self.log.debug("Sending ping")
