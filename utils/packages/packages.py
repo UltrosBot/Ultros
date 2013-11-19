@@ -8,9 +8,10 @@ management script.
 __author__ = 'Gareth Coles'
 
 import os
-import urllib2
+import pip
 import shutil
 import urllib
+import urllib2
 import yaml
 
 from utils.data import Data
@@ -103,6 +104,17 @@ class Packages(object):
                 else:
                     path = _file
                     conflicts["files"].append(path)
+
+        requirements = info["requires"]
+        for module in requirements["modules"]:
+            try:
+                __import__(module)
+            except ImportError:
+                pip.main(["install", module])
+
+        for new_package in requirements["packages"]:
+            if not self.package_installed(new_package):
+                self.install_package(new_package)
 
         with self.config:
             self.config["installed"][package] =\
