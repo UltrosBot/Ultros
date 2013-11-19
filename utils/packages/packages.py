@@ -94,7 +94,7 @@ class Packages(object):
                                  "from another package" % _file)
 
         for _file in files:
-            if file[-1] == "/":
+            if _file[-1] == "/":
                 os.mkdir(_file)
             else:
                 self._get_file(package + "/", _file)

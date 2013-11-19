@@ -11,6 +11,7 @@ In the root of the repo is a packages.yml files containing information on each
 of the available packages. Sub-folders in the repo contain the actual
 packages, including their information and version history files.
 """
+import traceback
 
 __author__ = 'Gareth Coles'
 
@@ -165,6 +166,11 @@ def main(args):
             packages.install_package(package)
         except Exception as e:
             print ">> Error installing package: %s" % e
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            data = traceback.format_exception(exc_type, exc_value,
+                                              exc_traceback)
+            print "==============================="
+            print " ".join(data)
             return exit(1)
         print ">> Version %s installed successfully." \
               % packages.config["installed"][package]
