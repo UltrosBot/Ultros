@@ -72,27 +72,30 @@ class Manager(object):
         self.logger.debug("Collecting plugins..")
         self.plugman.collectPlugins()
 
-        for info in self.plugman.getAllPlugins():
-            name = info.name
-            self.logger.debug("Checking if plugin '%s' is configured to load.."
-                              % name)
-            if name in self.main_config["plugins"]:
-                try:
-                    self.plugman.activatePluginByName(info.name)
-                    info.plugin_object.add_variables(info, self)
-                    if hasattr(info.plugin_object, "setup"):
-                        self.logger.debug("Running setup method..")
-                        info.plugin_object.setup()
-                except Exception:
-                    self.logger.warn("Unable to load plugin: %s v%s"
-                                     % (name, info.version))
-                    output_exception(self.logger, logging.WARN)
-                    self.plugman.deactivatePluginByName(name)
-                else:
-                    self.logger.info("Loaded plugin: %s v%s"
-                                     % (name, info.version))
-                    if info.copyright:
-                        self.logger.info("Licensing: %s" % info.copyright)
+        if self.main_config["plugins"]:
+            for info in self.plugman.getAllPlugins():
+                name = info.name
+                self.logger.debug("Checking if plugin '%s' is configured to "
+                                  "load.." % name)
+                if name in self.main_config["plugins"]:
+                    try:
+                        self.plugman.activatePluginByName(info.name)
+                        info.plugin_object.add_variables(info, self)
+                        if hasattr(info.plugin_object, "setup"):
+                            self.logger.debug("Running setup method..")
+                            info.plugin_object.setup()
+                    except Exception:
+                        self.logger.warn("Unable to load plugin: %s v%s"
+                                         % (name, info.version))
+                        output_exception(self.logger, logging.WARN)
+                        self.plugman.deactivatePluginByName(name)
+                    else:
+                        self.logger.info("Loaded plugin: %s v%s"
+                                         % (name, info.version))
+                        if info.copyright:
+                            self.logger.info("Licensing: %s" % info.copyright)
+        else:
+            self.logger.info("No plugins are configured.")
 
         # Load up the protocols
 
