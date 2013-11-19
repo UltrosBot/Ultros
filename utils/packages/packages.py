@@ -88,20 +88,27 @@ class Packages(object):
         info = self.get_package_info(package)
         files = info["files"]
 
-        for _file in files:
-            if os.path.exists(_file):
-                raise ValueError("File `%s` conflicts with a core file or one "
-                                 "from another package" % _file)
+        conflicts = {"files": [], "folders": []}
 
         for _file in files:
             if _file[-1] == "/":
-                os.mkdir(_file)
+                if not os.path.exists(_file):
+                    os.mkdir(_file)
+                else:
+                    path = _file
+                    conflicts["folders"].append(path)
             else:
-                self._get_file(package + "/", _file)
+                if not os.path.exists(_file):
+                    self._get_file(package + "/", _file)
+                else:
+                    path = _file
+                    conflicts["files"].append(path)
 
         with self.config:
             self.config["installed"][package] =\
                 info["current_version"]["number"]
+
+        return conflicts
 
     def update_package(self, package):
         if not self.package_installed(package):

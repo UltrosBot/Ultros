@@ -163,7 +163,7 @@ def main(args):
             return exit(1)
 
         try:
-            packages.install_package(package)
+            conflicts = packages.install_package(package)
         except Exception as e:
             print ">> Error installing package: %s" % e
             exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -174,6 +174,21 @@ def main(args):
             return exit(1)
         print ">> Version %s installed successfully." \
               % packages.config["installed"][package]
+        files = conflicts["files"]
+        folders = conflicts["folders"]
+        if len(files) or len(folders):
+            print ">> The following conflicts were found."
+            if len(folders):
+                print "   | Directories: %s" % len(folders)
+                for path in folders:
+                    print "   + %s" % path
+            if len(files):
+                print "   | Files: %s" % len(folders)
+                for path in files:
+                    print "   + %s" % path
+            print ">> These files were not modified but may be removed if " \
+                  "you uninstall the package."
+
     elif operation == "uninstall":
         if len(args) < 2:
             print ">> Syntax: 'python packages.py uninstall <package>'"
