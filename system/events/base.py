@@ -14,6 +14,7 @@ class BaseEvent(object):
     """
 
     caller = None
+    cancelled = False
 
     def __init__(self, caller):
         """
