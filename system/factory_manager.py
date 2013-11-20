@@ -71,7 +71,7 @@ class Manager(object):
 
         self.logger.debug("Collecting plugins..")
         self.plugman.collectPlugins()
-        
+
         if self.main_config["plugins"]:
             for info in self.plugman.getAllPlugins():
                 name = info.name
