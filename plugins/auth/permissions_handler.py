@@ -21,6 +21,7 @@ class permissionsHandler(object):
                                        ["auth.login",
                                         "auth.logout",
                                         "bridge.relay",
+                                        "urls.shorten",
                                         "urls.title"])
 
     def find_username(self, username):

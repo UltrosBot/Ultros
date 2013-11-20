@@ -946,6 +946,9 @@ class Protocol(irc.IRCClient):
 
         msg = event.message
 
+        target = str(target).decode("UTF-8")
+        msg = msg.decode("UTF-8")
+
         if event.printable:
             self.log.info("-> -%s- %s" % (target, msg))
 
@@ -955,13 +958,19 @@ class Protocol(irc.IRCClient):
         """
         Sends a notice without printing it or firing an event.
         """
-        self.sendLine(u"NOTICE %s :%s" % (target, message))
+        target = str(target).decode("UTF-8")
+        msg = message.decode("UTF-8")
+
+        self.sendLine(u"NOTICE %s :%s" % (target, msg))
 
     def send_privmsg(self, target, message):
         event = general_events.MessageSent(self, "notice", target, message)
         self.event_manager.run_callback("MessageSent", event)
 
         msg = event.message
+
+        target = str(target).decode("UTF-8")
+        msg = msg.decode("UTF-8")
 
         if event.printable:
             self.log.info("-> *%s* %s" % (target, msg))
@@ -972,9 +981,14 @@ class Protocol(irc.IRCClient):
         """
         Sends a privmsg without printing it or firing an event.
         """
-        self.sendLine(u"PRIVMSG %s :%s" % (target, message))
+        target = str(target).decode("UTF-8")
+        msg = message.decode("UTF-8")
+
+        self.sendLine(u"PRIVMSG %s :%s" % (target, msg))
 
     def send_ctcp(self, target, command, args=None):
+        target = str(target).decode("UTF-8")
+        command = command.decode("UTF-8")
         message = command
         if args and len(args):
             message = u"%s %s" % (command, args)
@@ -982,6 +996,8 @@ class Protocol(irc.IRCClient):
                                    constants.CTCP)
 
     def send_ctcp_reply(self, target, command, args=None):
+        target = str(target).decode("UTF-8")
+        command = command.decode("UTF-8")
         message = command
         if args and len(args):
             message = u"%s %s" % (command, args)
@@ -989,6 +1005,7 @@ class Protocol(irc.IRCClient):
                                   constants.CTCP)
 
     def send_who(self, mask, operators_only=False):
+        mask = mask.decode("UTF-8")
         query = u"WHO %s" % mask
         if operators_only:
             query += " o"
