@@ -71,7 +71,7 @@ class Manager(object):
 
         self.logger.debug("Collecting plugins..")
         self.plugman.collectPlugins()
-
+        
         if self.main_config["plugins"]:
             for info in self.plugman.getAllPlugins():
                 name = info.name
@@ -81,9 +81,9 @@ class Manager(object):
                     try:
                         self.plugman.activatePluginByName(info.name)
                         info.plugin_object.add_variables(info, self)
-                        if hasattr(info.plugin_object, "setup"):
-                            self.logger.debug("Running setup method..")
-                            info.plugin_object.setup()
+                        info.plugin_object.logger = getLogger(name)
+                        self.logger.debug("Running setup method..")
+                        info.plugin_object.setup()
                     except Exception:
                         self.logger.warn("Unable to load plugin: %s v%s"
                                          % (name, info.version))

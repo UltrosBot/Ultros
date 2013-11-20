@@ -34,7 +34,6 @@ def getLogger(name, path=None,
 
         handler = logging.FileHandler(path)
         formatter = logging.Formatter(fmt)
-        formatter.datefmt = datefmt
         handler.setFormatter(formatter)
         logger.addHandler(handler)
 

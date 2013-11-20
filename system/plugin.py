@@ -73,4 +73,5 @@ class Plugin(IPlugin):
         self.info and self.factory are only available once this method is
         called.
         """
+        self.logger.warn("Setup method not defined!")
         pass
