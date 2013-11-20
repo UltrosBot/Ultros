@@ -19,3 +19,6 @@ class User(object):
 
     def remove_channel(self, channel):
         raise NotImplementedError("This method must be overridden")
+
+    def respond(self, message):
+        raise NotImplemented("This method must be overridden")
