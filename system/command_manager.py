@@ -32,6 +32,16 @@ class CommandManager(object):
     def __init__(self):
         self.logger = getLogger("Commands")
 
+    @staticmethod
+    def instance(self=None):
+        """
+        This only exists to help developers using decent IDEs.
+        Don't actually use it.
+        """
+        if self is None:
+            self = CommandManager
+        return self
+
     def set_factory_manager(self, factory_manager):
         """
         Set the factory manager. This should only ever be called by the

@@ -6,13 +6,13 @@ import auth_handler
 import permissions_handler
 
 from system.command_manager import CommandManager
-from system.plugin import Plugin
+from system.plugin import PluginObject
 from utils.config import Config
 from utils.data import Data
 from utils.misc import output_exception
 
 
-class AuthPlugin(Plugin):
+class AuthPlugin(PluginObject):
 
     config = None
     passwords = None

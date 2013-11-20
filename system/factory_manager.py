@@ -2,6 +2,7 @@
 __author__ = "Gareth Coles"
 
 import logging
+import inspect
 
 from system.factory import Factory
 from utils.log import getLogger
@@ -80,6 +81,10 @@ class Manager(object):
                 if name in self.main_config["plugins"]:
                     try:
                         self.plugman.activatePluginByName(info.name)
+                        self.logger.debug("Loading plugin: %s"
+                                          % info.plugin_object)
+                        self.logger.debug("Location: %s" % inspect.getfile
+                                    (info.plugin_object.__class__))
                         info.plugin_object.add_variables(info, self)
                         info.plugin_object.logger = getLogger(name)
                         self.logger.debug("Running setup method..")

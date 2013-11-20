@@ -5,7 +5,7 @@ import logging
 from yapsy.IPlugin import IPlugin
 
 
-class Plugin(IPlugin):
+class PluginObject(IPlugin):
     """
     Super class for creating plugins.
 
@@ -30,7 +30,7 @@ class Plugin(IPlugin):
     factory_manager = None
 
     def __init__(self):
-        super(Plugin, self).__init__()
+        super(PluginObject, self).__init__()
 
     def add_variables(self, info, factory_manager):
         """
@@ -54,14 +54,14 @@ class Plugin(IPlugin):
         Called when the plugin is loaded.
         Not to be used for setup! You probably don't need this at all.
         """
-        super(Plugin, self).activate()
+        super(PluginObject, self).activate()
 
     def deactivate(self):
         """
         Called when the plugin is unloaded.
         Use this for saving data or cleaning up.
         """
-        super(Plugin, self).deactivate()
+        super(PluginObject, self).deactivate()
 
     def setup(self):
         """

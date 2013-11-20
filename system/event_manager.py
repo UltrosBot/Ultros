@@ -79,6 +79,16 @@ class EventManager(object):
     def __init__(self):
         self.logger = getLogger("Events")
 
+    @staticmethod
+    def instance(self=None):
+        """
+        This only exists to help developers using decent IDEs.
+        Don't actually use it.
+        """
+        if self is None:
+            self = EventManager
+        return self
+
     def _sort(self, lst):
         return sorted(lst, key=itemgetter("priority", "name"), reverse=True)
 
@@ -86,7 +96,7 @@ class EventManager(object):
                      cancelled=False):
         if not self.has_callback(callback):
             self.callbacks[callback] = []
-        if self.ha_plugin_callback(callback, plugin.info.name):
+        if self.has_plugin_callback(callback, plugin.info.name):
             raise ValueError("Plugin '%s' has already registered a handler for"
                              " the '%s' callback" %
                              (plugin.info.name, callback))
@@ -175,12 +185,17 @@ class EventManager(object):
                 try:
                     self.logger.debug("Running callback: %s" % cb)
                     if cb["filter"]:
-                        if isinstance(cb["filter"], str):
-                            continue
-                        elif isinstance(cb["filter"], FunctionType):
+                        if isinstance(cb["filter"], FunctionType):
                             if not cb["filter"](event):
+                                self.logger.debug("Not running, filter "
+                                                  "function returned false.")
                                 continue
                         else:
+                            self.logger.warn("Not running, filter variable "
+                                             "is not actually a function. Bug "
+                                             "the developers of the %s plugin "
+                                             "about it!" % cb["name"])
+                            self.logger.warn("Value: %s" % cb["filter"])
                             continue
                     if event.cancelled:
                         if cb["cancelled"]:

@@ -20,7 +20,8 @@ class permissionsHandler(object):
             self.add_group_permissions("default",
                                        ["auth.login",
                                         "auth.logout",
-                                        "bridge.relay"])
+                                        "bridge.relay",
+                                        "urls.title"])
 
     def find_username(self, username):
         username = username.lower()
