@@ -23,4 +23,4 @@ control_chars: "." # What messages must be prefixed with to count as a command.
                    # This doesn't have to be just one character!
                    # You can also use {NICK} in place of the bot's current nick.
 
-line_delay: 1
+line_delay: 1 # Delay (in seconds) between each line being sent
