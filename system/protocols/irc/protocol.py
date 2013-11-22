@@ -92,6 +92,7 @@ class Protocol(irc.IRCClient):
         self.networking = config["network"]
         self.identity = config["identity"]
         self.control_chars = config["control_chars"]
+        self.lineRate = config["line_delay"]
 
         if self.identity["authentication"].lower() == "password":
             self.password = "%s:%s" % (self.identity["auth_name"],

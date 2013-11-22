@@ -22,3 +22,5 @@ channels: # Initial channels to join. The bot will remember what channels it was
 control_chars: "." # What messages must be prefixed with to count as a command.
                    # This doesn't have to be just one character!
                    # You can also use {NICK} in place of the bot's current nick.
+
+line_delay: 1
