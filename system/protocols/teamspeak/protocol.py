@@ -126,6 +126,14 @@ class Protocol(protocol.Protocol):
         if not r["result"]:
             self.log.warn("Unable to select server: %s" % r["error_msg"])
 
+        r = self.send_command("clientupdate", {"client_nickname":
+                                               self.identity["nickname"]},
+                              output=False)
+
+        if not r["result"]:
+            self.log.warn("Unable to set nickname: %s"
+                          % r["error_msg"])
+
         self.log.debug("Starting anti-timeout kick heartbeat..")
 
         self.whoami_heartbeat()
@@ -174,14 +182,6 @@ class Protocol(protocol.Protocol):
             if not r["result"]:
                 self.log.warn("Unable to subscribe channel notifications: %s"
                               % r["error_msg"])
-
-        r = self.send_command("clientupdate", {"client_nickname":
-                                               self.identity["nickname"]},
-                              output=False)
-
-        if not r["result"]:
-            self.log.warn("Unable to set nickname: %s"
-                          % r["error_msg"])
 
         self.log.info("Logged in.")
 
@@ -237,6 +237,11 @@ class Protocol(protocol.Protocol):
             elif parsed["targetmode"] == "3":
                 mode = "SERVER "
 
+            self.log.debug("Parsed: %s" % parsed)
+
+            self.send_message(parsed["targetmode"], parsed["invokerid"],
+                              "Echo test: %s" % parsed["msg"])
+
             self.log.info("%s | <%s> %s"
                           % (mode, parsed["invokername"], parsed["msg"]))
         else:
@@ -264,3 +269,23 @@ class Protocol(protocol.Protocol):
         for x in splitdata:
             self.log.debug("<- %s" % x)
             self.do_parse(x)
+
+    def send_message(self, mode, target, message):
+        _mode = ""
+
+        if str(mode) == "1":
+            _mode = "PRIVATE"
+        elif str(mode) == "2":
+            _mode = "CHANNEL"
+        elif str(mode) == "3":
+            target = self.sid
+            _mode = "SERVER "
+
+        r = self.send_command("sendtextmessage", {"targetmode": mode,
+                                                  "target": target,
+                                                  "message": message},
+                              output=False)
+        if r["result"]:
+            self.log.info("%s | -> %s" % (_mode, message))
+        else:
+            self.log.warn("Unable to send message: %s" % r["error_msg"])

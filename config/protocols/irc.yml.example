@@ -25,4 +25,4 @@ control_chars: "." # What messages must be prefixed with to count as a command.
 
 rate_limiting: # Limit the speed of sending messages
   enabled: yes
-  line_delay: 1 # Delay (in seconds) between each line being sent
+  line_delay: 0.1 # Delay (in seconds) between each line being sent
