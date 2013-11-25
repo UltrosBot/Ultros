@@ -183,6 +183,12 @@ class Protocol(protocol.Protocol):
                 self.log.warn("Unable to subscribe channel notifications: %s"
                               % r["error_msg"])
 
+        r = self.send_command("whoami")
+
+        if r["result"]:
+            self.client_channel_id = r["data"]["client_channel_id"]
+            self.client_id = r["data"]["client_id"]
+
         self.log.info("Logged in.")
 
         #######################################################################
@@ -228,6 +234,10 @@ class Protocol(protocol.Protocol):
         parsed = self.parse_words(words[1:])
         notify_type = words[0].split("notify")[1]
 
+        invoker = parsed["invokerid"]
+        if invoker == self.client_id:
+            return
+
         if notify_type == "textmessage":
             mode = "???"
             if parsed["targetmode"] == "1":
@@ -239,8 +249,9 @@ class Protocol(protocol.Protocol):
 
             self.log.debug("Parsed: %s" % parsed)
 
-            self.send_message(parsed["targetmode"], parsed["invokerid"],
-                              "Echo test: %s" % parsed["msg"])
+            #TODO: Finish testing
+            #self.send_message(parsed["targetmode"], parsed["invokerid"],
+            #                  "Echo test: %s" % parsed["msg"])
 
             self.log.info("%s | <%s> %s"
                           % (mode, parsed["invokername"], parsed["msg"]))
@@ -270,6 +281,7 @@ class Protocol(protocol.Protocol):
             self.log.debug("<- %s" % x)
             self.do_parse(x)
 
+    @run_async
     def send_message(self, mode, target, message):
         _mode = ""
 
@@ -277,13 +289,14 @@ class Protocol(protocol.Protocol):
             _mode = "PRIVATE"
         elif str(mode) == "2":
             _mode = "CHANNEL"
+            target = self.client_channel_id
         elif str(mode) == "3":
             target = self.sid
             _mode = "SERVER "
 
         r = self.send_command("sendtextmessage", {"targetmode": mode,
                                                   "target": target,
-                                                  "message": message},
+                                                  "msg": message},
                               output=False)
         if r["result"]:
             self.log.info("%s | -> %s" % (_mode, message))

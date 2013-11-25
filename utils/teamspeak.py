@@ -25,6 +25,7 @@ def unescape(instr):
 
 def escape(instr):
     instr = str(instr)
+    instr = instr.replace("\\", "\\\\")
     instr = instr.replace(" ", "\\s")
     instr = instr.replace("\n", "\\n")
     instr = instr.replace("\r", "\\r")
@@ -35,5 +36,4 @@ def escape(instr):
     instr = instr.replace("\12", "\\f")
     instr = instr.replace("\11", "\\v")
     instr = instr.replace("/", "\\/")
-    instr = instr.replace("\\", "\\\\")
     return instr
