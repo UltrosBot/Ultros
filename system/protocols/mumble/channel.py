@@ -36,3 +36,6 @@ class Channel(channel.Channel):
             self.protocol.log.debug(
                 "Tried to remove non-existent user \"%s\" from channel \"%s\""
                 % (user, self))
+
+    def respond(self, message):
+        self.protocol.msg_channel(message, self)
