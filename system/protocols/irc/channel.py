@@ -7,7 +7,7 @@ from system.protocols.generic import channel
 
 class Channel(channel.Channel):
     def __init__(self, protocol, name):
-        self.protocol = protocol
+        super(Channel, self).__init__(protocol)
         self.name = name
         self.users = set()
         self._modes = {}

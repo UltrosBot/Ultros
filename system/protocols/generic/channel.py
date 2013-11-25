@@ -5,8 +5,8 @@ class Channel(object):
 
     name = ""
 
-    def __init__(self):
-        self.protocol = None
+    def __init__(self, protocol=None):
+        self.protocol = protocol
 
     def respond(self, message):
-        raise NotImplemented("This method must be overridden")
+        raise NotImplementedError("This method must be overridden")
