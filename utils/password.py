@@ -27,7 +27,7 @@ def mkpasswd(length=8, digits=2, upper=2, lower=2):
     :param lower: Minimum no. of lower case letters in the password
     :type lower: int
 
-    :returns: A random password with the above constaints
+    :returns: A random password with the above constraints
     :rtype: str
     """
 
