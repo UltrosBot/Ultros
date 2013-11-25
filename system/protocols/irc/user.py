@@ -9,13 +9,12 @@ from system.protocols.generic import user
 class User(user.User):
     def __init__(self, protocol, nickname, ident=None, host=None,
                  realname=None, is_oper=False, is_tracked=False):
-        self.protocol = protocol
+        super(User, self).__init__(protocol, is_tracked)
         self.nickname = nickname
         self.ident = ident
         self.host = host
         self.realname = realname
         self.is_oper = is_oper
-        self.is_tracked = is_tracked
         self.channels = set()
         self._ranks = {}
 
