@@ -20,6 +20,8 @@ class Protocol(protocol.Protocol):
     command_responses = deque()
     command_mutex = Lock()
 
+    receive_mutex = Lock()
+
     channels = {}
     users = []
 
@@ -259,6 +261,7 @@ class Protocol(protocol.Protocol):
             self.log.debug("Received notification: %s %s"
                            % (notify_type, parsed))
 
+    @run_async
     def do_parse(self, data):
         if data.lower().startswith("ts3"):
             self.log.info("Connected.")
@@ -274,14 +277,14 @@ class Protocol(protocol.Protocol):
         self.command_responses.append(data)
 
     def dataReceived(self, data):
-        splitdata = data.split("\n\r")
-        if "" in splitdata:
-            splitdata.remove("")
-        for x in splitdata:
-            self.log.debug("<- %s" % x)
-            self.do_parse(x)
+        with self.receive_mutex:
+            splitdata = data.split("\n\r")
+            if "" in splitdata:
+                splitdata.remove("")
+            for x in splitdata:
+                self.log.debug("<- %s" % x)
+                self.do_parse(x)
 
-    @run_async
     def send_message(self, mode, target, message):
         _mode = ""
 
