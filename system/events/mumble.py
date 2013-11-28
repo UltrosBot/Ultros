@@ -34,10 +34,16 @@ class CodecVersion(MumbleEvent):
     """
     # TODO: Update this docstring when we know what this is for
 
-    version = ""
+    alpha = ""
+    beta = ""
+    prefer_alpha = False
+    opus = ""
 
-    def __init__(self, caller, version):
-        self.version = version
+    def __init__(self, caller, alpha, beta, prefer_alpha, opus):
+        self.alpha = alpha
+        self.beta = beta
+        self.prefer_alpha = prefer_alpha
+        self.opus = opus
 
         super(self.__class__, self).__init__(caller)
 
@@ -48,10 +54,12 @@ class CryptoSetup(MumbleEvent):
     """
     # TODO: Update this docstring when we know what this is for
 
+    key = ""
     client_nonce = ""
     server_nonce = ""
 
-    def __init__(self, caller, client_n, server_n):
+    def __init__(self, caller, key, client_n, server_n):
+        self.key = key
         self.client_nonce = client_n
         self.server_nonce = server_n
 
@@ -82,12 +90,15 @@ class ServerSync(MumbleEvent):
     """
 
     session = ""
-    bandwidth = ""
+    max_bandwidth = ""
     permissions = ""
+    welcome_text = ""
 
-    def __init__(self, caller, session, bandwidth, permissions):
+    def __init__(self, caller, session, max_bandwidth, welcome_text,
+                 permissions):
         self.session = session
-        self.bandwidth = bandwidth
+        self.max_bandwidth = max_bandwidth
+        self.welcome_text = welcome_text
         self.permissions = permissions
 
         super(self.__class__, self).__init__(caller)
@@ -99,14 +110,19 @@ class ServerConfig(MumbleEvent):
     """
     # TODO: Update this docstring when we know what this is for
 
-    bandwidth = ""
+    max_bandwidth = ""
+    welcome_text = ""
     allow_html = True
     message_length = 0
+    image_message_length = 0
 
-    def __init__(self, caller, bandwidth, allow_html, message_length):
-        self.bandwidth = bandwidth
+    def __init__(self, caller, max_bandwidth, welcome_text, allow_html,
+                 message_length, image_message_length):
+        self.max_bandwidth = max_bandwidth
+        self.welcome_text = welcome_text
         self.allow_html = allow_html
         self.message_length = message_length
+        self.image_message_length = image_message_length
 
         super(self.__class__, self).__init__(caller)
 
@@ -152,14 +168,16 @@ class UserRemove(MumbleEvent):
     # TODO: Update this docstring when we know what this is for
 
     session = ""
+    actor = ""
     user = None
     reason = ""
     ban = ""
 
-    def __init__(self, caller, session, actor, reason, ban):
+    def __init__(self, caller, session, actor, user, reason, ban):
         self.caller = caller
         self.session = session
-        self.user = actor
+        self.actor = actor
+        self.user = user
         self.reason = reason
         self.ban = ban
 
@@ -171,11 +189,11 @@ class Unknown(MumbleEvent):
     Unknown message - Called when we get a message that isn't already handled.
     """
 
-    type = None
-    message = ""
+    type = ""
+    message = None
 
     def __init__(self, caller, typ, message):
-        self.type = type
+        self.type = typ
         self.message = message
 
         super(self.__class__, self).__init__(caller)
@@ -217,10 +235,12 @@ class UserStateToggleEvent(MumbleEvent):
 
     user = None
     state = False
+    actor = None
 
-    def __init__(self, caller, user, state):
+    def __init__(self, caller, user, state, actor=None):
         self.user = user
         self.state = state
+        self.actor = actor
 
         super(self.__class__, self).__init__(caller)
 
@@ -243,11 +263,11 @@ class UserDeafToggle(UserStateToggleEvent):
     """
 
 
-class UserSupressionToggle(UserStateToggleEvent):
+class UserSuppressionToggle(UserStateToggleEvent):
     """
-    User supression toggle - Sent when a user is surpressed or unsurpressed.
+    User suppression toggle - Sent when a user is suppressed or unsuppressed.
 
-    state: True if surpressed, False if unsurpressed
+    state: True if suppressed, False if unsuppressed
     """
 
 

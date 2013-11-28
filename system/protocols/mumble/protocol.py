@@ -22,6 +22,7 @@ from utils.html import html_to_text
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
 from system.events import general as general_events
+from system.events import mumble as mumble_events
 from system.protocols.mumble.user import User
 from system.protocols.mumble.channel import Channel
 
@@ -221,73 +222,117 @@ class Protocol(protocol.Protocol):
             # TODO: Kill connection, stop ping loop, etc
         elif isinstance(message, Mumble_pb2.CodecVersion):
             # alpha, beta, prefer_alpha, opus
+            alpha = message.alpha
+            beta = message.beta
+            prefer_alpha = message.prefer_alpha
+            opus = message.opus
 
-            # TODO: Throw event (Mumble, codec version)
-            pass
+            event = mumble_events.CodecVersion(self, alpha, beta, prefer_alpha,
+                                               opus)
+            self.event_manager.run_callback("Mumble/CodecVersion", event)
         elif isinstance(message, Mumble_pb2.CryptSetup):
             # key, client_nonce, server_nonce
+            key = message.key
+            c_n = message.client_nonce
+            s_n = message.server_nonce
 
-            # TODO: Throw event (Mumble, crypto setup)
-            pass
+            event = mumble_events.CryptoSetup(self, key, c_n, s_n)
+            self.event_manager.run_callback("Mumble/CryptoSetup", event)
         elif isinstance(message, Mumble_pb2.ChannelState):
             # channel_id, name, position, [parent]
             self.handle_msg_channelstate(message)
-
-            # TODO: Throw event (Mumble, channel state)
         elif isinstance(message, Mumble_pb2.PermissionQuery):
-            # channel_id, permissions
-            pass
-            # TODO: Throw event (Mumble, permissions query)
+            # channel_id, permissions, flush
+            channel = self.channels[message.channel_id]
+            permissions = message.permissions
+            flush = message.flush
+            event = mumble_events.PermissionsQuery(self, channel, permissions,
+                                                   flush)
+            self.event_manager.run_callback("Mumble/PermissionsQuery", event)
         elif isinstance(message, Mumble_pb2.UserState):
             # session, name,
             # [user_id, suppress, hash, actor, self_mute, self_deaf]
             self.handle_msg_userstate(message)
-
-            # TODO: Throw event (Mumble, user state)
-            # Is that necessary? ^ Events are thrown for each user state change
-            # anyway in handle_msg_userstate(), and if a plugin needs something
-            # we don't yet track, then we should add support for it instead of
-            # giving them raw user state information.
         elif isinstance(message, Mumble_pb2.ServerSync):
             # session, max_bandwidth, welcome_text, permissions
+            session = message.session
+            max_bandwidth = message.max_bandwidth
+            permissions = message.permissions
             welcome_text = html_to_text(message.welcome_text, True)
             self.log.info("===   Welcome message   ===")
             for line in welcome_text.split("\n"):
                 self.log.info(line)
             self.log.info("=== End welcome message ===")
 
-            # TODO: Throw event (Mumble, server sync)
+            event = mumble_events.ServerSync(self, session, max_bandwidth,
+                                             welcome_text, permissions)
+            self.event_manager.run_callback("Mumble/ServerSync", event)
         elif isinstance(message, Mumble_pb2.ServerConfig):
-            # allow_html, message_length, image_message_length
+            # max_bandwidth, welcome_text, allow_html, message_length,
+            # image_message_length
+            max_bandwidth = message.max_bandwidth
+            welcome_text = message.welcome_text
             self.allow_html = message.allow_html
+            message_lenth = message.message_length
+            image_message_length = message.image_message_length
 
-            # TODO: Throw event
+            event = mumble_events.ServerConfig(self, max_bandwidth,
+                                               welcome_text, self.allow_html,
+                                               message_lenth,
+                                               image_message_length)
+            self.event_manager.run_callback("Mumble/ServerConfig", event)
         elif isinstance(message, Mumble_pb2.Ping):
-            # timestamp, good, late, lost, resync
-            pass
+            # timestamp, good, late, lost, resync, udp_packets, tcp_packets,
+            # udp_ping_avg, udp_ping_var, tcp_ping_avg, tcp_ping_var
+            timestamp = message.timestamp
+            good = message.good
+            late = message.late
+            lost = message.lost
+            resync = message.resync
+            udp = message.udp_packets
+            tcp = message.tcp_packets
+            udp_a = message.udp_ping_avg
+            udp_v = message.udp_ping_var
+            tcp_a = message.tcp_ping_avg
+            tcp_v = message.tcp_ping_var
 
-            # TODO: Throw event
+            event = mumble_events.Ping(self, timestamp, good, late, lost,
+                                       resync, tcp, udp, tcp_a, udp_a, tcp_v,
+                                       udp_v)
+
+            self.event_manager.run_callback("Mumble/Ping", event)
         elif isinstance(message, Mumble_pb2.UserRemove):
-            # session
+            # session, actor, reason, ban
+            session = message.session
+            actor = message.actor
+            reason = message.reason
+            ban = message.ban
+
             if message.session in self.users:
                 user = self.users[message.session]
                 self.log.info("User left: %s" %
                               user)
                 user.channel.remove_user(user)
                 del self.users[message.session]
+            else:
+                user = None
 
-            # TODO: Throw event
+            event = mumble_events.UserRemove(self, session, actor, user,
+                                             reason, ban)
+            self.event_manager.run_callback("Mumble/UserRemove", event)
+
+            s_event = general_events.UserDisconnected(self,  user)
+            self.event_manager.run_callback("UserDisconnected", s_event)
         elif isinstance(message, Mumble_pb2.TextMessage):
             # actor, channel_id, message
             self.handle_msg_textmessage(message)
-
-            # TODO: Throw event
         else:
             self.log.debug("Unknown message type: %s" % message.__class__)
             self.log.debug("Received message '%s' (%d):\n%s"
                            % (message.__class__, msg_type, str(message)))
 
-            # TODO: Throw event
+            event = mumble_events.Unknown(self, type(message), message)
+            self.event_manager.run_callback("Mumble/Unknown", event)
 
     def init_ping(self):
         # Call ping every PING_REPEAT_TIME seconds.
@@ -327,14 +372,24 @@ class Protocol(protocol.Protocol):
                 self.log.info("Channel link added: %s to %s" %
                               (self.channels[link],
                                self.channels[message.channel_id]))
-                # TODO: Throw event
+                event = mumble_events.ChannelLinked(self, self.channels[link],
+                                                    self.channels
+                                                    [message.channel_id])
+                                                    # TOTALLY MORE READABLE
+                                                    # GOOD JOB PEP8
+                self.event_manager.run_callback("Mumble/ChannelLinked", event)
         if message.links_remove:
             for link in message.links_remove:
                 self.channels[message.channel_id].remove_link(link)
                 self.log.info("Channel link removed: %s from %s" %
                               (self.channels[link],
                                self.channels[message.channel_id]))
-                # TODO: Throw event
+                event = mumble_events.ChannelUnlinked(self, self.channels
+                                                      [link], self.channels
+                                                      [message.channel_id])
+                                                      # Jesus fuck.
+                self.event_manager.run_callback("Mumble/ChannelUnlinked",
+                                                event)
 
     def handle_msg_userstate(self, message):
         if message.name and message.session not in self.users:
@@ -380,11 +435,12 @@ class Protocol(protocol.Protocol):
                                              conf["name"])
                     else:
                         self.log.warning("No channel found in config")
-                except:
+                except Exception:
                     self.log.warning("Config is missing 'channel' section")
             else:
-                # TODO: Throw event - user join
-                pass
+                event = mumble_events.UserJoined(self,
+                                                 self.users[message.session])
+                self.event_manager.run_callback("Mumble/UserJoined", event)
         else:
             # Note: More than one state change can happen at once
             user = self.users[message.session]
@@ -399,7 +455,8 @@ class Protocol(protocol.Protocol):
                 self.channels[message.channel_id].add_user(user)
                 user.channel = self.channels[message.channel_id]
 
-                # TODO: Throw event
+                event = mumble_events.UserMoved(self, user, user.channel)
+                self.event_manager.run_callback("Mumble/UserMoved", event)
             if message.HasField('mute'):
                 actor = self.users[message.actor]
                 if message.mute:
@@ -407,7 +464,10 @@ class Protocol(protocol.Protocol):
                 else:
                     self.log.info("User was unmuted: %s by %s" % (user, actor))
                 user.mute = message.mute
-                # TODO: Throw event
+
+                event = mumble_events.UserMuteToggle(self, user, user.mute,
+                                                     actor)
+                self.event_manager.run_callback("Mumble/UserMuteToggle", event)
             if message.HasField('deaf'):
                 actor = self.users[message.actor]
                 if message.deaf:
@@ -416,29 +476,44 @@ class Protocol(protocol.Protocol):
                 else:
                     self.log.info("User was undeafened: %s by %s" % (user,
                                                                      actor))
-                user.deaf = message.deaf
-                # TODO: Throw event
+                user.deaf = message.deaf  # TODO: Stop typing "dead"
+
+                event = mumble_events.UserDeafToggle(self, user, user.deaf,
+                                                     actor)
+                self.event_manager.run_callback("Mumble/UserDeafToggle", event)
             if message.HasField('suppress'):
                 if message.suppress:
                     self.log.info("User was suppressed: %s" % user)
                 else:
                     self.log.info("User was unsuppressed: %s" % user)
                 user.suppress = message.suppress
-                # TODO: Throw event
+
+                event = mumble_events.UserSuppressionToggle(self, user,
+                                                           user.suppress)
+                self.event_manager.run_callback("Mumble/UserSuppressionToggle",
+                                                event)
             if message.HasField('self_mute'):
                 if message.self_mute:
                     self.log.info("User muted themselves: %s" % user)
                 else:
                     self.log.info("User unmuted themselves: %s" % user)
                 user.self_mute = message.self_mute
-                # TODO: Throw event
+
+                event = mumble_events.UserSelfMuteToggle(self, user,
+                                                         user.self_mute)
+                self.event_manager.run_callback("Mumble/UserSelfMuteToggle",
+                                                event)
             if message.HasField('self_deaf'):
                 if message.self_deaf:
                     self.log.info("User deafened themselves: %s" % user)
                 else:
                     self.log.info("User undeafened themselves: %s" % user)
                 user.self_deaf = message.self_deaf
-                # TODO: Throw event
+
+                event = mumble_events.UserSelfDeafToggle(self, user,
+                                                         user.self_deaf)
+                self.event_manager.run_callback("Mumble/UserSelfDeafToggle",
+                                                event)
             if message.HasField('priority_speaker'):
                 actor = self.users[message.actor]
                 if message.priority_speaker:
@@ -447,15 +522,21 @@ class Protocol(protocol.Protocol):
                 else:
                     self.log.info("User was revoked priority speaker: %s by %s"
                                   % (user, actor))
-                user.priority_speaker = message.priority_speaker
-                # TODO: Throw event
+                state = user.priority_speaker = message.priority_speaker
+
+                event = mumble_events.UserPrioritySpeakerToggle(self, user,
+                                                                state, actor)
+                self.event_manager.run_callback("Mumble/UserPrioritySpeaker"
+                                                "Toggle", event)
             if message.HasField('recording'):
                 if message.recording:
                     self.log.info("User started recording: %s" % user)
                 else:
                     self.log.info("User stopped recording: %s" % user)
                 user.recording = message.recording
-                # TODO: Throw event
+
+                event = mumble_events.UserRecordingToggle(self, user,
+                                                          user.recording)
 
     def handle_msg_textmessage(self, message):
         if message.actor in self.users:
