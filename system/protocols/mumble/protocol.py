@@ -321,7 +321,7 @@ class Protocol(protocol.Protocol):
                                              reason, ban)
             self.event_manager.run_callback("Mumble/UserRemove", event)
 
-            s_event = general_events.UserDisconnected(self,  user)
+            s_event = general_events.UserDisconnected(self, user)
             self.event_manager.run_callback("UserDisconnected", s_event)
         elif isinstance(message, Mumble_pb2.TextMessage):
             # actor, channel_id, message
@@ -489,7 +489,7 @@ class Protocol(protocol.Protocol):
                 user.suppress = message.suppress
 
                 event = mumble_events.UserSuppressionToggle(self, user,
-                                                           user.suppress)
+                                                            user.suppress)
                 self.event_manager.run_callback("Mumble/UserSuppressionToggle",
                                                 event)
             if message.HasField('self_mute'):
