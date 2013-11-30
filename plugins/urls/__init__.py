@@ -87,6 +87,8 @@ class Plugin(PluginObject):
 
                 title, domain = self.parse_title(url)
 
+                self.logger.debug("Title: %s" % title)
+
                 if isinstance(target, Channel):
                     if not target.name in self.channels:
                         with self.channels:
@@ -116,6 +118,9 @@ class Plugin(PluginObject):
                         source.respond(title)
                     else:
                         source.respond("\"%s\" at %s" % (title, domain))
+                else:
+                    self.logger.warn("Unknown target type: %s [%s]"
+                                     % (target, target.__class__))
 
     def urls_command(self, caller, source, args, protocol):
         if not isinstance(source, Channel):

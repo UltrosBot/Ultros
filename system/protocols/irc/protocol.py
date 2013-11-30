@@ -300,7 +300,7 @@ class Protocol(irc.IRCClient):
             user_obj = self._get_user_from_user_string(user)
         except:
             # Privmsg from the server itself and things (if that happens)
-            self.log.debug("Notice from irregular user: %s" % user)
+            self.log.debug("Message from irregular user: %s" % user)
             user_obj = User(self, nickname=user, is_tracked=False)
         channel_obj = None
         if self.utils.compare_nicknames(channel, self.nickname):

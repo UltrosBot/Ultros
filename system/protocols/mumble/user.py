@@ -11,6 +11,7 @@ class User(user.User):
         super(User, self).__init__(protocol, True)
         self.session = session
         self.name = name
+        self.nickname = name  # TODO: STANDARDIZE!
         self.channel = channel
         self.mute = mute
         self.deaf = deaf
@@ -24,4 +25,5 @@ class User(user.User):
         return "%s (%s)" % (self.name, self.session)
 
     def respond(self, message):
+        message = message.replace("{CHARS}", self.protocol.control_chars)
         self.protocol.msg_user(message, self)

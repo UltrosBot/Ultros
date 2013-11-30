@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
+import cgi
+import re
+from utils.misc import output_exception
 
 __author__ = 'Gareth Coles'
 
@@ -95,6 +98,8 @@ class Protocol(protocol.Protocol):
         self.networking = config["network"]
         self.tokens = config["identity"]["tokens"]
 
+        self.control_chars = config["control_chars"]
+
         event = general_events.PreConnectEvent(self, config)
         self.event_manager.run_callback("PreConnect", event)
 
@@ -189,7 +194,7 @@ class Protocol(protocol.Protocol):
                 self.recvProtobuf(msg_type, msg)
             except Exception as e:
                 self.log.error("Exception while handling data.")
-                self.log.debug(e)
+                output_exception(self.log, logging.ERROR)
                 # We abort on exception, because that's the proper thing to do
                 #self.transport.loseConnection()
                 #raise
@@ -538,13 +543,76 @@ class Protocol(protocol.Protocol):
                 event = mumble_events.UserRecordingToggle(self, user,
                                                           user.recording)
 
+    def handle_command(self, source, target, message):
+        """
+        Handles checking a message for a command.
+        """
+
+        cc = self.control_chars.replace("{NICK}", self.username).lower()
+
+        if message.lower().startswith(cc):  # It's a command!
+            # Some case-insensitive replacement here.
+            regex = re.compile(re.escape(cc), re.IGNORECASE)
+            replaced = regex.sub("", message, count=1)
+
+            split = replaced.split()
+            command = split[0]
+            args = split[1:]
+
+            self.log.info("%s ran the %s command in %s" % (source.name,
+                                                           command, target))
+
+            result = self.command_manager.run_command(command, source, target,
+                                                      self, args)
+            a, b = result
+            if a:
+                pass  # Command ran successfully
+            else:  # There's a problem
+                if b is True:  # Unable to authorize
+                    self.log.warn("%s is not authorized to use the %s "
+                                  "command"
+                                  % (source.nickname, command))
+                elif b is None:  # Command not found
+                    self.log.debug("Command not found: %s" % command)
+                    return False
+                else:  # Exception occured
+                    self.log.warn("An error occured while running the %s "
+                                  "command: %s" % (command, b))
+            return True
+        return False
+
     def handle_msg_textmessage(self, message):
         if message.actor in self.users:
+            user_obj = self.users[message.actor]
+            channel_obj = None
             msg = html_to_text(message.message, True)
-            for line in msg.split("\n"):
-                self.log.info("<%s> %s" % (self.users[message.actor],
-                                           line))
-            # TODO: Throw event
+
+            if message.channel_id:
+                cid = message.channel_id[0]
+                channel_obj = self.channels[cid]
+            else:
+                channel_obj = self.ourself  # Private message
+
+            if not self.handle_command(user_obj, channel_obj, msg):
+                event = general_events.PreMessageReceived(self,
+                                                          user_obj,
+                                                          channel_obj,
+                                                          msg,
+                                                          "message",
+                                                          printable=True)
+                self.event_manager.run_callback("PreMessageReceived", event)
+                if event.printable:
+                    for line in msg.split("\n"):
+                        self.log.info("<%s> %s" % (user_obj, line))
+
+                second_event = general_events.MessageReceived(self,
+                                                              user_obj,
+                                                              channel_obj,
+                                                              event.message,
+                                                              "message")
+                self.event_manager.run_callback("MessageReceived",
+                                                second_event)
+
             # TODO: Remove this before proper release. An admin plugin with the
             # - same functionality should be created.
             if msg.startswith('!'):
@@ -578,6 +646,8 @@ class Protocol(protocol.Protocol):
 
         self.log.debug("Sending text message: %s" % message)
 
+        message = cgi.escape(message)
+
         msg = Mumble_pb2.TextMessage()  # session, channel_id, tree_id, message
         msg.message = message
         if target == "channel":
@@ -594,6 +664,9 @@ class Protocol(protocol.Protocol):
         # TODO: Throw event
         if isinstance(channel, Channel):
             channel = channel.channel_id
+
+        self.log.info("To \"%s\": %s" % (self.channels[channel], message))
+
         self.msg(message, "channel", channel)
 
         # TODO: Throw event
@@ -603,6 +676,9 @@ class Protocol(protocol.Protocol):
         # TODO: Throw event
         if isinstance(user, User):
             user = user.session
+
+        self.log.info("To \"%s\": %s" % (self.users[user], message))
+
         self.msg(message, "user", user)
 
         # TODO: Throw event

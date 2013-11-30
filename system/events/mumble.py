@@ -10,7 +10,7 @@ class MumbleEvent(BaseEvent):
     """
 
     def __init__(self, caller):
-        super(self.__class__, self).__init__(caller)
+        super(MumbleEvent, self).__init__(caller)
 
 
 class Reject(MumbleEvent):
@@ -25,7 +25,7 @@ class Reject(MumbleEvent):
         self.type = typ
         self.reason = reason
 
-        super(self.__class__, self).__init__(caller)
+        super(Reject, self).__init__(caller)
 
 
 class CodecVersion(MumbleEvent):
@@ -45,7 +45,7 @@ class CodecVersion(MumbleEvent):
         self.prefer_alpha = prefer_alpha
         self.opus = opus
 
-        super(self.__class__, self).__init__(caller)
+        super(CodecVersion, self).__init__(caller)
 
 
 class CryptoSetup(MumbleEvent):
@@ -63,7 +63,7 @@ class CryptoSetup(MumbleEvent):
         self.client_nonce = client_n
         self.server_nonce = server_n
 
-        super(self.__class__, self).__init__(caller)
+        super(CryptoSetup, self).__init__(caller)
 
 
 class PermissionsQuery(MumbleEvent):
@@ -81,7 +81,7 @@ class PermissionsQuery(MumbleEvent):
         self.permissions = permissions
         self.flush = flush
 
-        super(self.__class__, self).__init__(caller)
+        super(PermissionsQuery, self).__init__(caller)
 
 
 class ServerSync(MumbleEvent):
@@ -101,7 +101,7 @@ class ServerSync(MumbleEvent):
         self.welcome_text = welcome_text
         self.permissions = permissions
 
-        super(self.__class__, self).__init__(caller)
+        super(ServerSync, self).__init__(caller)
 
 
 class ServerConfig(MumbleEvent):
@@ -124,7 +124,7 @@ class ServerConfig(MumbleEvent):
         self.message_length = message_length
         self.image_message_length = image_message_length
 
-        super(self.__class__, self).__init__(caller)
+        super(ServerConfig, self).__init__(caller)
 
 
 class Ping(MumbleEvent):
@@ -158,7 +158,7 @@ class Ping(MumbleEvent):
         self.tcp_var = tcp_var
         self.udp_var = udp_var
 
-        super(self.__class__, self).__init__(caller)
+        super(Ping, self).__init__(caller)
 
 
 class UserRemove(MumbleEvent):
@@ -181,7 +181,7 @@ class UserRemove(MumbleEvent):
         self.reason = reason
         self.ban = ban
 
-        super(self.__class__, self).__init__(caller)
+        super(UserRemove, self).__init__(caller)
 
 
 class Unknown(MumbleEvent):
@@ -196,7 +196,7 @@ class Unknown(MumbleEvent):
         self.type = typ
         self.message = message
 
-        super(self.__class__, self).__init__(caller)
+        super(Unknown, self).__init__(caller)
 
 
 class UserJoined(MumbleEvent):
@@ -209,7 +209,7 @@ class UserJoined(MumbleEvent):
     def __init__(self, caller, user):
         self.user = user
 
-        super(self.__class__, self).__init__(caller)
+        super(UserJoined, self).__init__(caller)
 
 
 class UserMoved(MumbleEvent):
@@ -224,7 +224,7 @@ class UserMoved(MumbleEvent):
         self.user = user
         self.channel = channel
 
-        super(self.__class__, self).__init__(caller)
+        super(UserMoved, self).__init__(caller)
 
 
 class UserStateToggleEvent(MumbleEvent):
@@ -242,7 +242,7 @@ class UserStateToggleEvent(MumbleEvent):
         self.state = state
         self.actor = actor
 
-        super(self.__class__, self).__init__(caller)
+        super(UserStateToggleEvent, self).__init__(caller)
 
 
 class UserMuteToggle(UserStateToggleEvent):
@@ -315,7 +315,7 @@ class ChannelCreated(MumbleEvent):
     def __init__(self, caller, channel):
         self.channel = channel
 
-        super(self.__class__, self).__init__(caller)
+        super(ChannelCreated, self).__init__(caller)
 
 
 class ChannelLinked(MumbleEvent):
@@ -330,7 +330,7 @@ class ChannelLinked(MumbleEvent):
         self.from_channel = from_
         self.to_channel = to_
 
-        super(self.__class__, self).__init__(caller)
+        super(ChannelLinked, self).__init__(caller)
 
 
 class ChannelUnlinked(MumbleEvent):
@@ -345,7 +345,7 @@ class ChannelUnlinked(MumbleEvent):
         self.from_channel = from_
         self.to_channel = to_
 
-        super(self.__class__, self).__init__(caller)
+        super(ChannelUnlinked, self).__init__(caller)
 
 
 # Channel state             []

@@ -172,6 +172,8 @@ class EventManager(object):
     def run_callback(self, callback, event, threaded=False):
         if self.has_callback(callback):
 
+            self.logger.debug("Event: %s" % event)
+
             for cb in self.get_callbacks(callback):
                 if threaded:
                     @run_async

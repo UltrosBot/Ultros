@@ -15,12 +15,6 @@ class User(object):
 
     # TODO: Should these be named some other way to differentiate between
     # - functions plugins should use and internal use ones like these?
-    # TODO: Should these even exist? They only make sense in IRC, not Mumble.
-    def add_channel(self, channel):
-        raise NotImplementedError("This method must be overridden")
-
-    def remove_channel(self, channel):
-        raise NotImplementedError("This method must be overridden")
 
     def respond(self, message):
         raise NotImplementedError("This method must be overridden")
