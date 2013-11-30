@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 # coding=utf-8
-import cgi
-import re
-from utils.misc import output_exception
 
 __author__ = 'Gareth Coles'
 
@@ -15,6 +12,8 @@ __author__ = 'Gareth Coles'
 import logging
 import platform
 import struct
+import cgi
+import re
 
 import Mumble_pb2
 
@@ -22,6 +21,7 @@ from twisted.internet import reactor, protocol, ssl
 
 from utils.log import getLogger
 from utils.html import html_to_text
+from utils.misc import output_exception
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
 from system.events import general as general_events
@@ -82,6 +82,8 @@ class Protocol(protocol.Protocol):
 
     channels = {}
     users = {}
+
+    pinging = True
 
     def __init__(self, factory, config):
         self.received = ""
@@ -195,9 +197,6 @@ class Protocol(protocol.Protocol):
             except Exception as e:
                 self.log.error("Exception while handling data.")
                 output_exception(self.log, logging.ERROR)
-                # We abort on exception, because that's the proper thing to do
-                #self.transport.loseConnection()
-                #raise
 
             self.received = self.received[full_length:]
 
@@ -224,7 +223,9 @@ class Protocol(protocol.Protocol):
             # version, release, os, os_version
             self.log.info("Could not connect to server: %s - %s" %
                           (message.type, message.reason))
-            # TODO: Kill connection, stop ping loop, etc
+
+            self.transport.loseConnection()
+            self.pinging = False
         elif isinstance(message, Mumble_pb2.CodecVersion):
             # alpha, beta, prefer_alpha, opus
             alpha = message.alpha
@@ -344,6 +345,8 @@ class Protocol(protocol.Protocol):
         reactor.callLater(Protocol.PING_REPEAT_TIME, self.ping_handler)
 
     def ping_handler(self):
+        if not self.pinging:
+            return
         self.log.debug("Sending ping")
 
         # Ping has only optional data, no required
@@ -481,7 +484,7 @@ class Protocol(protocol.Protocol):
                 else:
                     self.log.info("User was undeafened: %s by %s" % (user,
                                                                      actor))
-                user.deaf = message.deaf  # TODO: Stop typing "dead"
+                user.deaf = message.deaf
 
                 event = mumble_events.UserDeafToggle(self, user, user.deaf,
                                                      actor)
@@ -584,7 +587,6 @@ class Protocol(protocol.Protocol):
     def handle_msg_textmessage(self, message):
         if message.actor in self.users:
             user_obj = self.users[message.actor]
-            channel_obj = None
             msg = html_to_text(message.message, True)
 
             if message.channel_id:
@@ -640,7 +642,6 @@ class Protocol(protocol.Protocol):
 
     def msg(self, message, target="channel", target_id=None):
 
-        # TODO: Throw event
         if target_id is None and target == "channel":
             target_id = self.ourself.channel.channel_id
 
@@ -657,31 +658,35 @@ class Protocol(protocol.Protocol):
 
         self.sendProtobuf(msg)
 
-        # TODO: Throw event
-
     def msg_channel(self, message, channel):
 
-        # TODO: Throw event
         if isinstance(channel, Channel):
             channel = channel.channel_id
 
-        self.log.info("To \"%s\": %s" % (self.channels[channel], message))
+        event = general_events.MessageSent(self, "message",
+                                           self.channels[channel], message)
+        self.event_manager.run_callback("MessageSent", event)
+
+        message = event.message
+
+        self.log.info("-> *%s* %s" % (self.channels[channel], message))
 
         self.msg(message, "channel", channel)
 
-        # TODO: Throw event
-
     def msg_user(self, message, user):
 
-        # TODO: Throw event
         if isinstance(user, User):
             user = user.session
 
-        self.log.info("To \"%s\": %s" % (self.users[user], message))
+        event = general_events.MessageSent(self, "message",
+                                           self.users[user], message)
+        self.event_manager.run_callback("MessageSent", event)
+
+        message = event.message
+
+        self.log.info("-> (%s) %s" % (self.users[user], message))
 
         self.msg(message, "user", user)
-
-        # TODO: Throw event
 
     def join_channel(self, channel):
         if isinstance(channel, Channel):

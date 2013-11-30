@@ -943,7 +943,7 @@ class Protocol(irc.IRCClient):
     #######################################################################
 
     def send_notice(self, target, message):
-        event = general_events.MessageSent(self, "message", target, message)
+        event = general_events.MessageSent(self, "notice", target, message)
         self.event_manager.run_callback("MessageSent", event)
 
         msg = event.message
@@ -966,7 +966,7 @@ class Protocol(irc.IRCClient):
         self.sendLine(u"NOTICE %s :%s" % (target, msg))
 
     def send_privmsg(self, target, message):
-        event = general_events.MessageSent(self, "notice", target, message)
+        event = general_events.MessageSent(self, "message", target, message)
         self.event_manager.run_callback("MessageSent", event)
 
         msg = event.message
