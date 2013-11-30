@@ -216,7 +216,7 @@ class Plugin(PluginObject):
                 domain = domain[4:]
 
             if domain in self.handlers:
-                return self.handlers[domain](url), None
+                return self.handlers[domain](url).decode("UTF-8"), None
 
             self.logger.debug("Parsed domain: %s" % domain)
 
@@ -260,7 +260,7 @@ class Plugin(PluginObject):
             soup = BeautifulSoup(page,
                                  convertEntities=BeautifulSoup.HTML_ENTITIES)
             title = unicode(soup.title.string).encode("UTF-8")
-            return title, domain
+            return title.decode("UTF-8"), domain.decode("UTF-8")
         except Exception as e:
             if not str(e).lower() == "not viewing html":
                 return str(e), domain
