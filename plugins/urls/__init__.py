@@ -178,8 +178,7 @@ class Plugin(PluginObject):
                 caller.respond(shortened)
         else:
             if not source.name in self.channels \
-               or not len(self.channels[source.name]["last"])\
-               and not len(self.channels[source.name]["last"]):
+               or not len(self.channels[source.name]["last"]):
                 caller.respond("Nobody's pasted a URL here yet!")
                 return
             handler = self.channels[source.name]["shortener"]
