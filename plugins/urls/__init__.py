@@ -274,16 +274,16 @@ class Plugin(PluginObject):
         if domain.startswith("www."):
             raise ValueError("Domain should not start with 'www.'")
         if domain not in self.handlers:
-            self.logger.debug("Handler registered for '%s': %s"
-                              % (domain, handler))
+            #self.logger.debug("Handler registered for '%s': %s"
+            #                  % (domain, handler))
             self.handlers[domain] = handler
             return True
         return False
 
     def add_shortener(self, name, handler):
         if name not in self.shorteners:
-            self.logger.debug("Shortener '%s' registered: %s"
-                              % (name, handler))
+            #self.logger.debug("Shortener '%s' registered: %s"
+            #                  % (name, handler))
             self.shorteners[name] = handler
             return True
         return False
