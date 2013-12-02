@@ -1,7 +1,6 @@
 # coding=utf-8
 __author__ = "Gareth Coles"
 
-import logging
 from yapsy.IPlugin import IPlugin
 
 
