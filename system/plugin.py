@@ -46,7 +46,6 @@ class PluginObject(IPlugin):
 
         self.info = info
         self.module = self.info.path.replace("\\", "/").split("/")[-1]
-        self.logger = logging.getLogger(self.module.title())
         self.factory_manager = factory_manager
 
     def activate(self):

@@ -641,7 +641,6 @@ class Protocol(protocol.Protocol):
                         self.join_channel(chan)
 
     def msg(self, message, target="channel", target_id=None):
-
         if target_id is None and target == "channel":
             target_id = self.ourself.channel.channel_id
 
@@ -659,7 +658,6 @@ class Protocol(protocol.Protocol):
         self.sendProtobuf(msg)
 
     def msg_channel(self, message, channel):
-
         if isinstance(channel, Channel):
             channel = channel.channel_id
 
@@ -674,7 +672,6 @@ class Protocol(protocol.Protocol):
         self.msg(message, "channel", channel)
 
     def msg_user(self, message, user):
-
         if isinstance(user, User):
             user = user.session
 
