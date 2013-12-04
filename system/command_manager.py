@@ -1,11 +1,13 @@
 # coding=utf-8
+
 __author__ = "Gareth Coles"
 
 import logging
 
-from utils.misc import output_exception
 from system.decorators import Singleton
+from system.plugin import PluginObject
 from utils.log import getLogger
+from utils.misc import output_exception
 
 
 @Singleton
@@ -25,7 +27,7 @@ class CommandManager(object):
     #   "command": {
     #     "f": func(),
     #     "permission": "plugin.command",
-    #     "owner": <instance of system.plugin.Plugin>
+    #     "owner": Name of plugin, or an instance of a class
     #   }
     # }
 
@@ -75,9 +77,18 @@ class CommandManager(object):
         self.commands[command] = {
             "f": handler,
             "permission": permission,
-            "owner": owner
+            "owner": owner.info.name if (owner, PluginObject) else owner
         }
         return True
+
+    def unregister_commands_for_owner(self, owner):
+        current = self.commands.items()
+        if isinstance(owner, PluginObject):
+            owner = owner.info.name
+        for key, value in current:
+            if owner == value["owner"]:
+                del self.commands[key]
+                self.logger.debug("Unregistered command: %s" % key)
 
     def run_command(self, command, caller, source, protocol, args):
         """

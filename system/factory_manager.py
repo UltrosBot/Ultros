@@ -1,40 +1,30 @@
 # coding=utf-8
+
 __author__ = "Gareth Coles"
 
 import logging
 import inspect
 
+from twisted.internet import reactor
+
 from system.command_manager import CommandManager
 from system.constants import *
+from system.event_manager import EventManager
 from system.factory import Factory
 from system.plugin_manager import YamlPluginManagerSingleton
-from utils.log import getLogger
 from utils.config import Config
+from utils.log import getLogger
 from utils.misc import output_exception
-
-from twisted.internet import reactor
 
 # TODO: All this stuff
 # ====================================================
 # Things to split into functions
 # ====================================================
-# Load main configuration
-# Load plugins
-# Set up plugins
-# Set up protocols
-# ----------------------------------------------------
-# Load individual plugin
-# Unload individual plugin
-# ----------------------------------------------------
-# Load protocol with specified config
 # Unload (and disconnect) protocol
-# Get instance of a protocol
-# Get instance of a protocol's factory
-# Allow multiple named instances of each protocol
 # ====================================================
 # Other things to do in this file
 # ====================================================
-# Maintain a list of loaded plugins and their metadata
+# Allow multiple named instances of each protocol
 # Allow plugins to list other plugins they depend on
 
 
@@ -63,6 +53,8 @@ class Manager(object):
 
         self.commands = CommandManager.instance()
         self.commands.set_factory_manager(self)
+
+        self.event_manager = EventManager.instance()
 
         self.plugman = YamlPluginManagerSingleton.instance()
         self.plugman.setPluginPlaces(["plugins"])
@@ -192,7 +184,6 @@ class Manager(object):
                                      "protocol.")
 
     def load_protocol(self, name, friendly_name, conf_location):  # noqa
-
         if name in self.factories:
             return PROTOCOL_ALREADY_LOADED
 
@@ -229,6 +220,8 @@ class Manager(object):
             except Exception:
                 self.logger.error("Error disabling plugin: %s" % name)
                 output_exception(self.logger, logging.ERROR)
+            self.commands.unregister_commands_for_owner(name)
+            self.event_manager.remove_callbacks_for_plugin(name)
             del self.loaded_plugins[name]
             return PLUGIN_UNLOADED
         return PLUGIN_NOT_EXISTS
