@@ -6,6 +6,7 @@ import logging
 
 from twisted.internet import protocol, reactor  # , reactor, ssl
 
+from system.protocols.generic.protocol import Protocol as GenericProtocol
 from utils.misc import output_exception
 from utils.log import getLogger
 
@@ -40,7 +41,11 @@ class Factory(protocol.ClientFactory):
                 "Unable to import protocol %s" % self.name)
             output_exception(self.logger, logging.ERROR)
         else:
-            self.protocol = current_protocol.Protocol(self, self.config)
+            if issubclass(current_protocol.Protocol, GenericProtocol):
+                self.protocol = current_protocol.Protocol(self, self.config)
+            else:
+                raise TypeError("Protocol does not subclass the generic "
+                                "protocol class!")
 
     def buildProtocol(self, addr):
         return self.protocol

@@ -226,8 +226,17 @@ class Manager(object):
             return PLUGIN_UNLOADED
         return PLUGIN_NOT_EXISTS
 
-    def unload_protocol(self, name):
-        pass
+    def unload_protocol(self, name):  # Removes with a shutdown
+        if name in self.factories:
+            proto = self.factories[name].protocol
+            try:
+                proto.shutdown()
+            except Exception:
+                self.logger.error("Error shutting down protocol %s")
+                output_exception(self.logger, logging.ERROR)
+            del self.factories[name]
+            return True
+        return False
 
     # Grab stuff
 
@@ -241,7 +250,7 @@ class Manager(object):
             return self.factories[name]
         return None
 
-    def remove_protocol(self, protocol):
+    def remove_protocol(self, protocol):  # Removes without shutdown
         if protocol in self.factories:
             del self.factories[protocol]
             return True

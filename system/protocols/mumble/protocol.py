@@ -9,30 +9,31 @@ __author__ = 'Gareth Coles'
 # File: mumble_protocol.py
 
 
+import cgi
 import logging
 import platform
-import struct
-import cgi
 import re
+import struct
 
-import Mumble_pb2
+from twisted.internet import reactor, ssl
 
-from twisted.internet import reactor, protocol, ssl
-
-from utils.log import getLogger
-from utils.html import html_to_text
-from utils.misc import output_exception
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
 from system.events import general as general_events
 from system.events import mumble as mumble_events
+from system.protocols.generic.protocol import Protocol as GenericProtocol
+from system.protocols.mumble import Mumble_pb2
 from system.protocols.mumble.user import User
 from system.protocols.mumble.channel import Channel
+
+from utils.html import html_to_text
+from utils.log import getLogger
+from utils.misc import output_exception
 
 log = logging.getLogger(__name__)
 
 
-class Protocol(protocol.Protocol):
+class Protocol(GenericProtocol):
     VERSION_MAJOR = 1
     VERSION_MINOR = 2
     VERSION_PATCH = 4
@@ -115,6 +116,10 @@ class Protocol(protocol.Protocol):
 
         event = general_events.PostConnectEvent(self, config)
         self.event_manager.run_callback("PostConnect", event)
+
+    def shutdown(self):
+        self.msg("Disconnecting: Protocol shutdown")
+        self.transport.loseConnection()
 
     def connectionMade(self):
         self.log.info("Connected to server.")

@@ -4,26 +4,26 @@ import time
 import logging
 import re
 
+from kitchen.text.converters import to_bytes
+from twisted.internet import reactor
+from twisted.words.protocols import irc
+
+from system.command_manager import CommandManager
+from system.event_manager import EventManager
+from system.events import irc as irc_events
+from system.events import general as general_events
+from system.protocols.generic.protocol import Protocol as GenericProtocol
 from system.protocols.irc import constants
 from system.protocols.irc.channel import Channel
 from system.protocols.irc.rank import Ranks
 from system.protocols.irc.user import User
-from utils.irc import IRCUtils
 
+from utils.irc import IRCUtils
 from utils.log import getLogger
 from utils.misc import output_exception
-from system.event_manager import EventManager
-from system.command_manager import CommandManager
-from system.events import irc as irc_events
-from system.events import general as general_events
-
-from twisted.words.protocols import irc
-from twisted.internet import reactor
-
-from kitchen.text.converters import to_bytes
 
 
-class Protocol(irc.IRCClient):
+class Protocol(irc.IRCClient, GenericProtocol):
     """
     Internet Relay Chat server protocol.
 
@@ -43,7 +43,7 @@ class Protocol(irc.IRCClient):
         - Public API functions (send_notice, etc)
     """
 
-    # region Init
+    # region Init and shutdown
 
     __version__ = "1.0.0"
 
@@ -142,6 +142,10 @@ class Protocol(irc.IRCClient):
 
         event = general_events.PostConnectEvent(self, config)
         self.event_manager.run_callback("PostConnect", event)
+
+    def shutdown(self):
+        self.sendLine("QUIT: Protocol shutdown")
+        self.transport.loseConnection()
 
     # endregion
 

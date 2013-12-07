@@ -6,11 +6,12 @@ from collections import deque
 from utils.log import getLogger
 from system.decorators import run_async
 
-from twisted.internet import reactor, protocol
+from twisted.internet import reactor
+from system.protocols.generic.protocol import Protocol as GenericProtocol
 from threading import Lock
 
 
-class Protocol(protocol.Protocol):
+class Protocol(GenericProtocol):
 
     factory = None
     config = None
@@ -49,6 +50,11 @@ class Protocol(protocol.Protocol):
             self.factory,
             120
         )
+
+    def shutdown(self):
+        self.send_message(2, 0, "Disconnecting: Protocol shutdown")
+        self.send_command("quit")
+        self.transport.loseConnection()
 
     def connectionMade(self):
         pass
