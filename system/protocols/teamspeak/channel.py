@@ -2,7 +2,7 @@
 __author__ = 'Sean'
 
 from system.protocols.generic import channel
-from system.protocols.teamspeak.protocol import Protocol
+#from system.protocols.teamspeak.protocol import Protocol
 
 
 class Channel(channel.Channel):
