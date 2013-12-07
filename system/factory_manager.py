@@ -17,13 +17,6 @@ from utils.log import getLogger
 from utils.misc import output_exception
 
 # TODO: All this stuff
-# ====================================================
-# Things to split into functions
-# ====================================================
-# Unload (and disconnect) protocol
-# ====================================================
-# Other things to do in this file
-# ====================================================
 # Allow multiple named instances of each protocol
 # Allow plugins to list other plugins they depend on
 
