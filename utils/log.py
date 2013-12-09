@@ -29,7 +29,7 @@ class ColorizingStreamHandler(logging.StreamHandler):
         'white': 7,
     }
 
-    #levels to (background, foreground, bold/intense)
+    # levels to (background, foreground, bold/intense)
     if os.name == 'nt':
         level_map = {
             logging.DEBUG: (None, 'blue', True),
@@ -115,7 +115,7 @@ class ColorizingStreamHandler(logging.StreamHandler):
                             elif p == 0:  # reset to default color
                                 color = 0x07
                             else:
-                                pass # error condition ignored
+                                pass  # error condition ignored
                         ctypes.windll.kernel32.SetConsoleTextAttribute(h,
                                                                        color)
 
