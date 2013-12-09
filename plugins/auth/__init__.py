@@ -28,8 +28,7 @@ class AuthPlugin(PluginObject):
         try:
             self.config = Config("plugins/auth.yml")
         except Exception:
-            self.logger.error("Error loading configuration!")
-            output_exception(self.logger, logging.WARN)
+            self.logger.exception("Error loading configuration!")
             self.logger.error("Disabling..")
             self._disable_self()
             return
@@ -45,9 +44,8 @@ class AuthPlugin(PluginObject):
             try:
                 self.permissions = Data("plugins/auth/permissions.yml")
             except Exception:
-                self.logger.error("Unable to load permissions. They will be"
-                                  " unavailable!")
-                output_exception(self.logger, logging.ERROR)
+                self.logger.exception("Unable to load permissions. They will "
+                                      "be unavailable!")
             else:
                 self.perms_h = permissions_handler.permissionsHandler(
                     self, self.permissions)
@@ -59,9 +57,8 @@ class AuthPlugin(PluginObject):
             try:
                 self.passwords = Data("plugins/auth/passwords.yml")
             except Exception:
-                self.logger.error("Unable to load user accounts. They will be"
-                                  " unavailable!")
-                output_exception(self.logger, logging.ERROR)
+                self.logger.exception("Unable to load user accounts. They will"
+                                      " be unavailable!")
             else:
                 self.auth_h = auth_handler.authHandler(self, self.passwords)
                 result = self.commands.add_auth_handler(self.auth_h)
@@ -110,6 +107,3 @@ class AuthPlugin(PluginObject):
 
     def deactivate(self):
         pass
-
-    def _disable_self(self):
-        self.factory_manager.plugman.deactivatePluginByName(self.info.name)

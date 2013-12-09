@@ -154,7 +154,6 @@ class Manager(object):
         self.plugman.collectPlugins()
         for info in self.plugman.getAllPlugins():
             self.all_plugins[info.name] = info
-        self.logger.info("Plugins: %s" % self.all_plugins)
 
     def load_protocols(self):
         self.logger.info("Setting up protocols..")

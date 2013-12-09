@@ -15,6 +15,10 @@ class PluginObject(IPlugin):
        and FactoryManager are available.
     - deactivate(self): Called on plugin deactivation
      - You can clean up and save data here.
+    - reload(self): Called when the plugin should reload its configuration
+     - This is optional, don't add it if you don't need it.
+     - return True if the reload succeeded and False if not.
+     - None is returned if not implemented (to signify no config to reload)
     - setup(self):
      - Do your plugin setup here. This can include setting up events and other
        things. The plugin info and FactoryManager are available here.
@@ -61,6 +65,13 @@ class PluginObject(IPlugin):
         """
         super(PluginObject, self).deactivate()
 
+    def reload(self):
+        """
+        Called when the plugin should reload its configuration.
+        This is optional; don't implement it if it isn't needed.
+        """
+        return None
+
     def setup(self):
         """
         Called when the plugin is loaded.
@@ -73,3 +84,6 @@ class PluginObject(IPlugin):
         """
         self.logger.warn("Setup method not defined!")
         pass
+
+    def _disable_self(self):
+        self.factory_manager.plugman.deactivatePluginByName(self.info.name)
