@@ -598,7 +598,10 @@ class Protocol(GenericProtocol):
                 cid = message.channel_id[0]
                 channel_obj = self.channels[cid]
             else:
-                channel_obj = self.ourself  # Private message
+                # Private message - set the channel_obj (source) to user who
+                # sent the message, as is done with IRC (otherwise it would be
+                # None).
+                channel_obj = user_obj
 
             if not self.handle_command(user_obj, channel_obj, msg):
                 event = general_events.PreMessageReceived(self,
