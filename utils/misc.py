@@ -33,7 +33,7 @@ def chunker(iterable, chunksize):
     list.
     """
     for i, c in enumerate(iterable[::chunksize]):
-        yield iterable[i*chunksize:(i+1)*chunksize]
+        yield iterable[i * chunksize: (i + 1) * chunksize]
 
 
 def string_split_readable(input, length):
