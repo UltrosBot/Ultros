@@ -8,11 +8,27 @@ import hashlib
 
 class authHandler(object):
 
-    def __init__(self, plugin, data):
+    def __init__(self, plugin, data, blacklist):
         self.data = data
+        self.blacklist = blacklist
         self.plugin = plugin
 
         self.create_superadmin_account()
+        self.create_blacklisted_passwords()
+
+    def create_blacklisted_passwords(self):
+        if not len(self.blacklist):
+            # Top 20 passwords of 2013
+            passwords = ["password", "123456", "12345678", "1234", "qwerty",
+                         "12345", "dragon", "pussy", "baseball", "football",
+                         "letmein", "monkey", "696969", "abc123", "mustang",
+                         "michael", "shadow", "master", "jennifer", "111111"]
+
+            with self.blacklist:
+                self.blacklist["all"] = passwords
+                self.blacklist["users"] = {}
+                self.plugin.logger.info("Created password blacklist with the "
+                                        "20 most popular passwords of 2013.")
 
     def create_superadmin_account(self):
         if len(self.data):
@@ -77,6 +93,24 @@ class authHandler(object):
 
         return True
 
+    def change_password(self, username, old, new):
+        username = username.lower()
+        with self.data:
+            if username not in self.data:
+                return False
+            user_data = self.data[username]
+            calculated = self.hash(user_data["salt"], old)
+            real_hash = user_data["password"]
+            if calculated != real_hash:
+                return False
+
+            salt = mkpasswd(64, 21, 22, 21)
+            hashed = self.hash(salt, new)
+
+            self.data[username]["password"] = hashed
+            self.data[username]["salt"] = salt
+        return True
+
     def delete_user(self, username):
         username = username.lower()
         with self.data:
@@ -113,3 +147,32 @@ class authHandler(object):
     def user_exists(self, username):
         username = username.lower()
         return username in self.data
+
+    def blacklist_password(self, password, username=None):
+        with self.blacklist:
+            password = password.lower()
+            if username is None:
+                if password not in self.blacklist["all"]:
+                    self.blacklist["all"].append(password)
+                    return True
+                return False
+            username = username.lower()
+            if username not in self.blacklist["users"]:
+                self.blacklist["users"][username] = [password]
+                return True
+            else:
+                if password in self.blacklist["users"][username]:
+                    return False
+            self.blacklist["users"][username].append(password)
+            return True
+
+    def password_backlisted(self, password, username=None):
+        password = password.lower()
+        if password in self.blacklist["all"]:
+            return True
+        if username is None:
+            return False
+        username = username.lower()
+        if username in self.blacklist["users"]:
+            return password in self.blacklist["users"][username]
+        return False

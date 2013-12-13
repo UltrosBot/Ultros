@@ -20,6 +20,8 @@ class permissionsHandler(object):
             self.add_group_permissions("default",
                                        ["auth.login",
                                         "auth.logout",
+                                        "auth.register",
+                                        "auth.passwd",
                                         "bridge.relay",
                                         "urls.shorten",
                                         "urls.title"])
