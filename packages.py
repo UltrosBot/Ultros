@@ -31,6 +31,7 @@ except ImportError:
     print ""
 
 from utils.packages.packages import Packages
+from utils.misc import string_split_readable
 
 operations = ["install", "update", "uninstall", "list", "list-installed",
               "info", "help"]
@@ -102,19 +103,43 @@ def main(args):
         output_help()
         return exit(0)
     elif operation == "list":
+        print ""
+        print "+%s+%s+%s+" % ("-" * 17, "-" * 7, "-" * 82)
+        print "| %s | %s | %s |" % ("Name".ljust(15), "Vers.",
+                                    "Description".ljust(80))
+        print "+%s+%s+%s+" % ("-" * 17, "-" * 7, "-" * 82)
         for x in packages.packages:
             package = packages.data[x]
-            print ""
-            print "%s v%s: %s" % (x, package["version"],
-                                  package["description"])
+            version = package["version"]
+            desc = package["description"]
+
+            chunks = string_split_readable(desc, 80)
+            i = False
+            for chunk in chunks:
+                if not i:
+                    print "| %s | %s | %s |" % (x.ljust(15), version.ljust(5),
+                                                chunk.ljust(80))
+                    i = True
+                else:
+                    print "| %s | %s | %s |" % ("".ljust(15), "".ljust(5),
+                                                chunk.ljust(80))
 
             if package["requires"]["modules"]:
-                print "- Required modules: %s" \
-                      % (", ".join(package["requires"]["modules"]))
+                needed = "Needed modules: %s" \
+                         % (", ".join(package["requires"]["modules"]))
+                chunks = string_split_readable(needed, 78)
+                for chunk in chunks:
+                    print "| %s | %s | > %s |" % ("".ljust(15), "".ljust(5),
+                                                  chunk.ljust(78))
 
             if package["requires"]["packages"]:
-                print "- Required packages: %s" \
-                      % (", ".join(package["requires"]["packages"]))
+                needed = "Needed packages: %s" \
+                         % (", ".join(package["requires"]["packages"]))
+                chunks = string_split_readable(needed, 78)
+                for chunk in chunks:
+                    print "| %s | %s | > %s |" % ("".ljust(15), "".ljust(5),
+                                                  chunk.ljust(78))
+        print "+%s+%s+%s+" % ("-" * 17, "-" * 7, "-" * 82)
     elif operation == "info":
         if len(args) < 2:
             print ">> Syntax: 'python packages.py info <package>'"
