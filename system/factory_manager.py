@@ -38,6 +38,7 @@ class Manager(object):
 
     all_plugins = {}
     loaded_plugins = {}
+    plugins_with_dependencies = {}
 
     def __init__(self):
         # Set up the logger
@@ -96,7 +97,18 @@ class Manager(object):
         self.logger.debug("Collecting plugins..")
 
         if self.main_config["plugins"]:
+            todo = []
             for info in self.plugman.getAllPlugins():
+                name = info.name
+                if info.dependencies:
+                    self.plugins_with_dependencies[name] = info
+                else:
+                    todo.append(info)
+
+            self.logger.debug("Loading plugins that have no dependencies "
+                              "first.")
+
+            for info in todo:
                 name = info.name
                 self.logger.debug("Checking if plugin '%s' is configured to "
                                   "load.." % name)
@@ -111,12 +123,51 @@ class Manager(object):
                             self.logger.warn("Plugin already loaded.")
                         elif result is PLUGIN_NOT_EXISTS:
                             self.logger.warn("Plugin doesn't exist.")
+                        elif result is PLUGIN_DEPENDENCY_MISSING:
+                            # THIS SHOULD NEVER HAPPEN!
+                            self.logger.warn("Plugin dependency is missing.")
+
+            self.logger.debug("Loading plugins that have dependencies.")
+
+            for name, info in self.plugins_with_dependencies.items():
+                self.logger.debug("Checking if plugin '%s' is configured to "
+                                  "load.." % name)
+                if name in self.main_config["plugins"]:
+                    self.logger.info("Attempting to load plugin: %s" % name)
+                    try:
+                        result = self.load_plugin(name)
+                    except RuntimeError as e:
+                        message = e.message
+                        if message == "maximum recursion depth exceeded " \
+                                      "while calling a Python object":
+                            self.logger.error("Dependency loop detected while "
+                                              "loading: %s" % name)
+                            self.logger.error("This plugin will not be "
+                                              "available.")
+                        elif message == "maximum recursion depth exceeded":
+                            self.logger.error("Dependency loop detected while "
+                                              "loading: %s" % name)
+                            self.logger.error("This plugin will not be "
+                                              "available.")
+                        else:
+                            raise e
+                    except Exception as e:
+                        raise e
+                    if not result is PLUGIN_LOADED:
+                        if result is PLUGIN_LOAD_ERROR:
+                            self.logger.warn("Error detected while loading "
+                                             "plugin.")
+                        elif result is PLUGIN_ALREADY_LOADED:
+                            self.logger.warn("Plugin already loaded.")
+                        elif result is PLUGIN_NOT_EXISTS:
+                            self.logger.warn("Plugin doesn't exist.")
+                        elif result is PLUGIN_DEPENDENCY_MISSING:
+                            self.logger.warn("Plugin dependency is missing.")
         else:
             self.logger.info("No plugins are configured to load.")
 
     def load_plugin(self, name, unload=False):
         if name in self.all_plugins:
-
             if name in self.loaded_plugins:
                 if unload:
                     self.unload_plugin(name)
@@ -124,6 +175,25 @@ class Manager(object):
                     return PLUGIN_ALREADY_LOADED
 
             info = self.plugman.getPluginByName(name)
+            if info.dependencies:
+                depends = info.dependencies
+                self.logger.debug("Dependencies for %s: %s" % (name, depends))
+                for d_name in depends:
+                    if d_name not in self.all_plugins:
+                        self.logger.error("Error loading plugin %s: the plugin"
+                                          " relies on another plugin (%s), but"
+                                          " it is not present."
+                                          % (name, d_name))
+                        return PLUGIN_DEPENDENCY_MISSING
+                for d_name in depends:
+                    result = self.load_plugin(d_name)
+                    if not result is PLUGIN_LOADED:
+                        if result is PLUGIN_ALREADY_LOADED:
+                            continue
+
+                        self.logger.warn("Unable to load dependency: %s"
+                                         % d_name)
+                        return result
 
             try:
                 self.plugman.activatePluginByName(info.name)
@@ -136,12 +206,12 @@ class Manager(object):
                 self.logger.debug("Running setup method..")
                 info.plugin_object.setup()
             except Exception:
-                self.logger.warn("Unable to load plugin: %s v%s"
-                                 % (name, info.version))
-                output_exception(self.logger, logging.WARN)
+                self.logger.exception("Unable to load plugin: %s v%s"
+                                      % (name, info.version))
                 self.plugman.deactivatePluginByName(name)
                 return PLUGIN_LOAD_ERROR
             else:
+                self.loaded_plugins[name] = info
                 self.logger.info("Loaded plugin: %s v%s"
                                  % (name, info.version))
                 if info.copyright:

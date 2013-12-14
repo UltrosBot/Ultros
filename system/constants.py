@@ -7,6 +7,7 @@ PLUGIN_NOT_EXISTS = 0
 PLUGIN_LOADED = 1
 PLUGIN_ALREADY_LOADED = 2
 PLUGIN_UNLOADED = 3
+PLUGIN_DEPENDENCY_MISSING = 4
 
 # Constants related to (un)loading protocols
 

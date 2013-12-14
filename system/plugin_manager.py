@@ -18,7 +18,8 @@ import yaml
 
 from yapsy.PluginInfo import PluginInfo
 from yapsy.PluginManager import PluginManager
-from yapsy.PluginFileLocator import PluginFileAnalyzerWithInfoFile, PluginFileLocator
+from yapsy.PluginFileLocator import PluginFileAnalyzerWithInfoFile, \
+    PluginFileLocator
 
 from system.decorators import Singleton
 from utils.log import getLogger
@@ -40,7 +41,7 @@ class YamlPluginInfo(PluginInfo):
         self.categories = []
         self.error = None
 
-    def __setDetails(self,cfDetails):
+    def __setDetails(self, cfDetails):
         """
         Fill in all details by storing a ``ConfigParser`` instance.
 
@@ -68,6 +69,14 @@ class YamlPluginInfo(PluginInfo):
             self.details["core"] = {}
         self.details["core"]["name"] = name
 
+    def __getDependencies(self):
+        return self.details["core"]["dependencies"]
+
+    def __setDependencies(self, dependencies):
+        if not "core" in self.details:
+            self.details["core"] = {}
+        self.details["core"]["dependencies"] = dependencies
+
     def __getPath(self):
         return self.details["core"]["module"]
 
@@ -86,7 +95,7 @@ class YamlPluginInfo(PluginInfo):
         Used by subclasses to provide different handling of the
         version number.
         """
-        if isinstance(vstring,StrictVersion):
+        if isinstance(vstring, StrictVersion):
             vstring = str(vstring)
         if not "info" in self.details:
             self.details["info"] = {}
@@ -95,7 +104,7 @@ class YamlPluginInfo(PluginInfo):
     def __getAuthor(self):
         return self.details["info"]["author"]
 
-    def __setAuthor(self,author):
+    def __setAuthor(self, author):
         if not "info" in self.details:
             self.details["info"] = {}
         self.details["info"]["author"] = author
@@ -103,7 +112,7 @@ class YamlPluginInfo(PluginInfo):
     def __getCopyright(self):
         return self.details["info"]["copyright"]
 
-    def __setCopyright(self,copyrightTxt):
+    def __setCopyright(self, copyrightTxt):
         if not "info" in self.details:
             self.details["info"] = {}
         self.details["info"]["copyright"] = copyrightTxt
@@ -111,7 +120,7 @@ class YamlPluginInfo(PluginInfo):
     def __getWebsite(self):
         return self.details["info"]["website"]
 
-    def __setWebsite(self,website):
+    def __setWebsite(self, website):
         if not "info" in self.details:
             self.details["info"] = {}
         self.details["info"]["website"] = website
@@ -119,7 +128,7 @@ class YamlPluginInfo(PluginInfo):
     def __getDescription(self):
         return self.details["info"]["description"]
 
-    def __setDescription(self,description):
+    def __setDescription(self, description):
         if not "info" in self.details:
             self.details["info"] = {}
         self.details["info"]["description"] = description
@@ -135,7 +144,7 @@ class YamlPluginInfo(PluginInfo):
         else:
             return "UnknownCategory"
 
-    def __setCategory(self,c):
+    def __setCategory(self, c):
         """
         DEPRECATED (>1.9): Mimic former behaviour by making so
         that if a category is set as it it was the only category to
@@ -144,7 +153,6 @@ class YamlPluginInfo(PluginInfo):
         """
         self.categories = [c] + self.categories
 
-
     name = property(fget=__getName, fset=__setName)
     path = property(fget=__getPath, fset=__setPath)
     version = property(fget=__getVersion, fset=setVersion)
@@ -152,6 +160,7 @@ class YamlPluginInfo(PluginInfo):
     copyright = property(fget=__getCopyright, fset=__setCopyright)
     website = property(fget=__getWebsite, fset=__setWebsite)
     description = property(fget=__getDescription ,fset=__setDescription)
+    dependencies = property(fget=__getDependencies ,fset=__setDependencies)
     details = property(fget=__getDetails, fset=__setDetails)
     # deprecated (>1.9): plugins are not longer assocaited to a
     # single category !
@@ -180,9 +189,17 @@ class YamlPluginInfo(PluginInfo):
             self.copyright = "Unknown"
             self.description = ""
 
+        if "core" in self.details:
+            core = self.details["core"]
+            if not "dependencies" in core:
+                self.dependencies = []
+            else:
+                self.dependencies = core["dependencies"]
+
+
 class PluginFileAnalyzerWithYamlInfoFile(PluginFileAnalyzerWithInfoFile):
 
-    def __init__(self, analyzers=None, plugin_info_cls=PluginInfo):
+    def __init__(self, analyzers=None, plugin_info_cls=YamlPluginInfo):
         super(self.__class__, self).__init__(analyzers, plugin_info_cls)
 
     def getPluginNameAndModuleFromStream(self,
@@ -198,11 +215,11 @@ class PluginFileAnalyzerWithYamlInfoFile(PluginFileAnalyzerWithInfoFile):
             return None, None, None
         # check if the basic info is available
         if not "core" in data:
-            logging.debug("Plugin info file has no 'Core' section (in '%s')"
+            logging.debug("Plugin info file has no 'core' section (in '%s')"
                           % candidate_infofile)
             return None, None, None
         if not "name" in data["core"] or not "module" in data["core"]:
-            logging.debug("Plugin info file has no 'Name' or 'Module' section "
+            logging.debug("Plugin info file has no 'name' or 'module' section "
                           "(in '%s')"
                           % candidate_infofile)
             return None, None, None
@@ -263,6 +280,7 @@ class PluginFileAnalyzerWithYamlInfoFile(PluginFileAnalyzerWithInfoFile):
             infos["website"] = None
             infos["copyright"] = None
             infos["description"] = None
+            infos["dependencies"] = []
 
             if "author" in info:
                 infos["author"] = info["author"]
@@ -274,6 +292,8 @@ class PluginFileAnalyzerWithYamlInfoFile(PluginFileAnalyzerWithInfoFile):
                 infos["copyright"] = info["copyright"]
             if "description" in info:
                 infos["description"] = info["description"]
+            if "dependencies" in info:
+                infos["dependencies"] = info["dependencies"]
         return infos, data
 
 
@@ -331,7 +351,9 @@ class YamlPluginManagerSingleton(PluginManager):
                 # plugin_locator not used, and plugin_info_ext provided
                 # -> compatibility mode
                 res = PluginFileLocator()
-                res.setAnalyzers([PluginFileAnalyzerWithInfoFile("info_ext",plugin_info_ext)])
+                res.setAnalyzers([
+                    PluginFileAnalyzerWithInfoFile("info_ext",
+                                                   plugin_info_ext)])
             elif specific_info_ext and specific_locator:
                 # both provided... issue a warning that tells "plugin_info_ext"
                 # will be ignored
