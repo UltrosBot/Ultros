@@ -16,9 +16,7 @@ from utils.config import Config
 from utils.log import getLogger
 from utils.misc import output_exception
 
-# TODO: All this stuff
-# Allow multiple named instances of each protocol
-# Allow plugins to list other plugins they depend on
+# TODO: Allow multiple named instances of each protocol
 
 
 class Manager(object):
