@@ -90,15 +90,26 @@ class Plugin(PluginObject):
                 self.logger.debug("Title: %s" % title)
 
                 if isinstance(target, Channel):
-                    if not target.name in self.channels:
+                    if not protocol.name in self.channels:
                         with self.channels:
-                            self.channels[target.name] = {"last": url,
-                                                          "status": "on",
-                                                          "shortener":
-                                                          "tinyurl"}
+                            self.channels[protocol.name] = {
+                                target.name: {"last": url,
+                                              "status": "on",
+                                              "shortener":
+                                              "tinyurl"}
+                            }
+                    if not target.name in self.channels[protocol.name]:
+                        with self.channels:
+                            self.channels[protocol.name][target.name] = {
+                                "last": url,
+                                "status": "on",
+                                "shortener":
+                                "tinyurl"
+                            }
                     else:
                         with self.channels:
-                            self.channels[target.name]["last"] = url
+                            self.channels[protocol.name][target.name]["last"] \
+                                = url
                     if title is None:
                         return
 
@@ -136,28 +147,37 @@ class Plugin(PluginObject):
 
         operation = args[0].lower()
         value = args[1].lower()
+
+        if not protocol.name in self.channels:
+            with self.channels:
+                self.channels[protocol.name] = {
+                    source.name: {
+                        "status": "on",
+                        "last": "",
+                        "shortener": "tinyurl"
+                    }
+                }
+        if not source.name in self.channels[protocol.name]:
+            with self.channels:
+                self.channels[protocol.name][source.name] = {
+                    "status": "on",
+                    "last": "",
+                    "shortener": "tinyurl"
+                }
+
         if operation == "set":
-            if value in ["on", "off"]:
+            if not value in ["on", "off"]:
                 caller.respond("Usage: {CHARS}urls set <on|off>")
             else:
-                if not source.name in self.channels:
-                    with self.channels:
-                        self.channels[source.name] = {"status": "on",
-                                                      "last": "",
-                                                      "shortener": "tinyurl"}
                 with self.channels:
-                    self.channels[source.name]["status"] = value
+                    self.channels[protocol.name][source.name]["status"] = value
                 caller.respond("Title passing for %s turned %s."
                                % (source.name, value))
         elif operation == "shortener":
             if value.lower() in self.shorteners:
-                if not source.name in self.channels:
-                    with self.channels:
-                        self.channels[source.name] = {"status": "on",
-                                                      "last": "",
-                                                      "shortener": "tinyurl"}
                 with self.channels:
-                    self.channels[source.name]["shortener"] = value.lower()
+                    self.channels[protocol.name][source.name]["shortener"] \
+                        = value.lower()
                 caller.respond("URL shortener for %s set to %s."
                                % (source.name, value))
             else:
@@ -177,24 +197,26 @@ class Plugin(PluginObject):
 
                 caller.respond(shortened)
         else:
-            if not source.name in self.channels \
-               or not len(self.channels[source.name]["last"]):
+            if not protocol.name in self.channels \
+               or not source.name in self.channels[protocol.name] \
+               or not len(self.channels[protocol.name][source.name]["last"]):
                 caller.respond("Nobody's pasted a URL here yet!")
                 return
-            handler = self.channels[source.name]["shortener"]
+            handler = self.channels[protocol.name][source.name]["shortener"]
             if len(handler) == 0:
                 with self.channels:
-                    self.channels[source.name]["shortener"] = "tinyurl"
+                    self.channels[protocol.name][source.name]["shortener"]\
+                        = "tinyurl"
                 handler = "tinyurl"
             if handler not in self.shorteners:
                 caller.respond("Shortener '%s' not found - please set a new "
                                "one!" % handler)
                 return
 
-            url = self.channels[source.name]["last"]
+            url = self.channels[protocol.name][source.name]["last"]
 
             if len(args) > 0:
-                url = args[1]
+                url = args[0]
 
             shortened = self.shorten_url(url, handler)
 
@@ -262,6 +284,7 @@ class Plugin(PluginObject):
             return title.decode("UTF-8"), domain.decode("UTF-8")
         except Exception as e:
             if not str(e).lower() == "not viewing html":
+                self.logger.exception("Error parsing title.")
                 return str(e), domain
             return None, None
 

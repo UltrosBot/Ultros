@@ -85,6 +85,7 @@ class Protocol(GenericProtocol):
     users = {}
 
     pinging = True
+    name = "mumble"
 
     def __init__(self, factory, config):
         self.received = ""

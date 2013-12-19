@@ -39,6 +39,7 @@ class Protocol(protocol.Protocol):
     And these you'll absolutely have to override for your protocol to work
     as expected:
         - __version__: The version string
+        - name: A string. This is the name of your protocol.
         - nickname: The bot's username or nickname
         - ourselves: A User object describing the bot
 
@@ -65,6 +66,7 @@ class Protocol(protocol.Protocol):
     command_manager = None
 
     nickname = ""
+    name = "generic"
     ourselves = None
 
     def __init__(self, factory, config):

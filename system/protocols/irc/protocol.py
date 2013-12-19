@@ -56,6 +56,7 @@ class Protocol(irc.IRCClient, GenericProtocol):
     identity = {}
 
     nickname = ""
+    name = "irc"
 
     _channels = {}  # key is lowercase "#channel" - use get/set/del_channel()
     # TODO: Make users a set()?
