@@ -276,7 +276,7 @@ class Plugin(PluginObject):
 
             page = response.read()
             soup = BeautifulSoup(page)
-            title = unicode(soup.title.string).encode("UTF-8")
+            title = unicode(soup.title.string.strip()).encode("UTF-8")
             return title.decode("UTF-8"), domain.decode("UTF-8")
         except Exception as e:
             if not str(e).lower() == "not viewing html":
