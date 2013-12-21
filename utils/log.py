@@ -32,18 +32,18 @@ class ColorizingStreamHandler(logging.StreamHandler):
     # levels to (background, foreground, bold/intense)
     if os.name == 'nt':
         level_map = {
-            logging.DEBUG: (None, 'blue', True),
-            logging.INFO: (None, 'white', False),
-            logging.WARNING: (None, 'yellow', True),
-            logging.ERROR: (None, 'red', True),
+            logging.DEBUG: ('black', 'blue', True),
+            logging.INFO: ('black', 'white', False),
+            logging.WARNING: ('black', 'yellow', True),
+            logging.ERROR: ('black', 'red', True),
             logging.CRITICAL: ('red', 'white', True),
         }
     else:
         level_map = {
-            logging.DEBUG: (None, 'blue', False),
-            logging.INFO: (None, 'black', False),
-            logging.WARNING: (None, 'yellow', False),
-            logging.ERROR: (None, 'red', False),
+            logging.DEBUG: ('black', 'blue', False),
+            logging.INFO: ('black', 'white', False),
+            logging.WARNING: ('black', 'yellow', False),
+            logging.ERROR: ('black', 'red', False),
             logging.CRITICAL: ('red', 'white', True),
         }
     csi = '\x1b['
