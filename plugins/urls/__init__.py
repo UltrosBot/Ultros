@@ -15,10 +15,7 @@ from system.events.general import MessageReceived
 from system.protocols.generic.channel import Channel
 from system.protocols.generic.user import User
 
-try:
-    from bs4 import BeautifulSoup
-except ImportError:
-    from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 
 
 class Plugin(PluginObject):
@@ -278,8 +275,7 @@ class Plugin(PluginObject):
                 return None, None
 
             page = response.read()
-            soup = BeautifulSoup(page,
-                                 convertEntities=BeautifulSoup.HTML_ENTITIES)
+            soup = BeautifulSoup(page)
             title = unicode(soup.title.string).encode("UTF-8")
             return title.decode("UTF-8"), domain.decode("UTF-8")
         except Exception as e:
