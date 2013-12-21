@@ -5,6 +5,35 @@ from system.protocols.irc import constants
 
 __author__ = 'rakiru'
 
+_ircformatting = {'BOLD': constants.BOLD,
+             'ITALIC': constants.ITALIC,
+             'COLOUR': constants.COLOUR,
+             'REVERSE': constants.REVERSE,
+             'NORMAL': constants.NORMAL,
+             'CTCP': constants.CTCP}
+
+_irccolours = {'COLOUR_WHITE': constants.COLOUR_WHITE,
+               'COLOUR_BLACK': constants.COLOUR_BLACK,
+               'COLOUR_BLUE': constants.COLOUR_BLUE,
+               'COLOUR_GREEN': constants.COLOUR_GREEN,
+               'COLOUR_RED': constants.COLOUR_RED_LIGHT,
+               'COLOUR_BROWN': constants.COLOUR_BROWN,
+               'COLOUR_PURPLE': constants.COLOUR_PURPLE,
+               'COLOUR_ORANGE': constants.COLOUR_ORANGE,
+               'COLOUR_YELLOW': constants.COLOUR_YELLOW,
+               'COLOUR_GREEN_LIGHT': constants.COLOUR_GREEN_LIGHT,
+               'COLOUR_CYAN': constants.COLOUR_CYAN,
+               'COLOUR_CYAN_LIGHT': constants.COLOUR_CYAN_LIGHT,
+               'COLOUR_BLUE_LIGHT': constants.COLOUR_BLUE_LIGHT,
+               'COLOUR_PINK': constants.COLOUR_PINK,
+               'COLOUR_GREY': constants.COLOUR_GREY,
+               'COLOUR_GREY_LIGHT': constants.COLOUR_GREY_LIGHT}
+
+_ircvalues = dict(_ircformatting, **_irccolours)
+
+_re_formatting = re.compile("(%s[0-9]{1,2})|[%s]" %
+                            (constants.COLOUR,
+                             ''.join(_ircformatting.values())))
 
 def split_hostmask(hostmask):
     posex = hostmask.find(u'!')
@@ -15,36 +44,18 @@ def split_hostmask(hostmask):
     return [hostmask[0:posex], hostmask[posex + 1: posat],
             hostmask[posat + 1:]]
 
-
 def format_string(value, values=None):
-    ircvalues = {'BOLD': constants.BOLD,
-                 'ITALIC': constants.ITALIC,
-                 'COLOUR': constants.COLOUR,
-                 'REVERSE': constants.REVERSE,
-                 'NORMAL': constants.NORMAL,
-                 'CTCP': constants.CTCP,
-                 'COLOUR_WHITE': constants.COLOUR_WHITE,
-                 'COLOUR_BLACK': constants.COLOUR_BLACK,
-                 'COLOUR_BLUE': constants.COLOUR_BLUE,
-                 'COLOUR_GREEN': constants.COLOUR_GREEN,
-                 'COLOUR_RED_LIGHT': constants.COLOUR_RED_LIGHT,
-                 'COLOUR_BROWN': constants.COLOUR_BROWN,
-                 'COLOUR_PURPLE': constants.COLOUR_PURPLE,
-                 'COLOUR_ORANGE': constants.COLOUR_ORANGE,
-                 'COLOUR_YELLOW': constants.COLOUR_YELLOW,
-                 'COLOUR_GREEN_LIGHT': constants.COLOUR_GREEN_LIGHT,
-                 'COLOUR_CYAN': constants.COLOUR_CYAN,
-                 'COLOUR_CYAN_LIGHT': constants.COLOUR_CYAN_LIGHT,
-                 'COLOUR_BLUE_LIGHT': constants.COLOUR_BLUE_LIGHT,
-                 'COLOUR_PINK': constants.COLOUR_PINK,
-                 'COLOUR_GREY': constants.COLOUR_GREY,
-                 'COLOUR_GREY_LIGHT': constants.COLOUR_GREY_LIGHT}
     mergedvalues = None
     if values is None:
-        mergedvalues = ircvalues
+        mergedvalues = _ircvalues
     else:
-        mergedvalues = dict(ircvalues, **values)
+        mergedvalues = dict(_ircvalues, **values)
     return value.format(**mergedvalues)
+
+def strip_formatting(message):
+    # GOD DAMN MOTHER FUCKER SHIT FUCK CUNT BITCH
+    # WHY ARE THE ARGUMENTS BACK TO FRONT?!?
+    return _re_formatting.sub("", message)
 
 
 class IRCUtils(object):
@@ -129,3 +140,6 @@ class IRCUtils(object):
 
     def format_string(self, value, values=None):
         return format_string(value, values)
+
+    def strip_formatting(self, message):
+        return strip_formatting(message)

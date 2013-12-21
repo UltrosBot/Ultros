@@ -63,6 +63,8 @@ class Plugin(PluginObject):
 
         allowed = self.commands.perm_handler.check("urls.title", source,
                                                    target, protocol)
+        # This second check is a hack to check default group, since there is
+        # not currently inheritance
         if not allowed:
             allowed = self.commands.perm_handler.check("urls.title", None,
                                                        target, protocol)
@@ -73,7 +75,14 @@ class Plugin(PluginObject):
                                "fetcher.")
                 return
 
-        for word in message.split(" "):
+        # Strip formatting characters if possible
+        message_stripped = message
+        try:
+            message_stripped = event.caller.utils.strip_formatting(message)
+        except AttributeError as e:
+            pass
+
+        for word in message_stripped.split(" "):
             pos = word.lower().find("http://")
             if pos == -1:
                 pos = word.lower().find("https://")
