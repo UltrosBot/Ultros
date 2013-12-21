@@ -4,6 +4,8 @@ import urlparse
 import urllib
 import urllib2
 
+from kitchen.text.converters import to_unicode
+
 from utils.data import Data
 
 from system.command_manager import CommandManager
@@ -276,8 +278,9 @@ class Plugin(PluginObject):
 
             page = response.read()
             soup = BeautifulSoup(page)
-            title = unicode(soup.title.string.strip()).encode("UTF-8")
-            return title.decode("UTF-8"), domain.decode("UTF-8")
+            title = to_unicode(soup.title.string)
+            domain = to_unicode(domain)
+            return title, domain
         except Exception as e:
             if not str(e).lower() == "not viewing html":
                 self.logger.exception("Error parsing title.")

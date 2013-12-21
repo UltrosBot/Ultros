@@ -4,7 +4,7 @@ import time
 import logging
 import re
 
-from kitchen.text.converters import to_bytes
+from kitchen.text.converters import to_bytes, to_unicode
 from twisted.internet import reactor
 from twisted.words.protocols import irc
 
@@ -951,10 +951,8 @@ class Protocol(irc.IRCClient, GenericProtocol):
         event = general_events.MessageSent(self, "notice", target, message)
         self.event_manager.run_callback("MessageSent", event)
 
-        msg = event.message
-
-        target = str(target).decode("UTF-8")
-        msg = msg.decode("UTF-8")
+        msg = to_unicode(event.message)
+        target = to_unicode(target)
 
         if event.printable:
             self.log.info("-> -%s- %s" % (target, msg))
@@ -965,8 +963,8 @@ class Protocol(irc.IRCClient, GenericProtocol):
         """
         Sends a notice without printing it or firing an event.
         """
-        target = str(target).decode("UTF-8")
-        msg = message.decode("UTF-8")
+        target = to_unicode(target)
+        msg = to_unicode(message)
 
         self.sendLine(u"NOTICE %s :%s" % (target, msg))
 
@@ -976,8 +974,8 @@ class Protocol(irc.IRCClient, GenericProtocol):
 
         msg = event.message
 
-        target = str(target).decode("UTF-8")
-        msg = msg.decode("UTF-8")
+        target = to_unicode(target)
+        msg = to_unicode(message)
 
         if event.printable:
             self.log.info("-> *%s* %s" % (target, msg))
@@ -988,14 +986,14 @@ class Protocol(irc.IRCClient, GenericProtocol):
         """
         Sends a privmsg without printing it or firing an event.
         """
-        target = str(target).decode("UTF-8")
-        msg = message.decode("UTF-8")
+        target = to_unicode(target)
+        msg = to_unicode(message)
 
         self.sendLine(u"PRIVMSG %s :%s" % (target, msg))
 
     def send_ctcp(self, target, command, args=None):
-        target = str(target).decode("UTF-8")
-        command = command.decode("UTF-8")
+        target = to_unicode(target)
+        command = to_unicode(command)
         message = command
         if args and len(args):
             message = u"%s %s" % (command, args)
@@ -1003,8 +1001,8 @@ class Protocol(irc.IRCClient, GenericProtocol):
                                    constants.CTCP)
 
     def send_ctcp_reply(self, target, command, args=None):
-        target = str(target).decode("UTF-8")
-        command = command.decode("UTF-8")
+        target = to_unicode(target)
+        command = to_unicode(command)
         message = command
         if args and len(args):
             message = u"%s %s" % (command, args)
@@ -1012,7 +1010,6 @@ class Protocol(irc.IRCClient, GenericProtocol):
                                   constants.CTCP)
 
     def send_who(self, mask, operators_only=False):
-        mask = mask.decode("UTF-8")
         query = u"WHO %s" % mask
         if operators_only:
             query += " o"
