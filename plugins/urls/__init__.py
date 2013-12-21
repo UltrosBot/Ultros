@@ -70,10 +70,7 @@ class Plugin(PluginObject):
                                                        target, protocol)
 
         if not allowed:
-            if isinstance(target, User):
-                source.respond("You're not authorized to use the URL title "
-                               "fetcher.")
-                return
+            return
 
         # Strip formatting characters if possible
         message_stripped = message
