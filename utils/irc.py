@@ -6,11 +6,11 @@ from system.protocols.irc import constants
 __author__ = 'rakiru'
 
 _ircformatting = {'BOLD': constants.BOLD,
-             'ITALIC': constants.ITALIC,
-             'COLOUR': constants.COLOUR,
-             'REVERSE': constants.REVERSE,
-             'NORMAL': constants.NORMAL,
-             'CTCP': constants.CTCP}
+                  'ITALIC': constants.ITALIC,
+                  'COLOUR': constants.COLOUR,
+                  'REVERSE': constants.REVERSE,
+                  'NORMAL': constants.NORMAL,
+                  'CTCP': constants.CTCP}
 
 _irccolours = {'COLOUR_WHITE': constants.COLOUR_WHITE,
                'COLOUR_BLACK': constants.COLOUR_BLACK,
@@ -35,6 +35,7 @@ _re_formatting = re.compile("(%s[0-9]{1,2})|[%s]" %
                             (constants.COLOUR,
                              ''.join(_ircformatting.values())))
 
+
 def split_hostmask(hostmask):
     posex = hostmask.find(u'!')
     posat = hostmask.find(u'@')
@@ -44,6 +45,7 @@ def split_hostmask(hostmask):
     return [hostmask[0:posex], hostmask[posex + 1: posat],
             hostmask[posat + 1:]]
 
+
 def format_string(value, values=None):
     mergedvalues = None
     if values is None:
@@ -51,6 +53,7 @@ def format_string(value, values=None):
     else:
         mergedvalues = dict(_ircvalues, **values)
     return value.format(**mergedvalues)
+
 
 def strip_formatting(message):
     # GOD DAMN MOTHER FUCKER SHIT FUCK CUNT BITCH
