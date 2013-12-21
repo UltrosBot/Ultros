@@ -29,6 +29,7 @@ except Exception:
     output_exception(logger)
 
 finally:
+    manager.unload()
     close_log("output.log")
     try:
         raw_input("Press enter to exit.")

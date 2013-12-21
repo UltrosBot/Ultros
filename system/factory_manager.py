@@ -298,6 +298,13 @@ class Manager(object):
             return True
         return False
 
+    def unload(self):
+        # Shut down!
+        for name in self.factories.keys():
+            self.unload_protocol(name)
+        for name in self.loaded_plugins.keys():
+            self.unload_plugin(name)
+
     # Grab stuff
 
     def get_protocol(self, name):
