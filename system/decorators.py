@@ -91,6 +91,25 @@ def run_async(func):
 
     return async_func
 
+
+def run_async_daemon(func):
+    """
+    Much the same as run_async but the thread stops when the app does.
+    """
+    from threading import Thread
+    from functools import wraps
+
+    @wraps(func)
+    def async_func(*args, **kwargs):
+        func_hl = Thread(target=func, args=args, kwargs=kwargs)
+        func_hl.daemon = True
+        func_hl.start()
+        return func_hl
+
+    return async_func
+
+#
+
 # Yeah, I know how non-Pythonic the `accepts` decorator is, but it's
 #   somewheat necessary to help new Python devs get into working with
 #   the plugin system, especially if they come from a non-Python background.
