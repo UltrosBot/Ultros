@@ -281,9 +281,6 @@ class Protocol(irc.IRCClient, GenericProtocol):
                                               target, printable)
             self.event_manager.run_callback("PreCommand", event)
 
-            if event.printable:
-                self.log.info(event.printable)
-
             result = self.command_manager.run_command(event.command,
                                                       event.source,
                                                       event.target, self,
@@ -303,6 +300,8 @@ class Protocol(irc.IRCClient, GenericProtocol):
                 else:  # Exception occured
                     self.log.warn("An error occured while running the %s "
                                   "command: %s" % (command, b))
+            if event.printable:
+                self.log.info(event.printable)
             return True
         return False
 
