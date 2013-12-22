@@ -229,7 +229,7 @@ class Manager(object):
         for protocol in self.main_config["protocols"]:
             self.logger.info("Setting up protocol: %s" % protocol)
             conf_location = "protocols/%s.yml" % protocol
-            result = self.load_protocol(protocol, protocol, conf_location)
+            result = self.load_protocol(protocol, conf_location)
 
             if not result is PROTOCOL_LOADED:
                 if result is PROTOCOL_ALREADY_LOADED:
@@ -243,7 +243,7 @@ class Manager(object):
                     self.logger.warn("Error detected while setting up "
                                      "protocol.")
 
-    def load_protocol(self, name, friendly_name, conf_location):  # noqa
+    def load_protocol(self, name, conf_location):
         if name in self.factories:
             return PROTOCOL_ALREADY_LOADED
 

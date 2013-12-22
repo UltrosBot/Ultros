@@ -6,7 +6,7 @@
 
 # Specify the names of the protocols to use for connections here.
 protocols:
-  - irc
+  - irc-esper
 
 # Any protocol-specific configuration goes in its own configuration file in the
 # "protocols" folder. This will include connection information, so make sure

@@ -21,6 +21,7 @@ class Factory(protocol.ClientFactory):
         self.config = config
         self.manager = manager
         self.name = protocol_name
+        self.ptype = config["main"]["protocol-type"]
         self.protocol_class = None
         self.protocol = None
         manager_config = manager.main_config
@@ -34,11 +35,12 @@ class Factory(protocol.ClientFactory):
     def setup(self):
         try:
             current_protocol = importlib.import_module(
-                "system.protocols.%s.protocol" % self.name)
+                "system.protocols.%s.protocol" % self.ptype)
             self.protocol_class = current_protocol
         except ImportError:
             self.logger.error(
-                "Unable to import protocol %s" % self.name)
+                "Unable to import protocol %s for %s" %
+                (self.ptype, self.name))
             output_exception(self.logger, logging.ERROR)
         else:
             if issubclass(current_protocol.Protocol, GenericProtocol):

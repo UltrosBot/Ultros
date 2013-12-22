@@ -1,7 +1,10 @@
+main:
+  protocol-type: irc
+
 network: # Network connection settings
-  address: irc.archivesmc.com # Address of the server
-  port: 6667 # Port to connect to
-  ssl: no # Use SSL?
+  address: irc.esper.net # Address of the server
+  port: 6697 # Port to connect to
+  ssl: yes # Use SSL?
 
 identity: # Settings relating to identification and authentication
   nick: Ultros # The bot's nickname
