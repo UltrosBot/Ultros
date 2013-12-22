@@ -83,7 +83,6 @@ class PluginObject(IPlugin):
         called.
         """
         self.logger.warn("Setup method not defined!")
-        pass
 
     def _disable_self(self):
         self.factory_manager.plugman.deactivatePluginByName(self.info.name)

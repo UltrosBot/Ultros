@@ -275,11 +275,20 @@ class Protocol(irc.IRCClient, GenericProtocol):
             command = split[0]
             args = split[1:]
 
-            self.log.info("%s ran the %s command in %s" % (source.nickname,
-                                                           command, target))
+            printable = "<%s:%s> %s" % (source.nickname, target, message)
 
-            result = self.command_manager.run_command(command, source, target,
-                                                      self, args)
+            event = general_events.PreCommand(self, command, args, source,
+                                              target, printable)
+            self.event_manager.run_callback("PreCommand", event)
+
+            if event.printable:
+                self.log.info(event.printable)
+
+            result = self.command_manager.run_command(event.command,
+                                                      event.source,
+                                                      event.target, self,
+                                                      event.args)
+
             a, b = result
             if a:
                 pass  # Command ran successfully
@@ -300,14 +309,13 @@ class Protocol(irc.IRCClient, GenericProtocol):
     def privmsg(self, user, channel, message):
         """ Called when we receive a message - channel or private. """
 
-        user_obj = None
         try:
             user_obj = self._get_user_from_user_string(user)
-        except:
+        except Exception:
             # Privmsg from the server itself and things (if that happens)
             self.log.debug("Message from irregular user: %s" % user)
             user_obj = User(self, nickname=user, is_tracked=False)
-        channel_obj = None
+
         if self.utils.compare_nicknames(channel, self.nickname):
             channel_obj = user_obj
         else:
@@ -334,14 +342,14 @@ class Protocol(irc.IRCClient, GenericProtocol):
 
     def noticed(self, user, channel, message):
         """ Called when we receive a notice - channel or private. """
-        user_obj = None
+
         try:
             user_obj = self._get_user_from_user_string(user)
         except:
             # Notices from the server itself and things
             self.log.debug("Notice from irregular user: %s" % user)
             user_obj = User(self, nickname=user, is_tracked=False)
-        channel_obj = None
+
         if self.utils.compare_nicknames(channel, self.nickname):
             channel_obj = user_obj
         else:

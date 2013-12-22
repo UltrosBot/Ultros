@@ -108,8 +108,6 @@ def run_async_daemon(func):
 
     return async_func
 
-#
-
 # Yeah, I know how non-Pythonic the `accepts` decorator is, but it's
 #   somewheat necessary to help new Python devs get into working with
 #   the plugin system, especially if they come from a non-Python background.

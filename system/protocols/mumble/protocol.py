@@ -568,11 +568,19 @@ class Protocol(GenericProtocol):
             command = split[0]
             args = split[1:]
 
-            self.log.info("%s ran the %s command in %s" % (source.name,
-                                                           command, target))
+            printable = "<%s> %s" % (source, message)
 
-            result = self.command_manager.run_command(command, source, target,
-                                                      self, args)
+            event = general_events.PreCommand(self, command, args, source,
+                                              target, printable)
+            self.event_manager.run_callback("PreCommand", event)
+
+            if event.printable:
+                self.log.info(event.printable)
+
+            result = self.command_manager.run_command(event.command,
+                                                      event.source,
+                                                      event.target, self,
+                                                      event.args)
             a, b = result
             if a:
                 pass  # Command ran successfully

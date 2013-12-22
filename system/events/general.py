@@ -185,3 +185,25 @@ class UserDisconnected(GeneralEvent):
     def __init__(self, caller, user):
         self.user = user
         super(UserDisconnected, self).__init__(caller)
+
+
+class PreCommand(GeneralEvent):
+    """
+    Thrown just before a command is called.
+    Don't action your commands here, this is more for stats collection
+        and output modification, as well as perhaps a little duck-punching.
+    """
+
+    command = ""
+    args = []
+    source = None
+    target = None
+    printable = ""
+
+    def __init__(self, caller, command, args, source, target, printable):
+        self.command = command
+        self.args = args
+        self.source = source
+        self.target = target
+        self.printable = printable
+        super(GeneralEvent, self).__init__(caller)

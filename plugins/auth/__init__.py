@@ -1,9 +1,12 @@
+
 __author__ = 'Gareth Coles'
 
 import auth_handler
 import permissions_handler
 
 from system.command_manager import CommandManager
+from system.event_manager import EventManager
+from system.events.general import PreCommand
 from system.plugin import PluginObject
 from system.protocols.generic.channel import Channel
 from utils.config import Config
@@ -18,6 +21,7 @@ class AuthPlugin(PluginObject):
     blacklist = None
 
     commands = None
+    events = None
 
     auth_h = None
     perms_h = None
@@ -38,6 +42,7 @@ class AuthPlugin(PluginObject):
             return
 
         self.commands = CommandManager.instance()
+        self.events = EventManager.instance()
 
         if self.config["use-permissions"]:
             try:
@@ -75,6 +80,32 @@ class AuthPlugin(PluginObject):
                                        self, "auth.register")
         self.commands.register_command("passwd", self.passwd_command, self,
                                        "auth.passwd")
+
+        self.events.add_callback("PreCommand", self, self.pre_command, 10000)
+
+    def pre_command(self, event=PreCommand):
+        self.logger.debug("Command: %s" % event.command)
+        if event.command.lower() in ["login", "register"]:
+            if len(event.args) >= 2:
+                split_ = event.printable.split("%s " % event.command)
+                second_split = split_[1].split()
+                second_split[1] = "[REDACTED]"
+                split_[1] = " ".join(second_split)
+                donestr = "%s " % event.command
+                done = donestr.join(split_)
+                event.printable = done
+        elif event.command.lower() == "passwd":
+            split_ = event.printable.split("%s " % event.command)
+            second_split = split_[1].split()
+
+            dsplit = []
+            for x in second_split:
+                dsplit.append("[REDACTED]")
+
+            split_[1] = " ".join(dsplit)
+            donestr = "%s " % event.command
+            done = donestr.join(split_)
+            event.printable = done
 
     def login_command(self, caller, source, args, protocol):
         if len(args) < 2:
