@@ -94,5 +94,5 @@ class Protocol(protocol.Protocol):
         You don't need to implement this if your protocol doesn't use channels.
         :param channel: string representing the channel we need.
         """
-        raise NotImplementedError("This function is optional and only applies to "
-                             "channel-based protocols.")
+        raise NotImplementedError("This function is optional and only applies "
+                                  "to channel-based protocols.")
