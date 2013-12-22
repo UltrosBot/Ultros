@@ -284,7 +284,7 @@ class Plugin(PluginObject):
 
             page = response.read()
             soup = BeautifulSoup(page)
-            title = to_unicode(soup.title.string)
+            title = to_unicode(soup.title.string.strip())
             domain = to_unicode(domain)
             return title, domain
         except Exception as e:
