@@ -79,14 +79,14 @@ class Protocol(protocol.Protocol):
         here.
         """
         self.transport.loseConnection()
-        raise NotImplemented("This function needs to be implemented!")
+        raise NotImplementedError("This function needs to be implemented!")
 
     def get_user(self, user):
         """
         Used to retrieve a user. Return None if we can't find it.
         :param user: string representing the user we need.
         """
-        raise NotImplemented("This function needs to be implemented!")
+        raise NotImplementedError("This function needs to be implemented!")
 
     def get_channel(self, channel):
         """
@@ -94,5 +94,5 @@ class Protocol(protocol.Protocol):
         You don't need to implement this if your protocol doesn't use channels.
         :param channel: string representing the channel we need.
         """
-        raise NotImplemented("This function is optional and only applies to "
+        raise NotImplementedError("This function is optional and only applies to "
                              "channel-based protocols.")
