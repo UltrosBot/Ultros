@@ -34,6 +34,9 @@ log = logging.getLogger(__name__)
 
 
 class Protocol(GenericProtocol):
+
+    TYPE = "mumble"
+
     VERSION_MAJOR = 1
     VERSION_MINOR = 2
     VERSION_PATCH = 4
@@ -85,13 +88,14 @@ class Protocol(GenericProtocol):
     users = {}
 
     pinging = True
-    name = "mumble"
 
-    def __init__(self, factory, config):
-        self.received = ""
+    def __init__(self, name, factory, config):
+        self.name = name
         self.factory = factory
         self.config = config
-        self.log = getLogger("Mumble")
+
+        self.received = ""
+        self.log = getLogger(self.name)
         self.log.info("Setting up..")
 
         self.command_manager = CommandManager.instance()

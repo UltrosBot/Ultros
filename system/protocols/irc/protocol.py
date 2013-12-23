@@ -47,6 +47,8 @@ class Protocol(irc.IRCClient, GenericProtocol):
 
     __version__ = "1.0.0"
 
+    TYPE = "irc"
+
     factory = None
     config = None
     log = None
@@ -65,8 +67,12 @@ class Protocol(irc.IRCClient, GenericProtocol):
 
     ssl = False
 
-    def __init__(self, factory, config):
-        self.log = getLogger("IRC")
+    def __init__(self, name, factory, config):
+        self.name = name
+        self.factory = factory
+        self.config = config
+
+        self.log = getLogger(self.name)
         self.log.info("Setting up..")
 
         try:
@@ -79,8 +85,6 @@ class Protocol(irc.IRCClient, GenericProtocol):
                           "SSL will not be available.")
             output_exception(self.log, logging.WARN)
 
-        self.factory = factory
-        self.config = config
         self.event_manager = EventManager.instance()
         self.command_manager = CommandManager.instance()
         self.utils = IRCUtils(self.log)

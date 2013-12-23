@@ -59,6 +59,8 @@ class Protocol(protocol.Protocol):
 
     __version__ = ""
 
+    TYPE = "generic"
+
     factory = None
     config = None
     log = None
@@ -66,10 +68,10 @@ class Protocol(protocol.Protocol):
     command_manager = None
 
     nickname = ""
-    name = "generic"
     ourselves = None
 
-    def __init__(self, factory, config):
+    def __init__(self, name, factory, config):
+        self.name = name
         self.factory = factory
         self.config = config
 

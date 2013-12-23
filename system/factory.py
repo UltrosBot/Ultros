@@ -44,7 +44,9 @@ class Factory(protocol.ClientFactory):
             output_exception(self.logger, logging.ERROR)
         else:
             if issubclass(current_protocol.Protocol, GenericProtocol):
-                self.protocol = current_protocol.Protocol(self, self.config)
+                self.protocol = current_protocol.Protocol(self.name,
+                                                          self,
+                                                          self.config)
             else:
                 raise TypeError("Protocol does not subclass the generic "
                                 "protocol class!")
