@@ -247,17 +247,20 @@ class Manager(object):
         if name in self.factories:
             return PROTOCOL_ALREADY_LOADED
 
-        conf_location = conf_location.replace("..", "")
-        try:
-            config = Config(conf_location)
-            if not config.exists:
-                return PROTOCOL_CONFIG_NOT_EXISTS
-        except Exception:
-            self.logger.error(
-                "Unable to load configuration for the '%s' protocol."
-                % name)
-            output_exception(self.logger, logging.ERROR)
-            return PROTOCOL_LOAD_ERROR
+        config = conf_location
+        if not isinstance(conf_location, Config):
+            # TODO: Prevent upward directory traversal properly
+            conf_location = conf_location.replace("..", "")
+            try:
+                config = Config(conf_location)
+                if not config.exists:
+                    return PROTOCOL_CONFIG_NOT_EXISTS
+            except Exception:
+                self.logger.error(
+                    "Unable to load configuration for the '%s' protocol."
+                    % name)
+                output_exception(self.logger, logging.ERROR)
+                return PROTOCOL_LOAD_ERROR
         try:
             self.factories[name] = Factory(name, config, self)
             self.factories[name].setup()
