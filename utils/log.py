@@ -142,7 +142,7 @@ class ColorizingStreamHandler(logging.StreamHandler):
 
 
 def getLogger(name, path=None,
-              fmt="%(asctime)s | %(name)10s | %(levelname)8s | %(message)s",
+              fmt="%(asctime)s | %(name)20s | %(levelname)8s | %(message)s",
               datefmt="%d %b %Y - %H:%M:%S", displayname=None):
 
     if displayname is None:
@@ -155,7 +155,7 @@ def getLogger(name, path=None,
 
     chandler = ColorizingStreamHandler()
     formatter = logging.Formatter(
-        "%(asctime)s | %(name)10s | %(levelname)8s | %(message)s")
+        "%(asctime)s | %(name)20s | %(levelname)8s | %(message)s")
     formatter.datefmt = datefmt
     chandler.setFormatter(formatter)
     chandler.setLevel(logging.DEBUG if "--debug" in sys.argv else logging.INFO)
@@ -178,7 +178,7 @@ def getLogger(name, path=None,
 
     handler = logging.FileHandler("logs/output.log")
     formatter = logging.Formatter(
-        "%(asctime)s | %(name)10s | %(levelname)8s | %(message)s")
+        "%(asctime)s | %(name)20s | %(levelname)8s | %(message)s")
     formatter.datefmt = datefmt
     handler.setFormatter(formatter)
     handler.setLevel(logging.DEBUG if "--debug" in sys.argv else logging.INFO)
@@ -206,7 +206,7 @@ def open_log(path):
 
     handler = logging.FileHandler(path)
     formatter = logging.Formatter(
-        "%(asctime)s | %(name)10s | %(levelname)8s | %(message)s")
+        "%(asctime)s | %(name)20s | %(levelname)8s | %(message)s")
     formatter.datefmt = "%d %b %Y - %H:%M:%S"
     handler.setFormatter(formatter)
     handler.setLevel(logging.DEBUG if "--debug" in sys.argv else logging.INFO)
@@ -232,7 +232,7 @@ def close_log(path):
 
     handler = logging.FileHandler(path)
     formatter = logging.Formatter(
-        "%(asctime)s | %(name)10s | %(levelname)8s | %(message)s")
+        "%(asctime)s | %(name)20s | %(levelname)8s | %(message)s")
     formatter.datefmt = "%d %b %Y - %H:%M:%S"
     handler.setFormatter(formatter)
     handler.setLevel(logging.DEBUG if "--debug" in sys.argv else logging.INFO)
