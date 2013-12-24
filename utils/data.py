@@ -9,7 +9,7 @@ from threading import Lock
 from utils.log import getLogger
 
 
-class Data(object):
+class YamlData(object):
 
     data = {}
 
@@ -104,3 +104,14 @@ class Data(object):
 
     def __str__(self):
         return "<Ultros data handler: %s>" % self.data
+
+
+class Data(YamlData):
+    """
+    DEPRECATED: This is only here until I can replace the Data objects
+        used all over the place!
+    """
+
+    def __init__(self, filename):
+        super(Data, self).__init__(filename)
+        self.logger.warn("This class is deprecated, use YamlData instead!")

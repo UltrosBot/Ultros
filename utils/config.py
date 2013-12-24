@@ -53,6 +53,15 @@ class YamlConfig(object):
             self.data = yaml.safe_load(self.fh)
             return True
 
+    def keys(self):
+        return self.data.keys()
+
+    def items(self):
+        return self.data.items()
+
+    def values(self):
+        return self.data.values()
+
     def __getitem__(self, y):
         return self.data.__getitem__(y)
 
@@ -111,6 +120,15 @@ class JSONConfig(object):
         else:
             self.data = json.load(self.fh)
             return True
+
+    def keys(self):
+        return self.data.keys()
+
+    def items(self):
+        return self.data.items()
+
+    def values(self):
+        return self.data.values()
 
     def __getitem__(self, y):
         return self.data.__getitem__(y)

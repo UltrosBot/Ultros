@@ -10,7 +10,7 @@ import os
 
 logging.basicConfig(
     level=(logging.DEBUG if "--debug" in sys.argv else logging.INFO),
-    format="%(asctime)s | %(name)10s | %(levelname)8s | %(message)s",
+    format="%(asctime)s | %(name)20s | %(levelname)8s | %(message)s",
     datefmt="%d %b %Y - %H:%M:%S")
 
 loggers = {}
