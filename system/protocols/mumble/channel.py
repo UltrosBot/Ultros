@@ -6,9 +6,8 @@ from system.protocols.generic import channel
 
 class Channel(channel.Channel):
     def __init__(self, protocol, channel_id, name, parent, position, links):
-        super(Channel, self).__init__(protocol)
+        super(Channel, self).__init__(name, protocol)
         self.channel_id = channel_id
-        self.name = name
         self.parent = parent
         self.position = position
         self.links = links

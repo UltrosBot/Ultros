@@ -326,6 +326,7 @@ class Protocol(ChannelsProtocol):
 
             if message.session in self.users:
                 user = self.users[message.session]
+                user.is_tracked = False
                 self.log.info("User left: %s" %
                               user)
                 user.channel.remove_user(user)
@@ -749,7 +750,7 @@ class Protocol(ChannelsProtocol):
         if isinstance(name_or_session, str):
             name = name_or_session.lower()
             for session, user in self.users.iteritems():
-                if user.name.lower() == name:
+                if user.nickname.lower() == name:
                     return user
             return None
         else:

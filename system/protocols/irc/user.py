@@ -9,8 +9,7 @@ from system.protocols.generic import user
 class User(user.User):
     def __init__(self, protocol, nickname, ident=None, host=None,
                  realname=None, is_oper=False, is_tracked=False):
-        super(User, self).__init__(protocol, is_tracked)
-        self.nickname = nickname
+        super(User, self).__init__(nickname, protocol, is_tracked)
         self.ident = ident
         self.host = host
         self.realname = realname

@@ -5,7 +5,8 @@ class Channel(object):
 
     name = ""
 
-    def __init__(self, protocol=None):
+    def __init__(self, name, protocol=None):
+        self.name = name
         self.protocol = protocol
 
     def respond(self, message):
