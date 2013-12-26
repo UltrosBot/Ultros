@@ -973,7 +973,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         if isinstance(target, User):
             self.send_notice(target.nickname, message)
         elif isinstance(target, Channel):
-            self.send_msg(target.name, message)
+            self.send_privmsg(target.name, message)
         else:
             return False
         return True
