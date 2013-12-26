@@ -9,7 +9,7 @@ from system.event_manager import EventManager
 from system.events.general import PreCommand
 from system.plugin import PluginObject
 from system.protocols.generic.channel import Channel
-from utils.config import Config
+from utils.config import YamlConfig
 from utils.data import Data
 
 
@@ -29,7 +29,7 @@ class AuthPlugin(PluginObject):
     def setup(self):
         self.logger.debug("Entered setup method.")
         try:
-            self.config = Config("plugins/auth.yml")
+            self.config = YamlConfig("plugins/auth.yml")
         except Exception:
             self.logger.exception("Error loading configuration!")
             self.logger.error("Disabling..")

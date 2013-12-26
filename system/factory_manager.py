@@ -13,7 +13,7 @@ from system.decorators import Singleton
 from system.event_manager import EventManager
 from system.factory import Factory
 from system.plugin_manager import YamlPluginManagerSingleton
-from utils.config import Config
+from utils.config import Config, YamlConfig
 from utils.log import getLogger
 from utils.misc import output_exception
 
@@ -41,7 +41,7 @@ class Manager(object):
     def __init__(self):
         # Set up the logger
         self.logger = getLogger("Manager")
-        self.main_config = Config("settings.yml")
+        self.main_config = YamlConfig("settings.yml")
 
         self.commands = CommandManager.instance()
         self.commands.set_factory_manager(self)
@@ -262,7 +262,7 @@ class Manager(object):
             # TODO: Prevent upward directory traversal properly
             conf_location = conf_location.replace("..", "")
             try:
-                config = Config(conf_location)
+                config = YamlConfig(conf_location)
                 if not config.exists:
                     return PROTOCOL_CONFIG_NOT_EXISTS
             except Exception:
