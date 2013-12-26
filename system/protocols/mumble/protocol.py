@@ -731,19 +731,33 @@ class Protocol(ChannelsProtocol):
         msg.channel_id = channel
         self.sendProtobuf(msg)
 
-    def get_channel(self, name):
-        name = name.lower()
-        for cid, channel in self.channels.iteritems():
-            if channel.name.lower() == name:
-                return channel
-        return None
+    def get_channel(self, name_or_id):
+        if isinstance(name_or_id, str):
+            name = name_or_id.lower()
+            for cid, channel in self.channels.iteritems():
+                if channel.name.lower() == name:
+                    return channel
+            return None
+        else:
+            # Assume ID - it's a hash lookup anyway
+            try:
+                return self.channels[name_or_id]
+            except KeyError:
+                return None
 
-    def get_user(self, name):
-        name = name.lower()
-        for session, user in self.users.iteritems():
-            if user.name.lower() == name:
-                return user
-        return None
+    def get_user(self, name_or_session):
+        if isinstance(name_or_session, str):
+            name = name_or_session.lower()
+            for session, user in self.users.iteritems():
+                if user.name.lower() == name:
+                    return user
+            return None
+        else:
+            # Assume session - it's a hash lookup anyway
+            try:
+                return self.users[name_or_session]
+            except KeyError:
+                return None
 
     def print_users(self):
         # TODO: Remove this debug function once user handling is complete
