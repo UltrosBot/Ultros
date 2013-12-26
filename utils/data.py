@@ -11,7 +11,11 @@ from threading import Lock
 from utils.log import getLogger
 
 
-class YamlData(object):
+class Data(object):
+    pass
+
+
+class YamlData(Data):
     """
     Data object that uses YAML files for storage.
 
@@ -142,19 +146,7 @@ class YamlData(object):
         return "<Ultros YAML data handler: %s>" % self.data
 
 
-class Data(YamlData):
-    """
-    DEPRECATED: This is only here until I can replace the Data objects
-        used all over the place!
-    """
-
-    def __init__(self, filename):
-        super(Data, self).__init__(filename)
-        self.logger = getLogger("Data")
-        self.logger.warn("This class is deprecated, use YamlData instead!")
-
-
-class JsonData(object):
+class JsonData(Data):
     """
     Data object that uses JSON files for storage.
 
@@ -262,7 +254,7 @@ class JsonData(object):
         return "<Ultros JSON data handler: %s>" % self.data
 
 
-class SqliteData(object):
+class SqliteData(Data):
     """
     Data object that uses SQLite for storage.
 

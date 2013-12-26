@@ -10,7 +10,11 @@ from utils.misc import output_exception
 from utils.log import getLogger
 
 
-class YamlConfig(object):
+class Config(object):
+    pass
+
+
+class YamlConfig(Config):
     """
     Configuration object that uses YAML files for storage.
     Configuration cannot be written. It can only be read. This is to keep
@@ -84,7 +88,7 @@ class YamlConfig(object):
         return self.data.__reversed__()
 
 
-class JSONConfig(object):
+class JSONConfig(Config):
     """
     Configuration object that uses JSON files for storage.
 
@@ -154,19 +158,7 @@ class JSONConfig(object):
         return self.data.__reversed__()
 
 
-class Config(YamlConfig):
-    """
-    DEPRECATED: This is only here until I can replace the Config objects
-        used all over the place!
-    """
-
-    def __init__(self, filename):
-        super(Config, self).__init__(filename)
-        self.logger = getLogger("Config")
-        self.logger.warn("This class is deprecated, use YamlConfig instead!")
-
-
-class MemoryConfig(object):
+class MemoryConfig(Config):
     """
     Just like the normal YamlConfig, but pass it a dict instead of a filename.
     That dict will be used to supply data, instead of a parsed YAML file.

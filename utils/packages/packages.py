@@ -14,7 +14,7 @@ import urllib
 import urllib2
 import yaml
 
-from utils.data import Data
+from utils.data import YamlData
 
 
 class Packages(object):
@@ -43,7 +43,7 @@ class Packages(object):
         response = urllib2.urlopen(info_url)
         data = response.read()
 
-        self.config = Data("packages.yml")
+        self.config = YamlData("packages.yml")
         if len(self.config) == 0:
             self.config["installed"] = {}
 

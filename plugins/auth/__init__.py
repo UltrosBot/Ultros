@@ -10,7 +10,7 @@ from system.events.general import PreCommand
 from system.plugin import PluginObject
 from system.protocols.generic.channel import Channel
 from utils.config import YamlConfig
-from utils.data import Data
+from utils.data import YamlData
 
 
 class AuthPlugin(PluginObject):
@@ -46,7 +46,7 @@ class AuthPlugin(PluginObject):
 
         if self.config["use-permissions"]:
             try:
-                self.permissions = Data("plugins/auth/permissions.yml")
+                self.permissions = YamlData("plugins/auth/permissions.yml")
             except Exception:
                 self.logger.exception("Unable to load permissions. They will "
                                       "be unavailable!")
@@ -59,8 +59,8 @@ class AuthPlugin(PluginObject):
 
         if self.config["use-auth"]:
             try:
-                self.passwords = Data("plugins/auth/passwords.yml")
-                self.blacklist = Data("plugins/auth/blacklist.yml")
+                self.passwords = YamlData("plugins/auth/passwords.yml")
+                self.blacklist = YamlData("plugins/auth/blacklist.yml")
             except Exception:
                 self.logger.exception("Unable to load user accounts. They will"
                                       " be unavailable!")

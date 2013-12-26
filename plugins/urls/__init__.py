@@ -6,7 +6,7 @@ import urllib2
 
 from kitchen.text.converters import to_unicode
 
-from utils.data import Data
+from utils.data import YamlData
 
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
@@ -34,7 +34,7 @@ class Plugin(PluginObject):
 
     def setup(self):
         self.logger.debug("Entered setup method.")
-        self.channels = Data("plugins/urls/channels.yml")
+        self.channels = YamlData("plugins/urls/channels.yml")
         self.commands = CommandManager.instance()
         self.events = EventManager.instance()
 
