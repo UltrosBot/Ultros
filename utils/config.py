@@ -91,7 +91,9 @@ class JSONConfig(object):
     This class is similar to the YAML config handler, but it uses JSON.
 
     Why does this exist when we have YAML?
-    ..heck if I know.
+    ..heck if I know. Don't use this unless it makes more sense than YAML.
+        If you're generating configs using some tool, don't be lazy and just
+        generate JSON. Generate YAML, like a good monkey.
 
     For sanity's sake, all JSON files should end in .json, but this isn't
         enforced.
