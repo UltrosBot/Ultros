@@ -90,11 +90,34 @@ class Protocol(protocol.Protocol):
         """
         raise NotImplementedError("This function needs to be implemented!")
 
+    def send_msg(self, target, message, target_type=None):
+        """
+        Send a message to a user or a channel.
+        :param target: A string, User or Channel object.
+        :param message: The message to send.
+        :param target_type: The type of target - this won't be needed by all
+            protocols.
+        :return: Boolean describing whether the target was found and messaged.
+        """
+        raise NotImplementedError("This function needs to be implemented.")
+
+
+class ChannelsProtocol(Protocol):
+    """
+    Base protocol for protocols that support channels.
+    You'll need to override everything in here as well.
+    """
+
     def get_channel(self, channel):
         """
         Used to retrieve a channel. Return None if we can't find it.
         You don't need to implement this if your protocol doesn't use channels.
         :param channel: string representing the channel we need.
         """
-        raise NotImplementedError("This function is optional and only applies "
-                                  "to channel-based protocols.")
+        raise NotImplementedError("This function needs to be implemented!")
+
+
+class NoChannelsProtocol(Protocol):
+    """
+    Base protocol for protocols that don't support channels.
+    """

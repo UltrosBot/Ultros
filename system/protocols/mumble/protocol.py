@@ -21,7 +21,7 @@ from system.command_manager import CommandManager
 from system.event_manager import EventManager
 from system.events import general as general_events
 from system.events import mumble as mumble_events
-from system.protocols.generic.protocol import Protocol as GenericProtocol
+from system.protocols.generic.protocol import ChannelsProtocol
 from system.protocols.mumble import Mumble_pb2
 from system.protocols.mumble.user import User
 from system.protocols.mumble.channel import Channel
@@ -33,7 +33,7 @@ from utils.misc import output_exception
 log = logging.getLogger(__name__)
 
 
-class Protocol(GenericProtocol):
+class Protocol(ChannelsProtocol):
 
     TYPE = "mumble"
 
@@ -637,28 +637,46 @@ class Protocol(GenericProtocol):
 
             # TODO: Remove this before proper release. An admin plugin with the
             # - same functionality should be created.
-            if msg.startswith('!'):
-                cmd = msg[1:].lower().split(" ")[0]
-                if cmd == "users":
-                    self.print_users()
-                elif cmd == "channels":
-                    self.print_channels()
-                elif cmd == "msgme":
-                    self.msg_user("msg_user() test using id", message.actor)
-                    self.msg_user("msg_user() test using User object",
-                                  self.users[message.actor])
-                elif cmd == "join":
-                    channame = msg[6:]
-                    chan = None
-                    for _id, channel in self.channels.iteritems():
-                        if channel.name.lower() == channame.lower():
-                            chan = _id
-                            break
-                    if chan is None:
-                        self.msg_user("Could not find channel", message.actor)
-                    else:
-                        self.msg_user("Joining channel", message.actor)
-                        self.join_channel(chan)
+            # if msg.startswith('!'):
+            #     cmd = msg[1:].lower().split(" ")[0]
+            #     if cmd == "users":
+            #         self.print_users()
+            #     elif cmd == "channels":
+            #         self.print_channels()
+            #     elif cmd == "msgme":
+            #         self.msg_user("msg_user() test using id", message.actor)
+            #         self.msg_user("msg_user() test using User object",
+            #                       self.users[message.actor])
+            #     elif cmd == "join":
+            #         channame = msg[6:]
+            #         chan = None
+            #         for _id, channel in self.channels.iteritems():
+            #             if channel.name.lower() == channame.lower():
+            #                 chan = _id
+            #                 break
+            #         if chan is None:
+            #             self.msg_user("Could not find channel", message.actor)
+            #         else:
+            #             self.msg_user("Joining channel", message.actor)
+            #             self.join_channel(chan)
+
+    def send_msg(self, target, message, target_type=None):
+        if isinstance(target, int) or isinstance(target, str):
+            if target_type == "user":
+                target = self.get_user(target)
+                if not target:
+                    return False
+            else:  # Prioritize channels
+                target = self.get_channel(target)
+                if not target:
+                    return False
+        if isinstance(target, User):
+            self.msg_user(message, target)
+            return True
+        elif isinstance(target, Channel):
+            self.msg_channel(message, target)
+            return True
+        return False
 
     def msg(self, message, target="channel", target_id=None):
         if target_id is None and target == "channel":

@@ -12,7 +12,7 @@ from system.command_manager import CommandManager
 from system.event_manager import EventManager
 from system.events import irc as irc_events
 from system.events import general as general_events
-from system.protocols.generic.protocol import Protocol as GenericProtocol
+from system.protocols.generic.protocol import ChannelsProtocol
 from system.protocols.irc import constants
 from system.protocols.irc.channel import Channel
 from system.protocols.irc.rank import Ranks
@@ -23,7 +23,7 @@ from utils.log import getLogger
 from utils.misc import output_exception
 
 
-class Protocol(irc.IRCClient, GenericProtocol):
+class Protocol(irc.IRCClient, ChannelsProtocol):
     """
     Internet Relay Chat server protocol.
 
@@ -957,6 +957,26 @@ class Protocol(irc.IRCClient, GenericProtocol):
     #   - get_channel()                                                   #
     #   - get_user() and get_users()                                      #
     #######################################################################
+
+    def send_msg(self, target, message, target_type=None):
+        if isinstance(target, str):
+            if target.startswith("#") or target.startswith("&"):
+                # Channel
+                target = self.get_channel(target)
+                if not target:
+                    return False
+            else:
+                target = self.get_user(target)
+                if not target:
+                    target = User(self, target)
+
+        if isinstance(target, User):
+            self.send_notice(target.nickname, message)
+        elif isinstance(target, Channel):
+            self.send_msg(target.name, message)
+        else:
+            return False
+        return True
 
     def send_notice(self, target, message):
         event = general_events.MessageSent(self, "notice", target, message)
