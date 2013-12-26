@@ -162,6 +162,7 @@ class Config(YamlConfig):
 
     def __init__(self, filename):
         super(Config, self).__init__(filename)
+        self.logger = getLogger("Config")
         self.logger.warn("This class is deprecated, use YamlConfig instead!")
 
 

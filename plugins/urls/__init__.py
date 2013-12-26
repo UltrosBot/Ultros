@@ -247,11 +247,9 @@ class Plugin(PluginObject):
                 except LookupError:
                     self.logger.debug("Handler raised LookupError, parsing "
                                       "title normally.")
-                    return self.parse_title(url, use_handler=False)
                 except Exception:
                     self.logger.exception("Error running handler, parsing "
                                           "title normally.")
-                    return self.parse_title(url, use_handler=False)
 
             self.logger.debug("Parsed domain: %s" % domain)
 

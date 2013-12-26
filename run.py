@@ -21,17 +21,20 @@ logger = getLogger("System")
 
 logger.info("Starting up..")
 
+manager = None
+
 try:
-    manager = Manager()
+    manager = Manager.instance()
 
 except Exception:
     logger.critical("Runtime error - process cannot continue!")
     output_exception(logger)
 
 finally:
-    manager.unload()
-    close_log("output.log")
     try:
+        manager.unload()
+        close_log("output.log")
+
         raw_input("Press enter to exit.")
     except:
         pass

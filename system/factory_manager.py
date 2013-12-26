@@ -9,6 +9,7 @@ from twisted.internet import reactor
 
 from system.command_manager import CommandManager
 from system.constants import *
+from system.decorators import Singleton
 from system.event_manager import EventManager
 from system.factory import Factory
 from system.plugin_manager import YamlPluginManagerSingleton
@@ -16,9 +17,8 @@ from utils.config import Config
 from utils.log import getLogger
 from utils.misc import output_exception
 
-# TODO: Allow multiple named instances of each protocol
 
-
+@Singleton
 class Manager(object):
     """
     Manager for keeping track of multiple factories - one per protocol.
@@ -63,6 +63,16 @@ class Manager(object):
             return
 
         reactor.run()
+
+    @staticmethod
+    def instance(self=None):
+        """
+        This only exists to help developers using decent IDEs.
+        Don't actually use it.
+        """
+        if self is None:
+            self = Manager
+        return self
 
     # Load stuff
 

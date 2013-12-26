@@ -150,6 +150,7 @@ class Data(YamlData):
 
     def __init__(self, filename):
         super(Data, self).__init__(filename)
+        self.logger = getLogger("Data")
         self.logger.warn("This class is deprecated, use YamlData instead!")
 
 
