@@ -231,7 +231,7 @@ class Plugin(PluginObject):
         return urllib2.urlopen("http://tinyurl.com/api-create.php?url="
                                + urllib.quote_plus(url)).read()
 
-    def parse_title(self, url):
+    def parse_title(self, url, use_handler=True):
         domain = ""
         self.logger.debug("Url: %s" % url)
         try:
@@ -241,8 +241,17 @@ class Plugin(PluginObject):
             if domain.startswith("www."):
                 domain = domain[4:]
 
-            if domain in self.handlers:
-                return self.handlers[domain](url).decode("UTF-8"), None
+            if domain in self.handlers and use_handler:
+                try:
+                    return self.handlers[domain](url).decode("UTF-8"), None
+                except LookupError:
+                    self.logger.debug("Handler raised LookupError, parsing "
+                                      "title normally.")
+                    return self.parse_title(url, use_handler=False)
+                except Exception:
+                    self.logger.exception("Error running handler, parsing "
+                                          "title normally.")
+                    return self.parse_title(url, use_handler=False)
 
             self.logger.debug("Parsed domain: %s" % domain)
 
