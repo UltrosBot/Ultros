@@ -1,0 +1,22 @@
+rules:
+  name1:  # Name of your rule
+    from:  # Stuff to check on an incoming message
+      protocol: "irc-esper"  # Name of the protocol to match
+      source: "#Ultros"  # Name of the channel to match (ignored when the type is "user")
+      source-type: channel  # "channel" if the source is a channel, "user" if we're looking for PMs
+    to:  # Where we're sending the relayed message
+      protocol: "irc-archives"  # Name of the protocol to send to
+      target: "#Ultros"  # Name of the user or channel to send to
+      target-type: channel  # "channel" if we're sending to a channel, "user" otherwise
+    format-string: "<{USER}> {MESSAGE}"  # The format of the message to send
+                            # You can use {USER}, {TARGET}, {MESSAGE} and {PROTOCOL} in your string.
+  name2:  # Another example rule
+    from:
+      protocol: "irc-archives"
+      source: "#Staff"
+      source-type: channel
+    to:
+      protocol: "irc-archives"
+      target: "username"  # Sending it to a user named "username"
+      target-type: user  # Tell the plugin that "username" denotes a user, not a channel
+    format-string: "{PROTOCOL} | {USER}: {MESSAGE}"
