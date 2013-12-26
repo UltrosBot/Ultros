@@ -445,7 +445,7 @@ class Protocol(ChannelsProtocol):
                             self.log.warning("No channel with id '%s'" %
                                              conf["id"])
                     elif "name" in conf and conf["name"]:
-                        chan = self.find_channel_by_name(conf["name"])
+                        chan = self.get_channel(conf["name"])
                         if chan is not None:
                             self.join_channel(chan)
                         else:
@@ -655,7 +655,7 @@ class Protocol(ChannelsProtocol):
             #                 chan = _id
             #                 break
             #         if chan is None:
-           #             self.msg_user("Could not find channel", message.actor)
+            #             self.msg_user("Could not find channel", message.actor)
             #         else:
             #             self.msg_user("Joining channel", message.actor)
             #             self.join_channel(chan)
@@ -730,11 +730,18 @@ class Protocol(ChannelsProtocol):
         msg.channel_id = channel
         self.sendProtobuf(msg)
 
-    def find_channel_by_name(self, name):
+    def get_channel(self, name):
         name = name.lower()
         for cid, channel in self.channels.iteritems():
             if channel.name.lower() == name:
                 return channel
+        return None
+
+    def get_user(self, name):
+        name = name.lower()
+        for session, user in self.users.iteritems():
+            if user.name.lower() == name:
+                return user
         return None
 
     def print_users(self):
