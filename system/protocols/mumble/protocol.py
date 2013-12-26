@@ -655,7 +655,8 @@ class Protocol(ChannelsProtocol):
             #                 chan = _id
             #                 break
             #         if chan is None:
-            #             self.msg_user("Could not find channel", message.actor)
+           #             self.msg_user("Could not find channel", message.actor)
+           # NOTE: The weird indent is because of the stupid line length limit
             #         else:
             #             self.msg_user("Joining channel", message.actor)
             #             self.join_channel(chan)
