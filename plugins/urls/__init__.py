@@ -243,10 +243,9 @@ class Plugin(PluginObject):
 
             if domain in self.handlers and use_handler:
                 try:
-                    return self.handlers[domain](url).decode("UTF-8"), None
-                except LookupError:
-                    self.logger.debug("Handler raised LookupError, parsing "
-                                      "title normally.")
+                    result = self.handlers[domain](url).decode("UTF-8")
+                    if result:
+                        return result, None
                 except Exception:
                     self.logger.exception("Error running handler, parsing "
                                           "title normally.")
