@@ -270,7 +270,8 @@ class Plugin(PluginObject):
             headers_dict = {}
 
             for x in headers:
-                k, v = x.split(": ")
+                split = x.split(": ")
+                k, v = split[0], ": ".join(split[1:])
 
                 headers_dict[k.lower()] = v.strip("\r\n")
 
