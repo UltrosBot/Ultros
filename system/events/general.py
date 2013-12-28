@@ -132,7 +132,7 @@ class MessageSent(GeneralEvent):
     type       - String describing what type of message this is
     target     - Where the message is going; a string
     message    - The actual message
-    parintable - A boolean specifying whether we should print the message...
+    printable - A boolean specifying whether we should print the message...
                  ... or not?
     """
 
