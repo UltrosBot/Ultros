@@ -982,8 +982,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         event = general_events.MessageSent(self, "notice", target, message)
         self.event_manager.run_callback("MessageSent", event)
 
-        msg = to_unicode(event.message)
         target = to_unicode(target)
+        msg = to_unicode(event.message)
 
         if event.printable:
             self.log.info("-> -%s- %s" % (target, msg))
@@ -1003,10 +1003,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         event = general_events.MessageSent(self, "message", target, message)
         self.event_manager.run_callback("MessageSent", event)
 
-        msg = event.message
-
         target = to_unicode(target)
-        msg = to_unicode(message)
+        msg = to_unicode(event.message)
 
         if event.printable:
             self.log.info("-> *%s* %s" % (target, msg))
