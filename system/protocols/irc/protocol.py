@@ -996,7 +996,6 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         elif isinstance(target, Channel):
             target = to_unicode(target.name)
 
-
         self.sendLine(u"NOTICE %s :%s" % (target, msg))
 
     def send_notice_no_event(self, target, message):
