@@ -38,4 +38,4 @@ class Channel(channel.Channel):
 
     def respond(self, message):
         self.protocol.log.debug("Respond!")
-        self.protocol.msg_channel(message, self)
+        self.protocol.send_msg(self, message, target_type="channel")

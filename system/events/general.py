@@ -148,6 +148,11 @@ class MessageSent(GeneralEvent):
         self.printable = printable
         super(MessageSent, self).__init__(caller)
 
+    def __str__(self):
+        return "<%s at %s | type: %s | target: %s | message: %s | " \
+               "printable: %s>" % (self.__class__.__name__, hex(id(self)),
+               self.type, repr(self.target), self.message, self.printable)
+
 
 class NameChangedSelf(GeneralEvent):
     """

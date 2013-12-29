@@ -52,4 +52,4 @@ class Channel(channel.Channel):
 
     def respond(self, message):
         message = message.replace("{CHARS}", self.protocol.control_chars)
-        self.protocol.send_privmsg(self.name, message)
+        self.protocol.send_msg(self, message, target_type="channel")

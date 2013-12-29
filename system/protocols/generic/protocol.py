@@ -90,13 +90,14 @@ class Protocol(protocol.Protocol):
         """
         raise NotImplementedError("This function needs to be implemented!")
 
-    def send_msg(self, target, message, target_type=None):
+    def send_msg(self, target, message, target_type=None, use_event=True):
         """
         Send a message to a user or a channel.
         :param target: A string, User or Channel object.
         :param message: The message to send.
         :param target_type: The type of target - this won't be needed by all
             protocols.
+        :param use_event: Whether to fire the MessageSent event or not.
         :return: Boolean describing whether the target was found and messaged.
         """
         raise NotImplementedError("This function needs to be implemented.")

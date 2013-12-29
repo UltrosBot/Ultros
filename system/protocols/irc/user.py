@@ -73,4 +73,4 @@ class User(user.User):
 
     def respond(self, message):
         message = message.replace("{CHARS}", self.protocol.control_chars)
-        self.protocol.send_notice(self.nickname, message)
+        self.protocol.send_msg(self, message, target_type="user")

@@ -5,7 +5,7 @@ from threading import Lock
 
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
-from system.events.general import MessageReceived
+from system.events.general import MessageReceived, MessageSent
 from system.plugin import PluginObject
 from system.protocols.generic.channel import Channel
 from system.protocols.generic.user import User
@@ -43,20 +43,29 @@ class BridgePlugin(PluginObject):
         self.rules = self.config["rules"]
 
         self.events.add_callback("MessageReceived", self, self.handle_msg,
-                                 0)
+                                 1000)
+
+        self.events.add_callback("MessageSent", self, self.handle_msg_sent,
+                                 1000)
 
     def handle_msg(self, event=MessageReceived):
-        msg = event.message
-        caller = event.caller
-        source = event.source
-        target = event.target
+        self.do_rules(event.message, event.caller, event.source, event.target)
 
+    def handle_msg_sent(self, event=MessageSent):
+        self.do_rules(event.message, event.caller, event.caller.ourselves,
+                      event.target, use_event=False)
+
+    def do_rules(self, msg, caller, source, target, from_user=True,
+                 to_user=True, f_str="format-string", tokens=None,
+                 use_event=True):
         if not caller:
             return
         if not source:
             return
         if not target:
             return
+        if not tokens:
+            tokens = {}
 
         c_name = caller.name.lower()  # Protocol
         s_name = source.nickname  # User
@@ -81,12 +90,16 @@ class BridgePlugin(PluginObject):
             if isinstance(target, User):
                 # We ignore the source name since there can only ever be one
                 #     user: us.
+                if not from_user:
+                    self.logger.debug("Function was called with relaying "
+                                      "from users disabled.")
+                    continue
                 if from_["source-type"].lower() != "user":
                     self.logger.debug("Target type isn't a user.")
                     continue
             elif isinstance(target, Channel):
                 if from_["source-type"].lower() != "channel":
-                    self.logger.debug("Target type isn't a user.")
+                    self.logger.debug("Target type isn't a Channel.")
                     continue
                 if from_["source"].lower() != t_name.lower():
                     self.logger.debug("Target name doesn't match the source.")
@@ -95,9 +108,18 @@ class BridgePlugin(PluginObject):
                 self.logger.debug("Target isn't a known type.")
                 continue
 
+            if to_["target"] == "user" and not to_user:
+                self.logger.debug("Function was called with relaying to users "
+                                  "disabled.")
+                continue
+
             # If we get this far, we've matched the incoming rule.
 
-            format_string = data["format-string"]
+            format_string = data[f_str]
+
+            for k, v in tokens.items():
+                format_string = format_string.replace("{%s}" % k, v)
+
             format_string = format_string.replace("{MESSAGE}", msg)
             format_string = format_string.replace("{USER}", s_name)
             format_string = format_string.replace("{TARGET}", t_name)
@@ -105,4 +127,4 @@ class BridgePlugin(PluginObject):
 
             prot = self.factory_manager.get_protocol(to_["protocol"])
             prot.send_msg(to_["target"], format_string,
-                          target_type=to_["target-type"])
+                          target_type=to_["target-type"], use_event=use_event)

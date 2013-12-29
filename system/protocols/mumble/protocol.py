@@ -89,6 +89,8 @@ class Protocol(ChannelsProtocol):
 
     pinging = True
 
+    ourselves = None
+
     def __init__(self, name, factory, config):
         self.name = name
         self.factory = factory
@@ -434,7 +436,7 @@ class Protocol(ChannelsProtocol):
                 self.users[message.session])
             # Store our User object
             if message.name == self.username:
-                self.ourself = self.users[message.session]
+                self.ourselves = self.users[message.session]
                 # User connection messages come after all channels have been
                 # given, so now is a safe time to attempt to join a channel.
                 try:
@@ -662,7 +664,7 @@ class Protocol(ChannelsProtocol):
             #             self.msg_user("Joining channel", message.actor)
             #             self.join_channel(chan)
 
-    def send_msg(self, target, message, target_type=None):
+    def send_msg(self, target, message, target_type=None, use_event=True):
         if isinstance(target, int) or isinstance(target, str):
             if target_type == "user":
                 target = self.get_user(target)
@@ -673,16 +675,16 @@ class Protocol(ChannelsProtocol):
                 if not target:
                     return False
         if isinstance(target, User):
-            self.msg_user(message, target)
+            self.msg_user(message, target, use_event)
             return True
         elif isinstance(target, Channel):
-            self.msg_channel(message, target)
+            self.msg_channel(message, target, use_event)
             return True
         return False
 
     def msg(self, message, target="channel", target_id=None):
         if target_id is None and target == "channel":
-            target_id = self.ourself.channel.channel_id
+            target_id = self.ourselves.channel.channel_id
 
         self.log.debug("Sending text message: %s" % message)
 
@@ -697,29 +699,31 @@ class Protocol(ChannelsProtocol):
 
         self.sendProtobuf(msg)
 
-    def msg_channel(self, message, channel):
+    def msg_channel(self, message, channel, use_event=True):
         if isinstance(channel, Channel):
             channel = channel.channel_id
 
-        event = general_events.MessageSent(self, "message",
-                                           self.channels[channel], message)
-        self.event_manager.run_callback("MessageSent", event)
+        if use_event:
+            event = general_events.MessageSent(self, "message",
+                                               self.channels[channel], message)
+            self.event_manager.run_callback("MessageSent", event)
 
-        message = event.message
+            message = event.message
 
         self.log.info("-> *%s* %s" % (self.channels[channel], message))
 
         self.msg(message, "channel", channel)
 
-    def msg_user(self, message, user):
+    def msg_user(self, message, user, use_event=True):
         if isinstance(user, User):
             user = user.session
 
-        event = general_events.MessageSent(self, "message",
-                                           self.users[user], message)
-        self.event_manager.run_callback("MessageSent", event)
+        if use_event:
+            event = general_events.MessageSent(self, "message",
+                                               self.users[user], message)
+            self.event_manager.run_callback("MessageSent", event)
 
-        message = event.message
+            message = event.message
 
         self.log.info("-> (%s) %s" % (self.users[user], message))
 

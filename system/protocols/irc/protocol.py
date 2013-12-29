@@ -63,7 +63,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
     _channels = {}  # key is lowercase "#channel" - use get/set/del_channel()
     # TODO: Make users a set()?
     _users = []
-    own_user = None
+    ourselves = None
 
     ssl = False
 
@@ -185,7 +185,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
         # Reset users and channels when we connect, in case we still have them
         # from a previous connection.
-        self.own_user = None
+        self.ourselves = None
         self._users = []
         self._channels = {}
 
@@ -573,8 +573,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
         if self.utils.compare_nicknames(nickname, self.nickname):
             # User-tracking stuff
-            if self.own_user is None:
-                self.own_user = user_obj
+            if self.ourselves is None:
+                self.ourselves = user_obj
             self.send_who(channel)
             # Call the self-joined-channel method manually, since we're no
             # longer calling the super method.
@@ -958,7 +958,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
     #   - get_user() and get_users()                                      #
     #######################################################################
 
-    def send_msg(self, target, message, target_type=None):
+    def send_msg(self, target, message, target_type=None, use_event=True):
         if isinstance(target, str):
             if target.startswith("#") or target.startswith("&"):
                 # Channel
@@ -971,22 +971,31 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                     target = User(self, target)
 
         if isinstance(target, User):
-            self.send_notice(target.nickname, message)
+            self.send_notice(target, message, use_event)
         elif isinstance(target, Channel):
-            self.send_privmsg(target.name, message)
+            self.send_privmsg(target, message, use_event)
         else:
             return False
         return True
 
-    def send_notice(self, target, message):
-        event = general_events.MessageSent(self, "notice", target, message)
-        self.event_manager.run_callback("MessageSent", event)
+    def send_notice(self, target, message, use_event=True):
+        msg = to_unicode(message)
+        if use_event:
+            event = general_events.MessageSent(self, "notice", target,
+                                               message)
+            self.event_manager.run_callback("MessageSent", event)
+            msg = to_unicode(event.message)
 
-        target = to_unicode(target)
-        msg = to_unicode(event.message)
-
-        if event.printable:
+            if event.printable:
+                self.log.info("-> -%s- %s" % (target, msg))
+        else:
             self.log.info("-> -%s- %s" % (target, msg))
+
+        if isinstance(target, User):
+            target = to_unicode(target.nickname)
+        elif isinstance(target, Channel):
+            target = to_unicode(target.name)
+
 
         self.sendLine(u"NOTICE %s :%s" % (target, msg))
 
@@ -994,20 +1003,31 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         """
         Sends a notice without printing it or firing an event.
         """
-        target = to_unicode(target)
+        if isinstance(target, User):
+            target = to_unicode(target.nickname)
+        elif isinstance(target, Channel):
+            target = to_unicode(target.name)
         msg = to_unicode(message)
 
         self.sendLine(u"NOTICE %s :%s" % (target, msg))
 
-    def send_privmsg(self, target, message):
-        event = general_events.MessageSent(self, "message", target, message)
-        self.event_manager.run_callback("MessageSent", event)
+    def send_privmsg(self, target, message, use_event=True):
+        msg = to_unicode(message)
+        if use_event:
+            event = general_events.MessageSent(self, "message", target,
+                                               message)
+            self.event_manager.run_callback("MessageSent", event)
+            msg = to_unicode(event.message)
 
-        target = to_unicode(target)
-        msg = to_unicode(event.message)
-
-        if event.printable:
+            if event.printable:
+                self.log.info("-> *%s* %s" % (target, msg))
+        else:
             self.log.info("-> *%s* %s" % (target, msg))
+
+        if isinstance(target, User):
+            target = to_unicode(target.nickname)
+        elif isinstance(target, Channel):
+            target = to_unicode(target.name)
 
         self.sendLine(u"PRIVMSG %s :%s" % (target, msg))
 
@@ -1015,13 +1035,19 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         """
         Sends a privmsg without printing it or firing an event.
         """
-        target = to_unicode(target)
+        if isinstance(target, User):
+            target = to_unicode(target.nickname)
+        elif isinstance(target, Channel):
+            target = to_unicode(target.name)
         msg = to_unicode(message)
 
         self.sendLine(u"PRIVMSG %s :%s" % (target, msg))
 
     def send_ctcp(self, target, command, args=None):
-        target = to_unicode(target)
+        if isinstance(target, User):
+            target = to_unicode(target.nickname)
+        elif isinstance(target, Channel):
+            target = to_unicode(target.name)
         command = to_unicode(command)
         message = command
         if args and len(args):
@@ -1030,7 +1056,10 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                                    constants.CTCP)
 
     def send_ctcp_reply(self, target, command, args=None):
-        target = to_unicode(target)
+        if isinstance(target, User):
+            target = to_unicode(target.nickname)
+        elif isinstance(target, Channel):
+            target = to_unicode(target.name)
         command = to_unicode(command)
         message = command
         if args and len(args):
