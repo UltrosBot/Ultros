@@ -53,11 +53,11 @@ class BridgePlugin(PluginObject):
 
     def handle_msg_sent(self, event=MessageSent):
         self.do_rules(event.message, event.caller, event.caller.ourselves,
-                      event.target, use_event=False)
+                      event.target)
 
     def do_rules(self, msg, caller, source, target, from_user=True,
                  to_user=True, f_str="format-string", tokens=None,
-                 use_event=True):
+                 use_event=False):
         if not caller:
             return
         if not source:
