@@ -56,8 +56,7 @@ class BridgePlugin(PluginObject):
                       event.target)
 
     def do_rules(self, msg, caller, source, target, from_user=True,
-                 to_user=True, f_str="format-string", tokens=None,
-                 use_event=False):
+                 to_user=True, f_str=None, tokens=None, use_event=False):
         if not caller:
             return
         if not source:
@@ -66,6 +65,8 @@ class BridgePlugin(PluginObject):
             return
         if not tokens:
             tokens = {}
+        if not f_str:
+            f_str = ["general", "message"]
 
         c_name = caller.name.lower()  # Protocol
         s_name = source.nickname  # User
@@ -115,15 +116,26 @@ class BridgePlugin(PluginObject):
 
             # If we get this far, we've matched the incoming rule.
 
-            format_string = data[f_str]
+            format_string = None
 
-            for k, v in tokens.items():
-                format_string = format_string.replace("{%s}" % k, v)
+            formatting = data["formatting"]
+            if f_str[0] in formatting:
+                if f_str[1] in formatting[f_str[0]]:
+                    format_string = formatting[f_str[0]][f_str[1]]
 
-            format_string = format_string.replace("{MESSAGE}", msg)
-            format_string = format_string.replace("{USER}", s_name)
-            format_string = format_string.replace("{TARGET}", t_name)
-            format_string = format_string.replace("{PROTOCOL}", caller.name)
+            if not format_string:
+                self.logger.debug("Not relaying message as the format string "
+                                  "was empty or missing.")
+                continue
+
+            else:
+                for k, v in tokens.items():
+                    format_string = format_string.replace("{%s}" % k, v)
+
+                format_string = format_string.replace("{MESSAGE}", msg)
+                format_string = format_string.replace("{USER}", s_name)
+                format_string = format_string.replace("{TARGET}", t_name)
+                format_string = format_string.replace("{PROTOCOL}", caller.name)
 
             prot = self.factory_manager.get_protocol(to_["protocol"])
             prot.send_msg(to_["target"], format_string,
