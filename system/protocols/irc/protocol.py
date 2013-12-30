@@ -979,6 +979,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         return True
 
     def send_notice(self, target, message, use_event=True):
+        if not message:
+            message = " "
         msg = to_unicode(message)
         if use_event:
             event = general_events.MessageSent(self, "notice", target,
@@ -1002,6 +1004,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         """
         Sends a notice without printing it or firing an event.
         """
+        if not message:
+            message = " "
         if isinstance(target, User):
             target = to_unicode(target.nickname)
         elif isinstance(target, Channel):
@@ -1011,6 +1015,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         self.sendLine(u"NOTICE %s :%s" % (target, msg))
 
     def send_privmsg(self, target, message, use_event=True):
+        if not message:
+            message = " "
         msg = to_unicode(message)
         if use_event:
             event = general_events.MessageSent(self, "message", target,
@@ -1034,6 +1040,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         """
         Sends a privmsg without printing it or firing an event.
         """
+        if not message:
+            message = " "
         if isinstance(target, User):
             target = to_unicode(target.nickname)
         elif isinstance(target, Channel):
