@@ -135,7 +135,8 @@ class BridgePlugin(PluginObject):
                 format_string = format_string.replace("{MESSAGE}", msg)
                 format_string = format_string.replace("{USER}", s_name)
                 format_string = format_string.replace("{TARGET}", t_name)
-                format_string = format_string.replace("{PROTOCOL}", caller.name)
+                format_string = format_string.replace("{PROTOCOL}",
+                                                      caller.name)
 
             prot = self.factory_manager.get_protocol(to_["protocol"])
             prot.send_msg(to_["target"], format_string,
