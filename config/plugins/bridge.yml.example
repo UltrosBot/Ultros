@@ -1,6 +1,6 @@
 protocol-support:
-  irc: yes
-  mumble: yes
+  - irc
+  - mumble
 
 rules:
   name1:  # Name of your rule
