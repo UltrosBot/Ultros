@@ -243,9 +243,9 @@ class Plugin(PluginObject):
 
             if domain in self.handlers and use_handler:
                 try:
-                    result = self.handlers[domain](url).decode("UTF-8")
+                    result = self.handlers[domain](url)
                     if result:
-                        return result, None
+                        return to_unicode(result), None
                 except Exception:
                     self.logger.exception("Error running handler, parsing "
                                           "title normally.")
