@@ -783,13 +783,19 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
         elif str(command) in ["265", "266"]:  # RPL_LOCALUSERS, RPL_GLOBALUSERS
             # Usually printed, these are purely informational
-            self.log.info(params[3])
+            self.log.debug("Params [265, 266]: %s" % params)
+            if len(params) > 3:
+                data = params[3]
+            else:
+                data = params[1]
+
+            self.log.info(data)
 
             if str(command) == "265":  # LOCALUSERS
-                event = irc_events.LOCALUSERSReplyEvent(self, params[3])
+                event = irc_events.LOCALUSERSReplyEvent(self, data)
                 self.event_manager.run_callback("IRC/LOCALUSERS", event)
             else:
-                event = irc_events.GLOBALUSERSReplyEvent(self, params[3])
+                event = irc_events.GLOBALUSERSReplyEvent(self, data)
                 self.event_manager.run_callback("IRC/GLOBALUSERS", event)
 
         elif str(command) == "396":  # VHOST was set
