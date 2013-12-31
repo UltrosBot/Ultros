@@ -91,19 +91,43 @@ class Packages(object):
 
         conflicts = {"files": [], "folders": []}
 
+        total_files = 0
+        total_folders = 0
+
+        for _file in files:
+            if _file[-1] == "/":
+                total_folders += 1
+            else:
+                total_files += 1
+
+        print ">> %s files to download." % total_files
+
+        current_file = 1
+        current_folder = 1
+
         for _file in files:
             if _file[-1] == "/":
                 if not os.path.exists(_file):
+                    print ">> Folder | Creating (%s/%s): %s" % \
+                          (current_folder, total_folders, _file)
                     os.mkdir(_file)
                 else:
+                    print ">> Folder | Already exists (%s/%s): %s" % \
+                          (current_folder, total_folders, _file)
                     path = _file
                     conflicts["folders"].append(path)
+                current_folder += 1
             else:
                 if not os.path.exists(_file):
+                    print ">>   File | Downloading (%s/%s): %s" % \
+                          (current_file, total_files, _file)
                     self._get_file(package + "/", _file)
                 else:
+                    print ">>   File | Conflict (%s/%s): %s" % \
+                          (current_file, total_files, _file)
                     path = _file
                     conflicts["files"].append(path)
+                current_file += 1
 
         requirements = info["requires"]
         for module in requirements["modules"]:
