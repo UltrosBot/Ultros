@@ -101,6 +101,15 @@ class PreMessageReceived(GeneralEvent):
         self.printable = printable
         super(PreMessageReceived, self).__init__(caller)
 
+    def __str__(self):
+        return "<%s at %s | type: %s | target: %s | source: %s | " \
+               "printable: %s | message: %s>" % (self.__class__.__name__,
+                                                 hex(id(self)), self.type,
+                                                 str(self.target),
+                                                 str(self.source),
+                                                 self.printable,
+                                                 repr(self.message))
+
 
 class MessageReceived(GeneralEvent):
     """
@@ -120,6 +129,12 @@ class MessageReceived(GeneralEvent):
         self.message = message
         self.type = typ
         super(MessageReceived, self).__init__(caller)
+
+    def __str__(self):
+        return "<%s at %s | type: %s | target: %s | source: %s | " \
+               "message: %s>" % (self.__class__.__name__, hex(id(self)),
+                                 self.type, str(self.target),
+                                 str(self.source), repr(self.message))
 
 
 class MessageSent(GeneralEvent):
@@ -151,8 +166,8 @@ class MessageSent(GeneralEvent):
     def __str__(self):
         return "<%s at %s | type: %s | target: %s | message: %s | " \
                "printable: %s>" % (self.__class__.__name__, hex(id(self)),
-                                   self.type, repr(self.target), self.message,
-                                   self.printable)
+                                   self.type, str(self.target),
+                                   repr(self.message), self.printable)
 
 
 class NameChangedSelf(GeneralEvent):
