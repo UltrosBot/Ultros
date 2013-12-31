@@ -984,6 +984,23 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             return False
         return True
 
+    def send_action(self, target, message, target_type=None, use_event=True):
+        if isinstance(target, str):
+            if target.startswith("#") or target.startswith("&"):
+                # Channel
+                target = self.get_channel(target)
+                if not target:
+                    return False
+            else:
+                target = self.get_user(target)
+                if not target:
+                    target = User(self, target)
+
+        if isinstance(target, Channel) or isinstance(target, User):
+            self.send_ctcp(target, "ACTION", message)
+            return True
+        return False
+
     def send_notice(self, target, message, use_event=True):
         if not message:
             message = " "

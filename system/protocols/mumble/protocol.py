@@ -682,6 +682,26 @@ class Protocol(ChannelsProtocol):
             return True
         return False
 
+    def send_action(self, target, message, target_type=None, use_event=True):
+        if isinstance(target, int) or isinstance(target, str):
+            if target_type == "user":
+                target = self.get_user(target)
+                if not target:
+                    return False
+            else:  # Prioritize channels
+                target = self.get_channel(target)
+                if not target:
+                    return False
+        # TODO: Add italics once formatter is added
+        message = u"*%s*" % (message)
+        if isinstance(target, User):
+            self.msg_user(message, target, use_event)
+            return True
+        elif isinstance(target, Channel):
+            self.msg_channel(message, target, use_event)
+            return True
+        return False
+
     def msg(self, message, target="channel", target_id=None):
         if target_id is None and target == "channel":
             target_id = self.ourselves.channel.channel_id

@@ -102,6 +102,21 @@ class Protocol(protocol.Protocol):
         """
         raise NotImplementedError("This function needs to be implemented.")
 
+    def send_action(self, target, message, target_type=None, use_event=True):
+        """
+        Send an action to a user of channel. (i.e. /me used action!)
+        If a protocol does not have a separate method for actions, then this
+        method should send a regular message in format "*message*", in italics
+        if possible.
+        :param target: A string, User or Channel object.
+        :param message: The message to send.
+        :param target_type: The type of target - this won't be needed by all
+            protocols.
+        :param use_event: Whether to fire the MessageSent event or not.
+        :return: Boolean describing whether the target was found and messaged.
+        """
+        raise NotImplementedError("This function needs to be implemented.")
+
 
 class ChannelsProtocol(Protocol):
     """
