@@ -290,9 +290,12 @@ class Plugin(PluginObject):
 
             page = response.read()
             soup = BeautifulSoup(page)
-            title = to_unicode(soup.title.string.strip())
-            domain = to_unicode(domain)
-            return title, domain
+            if soup.title:
+                title = to_unicode(soup.title.string.strip())
+                domain = to_unicode(domain)
+                return title, domain
+            else:
+                return None, None
         except Exception as e:
             if not str(e).lower() == "not viewing html":
                 self.logger.exception("Error parsing title.")
