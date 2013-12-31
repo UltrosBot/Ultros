@@ -144,7 +144,21 @@ class ChannelsProtocol(Protocol):
         :param password: Password for channel
         :return: Whether or not a join was attempted
         """
-        # raise NotImplementedError("This function needs to be implemented!")
+        raise NotImplementedError("This function needs to be implemented!")
+
+    def leave_channel(self, channel, reason=None):
+        """
+        Attempts to leave a channel. An optional reason may be provided, which
+        should be ignored by protocols that do not support them.
+        Return value is whether or not a channel leave was attempted - it is
+        not a guarantee that the operation will be successful. An example of
+        when it could return False is if a protocol requires you to be in a
+        channel.
+        :param channel: Channel to join
+        :param reason: Reason for leaving
+        :return: Whether or not a part was attempted
+        """
+        raise NotImplementedError("This function needs to be implemented!")
 
     def kick(self, user, channel=None, reason=None):
         """

@@ -1014,6 +1014,10 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         self.join(channel, password)
         return True
 
+    def leave_channel(self, channel, reason=None):
+        self.leave(channel, reason)
+        return True
+
     def send_notice(self, target, message, use_event=True):
         if not message:
             message = " "

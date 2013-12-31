@@ -766,6 +766,9 @@ class Protocol(ChannelsProtocol):
         self.sendProtobuf(msg)
         return True
 
+    def leave_channel(self, channel, reason=None):
+        return False
+
     def get_channel(self, name_or_id):
         if isinstance(name_or_id, str) or isinstance(name_or_id, unicode):
             name = name_or_id.lower()
