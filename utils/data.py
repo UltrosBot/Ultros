@@ -200,7 +200,10 @@ class JsonData(Data):
 
     def _load(self):
         if not os.path.exists(self.filename):
-            open(self.filename, "w").close()
+            f = open(self.filename, "w")
+            f.write("{}")
+            f.flush()
+            f.close()
         fh = open(self.filename, "r")
         self.data = json.load(fh)
         fh.close()
