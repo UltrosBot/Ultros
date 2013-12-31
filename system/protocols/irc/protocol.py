@@ -1010,6 +1010,10 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         self.sendLine(u"KICK %s %s :%s" % (channel, user, reason))
         return True
 
+    def join_channel(self, channel, password=None):
+        self.join(channel, password)
+        return True
+
     def send_notice(self, target, message, use_event=True):
         if not message:
             message = " "

@@ -754,15 +754,20 @@ class Protocol(ChannelsProtocol):
 
         self.msg(message, "user", user)
 
-    def join_channel(self, channel):
+    def join_channel(self, channel, password=None):
+        if isinstance(channel, str) or isinstance(channel, unicode):
+            channel = self.get_channel(channel)
+        if channel is None:
+            return False
         if isinstance(channel, Channel):
             channel = channel.channel_id
         msg = Mumble_pb2.UserState()
         msg.channel_id = channel
         self.sendProtobuf(msg)
+        return True
 
     def get_channel(self, name_or_id):
-        if isinstance(name_or_id, str):
+        if isinstance(name_or_id, str) or isinstance(name_or_id, unicode):
             name = name_or_id.lower()
             for cid, channel in self.channels.iteritems():
                 if channel.name.lower() == name:

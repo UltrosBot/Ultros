@@ -132,6 +132,20 @@ class ChannelsProtocol(Protocol):
         """
         raise NotImplementedError("This function needs to be implemented!")
 
+    def join_channel(self, channel, password=None):
+        """
+        Attempts to join a channel. An optional password may be provided, which
+        should be ignored by protocols that do not support them.
+        Return value is whether or not a channel join was attempted - it is not
+        a guarantee that the operation will be successful. An example of when
+        it could return False is if a channel doesn't exist and can't simply be
+        created by joining it.
+        :param channel: Channel to join
+        :param password: Password for channel
+        :return: Whether or not a join was attempted
+        """
+        # raise NotImplementedError("This function needs to be implemented!")
+
     def kick(self, user, channel=None, reason=None):
         """
         Attempts to kick a user from a channel. In many networks, we can't know
@@ -145,6 +159,7 @@ class ChannelsProtocol(Protocol):
         :param user: The user to kick
         :param channel: The channel to kick from
         :param reason: The reason for the kick
+        :return: Whether or not a kick was attempted
         """
         raise NotImplementedError("This function needs to be implemented!")
 
