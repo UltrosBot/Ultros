@@ -1001,6 +1001,15 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             return True
         return False
 
+    def kick(self, user, channel=None, reason=None):
+        # TODO: Event?
+        if channel is None:
+            return False
+        if reason is None:
+            reason = ""
+        self.sendLine(u"KICK %s %s :%s" % (channel, user, reason))
+        return True
+
     def send_notice(self, target, message, use_event=True):
         if not message:
             message = " "

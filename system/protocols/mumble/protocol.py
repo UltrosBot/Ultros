@@ -702,6 +702,11 @@ class Protocol(ChannelsProtocol):
             return True
         return False
 
+    def kick(self, user, channel=None, reason=None):
+        # Mumble protocol does not currently support cert authentication, so
+        # we can't have ACLs, allowing us to kick, etc., so just return False.
+        return False
+
     def msg(self, message, target="channel", target_id=None):
         if target_id is None and target == "channel":
             target_id = self.ourselves.channel.channel_id

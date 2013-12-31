@@ -132,6 +132,22 @@ class ChannelsProtocol(Protocol):
         """
         raise NotImplementedError("This function needs to be implemented!")
 
+    def kick(self, user, channel=None, reason=None):
+        """
+        Attempts to kick a user from a channel. In many networks, we can't know
+        if we have permission to kick until we do it, and in those cases,
+        this method should always attempt it.
+        Some protocols may not require a channel (single-channel, for example),
+        or may not support giving a reason, in which case, those parameters
+        should be ignored.
+        If a protocol does not support kicking, then it should always return
+        False.
+        :param user: The user to kick
+        :param channel: The channel to kick from
+        :param reason: The reason for the kick
+        """
+        raise NotImplementedError("This function needs to be implemented!")
+
 
 class NoChannelsProtocol(Protocol):
     """
