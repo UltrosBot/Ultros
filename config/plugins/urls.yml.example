@@ -1,0 +1,8 @@
+spoofing:  # Sites to spoof differently. Normally we spoof Firefox, you can set an alternative string for user-agent spoofing, or disable it entirely with False.
+  soundcloud.com: False
+content_types:  # Content-types to parse the title from. Be careful when modifying this!
+  - text/html
+  - text/webviewhtml
+  - message/rfc822
+  - text/x-server-parsed-html
+  - application/xhtml+xml

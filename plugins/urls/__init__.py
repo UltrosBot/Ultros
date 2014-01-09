@@ -6,6 +6,7 @@ import urllib2
 
 from kitchen.text.converters import to_unicode
 
+from utils.config import YamlConfig
 from utils.data import YamlData
 
 from system.command_manager import CommandManager
@@ -25,15 +26,30 @@ class Plugin(PluginObject):
     channels = None
     commands = None
     events = None
+    config = None
 
     handlers = {}
     shorteners = {}
+    spoofing = {}
 
     content_types = ["text/html", "text/webviewhtml", "message/rfc822",
                      "text/x-server-parsed-html", "application/xhtml+xml"]
 
     def setup(self):
         self.logger.debug("Entered setup method.")
+        try:
+            self.config = YamlConfig("plugins/urls.yml")
+        except Exception:
+            self.logger.exception("Error loading configuration!")
+        else:
+            if not self.config.exists:
+                self.logger.warn("Unable to find config/plugins/urls.yml")
+            else:
+                self.content_types = self.config["content_types"]
+                self.spoofing = self.config["spoofing"]
+
+        self.logger.debug("Spoofing: %s" % self.spoofing)
+
         self.channels = YamlData("plugins/urls/channels.yml")
         self.commands = CommandManager.instance()
         self.events = EventManager.instance()
@@ -253,10 +269,20 @@ class Plugin(PluginObject):
             self.logger.debug("Parsed domain: %s" % domain)
 
             request = urllib2.Request(url)
-            request.add_header('User-agent', 'Mozilla/5.0 (X11; U; Linux i686;'
-                                             ' en-US; rv:1.9.0.1) Gecko/200807'
-                                             '1615 Fedora/3.0.1-1.fc9-1.fc9 Fi'
-                                             'refox/3.0.1')
+            if domain in self.spoofing:
+                self.logger.debug("Custom spoofing for this domain found.")
+                user_agent = self.spoofing[domain]
+                if user_agent:
+                    self.logger.debug("Spoofing user-agent: %s" % user_agent)
+                    request.add_header("User-agent", user_agent)
+                else:
+                    self.logger.debug("Not spoofing user-agent.")
+            else:
+                self.logger.debug("Spoofing Firefox as usual.")
+                request.add_header('User-agent', 'Mozilla/5.0 (X11; U; Linux '
+                                                 'i686; en-US; rv:1.9.0.1) '
+                                                 'Gecko/2008071615 Fedora/3.0.'
+                                                 '1-1.fc9-1.fc9 Firefox/3.0.1')
             response = urllib2.urlopen(request)
 
             self.logger.debug("Info: %s" % response.info())
@@ -286,6 +312,7 @@ class Plugin(PluginObject):
             self.logger.debug("Content-type: %s" % repr(ct))
 
             if ct not in self.content_types:
+                self.logger.debug("Content-type is not allowed.")
                 return None, None
 
             page = response.read()
