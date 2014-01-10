@@ -1,6 +1,19 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+"""
+Ultros - That squidoctopus bot thing.
+
+This is the main file - You run this! Importing it is a bad idea!
+Stuff like that!
+
+Don't forget to read the README, the wiki and the LICENSE before you even
+consider modifying or distributing this software.
+
+If, however, you do fork yourself a copy and make some changes, submit a
+pull request or otherwise get in contact with us - we'd love your help!
+"""
+
 import os
 import sys
 from kitchen.text.converters import getwriter

@@ -1,4 +1,10 @@
 # coding=utf-8
+
+"""
+Miscellaneous functions that are used all over the code.
+These are used both by the main bot, and the package manager.
+"""
+
 __author__ = "Gareth Coles"
 
 import logging
@@ -31,12 +37,25 @@ def chunker(iterable, chunksize):
     """
     Split an iterable into chunks of size `chunksize` and return them in a
     list.
+    :param iterable: An iterable to split into chunks
+    :param chunksize: The size of the chunks that should be returned
     """
     for i, c in enumerate(iterable[::chunksize]):
         yield iterable[i * chunksize: (i + 1) * chunksize]
 
 
 def string_split_readable(input, length):
+    """
+    Convenience function to chunk a string into parts of a certain length,
+    whilst being wary of spaces. This means that chunks will only be
+    split on spaces, which means some chunks will be shorter, but it also
+    means that the resulting list will only contain readable strings.
+    :param input: The string to be split
+    :param length: Maximum length of the chunks to return
+    :return: List containing the split chunks
+    :except ValueError: Thrown if there's a word that's longer than the max \
+ chunk size.
+    """
     done = []
     current = ""
     for word in input.split():

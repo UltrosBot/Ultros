@@ -58,6 +58,12 @@ class Packages(object):
         urllib.urlretrieve(constructed_path, path)
 
     def get_package_info(self, package):
+        """
+        Load up the package info file for a package and return its data
+        as a dict.
+        :param package: Package to load data for
+        :return: Dict representing the package info, otherwise None
+        """
         if package in self.packages:
             url = self.base_file_url + package + "/" \
                                      + self.package_info_file
@@ -69,6 +75,12 @@ class Packages(object):
         return None
 
     def get_package_versions(self, package):
+        """
+        Load up the package version history file for a package and return its
+        data as a dict.
+        :param package: Package to load data for
+        :return: Dict representing the package versions, otherwise None
+        """
         if package in self.packages:
             url = self.base_file_url + package + "/" \
                                      + self.package_versions_file
@@ -80,9 +92,19 @@ class Packages(object):
         return None
 
     def package_installed(self, package):
+        """
+        Check whether a package is installed.
+        :param package: The package to look for
+        :return: Whether the package is installed
+        """
         return package in self.config["installed"]
 
     def install_package(self, package):
+        """
+        Attempt to install a package.
+        :param package: The package to try to install
+        :return: Any conflicts that were detected
+        """
         if self.package_installed(package):
             raise ValueError("Package '%s' is already installed"
                              % package)
@@ -147,6 +169,11 @@ class Packages(object):
         return conflicts
 
     def update_package(self, package):
+        """
+        Update a package (in reality, reinstall it.)
+        :param package: Package to reinstall
+        :return:
+        """
         if not self.package_installed(package):
             raise ValueError("Package '%s' is not installed"
                              % package)
@@ -155,6 +182,11 @@ class Packages(object):
         self.install_package(package)
 
     def uninstall_package(self, package):
+        """
+        Uninstall a package.
+        :param package: Package to uninstall
+        :return:
+        """
         if not self.package_installed(package):
             raise ValueError("Package '%s' is not installed"
                              % package)

@@ -1,4 +1,11 @@
 #coding=UTF-8
+
+"""
+A few useful utilities for working with HTML.
+This is especially useful for dealing with HTML-based protocols, such as
+Mumble.
+"""
+
 __author__ = 'Gareth Coles'
 
 from HTMLParser import HTMLParser
@@ -6,6 +13,13 @@ import htmlentitydefs
 
 
 class HTMLTextExtractor(HTMLParser):
+    """
+    Class for extracting text from HTML snippets. This is done by removing
+    all the tags and optionally inserting newlines at the relevant
+    places.
+    Don't use this directly, use the function below.
+    """
+
     def __init__(self, newlines=True):
         HTMLParser.__init__(self)
         self.result = []
@@ -42,6 +56,12 @@ class HTMLTextExtractor(HTMLParser):
 
 
 def html_to_text(html, newlines=False):
+    """
+    Given a HTML snippet, strip out all the HTML and leave just the text.
+    :param html: HTML to strip
+    :param newlines: Whether to replace <p>, <p/> and <br /> with newlines
+    :return: The stripped snippet
+    """
     s = HTMLTextExtractor(newlines)
     s.feed(html)
     return s.get_text()

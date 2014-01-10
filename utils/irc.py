@@ -1,5 +1,11 @@
 #coding=utf-8
 #from system.protocols.irc import constants
+
+"""
+IRC utilities and constants, for use with the IRC protocol and plugins
+that make direct use of it.
+"""
+
 import re
 from system.protocols.irc import constants
 
@@ -37,6 +43,12 @@ _re_formatting = re.compile("(%s[0-9]{1,2})|[%s]" %
 
 
 def split_hostmask(hostmask):
+    """
+    Split a hostmask into its parts and return them.
+    :param hostmask: Hostmask to parse
+    :return: [user, ident, host]
+    :exception Exception: Raised when the hostmask is not in the form "*!*@*"
+    """
     posex = hostmask.find(u'!')
     posat = hostmask.find(u'@')
     if posex <= 0 or posat < 3 or posex + 1 == posat or posat + 1 == len(
@@ -47,6 +59,12 @@ def split_hostmask(hostmask):
 
 
 def format_string(value, values=None):
+    """
+    Used to format an IRC string based on various tokens.
+    :param value: The string to format
+    :param values: Dictionary of tokens to use for formatting
+    :return: Formatted string
+    """
     mergedvalues = None
     if values is None:
         mergedvalues = _ircvalues
@@ -58,6 +76,11 @@ def format_string(value, values=None):
 def strip_formatting(message):
     # GOD DAMN MOTHER FUCKER SHIT FUCK CUNT BITCH
     # WHY ARE THE ARGUMENTS BACK TO FRONT?!?
+    """
+    Why, indeed? Strips IRC formatting codes from message strings.
+    :param message: The message string to strip from
+    :return: Message string, sans IRC formatting characters
+    """
     return _re_formatting.sub("", message)
 
 
@@ -84,16 +107,29 @@ class IRCUtils(object):
                      "rfc1459": RFC1459,
                      "strict-rfc1459": STRICT_RFC1459}
 
+    _case_mapping = RFC1459
+
     def __init__(self, log, case_mapping="rfc1459"):
         self.log = log
         self.case_mapping = case_mapping
 
     @property
     def case_mapping(self):
+        """
+        Property for getting our case-mapping.
+        :return: Int, the case-mapping.
+        """
         return self._case_mapping
 
     @case_mapping.setter
     def case_mapping(self, val):
+        """
+        Setter for our case-mapping property.
+
+        We support "ascii", "rfc1459" and "strict-rfc1459" as possible values.
+        :param val: A string, the case-mapping to use.
+        :return:
+        """
         try:
             x = val.lower()
             y = self.CASE_MAPPINGS
@@ -103,6 +139,11 @@ class IRCUtils(object):
             self.log.warning("Invalid case mapping: %s" % val)
 
     def lowercase_nick_chan(self, nick):
+        """
+        Take a nick or channel, make it lowercase.
+        :param nick: Nick/channel to make lowercase
+        :return: Lowercase nick/channel
+        """
         nick = nick.lower()
         if ((self.case_mapping == self.RFC1459 or
              self.case_mapping == self.STRICT_RFC1459)):
@@ -112,14 +153,32 @@ class IRCUtils(object):
         return nick
 
     def compare_nicknames(self, nickone, nicktwo):
+        """
+        Since lots of string comparisons are case-insensitive, we can
+        lower nicks properly using this function.
+        :param nickone: First nick to compare
+        :param nicktwo: Second nick to compare
+        :return: Whether the nicks match, ignoring case
+        """
         nickone = self.lowercase_nick_chan(nickone)
         nicktwo = self.lowercase_nick_chan(nicktwo)
         return nickone == nicktwo
 
     def split_hostmask(self, hostmask):
+        """
+        Wrapper. Split a hostmask.
+        :param hostmask: Hostmask to split.
+        :return: [user, ident, host]
+        """
         return split_hostmask(hostmask)
 
     def match_hostmask(self, user, mask):
+        """
+        Match a user's hostmask with another one. Wildcards are supported.
+        :param user: First hostmask to match against
+        :param mask: Second hostmask to match against
+        :return: Whether the two hostmasks match
+        """
         usersplit = split_hostmask(user)
         masksplit = split_hostmask(mask)
         # Case-insensitive match for nickname
@@ -133,6 +192,12 @@ class IRCUtils(object):
         return True
 
     def match_hostmask_part(self, user, mask):
+        """
+        Uses regex to compare parts of hostmasks. Supports wildcards.
+        :param user: First part to match against
+        :param mask: Second part to match against
+        :return: Whether the two parts match
+        """
         # IRC hostmasks can contain two kinds of wildcard:
         #   * - match any character, 0 or more times
         #   ? - match any character, exactly once
@@ -142,7 +207,18 @@ class IRCUtils(object):
         return re.match(mask, user) is not None
 
     def format_string(self, value, values=None):
+        """
+        Wrapper. Formats an IRC string using a dict of tokens.
+        :param value: String to format
+        :param values: Dict of tokens to use for formatting. Optional.
+        :return: Formatted string.
+        """
         return format_string(value, values)
 
     def strip_formatting(self, message):
+        """
+        Wrapper. Remove all IRC formatting characters from a string.
+        :param message: String to strip from.
+        :return: Stripped string.
+        """
         return strip_formatting(message)

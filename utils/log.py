@@ -1,4 +1,11 @@
 # coding=utf-8
+
+"""
+Semi-convenient logging wrapper. This is used to sort out terminal
+colouring, file output and basic logging configuration. Use this if you
+need to explicitly grab a logger!
+"""
+
 __author__ = "Gareth Coles"
 
 import ctypes
@@ -18,6 +25,10 @@ loggers = {}
 
 class ColorizingStreamHandler(logging.StreamHandler):
     # Modified version from http://bit.ly/18vOxNU
+    """
+    A logging StreamHandler that provides cross-platform coloured terminal
+    output based on the logging level.
+    """
     color_map = {
         'black': 0,
         'red': 1,
@@ -51,10 +62,19 @@ class ColorizingStreamHandler(logging.StreamHandler):
 
     @property
     def is_tty(self):
+        """
+        Check if the current stream is a tty.
+        :return: True if the stream is a tty, false otherwise.
+        """
         isatty = getattr(self.stream, 'isatty', None)
         return isatty and isatty()
 
     def emit(self, record):
+        """
+        Emit a logging record by outputting it to the stream.
+        :param record: The record to emit
+        :return:
+        """
         try:
             message = self.format(record)
             stream = self.stream
@@ -71,6 +91,11 @@ class ColorizingStreamHandler(logging.StreamHandler):
 
     if os.name != 'nt':
         def output_colorized(self, message):
+            """
+            Passthrough function for Windows-based systems.
+            :param message: Message to write to the stream
+            :return:
+            """
             self.stream.write(message)
     else:
         import re
@@ -88,6 +113,12 @@ class ColorizingStreamHandler(logging.StreamHandler):
         }
 
         def output_colorized(self, message):
+            """
+            Function that handles UNIX colour codes, for non-Windows-based
+            systems.
+            :param message: Message to write to the stream
+            :return:
+            """
             parts = self.ansi_esc.split(message)
             write = self.stream.write
             h = None
@@ -120,6 +151,12 @@ class ColorizingStreamHandler(logging.StreamHandler):
                                                                        color)
 
     def colorize(self, message, record):
+        """
+        Turn a logging record into a coloured record.
+        :param message: Log message
+        :param record: Log record
+        :return: Colourized message
+        """
         if record.levelno in self.level_map:
             bg, fg, bold = self.level_map[record.levelno]
             params = []
@@ -135,6 +172,11 @@ class ColorizingStreamHandler(logging.StreamHandler):
         return message
 
     def format(self, record):
+        """
+        Format logging message
+        :param record: Message to format
+        :return:
+        """
         message = logging.StreamHandler.format(self, record)
         if self.is_tty:
             message = self.colorize(message, record)
@@ -144,6 +186,15 @@ class ColorizingStreamHandler(logging.StreamHandler):
 def getLogger(name, path=None,
               fmt="%(asctime)s | %(name)20s | %(levelname)8s | %(message)s",
               datefmt="%d %b %Y - %H:%M:%S", displayname=None):
+    """
+    Works similarly to logging.getLogger(), get yourself a logger isntance.
+    :param name: Name of the logger
+    :param path: Path of the file to write to
+    :param fmt: Logging format
+    :param datefmt: Date format to use
+    :param displayname: Display name for your logger
+    :return: Logger
+    """
 
     if displayname is None:
         displayname = name
@@ -195,6 +246,11 @@ def getLogger(name, path=None,
 
 
 def open_log(path):
+    """
+    Prints a nice message to file saying the log has been opened.
+    :param path: Path to file.
+    :return:
+    """
     path = path.replace("..", "")
     path = "logs/" + path
     if not os.path.exists(os.path.dirname(path)):
@@ -221,6 +277,11 @@ def open_log(path):
 
 
 def close_log(path):
+    """
+    Prints a nice message to file saying the log has been closed.
+    :param path: Path to file.
+    :return:
+    """
     path = path.replace("..", "")
     path = "logs/" + path
     if not os.path.exists(os.path.dirname(path)):

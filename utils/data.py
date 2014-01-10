@@ -1,4 +1,22 @@
 # coding=utf-8
+
+"""
+A bunch of classes for working with data. These are to be used in your
+plugins. There's several different ones to choose from, each will store
+data using a different format and sometimes method. There are, so far, two
+types of data storage, encapsulating four classes.
+
+* Key-value  (Dictionary-like)
+  * YAML-format with dict-like access and thread safety
+  * JSON-format with dict-like access and thread safety
+  * In-memory dict-like storage with tread-safety. This is for plugins to
+    insert where they need to change the data object of something for some
+    reason.
+* Relational (SQL)
+  * SQLite-format with cursors and thread safety. Also supports in-memory
+    storage by specifying ":memory:" as the filename.
+"""
+
 __author__ = "Gareth Coles"
 
 import json
@@ -12,6 +30,9 @@ from utils.log import getLogger
 
 
 class Data(object):
+    """
+    Base class for data storage objects, mostly for type-checking.
+    """
     pass
 
 
@@ -82,6 +103,9 @@ class YamlData(Data):
         self.load()
 
     def load(self):
+        """
+        Load or reload data from the filesystem.
+        """
         if not self._context_guarded:
             with self.mutex:
                 self._load()
@@ -100,6 +124,9 @@ class YamlData(Data):
             self.data = {}
 
     def save(self):
+        """
+        Save data to the filesystem.
+        """
         if not self._context_guarded:
             with self.mutex:
                 self._save()
@@ -112,6 +139,19 @@ class YamlData(Data):
         fh.write(data)
         fh.flush()
         fh.close()
+
+    def keys(self):
+        return self.data.keys()
+
+    def items(self):
+        return self.data.items()
+
+    def values(self):
+        return self.data.values()
+
+    keys.__doc__ = data.keys.__doc__
+    items.__doc__ = data.items.__doc__
+    values.__doc__ = data.values.__doc__
 
     def __enter__(self):
         with self.context_mutex:
@@ -143,7 +183,93 @@ class YamlData(Data):
         return self.data.__iter__()
 
     def __str__(self):
-        return "<Ultros YAML data handler: %s>" % self.data
+        return "<Ultros YAML data handler: %s>" % self.filename
+
+
+class MemoryData(Data):
+    """
+    In-memory dict-like thread-safe storage. This is to be used as a shim where
+    you may need to insert a data object directly, without loading data from
+    some kind of file. Pass a dictionary instead of a filename to initialize
+    this.
+    """
+
+    data = {}
+
+    mutex = Lock()
+    _context_guarded = True
+
+    filename = ":memory:"  # So plugins can check for this easier
+
+    def __init__(self, data_dict):
+        self.logger = getLogger("Data")
+        self.data = data_dict
+
+    def load(self):
+        """
+        Does nothing.
+        """
+        if not self._context_guarded:
+            with self.mutex:
+                return
+        else:
+            return
+
+    reload = load
+
+    def save(self):
+        """
+        Does nothing.
+        """
+        if not self._context_guarded:
+            with self.mutex:
+                return
+        else:
+            return
+
+    def keys(self):
+        return self.data.keys()
+
+    def items(self):
+        return self.data.items()
+
+    def values(self):
+        return self.data.values()
+
+    keys.__doc__ = data.keys.__doc__
+    items.__doc__ = data.items.__doc__
+    values.__doc__ = data.values.__doc__
+
+    def __enter__(self):
+        with self.mutex:
+            self._context_guarded = True
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._context_guarded = False
+        if exc_type is None:
+            return True
+        return False
+
+    def __getitem__(self, y):
+        return self.data.__getitem__(y)
+
+    def __setitem__(self, key, value):
+        return self.data.__setitem__(key, value)
+
+    def __delitem__(self, key):
+        return self.data.__delitem__(key)
+
+    def __len__(self):
+        return self.data.__len__()
+
+    def __contains__(self, item):
+        return self.data.__contains__(item)
+
+    def __iter__(self):
+        return self.data.__iter__()
+
+    def __str__(self):
+        return "<Ultros in-memory data handler: %s>" % self.filename
 
 
 class JsonData(Data):
@@ -155,7 +281,7 @@ class JsonData(Data):
 
     This object is exactly the same as the YAML data handler, but it uses JSON.
 
-    For sanity's sake, all JSON files should end in .josn - but this is not
+    For sanity's sake, all JSON files should end in .json - but this is not
     enforced.
     """
 
@@ -190,6 +316,9 @@ class JsonData(Data):
         self.load()
 
     def load(self):
+        """
+        Load or reload data from the filesystem.
+        """
         if not self._context_guarded:
             with self.mutex:
                 self._load()
@@ -211,6 +340,9 @@ class JsonData(Data):
             self.data = {}
 
     def save(self):
+        """
+        Save data to the filesystem.
+        """
         if not self._context_guarded:
             with self.mutex:
                 self._save()
@@ -254,7 +386,7 @@ class JsonData(Data):
         return self.data.__iter__()
 
     def __str__(self):
-        return "<Ultros JSON data handler: %s>" % self.data
+        return "<Ultros JSON data handler: %s>" % self.filename
 
 
 class SqliteData(Data):
@@ -263,7 +395,7 @@ class SqliteData(Data):
 
     This is a very different data storage object! There is no dictionary
     access here, instead use the `with...as` construct. This will return
-    a standard cursor for you to work with, which will be commited
+    a standard cursor for you to work with, which will be committed
     automatically for you when the block exits.
 
     For example:
@@ -330,4 +462,4 @@ class SqliteData(Data):
         return False
 
     def __str__(self):
-        return "<Ultros SQLite data handler: %s>" % self.conn
+        return "<Ultros SQLite data handler: %s>" % self.filename

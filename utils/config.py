@@ -1,4 +1,24 @@
 # coding=utf-8
+
+"""
+Various configuration handlers. These work like the data handlers, except
+you can't write to them, and they load files from a different folder.
+
+You should absolutely use this if you're loading a user-supplied configuration
+that never needs to be written to programmatically. There is no in-between
+right now, so you'll have to split your plugin storage between data and
+configuration, and this is for a good reason - separating configuration
+and data is very, very important.
+
+We've got three types of configuration here, and they're all key-value
+dict-like objects.
+
+* Yaml-format configuration
+* JSON-format configuration
+* In-memory dict-like configuration, to be inserted where you may need to
+  pass a configuration around but don't have a file to load from.
+"""
+
 __author__ = "Gareth Coles"
 
 import json
@@ -45,6 +65,9 @@ class YamlConfig(Config):
         self.exists = self.reload()
 
     def reload(self):
+        """
+        Reload configuration data from the filesystem.
+        """
         if not os.path.exists(self.filename):
             self.logger.error("File not found: %s" % self.filename)
             return False
@@ -65,6 +88,10 @@ class YamlConfig(Config):
 
     def values(self):
         return self.data.values()
+
+    keys.__doc__ = data.keys.__doc__
+    items.__doc__ = data.items.__doc__
+    values.__doc__ = data.values.__doc__
 
     def __getitem__(self, y):
         return self.data.__getitem__(y)
@@ -115,6 +142,9 @@ class JSONConfig(Config):
         self.exists = self.reload()
 
     def reload(self):
+        """
+        Reload configuration data from the filesystem.
+        """
         if not os.path.exists(self.filename):
             self.logger.error("File not found: %s" % self.filename)
             return False
@@ -135,6 +165,10 @@ class JSONConfig(Config):
 
     def values(self):
         return self.data.values()
+
+    keys.__doc__ = data.keys.__doc__
+    items.__doc__ = data.items.__doc__
+    values.__doc__ = data.values.__doc__
 
     def __getitem__(self, y):
         return self.data.__getitem__(y)
@@ -172,14 +206,31 @@ class MemoryConfig(Config):
     exists = True
     fh = None
 
+    filename = ":memory:"
+
     def __init__(self, data_dict):
         self.logger = getLogger("MemoryConfig")
-        self.filename = ":memory:"
         self.exists = True
         self.data = data_dict
 
     def reload(self):
+        """
+        Does nothing.
+        """
         return True
+
+    def keys(self):
+        return self.data.keys()
+
+    def items(self):
+        return self.data.items()
+
+    def values(self):
+        return self.data.values()
+
+    keys.__doc__ = data.keys.__doc__
+    items.__doc__ = data.items.__doc__
+    values.__doc__ = data.values.__doc__
 
     def __getitem__(self, y):
         return self.data.__getitem__(y)

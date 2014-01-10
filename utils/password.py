@@ -1,6 +1,11 @@
 #!/usr/bin/env python
-
+#coding=utf-8
 # Found here: http://stackoverflow.com/a/15074754
+
+"""
+This is a convenience function for generating random passwords.
+You can also run this file directly if you want a 32-length password.
+"""
 
 import string
 from time import time
