@@ -46,7 +46,7 @@ class BridgePlugin(PluginObject):
                                  1000)
 
         self.events.add_callback("MessageSent", self, self.handle_msg_sent,
-                                 1000)
+                                 0)
 
     def handle_msg(self, event=MessageReceived):
         self.do_rules(event.message, event.caller, event.source, event.target)

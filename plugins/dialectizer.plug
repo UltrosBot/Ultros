@@ -1,0 +1,10 @@
+core:
+  name: Dialectizer
+  module: dialectizer
+  dependencies: []
+info:
+  description: Bork bork bork, uh-hah-hah-hah.
+  author: Gareth Coles
+  version: 0.0.1
+  website: https://github.com/McBlockitHelpbot/Ultros/tree/master/plugins/dialectizer
+  copyright: See Ultros' license
