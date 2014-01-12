@@ -1,5 +1,6 @@
 __author__ = 'Gareth Coles'
 
+import re
 import urlparse
 import urllib
 import urllib2
@@ -319,10 +320,7 @@ class Plugin(PluginObject):
             soup = BeautifulSoup(page)
             if soup.title.string:
                 title = soup.title.string.strip()
-                title = title.replace("\n", " ")
-                title = title.replace("\t", " ")
-                title = title.replace("\r", " ")
-                title = title.replace("  ", " ")
+                title = re.sub("\s+", " ", title)
                 title = to_unicode(title)
                 domain = to_unicode(domain)
                 return title, domain
