@@ -1,13 +1,10 @@
 # coding=utf-8
 __author__ = "Gareth Coles"
 
-from threading import Lock
-
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
 from system.events.general import MessageSent
 from system.plugin import PluginObject
-from system.protocols.generic.channel import Channel
 from system.protocols.generic.user import User
 from utils.data import YamlData
 
