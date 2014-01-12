@@ -318,7 +318,12 @@ class Plugin(PluginObject):
             page = response.read()
             soup = BeautifulSoup(page)
             if soup.title.string:
-                title = to_unicode(soup.title.string.strip())
+                title = soup.title.string.strip()
+                title = title.replace("\n", " ")
+                title = title.replace("\t", " ")
+                title = title.replace("\r", " ")
+                title = title.replace("  ", " ")
+                title = to_unicode(title)
                 domain = to_unicode(domain)
                 return title, domain
             else:
