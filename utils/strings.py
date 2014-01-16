@@ -22,5 +22,5 @@ class EmptyStringFormatter(string.Formatter):
                 return args[key]
             else:
                 return kwargs[key]
-        except:
+        except [KeyError, IndexError]:
             return ""
