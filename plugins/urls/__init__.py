@@ -8,7 +8,7 @@ import urllib2
 from kitchen.text.converters import to_unicode
 
 from utils.config import YamlConfig
-from utils.data import YamlData
+from utils.data import YamlData, SqliteData
 
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
@@ -28,6 +28,7 @@ class Plugin(PluginObject):
     commands = None
     events = None
     config = None
+    shortened = None
 
     handlers = {}
     shorteners = {}
@@ -52,8 +53,13 @@ class Plugin(PluginObject):
         self.logger.debug("Spoofing: %s" % self.spoofing)
 
         self.channels = YamlData("plugins/urls/channels.yml")
+        self.shortened = SqliteData("plugins/urls/shortened.sqlite")
         self.commands = CommandManager.instance()
         self.events = EventManager.instance()
+
+        with self.shortened as c:
+            c.execute("CREATE TABLE IF NOT EXISTS urls (url TEXT, \
+                      shortener TEXT, result TEXT)")
 
         def message_event_filter(event=MessageReceived):
             target = event.target
@@ -215,7 +221,12 @@ class Plugin(PluginObject):
             else:
                 handler = "tinyurl"
                 url = args[1]
-                shortened = self.shorten_url(url, handler)
+                try:
+                    shortened = self.shorten_url(url, handler)
+                except Exception as e:
+                    self.logger.exception("Error fetching short URL.")
+                    caller.respond("Error: %s" % e)
+                    return
 
                 caller.respond(shortened)
         else:
@@ -240,7 +251,12 @@ class Plugin(PluginObject):
             if len(args) > 0:
                 url = args[0]
 
-            shortened = self.shorten_url(url, handler)
+            try:
+                shortened = self.shorten_url(url, handler)
+            except Exception as e:
+                self.logger.exception("Error fetching short URL.")
+                caller.respond("Error: %s" % e)
+                return
 
             source.respond("%s: %s" % (caller.nickname, shortened))
 
@@ -333,8 +349,20 @@ class Plugin(PluginObject):
             return None, None
 
     def shorten_url(self, url, handler):
+        with self.shortened as c:
+            self.logger.debug("URL: %s" % url)
+            self.logger.debug("Handler: %s" % handler)
+            c.execute("SELECT * FROM urls WHERE  url=? AND shortener=?",
+                      (url, handler.lower()))
+            r = c.fetchone()
+            self.logger.debug("Result (SQL): %s" % repr(r))
+            if not r is None:
+                return r[2]
         if handler in self.shorteners:
-            return self.shorteners[handler](url)
+            result = self.shorteners[handler](url)
+            with self.shortened as c:
+                c.execute("INSERT INTO urls VALUES (?, ?, ?)",
+                          (url, handler.lower(), result))
         return None
 
     def add_handler(self, domain, handler):
