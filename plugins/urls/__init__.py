@@ -1,25 +1,27 @@
 __author__ = 'Gareth Coles'
 
 import re
+import socket
 import urlparse
 import urllib
 import urllib2
 
+from bs4 import BeautifulSoup
 from kitchen.text.converters import to_unicode
+from netaddr import all_matching_cidrs
 
-from utils.config import YamlConfig
-from utils.data import YamlData, SqliteData
+from system.plugin import PluginObject
 
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
-from system.plugin import PluginObject
 
 from system.events.general import MessageReceived
 
 from system.protocols.generic.channel import Channel
 from system.protocols.generic.user import User
 
-from bs4 import BeautifulSoup
+from utils.config import YamlConfig
+from utils.data import YamlData, SqliteData
 
 
 class Plugin(PluginObject):
@@ -270,6 +272,16 @@ class Plugin(PluginObject):
         try:
             parsed = urlparse.urlparse(url)
             domain = parsed.hostname
+
+            ip = socket.gethostbyname(domain)
+
+            matches = all_matching_cidrs(ip, ["10.0.0.0/8", "0.0.0.0/8",
+                                              "172.16.0.0/12",
+                                              "192.168.0.0/16", "127.0.0.0/8"])
+
+            if matches:
+                self.logger.warn("Prevented a portscan: %s" % url)
+                return None, None
 
             if domain.startswith("www."):
                 domain = domain[4:]
