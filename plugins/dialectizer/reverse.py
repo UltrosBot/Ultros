@@ -2,7 +2,7 @@
 __author__ = "Gareth Coles"
 
 
-class Dialectizer(object):
+class Reverse(object):
     """
     Class for implementing a dialectizer.
 
@@ -10,5 +10,5 @@ class Dialectizer(object):
     - sub(string): Dialectize and return the input.
     """
 
-    def sub(self, string=str):
-        return string
+    def sub(self, string):
+        return string[::-1]

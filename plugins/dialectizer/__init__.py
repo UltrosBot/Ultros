@@ -11,7 +11,10 @@ from utils.data import YamlData
 from chef import Chef
 from dialectizer import Dialectizer
 from fudd import Fudd
+from lower import Lower
 from olde import Olde
+from reverse import Reverse
+from upper import Upper
 
 
 class Plugin(PluginObject):
@@ -22,8 +25,11 @@ class Plugin(PluginObject):
 
     dialectizers = {"chef": Chef(),
                     "fudd": Fudd(),
+                    "lower": Lower(),
                     "off": Dialectizer(),
-                    "olde": Olde()}
+                    "olde": Olde(),
+                    "reverse": Reverse(),
+                    "upper": Upper()}
 
     def setup(self):
         self.commands = CommandManager.instance()
