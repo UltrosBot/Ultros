@@ -279,7 +279,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             command = split[0]
             args = split[1:]
 
-            printable = "<%s:%s> %s" % (source.nickname, target, message)
+            printable = "<%s:%s> %s" % (source, target, message)
 
             event = general_events.PreCommand(self, command, args, source,
                                               target, printable)

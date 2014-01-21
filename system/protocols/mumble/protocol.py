@@ -575,7 +575,7 @@ class Protocol(ChannelsProtocol):
             command = split[0]
             args = split[1:]
 
-            printable = "<%s> %s" % (source, message)
+            printable = "<%s:%s> %s" % (source, target, message)
 
             event = general_events.PreCommand(self, command, args, source,
                                               target, printable)
@@ -585,6 +585,7 @@ class Protocol(ChannelsProtocol):
                                                       event.source,
                                                       event.target, self,
                                                       event.args)
+
             a, b = result
             if a:
                 pass  # Command ran successfully
