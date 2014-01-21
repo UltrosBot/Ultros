@@ -227,7 +227,7 @@ class PreCommand(GeneralEvent):
         self.source = source
         self.target = target
         self.printable = printable
-        super(GeneralEvent, self).__init__(caller)
+        super(PreCommand, self).__init__(caller)
 
     def __str__(self):
         return "<%s at %s | command: %s | args: %s | source: %s | target: " \
