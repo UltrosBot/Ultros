@@ -62,7 +62,9 @@ class Plugin(PluginObject):
         message = subber.sub(message)
         event.message = message
 
-    def dialectizer_command(self, caller, source, args, protocol):
+    def dialectizer_command(self, protocol, caller, source, command, raw_args,
+                            parsed_args):
+        args = raw_args.split()  # Quick fix for new command handler signature
         if isinstance(source, User):
             caller.respond("This command only applies to channels.")
             return

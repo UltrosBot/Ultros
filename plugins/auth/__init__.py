@@ -107,7 +107,9 @@ class AuthPlugin(PluginObject):
             done = donestr.join(split_)
             event.printable = done
 
-    def login_command(self, caller, source, args, protocol):
+    def login_command(self, protocol, caller, source, command, raw_args,
+                      parsed_args):
+        args = raw_args.split()  # Quick fix for new command handler signature
         if len(args) < 2:
             caller.respond("Usage: {CHARS}login <username> <password>")
         else:
@@ -128,14 +130,18 @@ class AuthPlugin(PluginObject):
                                                          username))
                 caller.respond("You are now logged in as %s." % username)
 
-    def logout_command(self, caller, source, args, protocol):
+    def logout_command(self, protocol, caller, source, command, raw_args,
+                       parsed_args):
+        args = raw_args.split()  # Quick fix for new command handler signature
         if self.auth_h.authorized(caller, source, protocol):
             self.auth_h.logout(caller, protocol)
             caller.respond("You have been logged out successfully.")
         else:
             caller.respond("You're not logged in.")
 
-    def register_command(self, caller, source, args, protocol):
+    def register_command(self, protocol, caller, source, command, raw_args,
+                         parsed_args):
+        args = raw_args.split()  # Quick fix for new command handler signature
         if len(args) < 2:
             caller.respond("Usage: {CHARS}register <username> <password>")
             return
@@ -168,7 +174,9 @@ class AuthPlugin(PluginObject):
             caller.respond("Something went wrong when creating your account! "
                            "You should ask the bot operators about this.")
 
-    def passwd_command(self, caller, source, args, protocol):
+    def passwd_command(self, protocol, caller, source, command, raw_args,
+                       parsed_args):
+        args = raw_args.split()  # Quick fix for new command handler signature
         if len(args) < 2:
             caller.respond("Usage: {CHARS}passwd <old password> "
                            "<new password>")

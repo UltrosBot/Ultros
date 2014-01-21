@@ -567,13 +567,14 @@ class Protocol(ChannelsProtocol):
         cc = self.control_chars.replace("{NICK}", self.username).lower()
 
         if message.lower().startswith(cc):  # It's a command!
-            # Some case-insensitive replacement here.
-            regex = re.compile(re.escape(cc), re.IGNORECASE)
-            replaced = regex.sub("", message, count=1)
+            # Remove the command char(s) from the start
+            replaced = message[len(cc):]
 
-            split = replaced.split()
+            split = replaced.split(None, 1)
             command = split[0]
-            args = split[1:]
+            args = ""
+            if len(split) > 1:
+                args = split[1]
 
             printable = "<%s:%s> %s" % (source, target, message)
 

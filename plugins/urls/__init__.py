@@ -163,7 +163,9 @@ class Plugin(PluginObject):
                     self.logger.warn("Unknown target type: %s [%s]"
                                      % (target, target.__class__))
 
-    def urls_command(self, caller, source, args, protocol):
+    def urls_command(self, protocol, caller, source, command, raw_args,
+                     parsed_args):
+        args = raw_args.split()  # Quick fix for new command handler signature
         if not isinstance(source, Channel):
             caller.respond("This command can only be used in a channel.")
             return
@@ -215,7 +217,9 @@ class Plugin(PluginObject):
         else:
             caller.respond("Unknown operation: '%s'." % operation)
 
-    def shorten_command(self, caller, source, args, protocol):
+    def shorten_command(self, protocol, caller, source, command, raw_args,
+                        parsed_args):
+        args = raw_args.split()  # Quick fix for new command handler signature
         if not isinstance(source, Channel):
             if len(args) == 0:
                 caller.respond("Usage: {CHARS}shorten [url]")

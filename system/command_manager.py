@@ -1,4 +1,5 @@
 # coding=utf-8
+import shlex
 
 __author__ = "Gareth Coles"
 
@@ -107,6 +108,16 @@ class CommandManager(object):
         """
         if not command in self.commands:
             return False, None
+        # Parse args
+        raw_args = args
+        try:
+            lex = shlex.shlex(args, posix=True)
+            lex.whitespace_split = True
+            lex.quotes = '"'
+            lex.commenters = ""
+            parsed_args = list(lex)
+        except ValueError:
+            parsed_args = None
         try:
             if self.commands[command]["permission"]:
                 if not self.perm_handler or not self.auth_handlers:
@@ -123,8 +134,10 @@ class CommandManager(object):
                                                    [command]["permission"],
                                                    caller, source, protocol):
                             try:
-                                self.commands[command]["f"](caller, source,
-                                                            args, protocol)
+                                self.commands[command]["f"](protocol, caller,
+                                                            source, command,
+                                                            raw_args,
+                                                            parsed_args)
                             except Exception as e:
                                 output_exception(self.logger, logging.DEBUG)
                                 return False, e
@@ -135,15 +148,18 @@ class CommandManager(object):
                                                    [command]["permission"],
                                                    None, source, protocol):
                             try:
-                                self.commands[command]["f"](caller, source,
-                                                            args, protocol)
+                                self.commands[command]["f"](protocol, caller,
+                                                            source, command,
+                                                            raw_args,
+                                                            parsed_args)
                             except Exception as e:
                                 output_exception(self.logger, logging.DEBUG)
                                 return False, e
                         else:
                             return False, True
             else:
-                self.commands[command]["f"](caller, source, args, protocol)
+                self.commands[command]["f"](protocol, caller, source, command,
+                                            raw_args, parsed_args)
         except Exception as e:
             output_exception(self.logger, logging.ERROR)
             return False, e
