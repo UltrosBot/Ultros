@@ -2,7 +2,6 @@
 
 import time
 import logging
-import re
 
 from kitchen.text.converters import to_bytes, to_unicode
 from twisted.internet import reactor

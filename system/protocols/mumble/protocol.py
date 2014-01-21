@@ -12,7 +12,6 @@ __author__ = 'Gareth Coles'
 import cgi
 import logging
 import platform
-import re
 import struct
 
 from twisted.internet import reactor, ssl
