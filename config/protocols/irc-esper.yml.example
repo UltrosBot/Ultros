@@ -1,5 +1,6 @@
 main:
   protocol-type: irc
+  can-flood: no
 
 network: # Network connection settings
   address: irc.esper.net # Address of the server

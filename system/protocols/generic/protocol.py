@@ -74,6 +74,11 @@ class Protocol(protocol.Protocol):
         self.name = name
         self.factory = factory
         self.config = config
+        # Default values for optional main config section
+        try:
+            self.can_flood = self.config["main"]["can-flood"]
+        except KeyError:
+            self.can_flood = False
 
     def shutdown(self):
         """

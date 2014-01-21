@@ -68,9 +68,9 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
     ssl = False
 
     def __init__(self, name, factory, config):
-        self.name = name
-        self.factory = factory
-        self.config = config
+        # TODO: Replace this with a super if we ever fully replace twisted irc
+        # - and no longer inherit from it
+        ChannelsProtocol.__init__(self, name, factory, config)
 
         self.log = getLogger(self.name)
         self.log.info("Setting up..")

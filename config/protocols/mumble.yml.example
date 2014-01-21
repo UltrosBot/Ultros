@@ -1,5 +1,6 @@
 main:
   protocol-type: mumble
+  can-flood: no
 
 network:  # Network settings
   address: localhost  # The address to connect to
