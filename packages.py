@@ -15,8 +15,11 @@ import traceback
 
 __author__ = 'Gareth Coles'
 
+import os
 import sys
 import urllib
+
+os.chdir(os.path.dirname(sys.argv[0]))
 
 try:
     import pip

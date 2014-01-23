@@ -18,6 +18,8 @@ import os
 import sys
 from kitchen.text.converters import getwriter
 
+os.chdir(os.path.dirname(sys.argv[0]))
+
 from utils.log import getLogger, open_log, close_log
 from utils.misc import output_exception
 from system.factory_manager import Manager
