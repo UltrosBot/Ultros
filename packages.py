@@ -19,7 +19,8 @@ import os
 import sys
 import urllib
 
-os.chdir(os.path.dirname(sys.argv[0]))
+if os.path.dirname(sys.argv[0]):
+    os.chdir(os.path.dirname(sys.argv[0]))
 
 try:
     import pip

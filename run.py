@@ -18,7 +18,8 @@ import os
 import sys
 from kitchen.text.converters import getwriter
 
-os.chdir(os.path.dirname(sys.argv[0]))
+if os.path.dirname(sys.argv[0]):
+    os.chdir(os.path.dirname(sys.argv[0]))
 
 from utils.log import getLogger, open_log, close_log
 from utils.misc import output_exception
