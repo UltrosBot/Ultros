@@ -305,7 +305,7 @@ class Manager(object):
             try:
                 proto.shutdown()
             except Exception:
-                self.logger.error("Error shutting down protocol %s")
+                self.logger.error("Error shutting down protocol %s" % name)
                 output_exception(self.logger, logging.ERROR)
             del self.factories[name]
             return True
