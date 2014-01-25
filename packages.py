@@ -52,6 +52,7 @@ def output_help():
     print "=== Management operations ==="
     print "install <package>        Install a package"
     print "update <package>         Update a package"
+    print "update all               Update all packages"
     print "uninstall <package>      Remove a package"
     print ""
     print "=== Informational operations ==="
@@ -107,137 +108,170 @@ def main(args):
         output_help()
         return exit(0)
     elif operation == "list":
-        print ""
-        print "+%s+%s+%s+" % ("-" * 17, "-" * 7, "-" * 82)
-        print "| %s | %s | %s |" % ("Name".ljust(15), "Vers.",
-                                    "Description".ljust(80))
-        print "+%s+%s+%s+" % ("-" * 17, "-" * 7, "-" * 82)
-        for x in packages.packages:
-            package = packages.data[x]
-            version = package["version"]
-            desc = package["description"]
+        _list(args, packages)
 
-            chunks = string_split_readable(desc, 80)
-            i = False
-            for chunk in chunks:
-                if not i:
-                    print "| %s | %s | %s |" % (x.ljust(15), version.ljust(5),
-                                                chunk.ljust(80))
-                    i = True
-                else:
-                    print "| %s | %s | %s |" % ("".ljust(15), "".ljust(5),
-                                                chunk.ljust(80))
-
-            if package["requires"]["modules"]:
-                needed = "Needed modules: %s" \
-                         % (", ".join(package["requires"]["modules"]))
-                chunks = string_split_readable(needed, 78)
-                for chunk in chunks:
-                    print "| %s | %s | > %s |" % ("".ljust(15), "".ljust(5),
-                                                  chunk.ljust(78))
-
-            if package["requires"]["packages"]:
-                needed = "Needed packages: %s" \
-                         % (", ".join(package["requires"]["packages"]))
-                chunks = string_split_readable(needed, 78)
-                for chunk in chunks:
-                    print "| %s | %s | > %s |" % ("".ljust(15), "".ljust(5),
-                                                  chunk.ljust(78))
-        print "+%s+%s+%s+" % ("-" * 17, "-" * 7, "-" * 82)
     elif operation == "info":
-        if len(args) < 2:
-            print ">> Syntax: 'python packages.py info <package>'"
-            print ">> Try 'python packages.py help' if you're stuck"
-            return exit(1)
+        info(args, packages)
 
-        package = args[1]
-
-        if package not in packages.data:
-            print ">> Package not found: %s" % package
-            return exit(1)
-
-        print ">> Downloading information.."
-
-        info = packages.get_package_info(package)
-        versions = packages.get_package_versions(package)
-
-        print ""
-        print "=== Information ==="
-        print "Name: %s" % info["name"]
-        print "Latest version: v%s" % info["current_version"]["number"]
-        if packages.package_installed(package):
-            print "Installed: v%s" % packages.config["installed"][package]
-        print "Files: %s" % len(info["files"])
-        print "Documentation: %s" % info["documentation"]
-        print ""
-        print "=== Description ==="
-        print info["description"]
-        print "=== Latest version ==="
-        print "Version: %s" % info["current_version"]["number"]
-        print "- %s other versions." % len(versions.keys())
-        print ""
-        print info["current_version"]["info"]
     elif operation == "install":
-        if len(args) < 2:
-            print ">> Syntax: 'python packages.py install <package>'"
-            print ">> Try 'python packages.py help' if you're stuck"
-            return exit(1)
-
-        package = args[1]
-
-        print ">> Installing package '%s'." % package
-
-        if packages.package_installed(package):
-            print ">> Package is already installed. Nothing to do."
-            return exit(1)
-
-        try:
-            conflicts = packages.install_package(package)
-        except Exception as e:
-            print ">> Error installing package: %s" % e
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            data = traceback.format_exception(exc_type, exc_value,
-                                              exc_traceback)
-            print "==============================="
-            print " ".join(data)
-            return exit(1)
-        print ">> Version %s installed successfully." \
-              % packages.config["installed"][package]
-        files = conflicts["files"]
-        folders = conflicts["folders"]
-        if len(files) or len(folders):
-            print ">> The following conflicts were found."
-            if len(folders):
-                print "   | Directories: %s" % len(folders)
-                for path in folders:
-                    print "   + %s" % path
-            if len(files):
-                print "   | Files: %s" % len(folders)
-                for path in files:
-                    print "   + %s" % path
-            print ">> These files were not modified but may be removed if " \
-                  "you uninstall the package."
+        install(args, packages)
 
     elif operation == "uninstall":
-        if len(args) < 2:
-            print ">> Syntax: 'python packages.py uninstall <package>'"
-            print ">> Try 'python packages.py help' if you're stuck"
-            return exit(1)
+        uninstall(args, packages)
 
-        package = args[1]
+    elif operation == "update":
+        if len(args) > 1 and args[1] == "all":
+            if not len(packages.config["installed"].keys()):
+                print ">> No packages are installed. Nothing to do."
+                exit(0)
+            for package in packages.config["installed"].keys():
+                args[1] = package
 
-        print ">> Uninstalling package '%s'." % package
+                uninstall(args, packages)
+                install(args, packages)
+        else:
+            uninstall(args, packages)
+            install(args, packages)
 
-        if not packages.package_installed(package):
-            print ">> Package is not installed. Nothing to do."
-            return exit(1)
 
-        try:
-            packages.uninstall_package(package)
-        except Exception as e:
-            print ">> Error uninstalling package: %s" % e
-            return exit(1)
-        print ">> Package uninstalled successfully."
+def _list(args, packages):
+    print ""
+    print "+%s+%s+%s+" % ("-" * 17, "-" * 7, "-" * 82)
+    print "| %s | %s | %s |" % ("Name".ljust(15), "Vers.",
+                                "Description".ljust(80))
+    print "+%s+%s+%s+" % ("-" * 17, "-" * 7, "-" * 82)
+    for x in packages.packages:
+        package = packages.data[x]
+        version = package["version"]
+        desc = package["description"]
+
+        chunks = string_split_readable(desc, 80)
+        i = False
+        for chunk in chunks:
+            if not i:
+                print "| %s | %s | %s |" % (x.ljust(15), version.ljust(5),
+                                            chunk.ljust(80))
+                i = True
+            else:
+                print "| %s | %s | %s |" % ("".ljust(15), "".ljust(5),
+                                            chunk.ljust(80))
+
+        if package["requires"]["modules"]:
+            needed = "Needed modules: %s" \
+                     % (", ".join(package["requires"]["modules"]))
+            chunks = string_split_readable(needed, 78)
+            for chunk in chunks:
+                print "| %s | %s | > %s |" % ("".ljust(15), "".ljust(5),
+                                              chunk.ljust(78))
+
+        if package["requires"]["packages"]:
+            needed = "Needed packages: %s" \
+                     % (", ".join(package["requires"]["packages"]))
+            chunks = string_split_readable(needed, 78)
+            for chunk in chunks:
+                print "| %s | %s | > %s |" % ("".ljust(15), "".ljust(5),
+                                              chunk.ljust(78))
+    print "+%s+%s+%s+" % ("-" * 17, "-" * 7, "-" * 82)
+
+
+def install(args, packages):
+    if len(args) < 2:
+        print ">> Syntax: 'python packages.py install <package>'"
+        print ">> Try 'python packages.py help' if you're stuck"
+        return exit(1)
+
+    package = args[1]
+
+    print ">> Installing package '%s'." % package
+
+    if packages.package_installed(package):
+        print ">> Package is already installed. Nothing to do."
+        return exit(1)
+
+    try:
+        conflicts = packages.install_package(package)
+    except Exception as e:
+        print ">> Error installing package: %s" % e
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        data = traceback.format_exception(exc_type, exc_value,
+                                          exc_traceback)
+        print "==============================="
+        print " ".join(data)
+        return exit(1)
+    print ">> Version %s installed successfully." \
+          % packages.config["installed"][package]
+    files = conflicts["files"]
+    folders = conflicts["folders"]
+    if len(files) or len(folders):
+        print ">> The following conflicts were found."
+        if len(folders):
+            print "   | Directories: %s" % len(folders)
+            for path in folders:
+                print "   + %s" % path
+        if len(files):
+            print "   | Files: %s" % len(folders)
+            for path in files:
+                print "   + %s" % path
+        print ">> These files were not modified but may be removed if " \
+              "you uninstall the package."
+
+
+def uninstall(args, packages):
+    if len(args) < 2:
+        print ">> Syntax: 'python packages.py uninstall <package>'"
+        print ">> Try 'python packages.py help' if you're stuck"
+        return exit(1)
+
+    package = args[1]
+
+    print ">> Uninstalling package '%s'." % package
+
+    if not packages.package_installed(package):
+        print ">> Package is not installed. Nothing to do."
+        return exit(1)
+
+    try:
+        packages.uninstall_package(package)
+    except Exception as e:
+        print ">> Error uninstalling package: %s" % e
+        return exit(1)
+    print ">> Package uninstalled successfully."
+
+
+def info(args, packages):
+    if len(args) < 2:
+        print ">> Syntax: 'python packages.py info <package>'"
+        print ">> Try 'python packages.py help' if you're stuck"
+        return exit(1)
+
+    package = args[1]
+
+    if package not in packages.data:
+        print ">> Package not found: %s" % package
+        return exit(1)
+
+    print ">> Downloading information.."
+
+    info = packages.get_package_info(package)
+    versions = packages.get_package_versions(package)
+
+    print ""
+    print "=== Information ==="
+    print "Name: %s" % info["name"]
+    print "Latest version: v%s" % info["current_version"]["number"]
+    if packages.package_installed(package):
+        print "Installed: v%s" % packages.config["installed"][package]
+    print "Files: %s" % len(info["files"])
+    print "Documentation: %s" % info["documentation"]
+    print ""
+    print "=== Description ==="
+    print info["description"]
+    print "=== Latest version ==="
+    print "Version: %s" % info["current_version"]["number"]
+    print "- %s other versions." % len(versions.keys())
+    print ""
+    print info["current_version"]["info"]
+
 
 if __name__ == "__main__":
     args = sys.argv[1:]
