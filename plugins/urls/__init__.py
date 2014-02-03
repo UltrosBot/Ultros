@@ -219,7 +219,7 @@ class Plugin(PluginObject):
 
     def shorten_command(self, protocol, caller, source, command, raw_args,
                         parsed_args):
-        args = raw_args.split()  # Quick fix for new command handler signature
+        args = parsed_args  # Quick fix for new command handler signature
         if not isinstance(source, Channel):
             if len(args) == 0:
                 caller.respond("Usage: {CHARS}shorten [url]")
@@ -263,6 +263,11 @@ class Plugin(PluginObject):
                 self.logger.exception("Error fetching short URL.")
                 caller.respond("Error: %s" % e)
                 return
+
+            if shortened is None:
+                source.respond("Unable to shorten URL %s using handler %s for "
+                               "some reason. Poke the bot owner!"
+                               % (url, handler))
 
             source.respond("%s: %s" % (caller.nickname, shortened))
 
@@ -379,6 +384,7 @@ class Plugin(PluginObject):
             with self.shortened as c:
                 c.execute("INSERT INTO urls VALUES (?, ?, ?)",
                           (url, handler.lower(), result))
+            return result
         return None
 
     def add_handler(self, domain, handler):
