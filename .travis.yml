@@ -8,3 +8,5 @@ install:
   - pip install flake8
 # command to run tests
 script: flake8 .
+notifications:
+  irc: "irc.esper.net#Ultros"
