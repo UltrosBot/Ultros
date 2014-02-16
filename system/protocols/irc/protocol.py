@@ -60,6 +60,11 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
     name = "irc"
 
     _channels = {}  # key is lowercase "#channel" - use get/set/del_channel()
+
+    @property
+    def num_channels(self):
+        return len(self._channels)
+
     # TODO: Make users a set()?
     _users = []
     ourselves = None

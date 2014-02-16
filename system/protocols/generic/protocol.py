@@ -129,6 +129,12 @@ class ChannelsProtocol(Protocol):
     You'll need to override everything in here as well.
     """
 
+    TYPE = "channels"
+
+    @property
+    def num_channels(self):
+        raise NotImplementedError("This function needs to be implemented!")
+
     def get_channel(self, channel):
         """
         Used to retrieve a channel. Return None if we can't find it.

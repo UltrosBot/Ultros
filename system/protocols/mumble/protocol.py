@@ -86,6 +86,10 @@ class Protocol(ChannelsProtocol):
     channels = {}
     users = {}
 
+    @property
+    def num_channels(self):
+        return len(self.channels)
+
     pinging = True
 
     ourselves = None

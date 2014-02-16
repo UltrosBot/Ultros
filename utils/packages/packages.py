@@ -57,6 +57,9 @@ class Packages(object):
         constructed_path = self.base_file_url + base_path + path
         urllib.urlretrieve(constructed_path, path)
 
+    def get_installed_packages(self):
+        return self.config["installed"]
+
     def get_package_info(self, package):
         """
         Load up the package info file for a package and return its data
