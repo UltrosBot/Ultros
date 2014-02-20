@@ -175,6 +175,8 @@ class Plugin(PluginObject):
                            " parsing for the current channel")
             caller.respond("            shortener <name> - Set which URL "
                            "shortener to use for the current channel")
+            caller.respond("            Shorteners: %s"
+                           % ", ".join(self.shorteners.keys()))
             return
 
         operation = args[0].lower()
