@@ -129,15 +129,19 @@ class BridgePlugin(PluginObject):
                 continue
 
             else:
-                for k, v in tokens.items():
-                    format_string = format_string.replace("{%s}" % k, v)
+                for line in msg.strip("\r").split("\n"):
+                    format_string = formatting[f_str[0]][f_str[1]]
 
-                format_string = format_string.replace("{MESSAGE}", msg)
-                format_string = format_string.replace("{USER}", s_name)
-                format_string = format_string.replace("{TARGET}", t_name)
-                format_string = format_string.replace("{PROTOCOL}",
-                                                      caller.name)
+                    for k, v in tokens.items():
+                        format_string = format_string.replace("{%s}" % k, v)
 
-            prot = self.factory_manager.get_protocol(to_["protocol"])
-            prot.send_msg(to_["target"], format_string,
-                          target_type=to_["target-type"], use_event=use_event)
+                    format_string = format_string.replace("{MESSAGE}", line)
+                    format_string = format_string.replace("{USER}", s_name)
+                    format_string = format_string.replace("{TARGET}", t_name)
+                    format_string = format_string.replace("{PROTOCOL}",
+                                                          caller.name)
+
+                    prot = self.factory_manager.get_protocol(to_["protocol"])
+                    prot.send_msg(to_["target"], format_string,
+                                  target_type=to_["target-type"],
+                                  use_event=use_event)
