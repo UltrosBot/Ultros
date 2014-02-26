@@ -48,6 +48,9 @@ class BridgePlugin(PluginObject):
         self.events.add_callback("MessageSent", self, self.handle_msg_sent,
                                  0)
 
+        self.events.add_callback("PreCommand", self, self.handle_command,
+                                 1000)
+
     def handle_msg(self, event=MessageReceived):
         self.do_rules(event.message, event.caller, event.source, event.target)
 
@@ -56,7 +59,8 @@ class BridgePlugin(PluginObject):
                       event.target)
 
     def handle_command(self, event=PreCommand):
-        self.do_rules(event.message, event.caller, event.source, event.target)
+        if event.printable:
+            self.do_rules(event.message, event.caller, event.source, event.target)
 
     def do_rules(self, msg, caller, source, target, from_user=True,
                  to_user=True, f_str=None, tokens=None, use_event=False):
