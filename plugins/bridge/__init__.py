@@ -60,7 +60,8 @@ class BridgePlugin(PluginObject):
 
     def handle_command(self, event=PreCommand):
         if event.printable:
-            self.do_rules(event.message, event.caller, event.source, event.target)
+            self.do_rules(event.message, event.caller, event.source,
+                          event.target)
 
     def do_rules(self, msg, caller, source, target, from_user=True,
                  to_user=True, f_str=None, tokens=None, use_event=False):

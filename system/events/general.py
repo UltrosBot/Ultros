@@ -222,7 +222,8 @@ class PreCommand(GeneralEvent):
     printable = ""
     message = ""
 
-    def __init__(self, caller, command, args, source, target, printable, message):
+    def __init__(self, caller, command, args, source, target, printable,
+                 message):
         self.command = command
         self.args = args
         self.source = source
