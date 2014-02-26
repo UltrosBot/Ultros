@@ -582,7 +582,7 @@ class Protocol(ChannelsProtocol):
             printable = "<%s:%s> %s" % (source, target, message)
 
             event = general_events.PreCommand(self, command, args, source,
-                                              target, printable)
+                                              target, printable, message)
             self.event_manager.run_callback("PreCommand", event)
 
             result = self.command_manager.run_command(event.command,

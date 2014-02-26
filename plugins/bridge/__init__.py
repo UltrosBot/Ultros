@@ -5,7 +5,7 @@ from threading import Lock
 
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
-from system.events.general import MessageReceived, MessageSent
+from system.events.general import MessageReceived, MessageSent, PreCommand
 from system.plugin import PluginObject
 from system.protocols.generic.channel import Channel
 from system.protocols.generic.user import User
@@ -54,6 +54,9 @@ class BridgePlugin(PluginObject):
     def handle_msg_sent(self, event=MessageSent):
         self.do_rules(event.message, event.caller, event.caller.ourselves,
                       event.target)
+
+    def handle_command(self, event=PreCommand):
+        self.do_rules(event.message, event.caller, event.source, event.target)
 
     def do_rules(self, msg, caller, source, target, from_user=True,
                  to_user=True, f_str=None, tokens=None, use_event=False):
