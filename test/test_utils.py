@@ -17,7 +17,7 @@ strings  - String manipulation utilities
 import time
 
 import nose.tools as nosetools
-from utils import irc, misc, password, strings  # config, data, html, 
+from utils import irc, misc, password, strings  # config, data, html,
 
 
 class test_utils:
