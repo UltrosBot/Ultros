@@ -17,7 +17,7 @@ strings  - String manipulation utilities
 import time
 
 import nose.tools as nosetools
-from utils import config, data, html, irc, misc, password, strings
+from utils import irc, misc, password, strings  # config, data, html, 
 
 
 class test_utils:
@@ -152,7 +152,8 @@ class test_utils:
 
             i += 1
 
-            time.sleep(0.001)  # Race condition, but we're using random numbers..
+            time.sleep(0.001)
+            # Race condition, but we're using random numbers..
 
         print "Found %s duplicates" % len(duplicates)
 
@@ -179,7 +180,8 @@ class test_utils:
 
             i += 1
 
-            time.sleep(0.001)  # Race condition, but we're using random numbers..
+            time.sleep(0.001)
+            # Race condition, but we're using random numbers..
 
         print "Found %s duplicates" % len(duplicates)
 
@@ -195,14 +197,16 @@ class test_utils:
         formatter = strings.EmptyStringFormatter()
 
         nosetools.eq_("RED", formatter.format("{RED}", RED="RED"), "Uppercase")
-        nosetools.eq_("blue", formatter.format("{blue}", blue="blue"), "Lowercase")
+        nosetools.eq_("blue", formatter.format("{blue}", blue="blue"),
+                      "Lowercase")
         nosetools.eq_("blue", formatter.format("{BLUE}", BLUE="blue"),
                       "Lowercase replacement")
         nosetools.eq_("BLUE", formatter.format("{blue}", blue="BLUE"),
                       "Lowercase token")
         nosetools.eq_("GrEeN", formatter.format("{GrEeN}", GrEeN="GrEeN"),
                       "Mixed case")
-        nosetools.eq_("a1", formatter.format("{a1}", a1="a1"), "Contains a number")
+        nosetools.eq_("a1", formatter.format("{a1}", a1="a1"),
+                      "Contains a number")
 
     def test_strings_formatter_blanks(self):
         """
