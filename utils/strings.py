@@ -2,6 +2,7 @@
 __author__ = 'Gareth Coles'
 
 import string
+from numbers import Number
 
 
 class EmptyStringFormatter(string.Formatter):
@@ -18,9 +19,10 @@ class EmptyStringFormatter(string.Formatter):
 
     def get_value(self, key, args, kwargs):
         try:
-            if hasattr(key, "__mod__"):
+            #if hasattr(key, "__mod__"):
+            if isinstance(key, Number):
                 return args[key]
             else:
                 return kwargs[key]
-        except [KeyError, IndexError]:
+        except (KeyError, IndexError):
             return ""

@@ -47,13 +47,13 @@ def split_hostmask(hostmask):
     Split a hostmask into its parts and return them.
     :param hostmask: Hostmask to parse
     :return: [user, ident, host]
-    :exception Exception: Raised when the hostmask is not in the form "*!*@*"
+    :exception ValueError: Raised when the hostmask is not in the form "*!*@*"
     """
     posex = hostmask.find(u'!')
     posat = hostmask.find(u'@')
     if posex <= 0 or posat < 3 or posex + 1 == posat or posat + 1 == len(
             hostmask):  # All parts must be > 0 in length
-        raise Exception("Hostmask must be in the form '*!*@*'")
+        raise ValueError("Hostmask must be in the form '*!*@*'")
     return [hostmask[0:posex], hostmask[posex + 1: posat],
             hostmask[posat + 1:]]
 
@@ -99,7 +99,7 @@ class IRCUtils(object):
     The RFC specifies that {}| are the lowercase versions of []\, due to IRC's
     scandinavian origin. This also implies that ~ is the lowercase of ^, but
     as that's not explicitly stated (although assumed by at least most
-    implementations, rfc1459 mode includes this, and strict-rfc1459 doesn't.
+    implementations), rfc1459 mode includes this, and strict-rfc1459 doesn't.
     """
 
     ASCII, RFC1459, STRICT_RFC1459 = xrange(3)

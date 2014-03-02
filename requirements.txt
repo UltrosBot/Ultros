@@ -1,0 +1,9 @@
+twisted
+zope.interface
+kitchen
+yapsy==1.10.2-pythons2n3
+pyyaml
+pyopenssl
+protobuf
+beautifulsoup4
+netaddr

@@ -115,7 +115,7 @@ class YamlConfig(Config):
         return self.data.__reversed__()
 
 
-class JSONConfig(Config):
+class JsonConfig(Config):
     """
     Configuration object that uses JSON files for storage.
 
