@@ -18,7 +18,8 @@ import time
 import sys
 
 import nose.tools as nosetools
-from utils import irc, misc, password, strings, html, console  # config, data, html,
+from utils import irc, misc, password, strings, html, console
+# config, data, html,
 
 
 class test_utils:
