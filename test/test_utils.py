@@ -48,8 +48,9 @@ class test_utils:
         result_newlines_two = html.html_to_text("<html><body>Some body that I "
                                                 "<br />used to know</body>",
                                                 newlines=True)
-        result_newlines_three = html.html_to_text("<html><body>Some body that I "
-                                                  "<p>used to know</p></body>",
+        result_newlines_three = html.html_to_text("<html><body>Some body that "
+                                                  "I <p>used to know</p>"
+                                                  "</body>",
                                                   newlines=True)
 
         nosetools.eq_(result, "Some body that I used to know")
