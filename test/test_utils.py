@@ -15,9 +15,10 @@ strings  - String manipulation utilities
 # Imports
 
 import time
+import sys
 
 import nose.tools as nosetools
-from utils import irc, misc, password, strings, html  # config, data, html,
+from utils import irc, misc, password, strings, html, console  # config, data, html,
 
 
 class test_utils:
@@ -26,6 +27,25 @@ class test_utils:
     """
 
     # Config
+
+    # Console
+
+    if sys.stdout.isatty():
+        def test_console(self):
+            """
+            Test console size retrieval (when we are a TTY)
+            """
+            data = console.getTerminalSize()
+            nosetools.assert_true(isinstance(data, tuple))
+            nosetools.assert_true(isinstance(data[0], int))
+            nosetools.assert_true(isinstance(data[1], int))
+    else:
+        @nosetools.raises(Exception)
+        def test_console(self):
+            """
+            Test console size retrieval (when we are *NOT* a TTY)
+            """
+            console.getTerminalSize()
 
     # Data
 
