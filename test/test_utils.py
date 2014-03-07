@@ -17,7 +17,7 @@ strings  - String manipulation utilities
 import time
 
 import nose.tools as nosetools
-from utils import irc, misc, password, strings  # config, data, html,
+from utils import irc, misc, password, strings, html  # config, data, html,
 
 
 class test_utils:
@@ -30,6 +30,58 @@ class test_utils:
     # Data
 
     # HTML
+
+    def test_html_parse(self):
+        """
+        Test HTML parser with HTML
+        """
+
+        result = html.html_to_text("<html><body>Some body that I used to "
+                                   "know</body>")
+        result_two = html.html_to_text("<html><body>Some body that I used to "
+                                       "<br />know</body>")
+        result_three = html.html_to_text("<html><body>Some body that I used to"
+                                         " <p>know</p></body>")
+
+        result_newlines = html.html_to_text("<html><body>Some body that I used"
+                                            " to know</body>", newlines=True)
+        result_newlines_two = html.html_to_text("<html><body>Some body that I "
+                                                "<br />used to know</body>",
+                                                newlines=True)
+        result_newlines_three = html.html_to_text("<html><body>Some body that I "
+                                                  "<p>used to know</p></body>",
+                                                  newlines=True)
+
+        nosetools.eq_(result, "Some body that I used to know")
+        nosetools.eq_(result_two, "Some body that I used to know")
+        nosetools.eq_(result_three, "Some body that I used to know")
+        nosetools.eq_(result_newlines, "Some body that I used to know")
+        nosetools.eq_(result_newlines_two, "Some body that I \nused to know")
+        nosetools.eq_(result_newlines_three, "Some body that I "
+                                             "\nused to know\n")
+
+    def test_html_noparse(self):
+        """
+        Test HTML parser without HTML
+        """
+
+        result = html.html_to_text("Some body that I used to "
+                                   "know")
+        result_newlines = html.html_to_text("Some body that I used"
+                                            " to know", newlines=True)
+
+        result_newlines_two = html.html_to_text("Some body that I "
+                                                "\nused to know",
+                                                newlines=True)
+        result_newlines_three = html.html_to_text("Some body that I "
+                                                  "\nused to know\n",
+                                                  newlines=True)
+
+        nosetools.eq_(result, "Some body that I used to know")
+        nosetools.eq_(result_newlines, "Some body that I used to know")
+        nosetools.eq_(result_newlines_two, "Some body that I \nused to know")
+        nosetools.eq_(result_newlines_three, "Some body that I "
+                                             "\nused to know\n")
 
     # IRC
 
