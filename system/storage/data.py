@@ -82,22 +82,12 @@ class YamlData(Data):
         self.logger = getLogger("Data")
         filename = filename.strip("..")
 
-        filename = "data/" + filename
-        if not os.path.exists("data"):
-            self.logger.debug("Creating data directory..")
-            os.mkdir("data")
-        if not os.path.isdir("data"):
-            self.logger.debug("Renaming invalid data dir and creating a new "
-                              "one..")
-            os.rename("data", "data_")
-            os.mkdir("data")
+        folders = filename.split("/")
+        folders.pop()
+        folders = "/".join(folders)
 
-        dirpath = filename.split("/")
-        dirpath.pop()
-        dirpath = "/".join(dirpath)
-
-        if not os.path.exists(dirpath):
-            os.makedirs(dirpath)
+        if not os.path.exists(folders):
+            os.makedirs(folders)
 
         self.filename = filename
         self.load()
@@ -185,6 +175,9 @@ class YamlData(Data):
     def __str__(self):
         return "<Ultros YAML data handler: %s>" % self.filename
 
+    def __nonzero__(self):
+        return True
+
 
 class MemoryData(Data):
     """
@@ -271,6 +264,9 @@ class MemoryData(Data):
     def __str__(self):
         return "<Ultros in-memory data handler: %s>" % self.filename
 
+    def __nonzero__(self):
+        return True
+
 
 class JSONData(Data):
     """
@@ -295,22 +291,12 @@ class JSONData(Data):
         self.logger = getLogger("Data")
         filename = filename.strip("..")
 
-        filename = "data/" + filename
-        if not os.path.exists("data"):
-            self.logger.debug("Creating data directory..")
-            os.mkdir("data")
-        if not os.path.isdir("data"):
-            self.logger.debug("Renaming invalid data dir and creating a new "
-                              "one..")
-            os.rename("data", "data_")
-            os.mkdir("data")
+        folders = filename.split("/")
+        folders.pop()
+        folders = "/".join(folders)
 
-        dirpath = filename.split("/")
-        dirpath.pop()
-        dirpath = "/".join(dirpath)
-
-        if not os.path.exists(dirpath):
-            os.makedirs(dirpath)
+        if not os.path.exists(folders):
+            os.makedirs(folders)
 
         self.filename = filename
         self.load()
@@ -388,6 +374,9 @@ class JSONData(Data):
     def __str__(self):
         return "<Ultros JSON data handler: %s>" % self.filename
 
+    def __nonzero__(self):
+        return True
+
 
 class SqliteData(Data):
     """
@@ -424,22 +413,12 @@ class SqliteData(Data):
         else:
             filename = filename.strip("..")
 
-            filename = "data/" + filename
-            if not os.path.exists("data"):
-                self.logger.debug("Creating data directory..")
-                os.mkdir("data")
-            if not os.path.isdir("data"):
-                self.logger.debug("Renaming invalid data dir and creating a "
-                                  "new one..")
-                os.rename("data", "data_")
-                os.mkdir("data")
+            folders = filename.split("/")
+            folders.pop()
+            folders = "/".join(folders)
 
-            dirpath = filename.split("/")
-            dirpath.pop()
-            dirpath = "/".join(dirpath)
-
-            if not os.path.exists(dirpath):
-                os.makedirs(dirpath)
+            if not os.path.exists(folders):
+                os.makedirs(folders)
 
             if not os.path.exists(filename):
                 open(filename, "w").close()
@@ -463,3 +442,6 @@ class SqliteData(Data):
 
     def __str__(self):
         return "<Ultros SQLite data handler: %s>" % self.filename
+
+    def __nonzero__(self):
+        return True

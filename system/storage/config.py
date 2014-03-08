@@ -61,7 +61,7 @@ class YamlConfig(Config):
         self.logger = getLogger("YamlConfig")
         # Some sanitizing here to make sure people can't escape the config dirs
         filename = filename.strip("..")
-        self.filename = "config/" + filename
+        self.filename = filename
         self.exists = self.reload()
 
     def reload(self):
@@ -114,6 +114,9 @@ class YamlConfig(Config):
     def __reversed__(self):
         return self.data.__reversed__()
 
+    def __nonzero__(self):
+        return True
+
 
 class JSONConfig(Config):
     """
@@ -138,7 +141,7 @@ class JSONConfig(Config):
         self.logger = getLogger("YamlConfig")
         # Some sanitizing here to make sure people can't escape the config dirs
         filename = filename.strip("..")
-        self.filename = "config/" + filename
+        self.filename = filename
         self.exists = self.reload()
 
     def reload(self):
@@ -190,6 +193,9 @@ class JSONConfig(Config):
 
     def __reversed__(self):
         return self.data.__reversed__()
+
+    def __nonzero__(self):
+        return True
 
 
 class MemoryConfig(Config):
@@ -252,3 +258,6 @@ class MemoryConfig(Config):
 
     def __reversed__(self):
         return self.data.__reversed__()
+
+    def __nonzero__(self):
+        return True
