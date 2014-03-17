@@ -458,6 +458,9 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         for channel in temp_chans:
             self.user_channel_part(user_obj, channel)
 
+        event = irc_events.UserQuitEvent(self, user, quitmessage)
+        self.event_manager.run_callback("IRC/UserQuit", event)
+
         event = general_events.UserDisconnected(self, user_obj)
         self.event_manager.run_callback("UserDisconnected", event)
 

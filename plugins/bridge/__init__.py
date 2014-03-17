@@ -5,7 +5,12 @@ from threading import Lock
 
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
-from system.events.general import MessageReceived, MessageSent, PreCommand
+from system.events.general import MessageReceived, MessageSent, PreCommand, \
+    UserDisconnected
+
+from system.events.irc import UserJoinedEvent, UserKickedEvent, \
+    UserPartedEvent, UserQuitEvent
+from system.events.mumble import UserJoined, UserMoved, UserRemove
 from system.plugin import PluginObject
 from system.protocols.generic.channel import Channel
 from system.protocols.generic.user import User
@@ -42,6 +47,8 @@ class BridgePlugin(PluginObject):
 
         self.rules = self.config["rules"]
 
+        # General
+
         self.events.add_callback("MessageReceived", self, self.handle_msg,
                                  1000)
 
@@ -50,6 +57,71 @@ class BridgePlugin(PluginObject):
 
         self.events.add_callback("PreCommand", self, self.handle_command,
                                  1000)
+
+        # IRC
+
+        self.events.add_callback("IRC/UserJoined", self,
+                                 self.handle_irc_join, 1000)
+
+        self.events.add_callback("IRC/UserParted", self,
+                                 self.handle_irc_part, 1000)
+
+        self.events.add_callback("IRC/UserKicked", self,
+                                 self.handle_irc_kick, 1000)
+
+        self.events.add_callback("IRC/UserQuit", self,
+                                 self.handle_irc_quit, 1000)
+
+        # Mumble
+
+        self.events.add_callback("Mumble/UserRemove", self,
+                                 self.handle_mumble_remove, 1000)
+
+        self.events.add_callback("Mumble/UserJoined", self,
+                                 self.handle_mumble_join, 1000)
+
+        self.events.add_callback("Mumble/UserMoved", self,
+                                 self.handle_mumble_move, 1000)
+
+    def handle_irc_join(self, event=UserJoinedEvent):
+        self.do_rules("", event.caller, event.user, event.channel,
+                      f_str=["general", "join"],
+                      tokens={"CHANNEL": event.channel.name})
+
+    def handle_irc_part(self, event=UserPartedEvent):
+        self.do_rules("", event.caller, event.user, event.channel,
+                      f_str=["general", "part"],
+                      tokens={"CHANNEL": event.channel.name})
+
+    def handle_irc_kick(self, event=UserKickedEvent):
+        self.do_rules(event.reason, event.caller, event.user, event.channel,
+                      f_str=["general", "kick"],
+                      tokens={"CHANNEL": event.channel.name,
+                              "KICKER": event.kicker.nickname})
+
+    def handle_irc_quit(self, event=UserQuitEvent):
+        self.do_rules(event.message, event.caller, event.user, event.user,
+                      f_str=["irc", "disconnect"],
+                      tokens={"USER": event.user.nickname})
+
+    def handle_disconnect(self, event=UserDisconnected):
+        self.do_rules("", event.caller, event.user, event.user,
+                      f_str=["general", "disconnect"],
+                      tokens={"USER": event.user.nickname})
+
+    def handle_mumble_join(self, event=UserJoined):
+        self.do_rules("", event.caller, event.user, event.user,
+                      f_str=["mumble", "connect"])
+
+    def handle_mumble_move(self, event=UserMoved):
+        self.do_rules("", event.caller, event.user, event.channel,
+                      f_str=["mumble", "move"])
+
+    def handle_mumble_remove(self, event=UserRemove):
+        self.do_rules(event.reason, event.caller, event.user, event.user,
+                      f_str=["mumble", "remove"],
+                      tokens={"KICKER": event.kicker,
+                              "BANNED?": "banned" if event.ban else "kicked"})
 
     def handle_msg(self, event=MessageReceived):
         self.do_rules(event.message, event.caller, event.source, event.target)
@@ -93,7 +165,7 @@ class BridgePlugin(PluginObject):
                 continue
 
             if not self.factory_manager.get_protocol(to_["protocol"]):
-                self.logger.debug("Targer protocol doesn't exist.")
+                self.logger.debug("Target protocol doesn't exist.")
                 continue
 
             if isinstance(target, User):
@@ -110,7 +182,8 @@ class BridgePlugin(PluginObject):
                 if from_["source-type"].lower() != "channel":
                     self.logger.debug("Target type isn't a Channel.")
                     continue
-                if from_["source"].lower() != t_name.lower():
+                if from_["source"].lower() == "*" \
+                   or from_["source"].lower() != t_name.lower():
                     self.logger.debug("Target name doesn't match the source.")
                     continue
             else:

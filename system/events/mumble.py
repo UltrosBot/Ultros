@@ -167,19 +167,21 @@ class UserRemove(MumbleEvent):
     """
     # TODO: Update this docstring when we know what this is for
 
-    session = ""
-    actor = ""
-    user = None
-    reason = ""
-    ban = ""
+    session = ""  # Session ID
+    actor = ""  # Session ID
+    user = None  # User object
+    kicker = None  # User object
+    reason = ""  # Reason
+    ban = False  # True if banned, false if kicked
 
-    def __init__(self, caller, session, actor, user, reason, ban):
+    def __init__(self, caller, session, actor, user, reason, ban, kicker):
         self.caller = caller
         self.session = session
         self.actor = actor
         self.user = user
         self.reason = reason
         self.ban = ban
+        self.kicker = kicker
 
         super(UserRemove, self).__init__(caller)
 

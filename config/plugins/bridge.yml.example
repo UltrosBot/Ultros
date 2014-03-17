@@ -12,9 +12,20 @@ rules:
       protocol: "irc-archives"  # Name of the protocol to send to
       target: "#Ultros"  # Name of the user or channel to send to
       target-type: channel  # "channel" if we're sending to a channel, "user" otherwise
-    formatting:  # See the documentation for an explanation of this section.
+    formatting:  # Omit any of these to disable relaying of a particular message.
+                 # General tokens: {MESSAGE}, {USER}, {TARGET}, {PROTOCOL}
       general:
         message: "<{USER}> {MESSAGE}"
+        join: "* {USER} joined {CHANNEL}" # Extra tokens: {CHANNEL}
+        part: "* {USER} left {CHANNEL}" # Extra tokens: {CHANNEL}
+        part: "* {USER} was kicked from {CHANNEL} by {KICKER} ({MESSAGE})" # Extra tokens: {CHANNEL}, {KICKER}
+        disconnect: "* {USER} disconnected"  # Don't use this if relaying from IRC, use the IRC one instead
+      irc:
+        disconnect: "* {USER} disconnected ({MESSAGE})" # IRC provides a quit message
+      mumble:
+        connect: "* {USER} connected"
+        move: "* {USER} moved to {TARGET}"
+        remove: "* {USER} was {BANNED?} ({MESSAGE})" # {BANNED?} (is either "kicked" or "banned")
   name2:  # Another example rule
     from:
       protocol: "irc-archives"
@@ -24,6 +35,17 @@ rules:
       protocol: "irc-archives"
       target: "username"  # Sending it to a user named "username"
       target-type: user  # Tell the plugin that "username" denotes a user, not a channel
-    formatting:  # See the documentation for an explanation of this section.
+    formatting:  # Omit any of these to disable relaying of a particular message.
+                 # General tokens: {MESSAGE}, {USER}, {TARGET}, {PROTOCOL}
       general:
         message: "<{USER}> {MESSAGE}"
+        join: "* {USER} joined {CHANNEL}" # Extra tokens: {CHANNEL}
+        part: "* {USER} left {CHANNEL}" # Extra tokens: {CHANNEL}
+        part: "* {USER} was kicked from {CHANNEL} by {KICKER} ({MESSAGE})" # Extra tokens: {CHANNEL}, {KICKER}
+        disconnect: "* {USER} disconnected"  # Don't use this if relaying from IRC, use the IRC one instead
+      irc:
+        disconnect: "* {USER} disconnected ({MESSAGE})" # IRC provides a quit message
+      mumble:
+        connect: "* {USER} connected"
+        move: "* {USER} moved to {TARGET}"
+        remove: "* {USER} was {BANNED?} ({MESSAGE})" # {BANNED?} (is either "kicked" or "banned")
