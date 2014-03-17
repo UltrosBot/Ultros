@@ -104,9 +104,11 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         if config["rate_limiting"]["enabled"]:
             self.lineRate = config["rate_limiting"]["line_delay"]
 
-        if self.identity["authentication"].lower() == "password":
-            self.password = "%s:%s" % (self.identity["auth_name"],
-                                       self.identity["auth_pass"])
+        try:
+            if config["network"]["password"]:
+                self.password = config["network"]["password"]
+        except KeyError:
+            self.log.warning("Config doesn't contain network/password entry")
 
         self.nickname = self.identity["nick"]
 

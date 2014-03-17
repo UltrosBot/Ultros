@@ -6,6 +6,7 @@ network: # Network connection settings
   address: irc.esper.net # Address of the server
   port: 6697 # Port to connect to
   ssl: yes # Use SSL?
+  password: ""
 
 identity: # Settings relating to identification and authentication
   nick: Ultros # The bot's nickname
