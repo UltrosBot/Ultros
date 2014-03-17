@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 #
+# flake8: noqa
+#
 # Ultros documentation build configuration file, created by
 # sphinx-quickstart on Mon Mar 17 17:25:27 2014.
 #
