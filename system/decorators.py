@@ -1,5 +1,8 @@
 # coding=utf-8
 
+from functools import wraps
+from threading import Thread
+
 
 class Singleton:
     """
@@ -80,8 +83,6 @@ def run_async(func):
              t1.join()
              t2.join()
      """
-    from threading import Thread
-    from functools import wraps
 
     @wraps(func)
     def async_func(*args, **kwargs):
@@ -96,8 +97,6 @@ def run_async_daemon(func):
     """
     Much the same as run_async but the thread stops when the app does.
     """
-    from threading import Thread
-    from functools import wraps
 
     @wraps(func)
     def async_func(*args, **kwargs):
