@@ -24,8 +24,8 @@ rules:
         disconnect: "* {USER} disconnected ({MESSAGE})" # IRC provides a quit message
       mumble:
         connect: "* {USER} connected"
-        moved-from: "* {USER} moved to {TARGET}"
-        moved-to: "* {USER} moved to {TARGET}"
+        moved-from: "* {USER} moved to {CHANNEL}" # Use {CHANNEL} instead of {TARGET}
+        moved-to: "* {USER} moved to {CHANNEL}" # Use {CHANNEL} instead of {TARGET}
         remove: "* {USER} was {BANNED?} ({MESSAGE})" # {BANNED?} (is either "kicked" or "banned")
   name2:  # Another example rule
     from:
@@ -48,6 +48,6 @@ rules:
         disconnect: "* {USER} disconnected ({MESSAGE})" # IRC provides a quit message
       mumble:
         connect: "* {USER} connected"
-        moved-from: "* {USER} moved to {TARGET}"
-        moved-to: "* {USER} moved to {TARGET}"
+        moved-from: "* {USER} moved to {CHANNEL}" # Use {CHANNEL} instead of {TARGET}
+        moved-to: "* {USER} moved to {CHANNEL}" # Use {CHANNEL} instead of {TARGET}
         remove: "* {USER} was {BANNED?} ({MESSAGE})" # {BANNED?} (is either "kicked" or "banned")
