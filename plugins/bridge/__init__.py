@@ -114,9 +114,11 @@ class BridgePlugin(PluginObject):
                       f_str=["mumble", "connect"])
 
     def handle_mumble_move(self, event=UserMoved):
+        # Moving /from/ the configured channel to another one
         self.do_rules("", event.caller, event.user, event.old_channel,
                       f_str=["mumble", "moved-from"],
                       tokens={"CHANNEL": event.channel.name})
+        # Moving /to/ the configured channel
         self.do_rules("", event.caller, event.user, event.channel,
                       f_str=["mumble", "moved-to"],
                       tokens={"CHANNEL": event.channel.name})
