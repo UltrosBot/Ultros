@@ -58,6 +58,9 @@ class BridgePlugin(PluginObject):
         self.events.add_callback("PreCommand", self, self.handle_command,
                                  1000)
 
+        self.events.add_callback("UserDisconnected", self,
+                                 self.handle_disconnect, 1000)
+
         # IRC
 
         self.events.add_callback("IRC/UserJoined", self,
