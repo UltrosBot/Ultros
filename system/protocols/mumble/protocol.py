@@ -338,7 +338,7 @@ class Protocol(ChannelsProtocol):
                 del self.users[message.session]
             else:
                 user = None
-                
+
             if actor in self.users:
                 event = mumble_events.UserRemove(self, session, actor, user,
                                                  reason, ban, self.users[actor])
