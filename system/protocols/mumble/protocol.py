@@ -341,7 +341,8 @@ class Protocol(ChannelsProtocol):
 
             if actor in self.users:
                 event = mumble_events.UserRemove(self, session, actor, user,
-                                                 reason, ban, self.users[actor])
+                                                 reason, ban,
+                                                 self.users[actor])
                 self.event_manager.run_callback("Mumble/UserRemove", event)
 
             s_event = general_events.UserDisconnected(self, user)

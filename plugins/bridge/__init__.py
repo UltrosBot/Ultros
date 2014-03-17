@@ -118,7 +118,8 @@ class BridgePlugin(PluginObject):
                       f_str=["mumble", "moved-from"],
                       tokens={"CHANNEL": event.channel.name})
         self.do_rules("", event.caller, event.user, event.channel,
-                      f_str=["mumble", "moved-to"])
+                      f_str=["mumble", "moved-to"],
+                      tokens={"CHANNEL": event.channel.name})
 
     def handle_mumble_remove(self, event=UserRemove):
         self.do_rules(event.reason, event.caller, event.user, event.user,
