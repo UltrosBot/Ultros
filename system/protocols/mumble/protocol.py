@@ -476,7 +476,7 @@ class Protocol(ChannelsProtocol):
                                user.channel,
                                self.channels[message.channel_id],
                                actor))
-                old = user.channel
+                old = self.channels[user.channel.channel_id]
                 user.channel.remove_user(user)
                 self.channels[message.channel_id].add_user(user)
                 user.channel = self.channels[message.channel_id]
