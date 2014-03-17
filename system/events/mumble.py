@@ -221,10 +221,12 @@ class UserMoved(MumbleEvent):
 
     user = None
     channel = None
+    old_channel = None
 
-    def __init__(self, caller, user, channel):
+    def __init__(self, caller, user, channel, old):
         self.user = user
         self.channel = channel
+        self.old_channel = old
 
         super(UserMoved, self).__init__(caller)
 

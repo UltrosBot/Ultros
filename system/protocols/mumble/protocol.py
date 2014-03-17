@@ -475,11 +475,12 @@ class Protocol(ChannelsProtocol):
                                user.channel,
                                self.channels[message.channel_id],
                                actor))
+                old = user.channel
                 user.channel.remove_user(user)
                 self.channels[message.channel_id].add_user(user)
                 user.channel = self.channels[message.channel_id]
 
-                event = mumble_events.UserMoved(self, user, user.channel)
+                event = mumble_events.UserMoved(self, user, user.channel, old)
                 self.event_manager.run_callback("Mumble/UserMoved", event)
             if message.HasField('mute'):
                 actor = self.users[message.actor]
