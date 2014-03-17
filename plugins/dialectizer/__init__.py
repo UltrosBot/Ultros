@@ -41,6 +41,8 @@ class Plugin(PluginObject):
                                  1)
         self.commands.register_command("dialectizer", self.dialectizer_command,
                                        self, "dialectizer.set")
+        self.commands.register_command("dialectiser", self.dialectizer_command,
+                                       self, "dialectizer.set")
 
     def handle_msg_sent(self, event=MessageSent):
         if isinstance(event.target, User):
