@@ -6,6 +6,7 @@ Installation
 Ultros requires the following for its basic functions:
 
 * Python 2.6 or 2.7 32-bit (NOT 64-bit as some libraries don't support it yet)
+    * **NOTE: Do not install Python from the website if you're on a Mac! See the Mac instructions below!**
     * Twisted
     * Zope.Interface
     * Kitchen
@@ -67,7 +68,7 @@ Windows
 
 Now, open a command prompt, and run the following (replacing **<path>** with the *path to wherever you downloaded Ultros*):
 
-.. code:: batch
+.. code::
 
     cd <path>
     pip install -r requirements.txt
@@ -79,7 +80,7 @@ You may create a batch script using either of the below methods for starting Ult
 
 To start Ultros normally:
 
-.. code:: batch
+.. code::
 
     @ECHO off
     echo Starting Ultros..
@@ -88,7 +89,7 @@ To start Ultros normally:
 
 To start Ultros in debug mode:
 
-.. code:: batch
+.. code::
 
     @ECHO off
     echo Starting Ultros in debug mode..
