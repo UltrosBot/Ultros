@@ -154,8 +154,6 @@ To start Ultros in debug mode::
     cd <path>
     python run.py --debug
 
-.. _installation-configuration:
-
 .. Footnote links, etc
 
 .. _site: http://ultros.io
