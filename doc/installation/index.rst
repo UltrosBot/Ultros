@@ -49,7 +49,7 @@ To update Ultros in future, simply do the following:
 
 If you're thick-skulled, paranoid about wasting space or just don't like Git, you can download a zipball from the site_, but you will have to keep it up-to-date manually.
 
-Please see below for OS-specific installation instructions.
+Please see below for OS-specific installation instructions. For configuration, please see the :ref:`configuration` page.
 
 .. _installation-windows:
 
@@ -152,6 +152,7 @@ Mac OSX
 
 .. code:: bash
 
+    xcode-select --install
     brew install python
     cd <path>  # Replace <path> with the directory you downloaded Ultros to
     pip install -r requirements.txt
@@ -174,9 +175,6 @@ To start Ultros in debug mode:
 
 .. _installation-configuration:
 
-Configuration
--------------
-
-For configuration, please see the :ref:`configuration` page.
+.. Footnote links, etc
 
 .. _site: http://ultros.io
