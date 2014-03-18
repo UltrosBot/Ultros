@@ -22,6 +22,7 @@ channels: # Initial channels to join. The bot will remember what channels it was
           # Remember, channel names must be surrounded in "quotes"
   - name: "#Ultros"
     key:
+    kick_rejoin: no  # Set this to yes to have the bot rejoin automatically when kicked, if the global setting is set to no
 
 control_chars: "." # What messages must be prefixed with to count as a command.
                    # This doesn't have to be just one character!
@@ -30,3 +31,10 @@ control_chars: "." # What messages must be prefixed with to count as a command.
 rate_limiting: # Limit the speed of sending messages
   enabled: yes
   line_delay: 0.1 # Delay (in seconds) between each line being sent
+
+# Set this to yes to automatically rejoin all channels when kicked
+# Set this to no to allow configuration of individual channels
+kick_rejoin: no
+
+# How long to wait before rejoining channels, in seconds
+rejoin_delay: 2

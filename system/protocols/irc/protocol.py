@@ -256,6 +256,24 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         event = irc_events.KickedEvent(self, channel_obj, user_obj, message)
         self.event_manager.run_callback("IRC/SelfKicked", event)
 
+        password = None
+
+        if channel in self.config["channels"]:
+            password = self.config["channels"][channel]["key"]
+
+        if self.config["kick_rejoin"]:
+            self.log.info("Rejoining in %s seconds.." %
+                          self.config["rejoin_delay"])
+            reactor.callLater(self.config["rejoin_delay"], self.join_channel,
+                              channel, password)
+        elif channel in self.config["channels"]:
+            if self.config["channels"][channel].get("kick_rejoin", False):
+                self.log.info("Rejoining in %s seconds.."  %
+                              self.config["rejoin_delay"])
+                reactor.callLater(self.config["rejoin_delay"],
+                                  self.join_channel,
+                                  channel, password)
+
     def nickChanged(self, nick):
         """ Called when our nick is forcibly changed. """
         self.log.info("Nick changed to %s" % nick)
