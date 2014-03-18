@@ -153,7 +153,7 @@ Mac OSX
 
 .. code:: bash
 
-    xcode-select --install
+    sudo xcode-select --install
     brew install python
     cd <path>  # Replace <path> with the directory you downloaded Ultros to
     pip install -r requirements.txt
