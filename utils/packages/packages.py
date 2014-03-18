@@ -38,17 +38,17 @@ class Packages(object):
     package_info_file = "package.yml"
     package_versions_file = "versions.yml"
 
-    def __init__(self):
-        info_url = self.base_file_url + self.info_file
-        response = urllib2.urlopen(info_url)
-        data = response.read()
+    def __init__(self, get=True):
+        if get:
+            info_url = self.base_file_url + self.info_file
+            response = urllib2.urlopen(info_url)
+            data = response.read()
+            self.data = yaml.load(data)
+            self.packages = sorted(self.data.keys())
 
         self.config = YamlData("packages.yml")
         if len(self.config) == 0:
             self.config["installed"] = {}
-
-        self.data = yaml.load(data)
-        self.packages = sorted(self.data.keys())
 
     def _get_file(self, base_path, path):
         if os.path.exists(path):

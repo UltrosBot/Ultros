@@ -92,34 +92,49 @@ def main(args):
         output_help()
         exit(1)
 
-    print ">> Downloading package list.."
-
-    try:
-        packages = Packages()
-    except Exception as e:
-        print ">> Error retrieving packages - %s" % e
-        return exit(1)
-
-    print ">> Found %s package(s)." % len(packages)
-
     operation = operation.lower()
+
+    def get_packages(get=True):
+        if get:
+            print ">> Downloading package list.."
+
+        try:
+            _packages = Packages(get)
+        except Exception as e:
+            print ">> Error retrieving packages - %s" % e
+            return exit(1)
+
+        if get:
+            print ">> Found %s package(s)." % len(_packages)
+
+        return _packages
 
     if operation == "help":
         output_help()
         return exit(0)
+
     elif operation == "list":
+        packages = get_packages()
         _list(args, packages)
 
+    elif operation == "list-installed":
+        packages = get_packages(False)
+        _list_installed(args, packages)
+
     elif operation == "info":
+        packages = get_packages()
         info(args, packages)
 
     elif operation == "install":
+        packages = get_packages()
         install(args, packages)
 
     elif operation == "uninstall":
+        packages = get_packages()
         uninstall(args, packages)
 
     elif operation == "update":
+        packages = get_packages()
         if len(args) > 1 and args[1] == "all":
             if not len(packages.config["installed"].keys()):
                 print ">> No packages are installed. Nothing to do."
@@ -132,6 +147,8 @@ def main(args):
         else:
             uninstall(args, packages)
             install(args, packages)
+    else:
+        print ">> This isn't implemented yet, go bitch at the developers!"
 
 
 def _list(args, packages):
@@ -172,6 +189,19 @@ def _list(args, packages):
                 print "| %s | %s | > %s |" % ("".ljust(15), "".ljust(5),
                                               chunk.ljust(78))
     print "+%s+%s+%s+" % ("-" * 17, "-" * 7, "-" * 82)
+
+
+def _list_installed(args, packages):
+    print ""
+    print "+%s+%s+" % ("-" * 17, "-" * 7)
+    print "| %s | %s |" % ("Name".ljust(15), "Vers.")
+    print "+%s+%s+" % ("-" * 17, "-" * 7)
+    for x in packages.get_installed_packages().keys():
+        version = packages.get_installed_packages()[x]
+
+        print "| %s | %s |" % (x.ljust(15), version.ljust(5))
+
+    print "+%s+%s+" % ("-" * 17, "-" * 7)
 
 
 def install(args, packages):
