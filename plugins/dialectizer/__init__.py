@@ -83,10 +83,10 @@ class Plugin(PluginObject):
             if not source.name in self.data[protocol.name]:
                 self.data[protocol.name][source.name] = "off"
 
-        setting = args[0].lower()
-        if not setting in self.dialectizers:
-            caller.respond("Unknown dialectizer: %s" % setting)
-            return
+            setting = args[0].lower()
+            if not setting in self.dialectizers:
+                caller.respond("Unknown dialectizer: %s" % setting)
+                return
 
-        self.data[protocol.name][source.name] = setting
-        caller.respond("Dialectizer set to '%s'" % setting)
+            self.data[protocol.name][source.name] = setting
+            caller.respond("Dialectizer set to '%s'" % setting)

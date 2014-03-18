@@ -33,18 +33,16 @@ without worrying about patching or moving files around.
     * Where I mention a terminal below, you can use "Git Bash" from your start menu.
 * On Linux, install Git from your package manager.
 
-Next, open a terminal and run the following commands:
+Next, open a terminal and run the following commands::
 
-.. code:: bash
     cd <path>  # Replace <path> with the directory you want to store Ultros in
     git clone https://github.com/UltrosBot/Ultros.git
     cd Ultros
 
 You will now have a full copy of Ultros, just waiting to be set up!
 
-To update Ultros in future, simply do the following:
+To update Ultros in future, simply do the following::
 
-.. code:: bash
     cd <path>/Ultros  # Replace <path> with the directory from above
     git pull --rebase
 
@@ -66,9 +64,7 @@ Windows
     * Download and install PyOpenSSL: https://pypi.python.org/packages/2.7/p/pyOpenSSL/pyOpenSSL-0.13.1.win32-py2.7.exe
     * You'll see some errors in the next step if you don't do this, but Ultros should still work just fine for things that don't need SSL.
 
-Now, open a command prompt, and run the following (replacing **<path>** with the *path to wherever you downloaded Ultros*):
-
-.. code::
+Now, open a command prompt, and run the following (replacing **<path>** with the *path to wherever you downloaded Ultros*)::
 
     cd <path>
     pip install -r requirements.txt
@@ -78,18 +74,14 @@ to run it in a command prompt, so that you'll be able to shut Ultros down proper
 
 You may create a batch script using either of the below methods for starting Ultros.
 
-To start Ultros normally:
-
-.. code::
+To start Ultros normally::
 
     @ECHO off
     echo Starting Ultros..
     python run.py
     PAUSE
 
-To start Ultros in debug mode:
-
-.. code::
+To start Ultros in debug mode::
 
     @ECHO off
     echo Starting Ultros in debug mode..
@@ -117,9 +109,7 @@ if you plan to keep it online for long periods of time. Linux also has a much ea
 * Use pip to install all of the required modules.
 
 If you're on a recent version of Ubuntu or Debian, you should be able to do all of this in a method similar to the following, replacing <path> with the path
-to your copy of Ultros.
-
-.. code:: bash
+to your copy of Ultros. ::
 
     sudo apt-get install python python-dev openssl gcc
     cd <path>
@@ -129,16 +119,12 @@ Naturally, you should replace the call to apt-get above with a call to your dist
 
 Once you've done this, you can start Ultros using one of the following methods.
 
-To start Ultros normally:
-
-.. code:: bash
+To start Ultros normally::
 
     cd <path>
     python run.py
 
-To start Ultros in debug mode:
-
-.. code:: bash
+To start Ultros in debug mode::
 
     cd <path>
     python run.py --debug
@@ -149,27 +135,21 @@ Mac OSX
 -------
 
 * First of all, you should install Homebrew, if you haven't already: http://brew.sh/
-* Open Terminal.app and run the following:
-
-.. code:: bash
+* Open Terminal.app and run the following::
 
     sudo xcode-select --install
     brew install python
     cd <path>  # Replace <path> with the directory you downloaded Ultros to
     pip install -r requirements.txt
 
-That's it, you should be good to go!
+This could take a little while to complete - The first part may require you to update xcode as well.
 
-To start Ultros normally:
-
-.. code:: bash
+To start Ultros normally::
 
     cd <path>
     python run.py
 
-To start Ultros in debug mode:
-
-.. code:: bash
+To start Ultros in debug mode::
 
     cd <path>
     python run.py --debug
