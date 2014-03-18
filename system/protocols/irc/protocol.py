@@ -268,7 +268,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                               channel, password)
         elif channel in self.config["channels"]:
             if self.config["channels"][channel].get("kick_rejoin", False):
-                self.log.info("Rejoining in %s seconds.."  %
+                self.log.info("Rejoining in %s seconds.." %
                               self.config["rejoin_delay"])
                 reactor.callLater(self.config["rejoin_delay"],
                                   self.join_channel,
