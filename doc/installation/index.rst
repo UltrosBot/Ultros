@@ -57,7 +57,7 @@ Please see below for OS-specific installation instructions. For configuration, p
 Windows
 -------
 
-.. highlight:: batch
+.. highlight:: bat
 
 * Download and install Python 2.7.6: https://www.python.org/ftp/python/2.7.6/python-2.7.6.msi
 * Add Python to your PATH: http://www.anthonydebarros.com/2011/10/15/setting-up-python-in-windows-7/
@@ -109,8 +109,7 @@ if you plan to keep it online for long periods of time. Linux also has a much ea
 * Install Python from your package manager.
     * Most package managers will install the latest version of Python 2, but some versions of Linux will install Python 3.
       Remember to check which version it installs!
-* If you need SSL, remember to install the standard OpenSSL package from your package manger, as well as a compiler (such as gcc)
-  and the Python development package.
+* If you need SSL, remember to install the standard OpenSSL package from your package manger, as well as a compiler (such as gcc) and the Python development package.
     * You'll see some errors in the next step if you don't do this, but Ultros should still work just fine for things that don't need SSL.
 * Use pip to install all of the required modules.
 
