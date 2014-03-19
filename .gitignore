@@ -49,7 +49,7 @@ config/**/*.yml
 !config/*.yml.example
 !config/**/*.yml.example
 data/
-doc/_*
+doc/_build
 
 # Other
 *~
