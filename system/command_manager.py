@@ -48,10 +48,15 @@ class CommandManager(object):
         Register a command, provided it hasn't been registered already.
         The params should go like this..
 
-        :param command: A string, the command
-        :param handler: A function to handle the command
+        :param command: The command to register
+        :param handler: The command handler
         :param owner: The plugin registering the command
         :param permission: The permission needed to run the command
+
+        :type command: str
+        :type handler: function
+        :type owner: PluginObject
+        :type permission: str
 
         :returns: Whether the command was registered or not
         :rtype: Boolean
@@ -100,6 +105,12 @@ class CommandManager(object):
         :param source: Where they ran the command
         :param protocol: The protocol they're part of
         :param args: A list of arguments for the command
+
+        :type command: str
+        :type caller: PluginObject
+        :type source: User
+        :type protocol: Protocol
+        :type args: list
 
         :rtype: Tuple of (Boolean, [None, Exception or Boolean))
         """
@@ -168,7 +179,11 @@ class CommandManager(object):
         Add an auth handler, provided it hasn't already been added.
 
         :param handler: The handler to add
+
+        :type handler: object
+
         :returns: Whether the handler was added or not
+
         :rtype: Boolean
         """
         for instance in self.auth_handlers:
@@ -185,7 +200,11 @@ class CommandManager(object):
         Set the permissions handler, provided one hasn't already been set.
 
         :param handler: The handler to set
+
+        :type handler: object
+
         :returns: Whether the handler was set or not
+
         :rtype: Boolean
         """
         if self.perm_handler:
