@@ -21,11 +21,45 @@ The main configuration deals with the plugins and protocols you want to use with
 As mentioned, Ultros supports connecting to multiple protocols, multiple instances of the same protocol, and even multiple
 connections to the same server.
 
-You define the names of your protocols here.
+The exerpts below are taken from the **config/settings.yml.example** file. If you need to redownload that file,
+you can find it here: :download:`settings.yml.example <../../config/settings.yml.example>`
 
+.. Protocols
 .. literalinclude:: ../../config/settings.yml.example
     :language: yaml
     :linenos:
+    :lines: 7-9
+
+In this section, you simply list off the names of your protocols. These names are what you will refer to when you
+modify other configuration files. We recommend a descriptive naming system, such as **<protocol>**-**<network>**.
+Don't forget that you should only use characters here that can be used in filenames!
+
+.. Plugins
+.. literalinclude:: ../../config/settings.yml.example
+    :language: yaml
+    :linenos:
+    :lines: 17-20
+
+In this section, you can list off the names of all of the plugins you want Ultros to load. The names here are specified
+per-plugin, and you can usually find the names of the plugin in their documentation. If you can't, then you can also
+edit the **plugins/<plugin>.plug** files; the name is also stored there.
+
+The plugins that ship with Ultros are as follows:
+
+* Auth
+* Bridge
+* Dialectizer
+* URLs
+
+.. Reconnections
+.. literalinclude:: ../../config/settings.yml.example
+    :language: yaml
+    :linenos:
+    :lines: 22-
+
+In this section, you specify how Ultros should behave when it loses connection or flat-out fails to connect. The options
+are explained in the snippet above. You should note that the reconnection counters are not shared between protocols,
+which means that they will reconnect independantly of each other.
 
 .. Footnote links, etc
 

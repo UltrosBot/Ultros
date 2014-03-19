@@ -1,8 +1,8 @@
 # Ultros is able to use various different types of protocols.
 # These protocols must all be based on Twisted's Protocols.
-# Ultros ships with the "irc" protocol, for connecting via IRC.
+# Ultros ships with the "irc" and "mumble" protocols.
 # Developers may create their own Protocol objects for connecting to other
-# services, such as Mumble.
+# services, such as Steam or Teamspeak.
 
 # Specify the names of the protocols to use for connections here.
 protocols:
@@ -19,7 +19,8 @@ plugins:
   - Bridge  # Configurable message relaying between protocols or within a protocol
   - URLs  # Tools for working with URLs, URL titles and URL shorteners
 
-reconnections: # Settings for reconnecting on connection failures. Reconnection counters are not shared between protocols.
+reconnections: # Settings for reconnecting on connection failures.
+               # Reconnection counters are not shared between protocols.
   delay: 10 # How long to wait between reconnection attempts, in seconds.
   attempts: 5 # How many times to attempt reconnecting
   on-drop: yes # Whether to reconnect if we lose connection
