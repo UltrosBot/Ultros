@@ -1,3 +1,5 @@
+.. highlight:: bash
+
 .. _installation:
 
 Installation
@@ -55,6 +57,8 @@ Please see below for OS-specific installation instructions. For configuration, p
 Windows
 -------
 
+.. highlight:: batch
+
 * Download and install Python 2.7.6: https://www.python.org/ftp/python/2.7.6/python-2.7.6.msi
 * Add Python to your PATH: http://www.anthonydebarros.com/2011/10/15/setting-up-python-in-windows-7/
 * Install pip by downloading and running this script (Just copy it into a file ending in .py and run it): https://raw.github.com/pypa/pip/master/contrib/get-pip.py
@@ -96,6 +100,8 @@ data, then it's not a bug, and we would appreciate if you would use the above me
 
 Linux
 -----
+
+.. highlight:: bash
 
 As the superior operating system for hosting practically anything, we highly recommend you use Linux to host your bot
 if you plan to keep it online for long periods of time. Linux also has a much easier setup, as follows.

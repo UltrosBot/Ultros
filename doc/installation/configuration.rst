@@ -14,6 +14,18 @@ at best, so you should take note of the following guidelines.
 * Everyone makes mistakes, and we're happy to help anyone having issues, but please take the time to check over your
   YAML files before asking us about bugs in the configuration handling. You can always use a linter_ to check your file over.
 
+Main configuration
+------------------
+
+The main configuration deals with the plugins and protocols you want to use with your bot, as well as reconnection settings.
+As mentioned, Ultros supports connecting to multiple protocols, multiple instances of the same protocol, and even multiple
+connections to the same server.
+
+You define the names of your protocols here.
+
+.. literalinclude:: ../../config/settings.yml.example
+    :language: yaml
+    :linenos:
 
 .. Footnote links, etc
 
