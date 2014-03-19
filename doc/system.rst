@@ -11,15 +11,4 @@ protocol handling, event and command managers, and so on.
 
 Modules:
 
-.. toctree::
-   :maxdepth: 2
-
-   system/command_manager
-   system/constants
-   system/decorators
-   system/event_manager
-   system/factory
-   system/factory_manager
-   system/plugin
-   system/plugin_manager
-
+* :ref:`system.command_manager`

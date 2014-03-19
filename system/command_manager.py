@@ -48,12 +48,13 @@ class CommandManager(object):
         Register a command, provided it hasn't been registered already.
         The params should go like this..
 
-        :param command - A string, the command
-        :param handler - A function to handle the command
-        :param owner - The plugin registering the command
-        :param permission (optional) - The permission needed to run the command
+        :param command: A string, the command
+        :param handler: A function to handle the command
+        :param owner: The plugin registering the command
+        :param permission: The permission needed to run the command
 
-        :returns True/False based on whether the command was registered or not
+        :returns: Whether the command was registered or not
+        :rtype: Boolean
         """
         if command in self.commands:
             self.logger.warn("Plugin '%s' tried to register command '%s' but"
@@ -86,16 +87,21 @@ class CommandManager(object):
         """
         Run a command, provided it's been registered.
 
-        :param command - The command, a string
-        :param caller - Who ran the command
-        :param source - Where they ran the command
-        :param protocol - The protocol they're part of
-        :param args - A list of arguments for the command
+        This could return one of the following:
 
-        :return (False, None) if the command isn't registered
-                (False, True) if we couldn't authorize the user for the command
-                (False, Exception) if an error happened while running
-                (True, None) if the command was run successfully
+        * (False, None) if the command isn't registered
+        * (False, True) if the command is registered but the user isn't allowed
+          to run it
+        * (False, Exception) if an error occurred while running the command
+        * (True, None) if the command was run successfully
+
+        :param command: The command, a string
+        :param caller: Who ran the command
+        :param source: Where they ran the command
+        :param protocol: The protocol they're part of
+        :param args: A list of arguments for the command
+
+        :rtype: Tuple of (Boolean, [None, Exception or Boolean))
         """
         if not command in self.commands:
             return False, None
@@ -161,8 +167,9 @@ class CommandManager(object):
         """
         Add an auth handler, provided it hasn't already been added.
 
-        :param handler - An instance of the handler to add
-        :return True/False based on whether the handler was added or not
+        :param handler: The handler to add
+        :returns: Whether the handler was added or not
+        :rtype: Boolean
         """
         for instance in self.auth_handlers:
             if isinstance(instance, handler.__class__):
@@ -177,8 +184,9 @@ class CommandManager(object):
         """
         Set the permissions handler, provided one hasn't already been set.
 
-        :param handler - The instance of the handler to set
-        :return True/False based on whether the handler was added or not
+        :param handler: The handler to set
+        :returns: Whether the handler was set or not
+        :rtype: Boolean
         """
         if self.perm_handler:
             self.logger.warn("Two plugins are trying to provide permissions "
