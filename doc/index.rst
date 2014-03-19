@@ -12,13 +12,14 @@ extensibility and ease-of-use in mind.
 There's not a lot here right now, but keep an eye out, this will be fleshed
 out very soon!
 
-Contents:
-
 .. toctree::
    :maxdepth: 2
 
    installation/index
    installation/configuration
+
+   system
+   utils
 
 Indices and tables
 ==================

@@ -21,7 +21,7 @@ from yapsy.PluginManager import PluginManager
 from yapsy.PluginFileLocator import PluginFileAnalyzerWithInfoFile, \
     PluginFileLocator
 
-from system.decorators import Singleton
+from system.singleton import Singleton
 from utils.log import getLogger
 
 logging = getLogger("Plugins")
@@ -307,7 +307,6 @@ class YamlPluginFileLocator(PluginFileLocator):
         self._default_plugin_info_cls = YamlPluginInfo
 
 
-@Singleton
 class YamlPluginManagerSingleton(PluginManager):
     """
     A subclass of PluginManager that treats plugin info files as YAML-format
@@ -320,6 +319,8 @@ class YamlPluginManagerSingleton(PluginManager):
     for all you people who are sticklers for standards, sorry, but I can't help
     with this much. At least I corrected the docstrings.
     """
+
+    __metaclass__ = Singleton
 
     def __init__(self,
                  categories_filter=None,

@@ -1,17 +1,18 @@
 __author__ = 'Gareth Coles'
 
-from system.decorators import Singleton
 from system.storage.exceptions import OtherOwnershipError, \
     UnknownStorageTypeError
+from system.singleton import Singleton
 
 import system.storage.files as files
 
 
-@Singleton
 class StorageManager(object):
     """
     Centralised data and configuration storage and access.
     """
+
+    __metaclass__ = Singleton
 
     conf_path = ""
     data_path = ""
@@ -24,16 +25,6 @@ class StorageManager(object):
     def __init__(self, conf_path="config/", data_path="data/"):
         self.conf_path = conf_path
         self.data_path = data_path
-
-    @staticmethod
-    def instance(self=None):
-        """
-        This only exists to help developers using decent IDEs.
-        Don't actually use it.
-        """
-        if self is None:
-            self = StorageManager
-        return self
 
     def get_file(self, plugin, storage_type, file_format, path):
         if ".." in path:

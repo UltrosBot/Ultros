@@ -5,19 +5,20 @@ __author__ = "Gareth Coles"
 
 import logging
 
-from system.decorators import Singleton
 from system.plugin import PluginObject
+from system.singleton import Singleton
 from utils.log import getLogger
 from utils.misc import output_exception
 
 
-@Singleton
 class CommandManager(object):
     """
     This is the command manager. It's in charge of tracking commands that
     plugins wish to offer, and providing ways for plugins to offer methods
     of providing authentication and permissions.
     """
+
+    __metaclass__ = Singleton
 
     commands = {}
     auth_handlers = []
@@ -34,16 +35,6 @@ class CommandManager(object):
 
     def __init__(self):
         self.logger = getLogger("Commands")
-
-    @staticmethod
-    def instance(self=None):
-        """
-        This only exists to help developers using decent IDEs.
-        Don't actually use it.
-        """
-        if self is None:
-            self = CommandManager
-        return self
 
     def set_factory_manager(self, factory_manager):
         """

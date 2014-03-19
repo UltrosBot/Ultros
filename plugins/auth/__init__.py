@@ -41,8 +41,8 @@ class AuthPlugin(PluginObject):
             self._disable_self()
             return
 
-        self.commands = CommandManager.instance()
-        self.events = EventManager.instance()
+        self.commands = CommandManager()
+        self.events = EventManager()
 
         if self.config["use-permissions"]:
             try:

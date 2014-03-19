@@ -41,7 +41,7 @@ if __name__ == "__main__":
     manager = None
 
     try:
-        manager = Manager.instance()
+        manager = Manager()
 
     except Exception:
         logger.critical("Runtime error - process cannot continue!")

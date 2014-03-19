@@ -8,16 +8,16 @@ from types import FunctionType
 
 __author__ = "Gareth Coles"
 
-from system.decorators import Singleton, run_async
+from system.decorators import run_async
+from system.singleton import Singleton
 
 
-@Singleton
 class EventManager(object):
     """
     The event manager.
 
     This class is a singleton in charge of managing both events and callbacks.
-    Use EventManager.Instance() or the  manager() function below to grab an
+    Use EventManager() or the  manager() function below to grab an
     instance.
 
     You'll probably want to read the Github documentation to learn how, when
@@ -63,6 +63,8 @@ class EventManager(object):
             Run all handlers for a certain callback with an event.
     """
 
+    __metaclass__ = Singleton
+
     callbacks = {}
     # {"callback_name":
     #   [
@@ -78,16 +80,6 @@ class EventManager(object):
 
     def __init__(self):
         self.logger = getLogger("Events")
-
-    @staticmethod
-    def instance(self=None):
-        """
-        This only exists to help developers using decent IDEs.
-        Don't actually use it.
-        """
-        if self is None:
-            self = EventManager
-        return self
 
     def _sort(self, lst):
         return sorted(lst, key=itemgetter("priority", "name"), reverse=True)
@@ -219,4 +211,4 @@ def manager():
     """
     Get yourself an instance of the event manager.
     """
-    return EventManager.Instance()
+    return EventManager()

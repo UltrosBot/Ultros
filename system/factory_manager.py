@@ -9,16 +9,15 @@ from twisted.internet import reactor
 
 from system.command_manager import CommandManager
 from system.constants import *
-from system.decorators import Singleton
 from system.event_manager import EventManager
 from system.factory import Factory
 from system.plugin_manager import YamlPluginManagerSingleton
+from system.singleton import Singleton
 from utils.config import Config, YamlConfig
 from utils.log import getLogger
 from utils.misc import output_exception
 
 
-@Singleton
 class Manager(object):
     """
     Manager for keeping track of multiple factories - one per protocol.
@@ -28,6 +27,8 @@ class Manager(object):
 
     It is currently not planned to have multiple instances of a single factory.
     """
+
+    __metaclass__ = Singleton
 
     factories = {}
     configs = {}
@@ -43,12 +44,12 @@ class Manager(object):
         self.logger = getLogger("Manager")
         self.main_config = YamlConfig("settings.yml")
 
-        self.commands = CommandManager.instance()
+        self.commands = CommandManager()
         self.commands.set_factory_manager(self)
 
-        self.event_manager = EventManager.instance()
+        self.event_manager = EventManager()
 
-        self.plugman = YamlPluginManagerSingleton.instance()
+        self.plugman = YamlPluginManagerSingleton()
         self.plugman.setPluginPlaces(["plugins"])
         self.plugman.setPluginInfoExtension("plug")
 
@@ -63,16 +64,6 @@ class Manager(object):
             return
 
         reactor.run()
-
-    @staticmethod
-    def instance(self=None):
-        """
-        This only exists to help developers using decent IDEs.
-        Don't actually use it.
-        """
-        if self is None:
-            self = Manager
-        return self
 
     # Load stuff
 

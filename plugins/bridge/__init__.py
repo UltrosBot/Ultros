@@ -42,8 +42,8 @@ class BridgePlugin(PluginObject):
             self._disable_self()
             return
 
-        self.commands = CommandManager.instance()
-        self.events = EventManager.instance()
+        self.commands = CommandManager()
+        self.events = EventManager()
 
         self.rules = self.config["rules"]
 

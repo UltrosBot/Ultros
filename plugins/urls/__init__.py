@@ -56,8 +56,8 @@ class Plugin(PluginObject):
 
         self.channels = YamlData("plugins/urls/channels.yml")
         self.shortened = SqliteData("plugins/urls/shortened.sqlite")
-        self.commands = CommandManager.instance()
-        self.events = EventManager.instance()
+        self.commands = CommandManager()
+        self.events = EventManager()
 
         with self.shortened as c:
             c.execute("CREATE TABLE IF NOT EXISTS urls (url TEXT, \

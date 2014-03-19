@@ -32,8 +32,8 @@ class Plugin(PluginObject):
                     "upper": Upper()}
 
     def setup(self):
-        self.commands = CommandManager.instance()
-        self.events = EventManager.instance()
+        self.commands = CommandManager()
+        self.events = EventManager()
 
         self.data = YamlData("plugins/dialectizer/settings.yml")
 

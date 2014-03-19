@@ -103,8 +103,8 @@ class Protocol(ChannelsProtocol):
         self.log = getLogger(self.name)
         self.log.info("Setting up..")
 
-        self.command_manager = CommandManager.instance()
-        self.event_manager = EventManager.instance()
+        self.command_manager = CommandManager()
+        self.event_manager = EventManager()
 
         self.username = config["identity"]["username"]
         self.password = config["identity"]["password"]

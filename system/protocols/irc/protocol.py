@@ -89,8 +89,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                           "SSL will not be available.")
             output_exception(self.log, logging.WARN)
 
-        self.event_manager = EventManager.instance()
-        self.command_manager = CommandManager.instance()
+        self.event_manager = EventManager()
+        self.command_manager = CommandManager()
         self.utils = IRCUtils(self.log)
         # Three dicts for easier lookup
         self.ranks = Ranks()
