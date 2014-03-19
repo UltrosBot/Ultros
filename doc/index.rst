@@ -13,7 +13,7 @@ There's not a lot here right now, but keep an eye out, this will be fleshed
 out very soon!
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    installation/index
    installation/configuration
