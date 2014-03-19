@@ -365,7 +365,7 @@ class Protocol(ChannelsProtocol):
     def ping_handler(self):
         if not self.pinging:
             return
-        self.log.debug("Sending ping")
+        # self.log.debug("Sending ping")
 
         # Ping has only optional data, no required
         ping = Mumble_pb2.Ping()
