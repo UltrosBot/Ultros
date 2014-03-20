@@ -73,7 +73,8 @@ class EventManager(object):
     #       "priority": priority,
     #       "function": function,
     #       "cancelled": cancelled,
-    #       "filter": function() / None
+    #       "filter": function() / None,
+    #       "extra": []
     #     }
     #   ],
     # }
@@ -85,7 +86,9 @@ class EventManager(object):
         return sorted(lst, key=itemgetter("priority", "name"), reverse=True)
 
     def add_callback(self, callback, plugin, function, priority, fltr=None,
-                     cancelled=False):
+                     cancelled=False, extra_args=None):
+        if extra_args is None:
+            extra_args = []
         if not self.has_callback(callback):
             self.callbacks[callback] = []
         if self.has_plugin_callback(callback, plugin.info.name):
@@ -99,7 +102,8 @@ class EventManager(object):
                 "function": function,
                 "priority": priority,
                 "cancelled": cancelled,
-                "filter": fltr}
+                "filter": fltr,
+                "extra": extra_args}
 
         self.logger.debug("Adding callback: %s" % data)
 
@@ -171,11 +175,11 @@ class EventManager(object):
                     @run_async
                     def go():
                         """ Run the callback asynchronously """
-                        cb["function"](event)
+                        cb["function"](event, *cb["extra"])
                 else:
                     def go():
                         """ Run the callback synchronously """
-                        cb["function"](event)
+                        cb["function"](event, *cb["extra"])
                 try:
                     self.logger.debug("Running callback: %s" % cb)
                     if cb["filter"]:
