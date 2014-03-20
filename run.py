@@ -18,6 +18,27 @@ import os
 import sys
 from kitchen.text.converters import getwriter
 
+if "--update" in sys.argv:
+    try:
+        print "Attempting to update.."
+
+        import pip
+
+        try:
+            from git import Git
+        except ImportError:
+            pip.main(["install", "gitpython==0.1.7 gitdb async"])
+            from git import Git
+
+        g = Git(".")
+        g.pull()
+        pip.main(["install", "-r", "requirements.txt"])
+        print "Done!"
+    except Exception as e:
+        print "Error updating: %s" % e
+
+    exit(0)
+
 if __name__ == "__main__":
     if os.path.dirname(sys.argv[0]):
         os.chdir(os.path.dirname(sys.argv[0]))
