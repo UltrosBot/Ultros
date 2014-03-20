@@ -27,7 +27,7 @@ if "--update" in sys.argv:
         try:
             from git import Git
         except ImportError:
-            pip.main(["install", "gitpython==0.1.7 gitdb async"])
+            pip.main(["install", "gitpython==0.1.7", "gitdb", "async"])
             from git import Git
 
         g = Git(".")
