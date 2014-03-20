@@ -18,48 +18,65 @@ class Protocol(protocol.Protocol):
     If you need to inherit another base class (for example irc.IRCClient),
     then use multiple inheritance, with the other base class first.
 
-    For example:
+    For example::
+
         class Protocol(irc.IRCClient, generic.protocol.Protocol):
             pass
 
     These are the functions and variables provided by this class that you
     do NOT have to override:
-        - factory: The factory for the protocol
-        - config: Configuration handler
-        - log: Logger
-        - event_manager: The event manager
-        - command_manager: The command manager
+    * factory: The factory for the protocol
+    * config: Configuration handler
+    * log: Logger
+    * event_manager: The event manager
+    * command_manager: The command manager
+    * CHANNELS: Don't override this, use one of the relevant subclasses instead
 
     These ones you should override, but are optional:
-        - get_channel(self, channel):
-              Only for protocols that handle channels, this is for retrieving
-              a channel object. Don't worry about this if you don't use
-              channels in your protocol, but always implement it if you do.
+    * get_channel(self, channel):
+        * Only for protocols that handle channels, this is for retrieving
+          a channel object. Don't worry about this if you don't use
+          channels in your protocol, but always implement it if you do.
 
     And these you'll absolutely have to override for your protocol to work
     as expected:
-        - __version__: The version string
-        - name: A string. This is the name of your protocol.
-        - nickname: The bot's username or nickname
-        - ourselves: A User object describing the bot
-
-        - __init__(self, factory, config)::
-              This is where all the setup for your protocol is done, and you
+    * Variables
+        * __version__: The version string
+        * name: A string. This is the name of your protocol.
+        * nickname: The bot's username or nickname
+        * ourselves: A User object describing the bot
+    * Functions
+        * __init__(self, factory, config):
+            * This is where all the setup for your protocol is done, and you
               should also connect it to a service when you do this. Remember
               to set your factory, config, log, event_manager and
               command_manager objects here too.
-        - shutdown(self):
-              This is called when the protocol needs to be disconnected. You
+            * If you're building a protocol, make sure that it doesn't
+              actually connect until reactor.run() is called; you can use
+              a call to reactor.callLater(0, startup_function) to do this.
+        * shutdown(self):
+            * This is called when the protocol needs to be disconnected. You
               should disconnect cleanly and do any cleanup you need to do here.
-        - get_user(self, user):
-              This is for retrieving a user object. This should always be
+        * get_user(self, user):
+            * This is for retrieving a user object. This should always be
               implemented, in every protocol, but it's okay to return None
               if you couldn't find a user object.
+        * send_msg(self, target, message, target_type, use_event):
+            * This is a generic abstraction for sending a message. You should
+              always implement this. target_type and use_event default to
+              None and True respectively and these options should always be
+              honored as appropriate.
+        * send_action(self, target, message, target_type, use_event):
+            * This is a generic abstraction for sending an action (/me on some
+              networks). It works much the same as send_msg but should be
+              treated with different formatting (For example, on IRC,
+              we would send a CTCP ACTION to the target).
     """
 
     __version__ = ""
 
     TYPE = "generic"
+    CHANNELS = False
 
     factory = None
     config = None
@@ -129,7 +146,7 @@ class ChannelsProtocol(Protocol):
     You'll need to override everything in here as well.
     """
 
-    TYPE = "channels"
+    CHANNELS = True
 
     @property
     def num_channels(self):

@@ -25,6 +25,7 @@ if __name__ == "__main__":
     from utils.log import getLogger, open_log, close_log
     from utils.misc import output_exception
     from system.factory_manager import Manager
+    from system import constants
 
     sys.stdout = getwriter('utf-8')(sys.stdout)
     sys.stderr = getwriter('utf-8')(sys.stderr)
@@ -36,7 +37,7 @@ if __name__ == "__main__":
 
     logger = getLogger("System")
 
-    logger.info("Starting up..")
+    logger.info("Starting up, version \"%s\"" % constants.__version__)
 
     manager = None
 

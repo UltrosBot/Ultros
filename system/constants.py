@@ -1,4 +1,16 @@
 __author__ = 'Gareth Coles'
+__version__ = "1.0.0"
+
+try:
+    from git import repo
+    r = repo.Repo(".")
+    heads = r.heads
+    master = heads[0]
+    commit = master.commit
+
+    __version__ = "Git: %s" % commit.id
+except:
+    pass
 
 # Constants related to (un)loading plugins
 
