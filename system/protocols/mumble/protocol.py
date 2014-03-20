@@ -553,7 +553,7 @@ class Protocol(ChannelsProtocol):
 
                 event = mumble_events.UserPrioritySpeakerToggle(self, user,
                                                                 state, actor)
-                self.event_manager.run_callback("Mumble/UserPrioritySpeaker"
+                self.event_manager.run_callback("Mumble/UserPrioritySpeaker" +
                                                 "Toggle", event)
             if message.HasField('recording'):
                 if message.recording:
@@ -564,6 +564,8 @@ class Protocol(ChannelsProtocol):
 
                 event = mumble_events.UserRecordingToggle(self, user,
                                                           user.recording)
+                self.event_manager.run_callback("Mumble/UserRecordingToggle",
+                                                event)
 
     def handle_command(self, source, target, message):
         """
