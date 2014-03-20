@@ -164,8 +164,18 @@ class Ping(MumbleEvent):
 class UserRemove(MumbleEvent):
     """
     User removal message
+
+    It looks like this is fired under three conditions..
+    * When a user disconnects or loses connection
+        * kicker will be None in that case
+    * When a user is kicked
+        * kicker will be set and ban will be False
+    * When a user is banned
+        * kicker will be set and ban will be True
+
+    This still requires some more research, the Mumble docs are godawful.
     """
-    # TODO: Update this docstring when we know what this is for
+    # TODO: Update this docstring when we're more sure of it
 
     session = ""  # Session ID
     actor = ""  # Session ID
@@ -216,7 +226,9 @@ class UserJoined(MumbleEvent):
 
 class UserMoved(MumbleEvent):
     """
-    User moved - Sent when a user moves channel, or is moved
+    User moved - Sent when a user moves channel, or is moved.
+
+    This is also fired when a user connects.
     """
 
     user = None
