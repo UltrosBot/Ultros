@@ -74,7 +74,8 @@ class EventManager(object):
     #       "function": function,
     #       "cancelled": cancelled,
     #       "filter": function() / None,
-    #       "extra": []
+    #       "extra_args": [],
+    #       "extra_kwargs": {}
     #     }
     #   ],
     # }
@@ -86,9 +87,11 @@ class EventManager(object):
         return sorted(lst, key=itemgetter("priority", "name"), reverse=True)
 
     def add_callback(self, callback, plugin, function, priority, fltr=None,
-                     cancelled=False, extra_args=None):
+                     cancelled=False, extra_args=None, extra_kwargs=None):
         if extra_args is None:
             extra_args = []
+        if extra_kwargs is None:
+            extra_kwargs = {}
         if not self.has_callback(callback):
             self.callbacks[callback] = []
         if self.has_plugin_callback(callback, plugin.info.name):
@@ -103,7 +106,8 @@ class EventManager(object):
                 "priority": priority,
                 "cancelled": cancelled,
                 "filter": fltr,
-                "extra": extra_args}
+                "extra_args": extra_args,
+                "extra_kwargs": extra_kwargs}
 
         self.logger.debug("Adding callback: %s" % data)
 
@@ -175,11 +179,13 @@ class EventManager(object):
                     @run_async
                     def go():
                         """ Run the callback asynchronously """
-                        cb["function"](event, *cb["extra"])
+                        cb["function"](event, *cb["extra_args"],
+                                       **cb["extra_kwargs"])
                 else:
                     def go():
                         """ Run the callback synchronously """
-                        cb["function"](event, *cb["extra"])
+                        cb["function"](event, *cb["extra_args"],
+                                       **cb["extra_kwargs"])
                 try:
                     self.logger.debug("Running callback: %s" % cb)
                     if cb["filter"]:
