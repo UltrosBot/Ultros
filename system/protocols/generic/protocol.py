@@ -88,6 +88,11 @@ class Protocol(protocol.Protocol):
     ourselves = None
 
     def __init__(self, name, factory, config):
+        # You don't necessarily need to call the super-class here,
+        #   however we do recommend at least copy-pasting the below code
+        #   into your __init__.
+        # Twisted uses old-style classes, so super() won't work if you intend
+        #   on using it!
         self.name = name
         self.factory = factory
         self.config = config

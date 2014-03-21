@@ -73,6 +73,15 @@ class StorageFile(object):
     def is_owner(self, candidate):
         return isinstance(candidate, self._owner.__class__)
 
+    def release(self, caller):
+        if isinstance(caller, self.manager_class):
+            del self.obj
+            self.obj = None
+            self._owner = None
+            self._ready = False
+        else:
+            raise TypeError("Only the storage manager can release files.")
+
 
 class DataFile(StorageFile):
     formats = Formats.DATA
