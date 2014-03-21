@@ -1,16 +1,14 @@
-![Ultros hugging Ultros, as (badly) interpreted by rakiru](https://dl.dropboxusercontent.com/u/7298729/drawings/ultros.png)
+![Ultros hugging Ultros, as interpreted by rakiru](https://dl.dropboxusercontent.com/u/7298729/drawings/ultros.png)
 
 ### The only squid that connects communities
 
 -------------------
 
-[![Build Status](https://travis-ci.org/UltrosBot/Ultros.png?branch=master)](https://travis-ci.org/UltrosBot/Ultros)
-
 <sub>(I've seen enough hentai...)</sub>
 
 Ultros is an IRC/Mumble/Teamspeak/etc bot, extensible to pretty much any protocol, with a full-featured plugin system.
 
-Current build status: [![Current build status image](http://bamboo.gserv.me/plugins/servlet/buildStatusImage/ULTROS-ULTROS)](http://bamboo.gserv.me/browse/ULTROS-ULTROS) (Click for more info)
+Current build status: [![Build Status](https://travis-ci.org/UltrosBot/Ultros.png?branch=master)](https://travis-ci.org/UltrosBot/Ultros) (Click for more info)
 
 -------------------
 
@@ -18,8 +16,4 @@ IRC: [irc://irc.esper.net/#Ultros](irc://irc.esper.net/#Ultros) ([webchat](https
 
 Site (Currently under development): [ultros.io](http://ultros.io)
 
-Documentation: [Wiki](https://github.com/UltrosBot/Ultros/wiki)
-
-Bamboo: [bamboo.gserv.me](http://bamboo.gserv.me/browse/ULTROS)
-
-Crucible: [crucible.gserv.me](http://crucible.gserv.me/project/ULTROS)
+Documentation: [Wiki](https://github.com/UltrosBot/Ultros/wiki) [ReadTheDocs](http://docs.ultros.io)
