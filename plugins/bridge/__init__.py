@@ -6,10 +6,10 @@ from threading import Lock
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
 from system.events.general import MessageReceived, MessageSent, PreCommand, \
-    UserDisconnected
+    UserDisconnected, ActionSent
 
 from system.events.irc import UserJoinedEvent, UserKickedEvent, \
-    UserPartedEvent, UserQuitEvent
+    UserPartedEvent, UserQuitEvent, CTCPQueryEvent
 from system.events.mumble import UserJoined, UserMoved, UserRemove
 from system.plugin import PluginObject
 from system.protocols.generic.channel import Channel
@@ -58,6 +58,9 @@ class BridgePlugin(PluginObject):
         self.events.add_callback("PreCommand", self, self.handle_command,
                                  1000)
 
+        self.events.add_callback("ActionSent", self, self.handle_action_sent,
+                                 0)
+
         self.events.add_callback("UserDisconnected", self,
                                  self.handle_disconnect, 1000)
 
@@ -74,6 +77,9 @@ class BridgePlugin(PluginObject):
 
         self.events.add_callback("IRC/UserQuit", self,
                                  self.handle_irc_quit, 1000)
+
+        self.events.add_callback("IRC/CTCPQueryReceived", self,
+                                 self.handle_irc_action, 1000)
 
         # Mumble
 
@@ -107,6 +113,11 @@ class BridgePlugin(PluginObject):
                       f_str=["irc", "disconnect"],
                       tokens={"USER": event.user.nickname})
 
+    def handle_irc_action(self, event=CTCPQueryEvent):
+        if event.action == "ACTION":
+            self.do_rules(event.data, event.caller, event.caller.ourselves,
+                          event.channel, f_str=["general", "action"])
+
     def handle_disconnect(self, event=UserDisconnected):
         self.do_rules("", event.caller, event.user, event.user,
                       f_str=["general", "disconnect"],
@@ -138,6 +149,10 @@ class BridgePlugin(PluginObject):
     def handle_msg_sent(self, event=MessageSent):
         self.do_rules(event.message, event.caller, event.caller.ourselves,
                       event.target)
+
+    def handle_action_sent(self, event=ActionSent):
+        self.do_rules(event.message, event.caller, event.caller.ourselves,
+                      event.target, f_str=["general", "action"])
 
     def handle_command(self, event=PreCommand):
         if event.printable:

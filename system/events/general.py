@@ -237,3 +237,34 @@ class PreCommand(GeneralEvent):
                "%s | printable: %s>" % (self.__class__.__name__, hex(id(self)),
                                         self.command, self.args, self.source,
                                         self.target, self.printable)
+
+
+class ActionSent(GeneralEvent):
+    """
+    Thrown when we send a action - plugins are free to catch this and even
+    modify the action before it actually gets sent out. The params available
+    are as follows..
+
+    caller     - As usual, the protocol that threw the event
+    type       - String describing what type of message this is
+    target     - Where the message is going; a string
+    message    - The actual action
+    printable - A boolean specifying whether we should print the message...
+                 ... or not?
+    """
+
+    target = ""
+    message = ""
+    printable = ""
+
+    def __init__(self, caller, target, message, printable=True):
+        self.target = target
+        self.message = message
+        self.printable = printable
+        super(ActionSent, self).__init__(caller)
+
+    def __str__(self):
+        return "<%s at %s | target: %s | message: %s | " \
+               "printable: %s>" % (self.__class__.__name__, hex(id(self)),
+                                   str(self.target),
+                                   repr(self.message), self.printable)

@@ -401,26 +401,34 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
     def ctcpQuery(self, user, channel, messages):
         """ Called when someone does a CTCP query - channel or private.
         Needs some param analysis."""
-        # Call super() to handle specific commands appropriately
-        # TODO: Make this call last, in case a plugin wants to cancel it?
-        irc.IRCClient.ctcpQuery(self, user, channel, messages)
-        self.log.info("[%s] %s" % (user, messages))
-        user_obj = None
+
+        message = messages[0]
+        action, data = message[0].upper(), message[1]
+
+        if action == "ACTION":
+            self.log.info("* %s:%s %s" % (user, channel, data))
+        else:
+            self.log.info("[%s] %s" % (user, messages))
+
         try:
             user_obj = self._get_user_from_user_string(user)
         except:
             # CTCP from the server itself and things (if that happens)
             self.log.debug("CTCP from irregular user: %s" % user)
             user_obj = User(self, nickname=user, is_tracked=False)
-        channel_obj = None
+
         if self.utils.compare_nicknames(channel, self.nickname):
             channel_obj = user_obj
         else:
             channel_obj = self.get_channel(channel)
 
         event = irc_events.CTCPQueryEvent(self, user_obj, channel_obj,
-                                          messages)
+                                          action, data)
         self.event_manager.run_callback("IRC/CTCPQueryReceived", event)
+
+        if not event.cancelled:
+            # Call super() to handle specific commands appropriately
+            irc.IRCClient.ctcpQuery(self, user, channel, messages)
 
     # endregion
 
@@ -1023,8 +1031,13 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                     target = User(self, target)
 
         if isinstance(target, Channel) or isinstance(target, User):
-            self.send_ctcp(target, "ACTION", message)
-            return True
+            event = general_events.ActionSent(self, target, message)
+            self.event_manager.run_callback("ActionSent", event)
+
+            if not event.cancelled:
+                self.send_ctcp(target, "ACTION", message)
+                return True
+            return False
         return False
 
     def kick(self, user, channel=None, reason=None):

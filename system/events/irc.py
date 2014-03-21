@@ -118,12 +118,14 @@ class CTCPQueryEvent(IRCEvent):
 
     user = None
     channel = None
-    messages = []
+    action = ""
+    data = ""
 
-    def __init__(self, caller, user, channel, messages):
+    def __init__(self, caller, user, channel, action, data):
         self.user = user
         self.channel = channel
-        self.messages = messages
+        self.action = action
+        self.data = data
         super(CTCPQueryEvent, self).__init__(caller)
 
 

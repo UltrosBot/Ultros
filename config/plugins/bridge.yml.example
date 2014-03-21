@@ -20,6 +20,7 @@ rules:
         part: "* {USER} left {CHANNEL}" # Extra tokens: {CHANNEL}
         kick: "* {USER} was kicked from {CHANNEL} by {KICKER} ({MESSAGE})" # Extra tokens: {CHANNEL}, {KICKER}
         disconnect: "* {USER} disconnected"  # Don't use this if relaying from IRC, use the IRC one instead
+        action: "* {USER} {MESSAGE}"
       irc:
         disconnect: "* {USER} disconnected ({MESSAGE})" # IRC provides a quit message
       mumble:
@@ -44,6 +45,7 @@ rules:
         part: "* {USER} left {CHANNEL}" # Extra tokens: {CHANNEL}
         kick: "* {USER} was kicked from {CHANNEL} by {KICKER} ({MESSAGE})" # Extra tokens: {CHANNEL}, {KICKER}
         disconnect: "* {USER} disconnected"  # Don't use this if relaying from IRC, use the IRC one instead
+        action: "* {USER} {MESSAGE}"
       irc:
         disconnect: "* {USER} disconnected ({MESSAGE})" # IRC provides a quit message
       mumble:

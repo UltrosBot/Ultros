@@ -704,10 +704,12 @@ class Protocol(ChannelsProtocol):
                     return False
         # TODO: Add italics once formatter is added
         message = u"*%s*" % (message)
-        if isinstance(target, User):
+        event = general_events.ActionSent(self, target, message)
+        self.event_manager.run_callback("ActionSent", event)
+        if isinstance(target, User) and not event.cancelled:
             self.msg_user(message, target, use_event)
             return True
-        elif isinstance(target, Channel):
+        elif isinstance(target, Channel) and not event.cancelled:
             self.msg_channel(message, target, use_event)
             return True
         return False
