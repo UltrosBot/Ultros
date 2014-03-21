@@ -16,4 +16,4 @@ IRC: [irc://irc.esper.net/#Ultros](irc://irc.esper.net/#Ultros) ([webchat](https
 
 Site (Currently under development): [ultros.io](http://ultros.io)
 
-Documentation: [Wiki](https://github.com/UltrosBot/Ultros/wiki) [ReadTheDocs (beta)](http://docs.ultros.io)
+Documentation: [Wiki](https://github.com/UltrosBot/Ultros/wiki) | [ReadTheDocs (beta)](http://docs.ultros.io)
