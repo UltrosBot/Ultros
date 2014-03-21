@@ -357,7 +357,7 @@ class Plugin(PluginObject):
 
             page = response.read()
             soup = BeautifulSoup(page)
-            if soup.title.string:
+            if soup.title and soup.title.string:
                 title = soup.title.string.strip()
                 title = re.sub("\s+", " ", title)
                 title = to_unicode(title)
