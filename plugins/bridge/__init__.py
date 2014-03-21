@@ -115,7 +115,7 @@ class BridgePlugin(PluginObject):
 
     def handle_irc_action(self, event=CTCPQueryEvent):
         if event.action == "ACTION":
-            self.do_rules(event.data, event.caller, event.caller.ourselves,
+            self.do_rules(event.data, event.caller, event.user,
                           event.channel, f_str=["general", "action"])
 
     def handle_disconnect(self, event=UserDisconnected):
