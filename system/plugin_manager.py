@@ -6,7 +6,7 @@ thank the developer of Yapsy for messing up their code so horribly that
 one has to jump though a ridiculous number of hoops just to change how
 plugin info files are loaded.
 
-Also, for using tabs. Fuck, I hate tabs.
+Also, for using tabs. Fuck, I hate tabs. Hasn't anyone heard of the PEP?
 """
 
 from distutils.version import StrictVersion

@@ -17,68 +17,51 @@ class EventManager(object):
     The event manager.
 
     This class is a singleton in charge of managing both events and callbacks.
-    Use EventManager() or the  manager() function below to grab an
-    instance.
 
-    You'll probably want to read the Github documentation to learn how, when
-    and why you would use this.
+    Usage goes something like this..
+
+    * For registering an event handler::
+
+        class Plugin:
+            def __init__(self):
+                self.events = EventManager()
+                self.events.add_callback("CallbackName", self, self.callback,
+                                         0, False, [], {})
+
+            def callback(self, event):
+                pass
+
+    * For firing events::
+
+        events = EventManager()
+        e = SomeEvent()
+
+        events.run_callback("Some", e)
+
 
     Remember, priority is handled from highest to lowest, in that order.
     Try not to pick a priority that's the same as another plugin - If you do,
     order will fall back to alphabetical plugin name ordering.
-
-    Public methods:
-        add_callback(callback, plugin, function, priority, cancelled=False):
-            Add a callback. Call this from your plugin to handle events.
-            Note: A plugin may not have more than one handler for a callback.
-            You should register a function to call your handlers in order
-            inside your plugin if you need this.
-            A handler handler. Handlerception!
-            - callback:  The name of the callback
-            - plugin:    Your plugin object's instance (or self)
-            - function:  The callback function
-            - priority:  An integer representing where in the order of
-                         callbacks the function should be called
-            - cancelled: Defaults to False; whether to pass cancelled events
-                         in or not
-        get_callback(callback, plugin):
-            Get a handler dict for a specific callback, in a specific plugin.
-            Note: `plugin` is the name of a plugin, not a plugin object.
-        get_callbacks(callback):
-            Get all handlers (in a list) for a specific callback.
-        has_callback(callback):
-            Check if a callback exists.
-        has_plugin_callback(callback, plugin):
-            Check if a plugin registered a handler for a certain callback.
-            Note: `plugin` is the name of a plugin, not a plugin object.
-        remove_callback(callback, plugin):
-            Remove a callback from a plugin.
-            Note: `plugin` is the name of a plugin, not a plugin object.
-        remove_callbacks(callback):
-            Remove a certain callback.
-        remove_callbacks_for_plugin(plugin):
-            Remove all handlers for a certain plugin.
-            Note: `plugin` is the name of a plugin, not a plugin object.
-        run_callback(callback, event):
-            Run all handlers for a certain callback with an event.
     """
 
     __metaclass__ = Singleton
 
+    #: Storage for all of the callbacks. The internal storage works like this::
+    #:
+    #:     callbacks = {
+    #:         "callback_name": [
+    #:             {
+    #:                 "name": str(),
+    #:                 "priority": int(),
+    #:                 "function": func(),
+    #:                 "cancelled:" bool(),
+    #:                 "filter": func() or None,  # For event filtering
+    #:                 "extra_args": [],  # Extra args to pass
+    #:                 "extra_kwargs": {}  # Extra kwargs to pass
+    #:             }
+    #:         ]
+    #:     }
     callbacks = {}
-    # {"callback_name":
-    #   [
-    #     {
-    #       "name": name,
-    #       "priority": priority,
-    #       "function": function,
-    #       "cancelled": cancelled,
-    #       "filter": function() / None,
-    #       "extra_args": [],
-    #       "extra_kwargs": {}
-    #     }
-    #   ],
-    # }
 
     def __init__(self):
         self.logger = getLogger("Events")
@@ -88,6 +71,34 @@ class EventManager(object):
 
     def add_callback(self, callback, plugin, function, priority, fltr=None,
                      cancelled=False, extra_args=None, extra_kwargs=None):
+        """
+        Add a callback. Call this from your plugin to handle events.
+
+        Note: A plugin may not have more than one handler for a callback.
+        You should register a function to call your handlers in order
+        inside your plugin if you need this. A handler handler. Handlerception!
+
+        :param callback: The name of the callback
+        :param plugin: Your plugin object's instance (aka self)
+        :param function: The callback function
+        :param priority: An integer representing where in the order of
+                         callbacks the function should be called
+        :param fltr: A function that takes one argument (an event) and returns
+                     either True or False, which represents whether to handle
+                     the event or not. This is optional.
+        :param cancelled: Whether to handle cancelled events or not
+        :param extra_args: Extra arguments to pass to the handler.
+        :param extra_kwargs: Extra keyword arguments to pass to the handler.
+
+        :type callback: str
+        :type plugin: Plugin
+        :type function: function
+        :type priority: int
+        :type fltr: function
+        :type cancelled: bool
+        :type extra_args: list
+        :type extra_kwargs: dict
+        """
         if extra_args is None:
             extra_args = []
         if extra_kwargs is None:
@@ -116,6 +127,17 @@ class EventManager(object):
         self.callbacks[callback] = self._sort(current)
 
     def get_callback(self, callback, plugin):
+        """
+        Get a handler dict for a specific callback, in a specific plugin.
+
+        :param callback: Name of the callback
+        :param plugin: Name of the plugin
+
+        :type plugin: str
+        :type callback: str
+
+        :return: The callback handler if it exists, otherwise None
+        """
         if self.has_callback(callback):
             callbacks = self.get_callbacks(callback)
             for cb in callbacks:
@@ -125,14 +147,43 @@ class EventManager(object):
         return None
 
     def get_callbacks(self, callback):
+        """
+        Get all handlers (in a list) for a specific callback.
+
+        :param callback: Name of the callback
+        :type callback: str
+
+        :return: The list of callback handlers if it exists, otherwise None
+        """
         if self.has_callback(callback):
             return self.callbacks[callback]
         return None
 
     def has_callback(self, callback):
+        """
+        Check if a callback exists.
+
+        :param callback: Name of the callback
+        :type callback: str
+
+        :return: Whether the callback exists
+        :rtype: bool
+        """
         return callback in self.callbacks
 
     def has_plugin_callback(self, callback, plugin):
+        """
+        Check if a plugin registered a handler for a certain callback.
+
+        :param callback: Name of the callback
+        :param plugin: Name of the plugin
+
+        :type plugin: str
+        :type callback: str
+
+        :return: Whether the callback exists and is registered to that plugin
+        :rtype: bool
+        """
         if self.has_callback(callback):
             callbacks = self.get_callbacks(callback)
             for cb in callbacks:
@@ -142,6 +193,14 @@ class EventManager(object):
         return False
 
     def remove_callback(self, callback, plugin):
+        """
+        Remove a callback from a plugin.
+
+        :param callback: Name of the callback
+        :param plugin: Name of the plugin
+        :type plugin: str
+        :type callback: str
+        """
         if self.has_plugin_callback(callback, plugin):
             callbacks = self.get_callbacks(callback)
             done = []
@@ -154,10 +213,22 @@ class EventManager(object):
                 del self.callbacks[callback]
 
     def remove_callbacks(self, callback):
+        """
+        Remove a certain callback.
+
+        :param callback: Name of the callback
+        :type callback: str
+        """
         if self.has_callback(callback):
             del self.callbacks[callback]
 
     def remove_callbacks_for_plugin(self, plugin):
+        """
+        Remove all handlers for a certain plugin.
+
+        :param plugin: Name of the plugin
+        :type plugin: str
+        """
         current = self.callbacks.items()
         for key, value in current:
             done = []
@@ -170,6 +241,17 @@ class EventManager(object):
                 del self.callbacks[key]
 
     def run_callback(self, callback, event, threaded=False):
+        """
+        Run all handlers for a certain callback with an event.
+
+        :param callback: The callback to run
+        :param event: An instance of the event to pass through the handlers
+        :param threaded: Whether to run each callback in its own thread
+
+        :type callback: str
+        :type event: object
+        :type threaded: bool
+        """
         if self.has_callback(callback):
 
             self.logger.debug("Event: %s" % event)
@@ -195,7 +277,7 @@ class EventManager(object):
                                                   "function returned false.")
                                 continue
                         else:
-                            self.logger.warn("Not running, filter variable "
+                            self.logger.warn("Not running event, filter "
                                              "is not actually a function. Bug "
                                              "the developers of the %s plugin "
                                              "about it!" % cb["name"])
@@ -215,10 +297,3 @@ class EventManager(object):
                                      (callback, e))
                     output_exception(self.logger, logging.WARN)
         return event
-
-
-def manager():
-    """
-    Get yourself an instance of the event manager.
-    """
-    return EventManager()

@@ -1,15 +1,15 @@
-.. Ultros documentation master file, created by
-   sphinx-quickstart on Mon Mar 17 17:25:27 2014.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Plugin base class
+=================
 
-Ultros - That squidoctopus bot thing
-====================================
+When you're writing a plugin, you will need to inherit this base class. Not
+only is it in charge of setting up some plugins and defining standard functions,
+but your plugin will actually fail to load if you don't inherit the Plugin class.
 
-The system module provides all of Ultros' core functionality - Plugin and
-protocol handling, event and command managers, and so on.
+-----------------------
 
-Modules:
+.. module:: system.plugin
 
-.. toctree::
-   :maxdepth: 2
+.. autoclass:: PluginObject
+    :members:
+    :undoc-members:
+    :show-inheritance:

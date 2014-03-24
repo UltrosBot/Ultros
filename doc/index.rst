@@ -20,3 +20,10 @@ out very soon!
 
    system
    utils
+
+Indexes
+=======
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

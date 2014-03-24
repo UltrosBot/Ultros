@@ -4,43 +4,29 @@ from functools import wraps
 from threading import Thread
 
 
-def config(key, value):
-    """
-    Decorator that allows setting a "config" dict for a function.
-    """
-
-    def config_inner(func):
-        if getattr(func, "config", None) is None:
-            func.config = {}
-        func.config[key] = value
-
-        return func
-
-    return config_inner
-
-
 def run_async(func):
     """
-         run_async(func)
-             function decorator, intended to make "func" run in a separate
-             thread (asynchronously).
-             Returns the created Thread object
+    A function decorator intended to cause the function to run in another
+    thread (in other words, asynchronously).
 
-             E.g.:
-             @run_async
-             def task1():
-                 do_something
+    These threads **will not be stopped** with Ultros; if you want them to be
+    stopped then use the **run_async_daemon** function.
 
-             @run_async
-             def task2():
-                 do_something_too
+    Functions that are decorated will return their Thread, which you can use
+    as normal. For example::
 
-             t1 = task1()
-             t2 = task2()
-             ...
-             t1.join()
-             t2.join()
-     """
+        @run_async
+        def func():
+            # Something that takes forever to run
+            pass
+
+        t1 = func()
+        # Something else that takes some time
+        t1.join()
+
+    :param func: The function to decorate
+    :type func: function
+    """
 
     @wraps(func)
     def async_func(*args, **kwargs):
@@ -53,7 +39,25 @@ def run_async(func):
 
 def run_async_daemon(func):
     """
-    Much the same as run_async but the thread stops when the app does.
+    A function decorator intended to cause the function to run in another
+    thread (in other words, asynchronously).
+
+    These threads **will** be stopped with Ultros.
+
+    Functions that are decorated will return their Thread, which you can use
+    as normal. For example::
+
+        @run_async_daemon
+        def func():
+            # Something that takes forever to run
+            pass
+
+        t1 = func()
+        # Something else that takes some time
+        t1.join()
+
+    :param func: The function to decorate
+    :type func: function
     """
 
     @wraps(func)
@@ -75,18 +79,30 @@ def run_async_daemon(func):
 
 def accepts(*argstypes, **kwargstypes):
     """
-    Used to specify type-checking for a function. Some examples..
+    A rather un-pythonic decorator that we haven't yet found a use for.
 
-    class A: pass
-    def f(arg1, arg2=None): pass
+    Used to specify type-checking for a function. Some examples::
 
-    @accepts(str, arg2=int)
-    @accepts(object, (str, unicode))
-    @accepts(object, A)
+        class A:
+            pass
+
+        @accepts(str, arg2=int)
+        def f(arg1, arg2=None):
+            pass
+
+        @accepts(object, (str, unicode))
+        def f(arg1, arg2):
+            pass
+
+        @accepts(object, A)
+        def f(arg1, arg2):
+            pass
 
     This also does a few checks to make sure we're getting the correct number
-      of keyword and non-keyword arguments. Remember, if the function defines
-      an argument as a keyword, the decorator should too!
+    of keyword and non-keyword arguments. Remember, if the function defines
+    an argument as a keyword, the decorator should too!
+
+    :param argstypes: The types 
     """
 
     def wrapper(func):

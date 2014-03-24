@@ -1,18 +1,17 @@
-.. Ultros documentation master file, created by
-   sphinx-quickstart on Mon Mar 17 17:25:27 2014.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Factory
+=======
 
-Ultros - That squidoctopus bot thing
-====================================
+The factory exists purely to create instances of protocols. Each protocol will
+get their own factory. Factories are also in charge of dispatching configuration
+to their protocols and handling any reconnection attempts.
 
-The system module provides all of Ultros' core functionality - Plugin and
-protocol handling, event and command managers, and so on.
+You will never need to subclass this. Let the factory manager handle it.
 
-Modules:
+-----------------------
 
-.. toctree::
-   :maxdepth: 2
+.. module:: system.factory
 
-
-
+.. autoclass:: Factory
+    :members:
+    :undoc-members:
+    :show-inheritance:

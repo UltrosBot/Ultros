@@ -20,18 +20,33 @@ class CommandManager(object):
 
     __metaclass__ = Singleton
 
+    #: Storage for all the registered commands. ::
+    #:
+    #:     commands = {
+    #:         "command": {
+    #:             "f": func(),
+    #:             "permission": "plugin.command",
+    #:             "owner": object
+    #:         }
+    #:     }
     commands = {}
-    auth_handlers = []
-    perm_handler = None
-    factory_manager = None
 
-    # commands = {
-    #   "command": {
-    #     "f": func(),
-    #     "permission": "plugin.command",
-    #     "owner": Name of plugin, or an instance of a class
-    #   }
-    # }
+    #: Storage for all the registered auth handlers.
+    #:
+    #: Auth handlers are in charge of asserting whether users are logged in
+    #: or not, and identifying who they are logged in as.
+    auth_handlers = []
+
+    #: Storage for the permissions handler. There may only ever be one of
+    #: these.
+    #:
+    #: Permissions handlers are in charge of asserting whether a user has
+    #: permission for a specified action. They work together with auth
+    #: handlers to determine this.
+    perm_handler = None
+
+    #: Storage for the factory manager, to avoid function call overhead.
+    factory_manager = None
 
     def __init__(self):
         self.logger = getLogger("Commands")
@@ -40,6 +55,9 @@ class CommandManager(object):
         """
         Set the factory manager. This should only ever be called by the
         factory manager itself.
+
+        :param factory_manager: The factory manager
+        :type factory_manager: Manager
         """
         self.factory_manager = factory_manager
 
@@ -50,41 +68,46 @@ class CommandManager(object):
 
         :param command: The command to register
         :param handler: The command handler
-        :param owner: The plugin registering the command
+        :param owner: The plugin or object registering the command
         :param permission: The permission needed to run the command
 
         :type command: str
         :type handler: function
-        :type owner: PluginObject
+        :type owner: Object
         :type permission: str
 
         :returns: Whether the command was registered or not
         :rtype: Boolean
         """
+
         if command in self.commands:
-            self.logger.warn("Plugin '%s' tried to register command '%s' but"
-                             "it's already been registered by plugin '%s'."
-                             % (
-                                 command,
-                                 self.commands[command]["owner"].info.name,
-                                 owner.info.name
-                             ))
+            self.logger.warn("Object '%s' tried to register command '%s' but"
+                             "it's already been registered by object '%s'."
+                             % (owner,
+                                command,
+                                self.commands[command]["owner"])
+                             )
             return False
         self.logger.debug("Registering command: %s (%s)"
-                          % (command, owner.info.name))
+                          % (command, owner))
         self.commands[command] = {
             "f": handler,
             "permission": permission,
-            "owner": owner.info.name if (owner, PluginObject) else owner
+            "owner": owner
         }
         return True
 
     def unregister_commands_for_owner(self, owner):
+        """
+        Unregister all commands that have been registered by a certain object.
+
+        :param owner: The owner to check for
+
+        :type owner: object
+        """
         current = self.commands.items()
-        if isinstance(owner, PluginObject):
-            owner = owner.info.name
         for key, value in current:
-            if owner == value["owner"]:
+            if owner is value["owner"]:
                 del self.commands[key]
                 self.logger.debug("Unregistered command: %s" % key)
 

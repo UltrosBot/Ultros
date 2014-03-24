@@ -1,15 +1,14 @@
-.. Ultros documentation master file, created by
-   sphinx-quickstart on Mon Mar 17 17:25:27 2014.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Decorators
+==========
 
-Ultros - That squidoctopus bot thing
-====================================
+These decorators are used throughout Ultros, for various different reasons. Feel
+free to use them in your plugins - after all, that's what they're there for.
 
-The system module provides all of Ultros' core functionality - Plugin and
-protocol handling, event and command managers, and so on.
+We don't currently have any decorators that are designed for wrapping classes.
 
-Modules:
+-----------------------
 
-.. toctree::
-   :maxdepth: 2
+.. automodule:: system.decorators
+    :members:
+    :undoc-members:
+    :show-inheritance:

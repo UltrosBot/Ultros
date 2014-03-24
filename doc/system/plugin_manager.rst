@@ -1,18 +1,18 @@
-.. Ultros documentation master file, created by
-   sphinx-quickstart on Mon Mar 17 17:25:27 2014.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Plugin manager
+==============
 
-Ultros - That squidoctopus bot thing
-====================================
+The plugin manager module contains classes that are rewritten forms of Yapsy's
+base classes. They're also part of the reason we're locking you to a specific
+version of Yapsy - They keep changing their class implementations.
 
-The system module provides all of Ultros' core functionality - Plugin and
-protocol handling, event and command managers, and so on.
+Our implementation here is to allow plugin info files to be in YAML format, which
+is a lot harder than it really should be.
 
-Modules:
+You won't have to use these yourself, they're managed internally.
 
-.. toctree::
-   :maxdepth: 2
+-----------------------
 
-
-
+.. automodule:: system.plugin_manager
+    :members:
+    :undoc-members:
+    :show-inheritance:
