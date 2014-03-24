@@ -102,7 +102,7 @@ def accepts(*argstypes, **kwargstypes):
     of keyword and non-keyword arguments. Remember, if the function defines
     an argument as a keyword, the decorator should too!
 
-    :param argstypes: The types 
+    :param argstypes: The types
     """
 
     def wrapper(func):

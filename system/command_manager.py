@@ -5,7 +5,6 @@ __author__ = "Gareth Coles"
 
 import logging
 
-from system.plugin import PluginObject
 from system.singleton import Singleton
 from utils.log import getLogger
 from utils.misc import output_exception
