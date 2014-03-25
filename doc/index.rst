@@ -13,13 +13,12 @@ There's not a lot here right now, but keep an eye out, this will be fleshed
 out very soon!
 
 .. toctree::
-   :maxdepth: 3
+   :includehidden:
 
    installation/index
    installation/configuration
 
-   system
-   utils
+   api/index
 
 Indexes
 =======
