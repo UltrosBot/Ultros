@@ -24,8 +24,6 @@ from yapsy.PluginFileLocator import PluginFileAnalyzerWithInfoFile, \
 from system.singleton import Singleton
 from utils.log import getLogger
 
-logging = getLogger("Plugins")
-
 PLUGIN_NAME_FORBIDEN_STRING = ";;"  # Yapsy dev doesn't know how to spell
 
 
@@ -200,6 +198,7 @@ class YamlPluginInfo(PluginInfo):
 class PluginFileAnalyzerWithYamlInfoFile(PluginFileAnalyzerWithInfoFile):
 
     def __init__(self, analyzers=None, plugin_info_cls=YamlPluginInfo):
+        self.logging = getLogger("Plugins")
         super(self.__class__, self).__init__(analyzers, plugin_info_cls)
 
     def getPluginNameAndModuleFromStream(self,
@@ -209,25 +208,25 @@ class PluginFileAnalyzerWithYamlInfoFile(PluginFileAnalyzerWithInfoFile):
         try:
             data = yaml.load(infoFileObject)
         except Exception, e:
-            logging.debug("Could not parse the plugin file '%s' "
-                          "(exception raised was '%s')"
-                          % (candidate_infofile, e))
+            self.logging.debug("Could not parse the plugin file '%s' "
+                               "(exception raised was '%s')"
+                               % (candidate_infofile, e))
             return None, None, None
         # check if the basic info is available
         if not "core" in data:
-            logging.debug("Plugin info file has no 'core' section (in '%s')"
-                          % candidate_infofile)
+            self. logging.debug("Plugin info file has no 'core' section (in "
+                                "'%s')" % candidate_infofile)
             return None, None, None
         if not "name" in data["core"] or not "module" in data["core"]:
-            logging.debug("Plugin info file has no 'name' or 'module' section "
-                          "(in '%s')"
+            self.logging.debug("Plugin info file has no 'name' or 'module' "
+                               "section (in '%s')"
                           % candidate_infofile)
             return None, None, None
         # check that the given name is valid
         name = data["core"]["name"]
         name = name.strip()
         if PLUGIN_NAME_FORBIDEN_STRING in name:
-            logging.debug("Plugin name contains forbidden character: "
+            self.logging.debug("Plugin name contains forbidden character: "
                           "%s (in '%s')" % (PLUGIN_NAME_FORBIDEN_STRING,
                                             candidate_infofile))
             return None, None, None
