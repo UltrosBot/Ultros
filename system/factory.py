@@ -12,6 +12,18 @@ from utils.log import getLogger
 
 
 class Factory(protocol.ClientFactory):
+    """
+    A Twisted factory, for producing protocols.
+
+    This is a bit unorthodox as Ultros' factories never need to create more
+    than one instance of a protocol, for configuration reasons.
+
+    You'll **never** need to work with this class directly. It's very
+    important, if you find that you need something extra in this class
+    then raise a ticket on GitHub or submit a pull request instead of
+    duck-punching it.
+    """
+
     protocol = None
     reconnecting = False
     attempts = 0

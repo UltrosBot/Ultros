@@ -22,4 +22,5 @@ Modules:
     system/factory_manager
     system/plugin
     system/plugin_manager
+    system/singleton
 

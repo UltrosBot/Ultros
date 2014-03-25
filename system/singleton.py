@@ -9,14 +9,16 @@ class Singleton(type):
 
     Use it by doing:
 
-    >>> class Classname(object): __metaclass__ = Singleton
+    >>> class Classname(object):
+    ...     __metaclass__ = Singleton
+    ...
     >>> x = Classname()
     >>> y = Classname()
     >>> x is y
     True
 
     Your class will automatically be a singleton, you do not need to call
-    () or any other special function.
+    **instance()** or any other special function.
     """
 
     _instances = {}
