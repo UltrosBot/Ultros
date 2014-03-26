@@ -72,7 +72,7 @@ class CommandManager(object):
 
         :type command: str
         :type handler: function
-        :type owner: Object
+        :type owner: PluginObject
         :type permission: str
 
         :returns: Whether the command was registered or not
