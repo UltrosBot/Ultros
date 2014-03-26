@@ -24,19 +24,26 @@ class Manager(object):
 
     This is so that the bot can connect to multiple services at once, and have
     them communicate with each other.
-
-    It is currently not planned to have multiple instances of a single factory.
     """
 
     __metaclass__ = Singleton
 
+    #: Storage for all of our factories:.
     factories = {}
+
+    #: Storage for all of the protocol configs.
     configs = {}
 
+    #: The main configuration is stored here.
     main_config = None
 
+    #: Storage of /all/ of the plugins, loaded or not.
     all_plugins = {}
+
+    #: Storage of all of the loaded plugins.
     loaded_plugins = {}
+
+    #: Storage of every plugin that depends on another plugin.
     plugins_with_dependencies = {}
 
     def __init__(self):
@@ -59,7 +66,7 @@ class Manager(object):
         self.load_protocols()  # Load and set up the protocols
 
         if not len(self.factories):
-            self.logger.info("It seems like no protocols are active. Shutting "
+            self.logger.info("It seems like no protocols are loaded. Shutting "
                              "down..")
             return
 
@@ -68,6 +75,12 @@ class Manager(object):
     # Load stuff
 
     def load_config(self):
+        """
+        Load the main configuration file.
+
+        :return: Whether the config was loaded or not
+        :rtype: bool
+        """
         try:
             self.logger.info("Loading global configuration..")
             if not self.main_config.exists:
@@ -88,6 +101,9 @@ class Manager(object):
         return True
 
     def load_plugins(self):
+        """
+        Attempt to load all of the plugins.
+        """
         self.logger.info("Loading plugins..")
 
         self.logger.debug("Configured plugins: %s"
@@ -166,6 +182,22 @@ class Manager(object):
             self.logger.info("No plugins are configured to load.")
 
     def load_plugin(self, name, unload=False):
+        """
+        Load a single plugin by name. This can return one of the following,
+        from system.constants:
+
+        * PLUGIN_ALREADY_LOADED
+        * PLUGIN_DEPENDENCY_MISSING
+        * PLUGIN_LOAD_ERROR
+        * PLUGIN_LOADED
+        * PLUGIN_NOT_EXISTS
+
+        :param name: The plugin to load.
+        :type name: string
+
+        :param unload: Whether to unload the plugin if it's alread loaded.
+        :type unload: bool
+        """
         if name in self.all_plugins:
             if name in self.loaded_plugins:
                 if unload:
@@ -219,12 +251,21 @@ class Manager(object):
         return PLUGIN_NOT_EXISTS
 
     def collect_plugins(self):
+        """
+        Collect all possible plugin candidates.
+
+        If you're calling this, you should unload all of the plugins
+        first.
+        """
         self.all_plugins = {}
         self.plugman.collectPlugins()
         for info in self.plugman.getAllPlugins():
             self.all_plugins[info.name] = info
 
     def load_protocols(self):
+        """
+        Load and set up all of the configured protocols.
+        """
         self.logger.info("Setting up protocols..")
 
         for protocol in self.main_config["protocols"]:
@@ -245,6 +286,23 @@ class Manager(object):
                                      "protocol.")
 
     def load_protocol(self, name, conf_location):
+        """
+        Attempt to load a protocol by name. This can return one of the
+        following, from system.constants:
+
+        * PROTOCOL_ALREADY_LOADED
+        * PROTOCOL_CONFIG_NOT_EXISTS
+        * PROTOCOL_LOAD_ERROR
+        * PROTOCOL_LOADED
+        * PROTOCOL_SETUP_ERROR
+
+        :param name: The name of the protocol
+        :type name: string
+
+        :param conf_location: The location of the config file, relative
+            to the config/ directory
+        :type conf_location: string
+        """
         if name in self.factories:
             return PROTOCOL_ALREADY_LOADED
 

@@ -19,17 +19,22 @@ class Factory(protocol.ClientFactory):
     than one instance of a protocol, for configuration reasons.
 
     You'll **never** need to work with this class directly. It's very
-    important, if you find that you need something extra in this class
+    important, so if you find that you need something extra in this class
     then raise a ticket on GitHub or submit a pull request instead of
     duck-punching it.
     """
 
+    #: The stored protocol object
     protocol = None
+
+    #: Whether we're reconnecting or not
     reconnecting = False
+
+    #: How many times we've tried to reconnect
     attempts = 0
 
     def __init__(self, protocol_name, config, manager):
-        self.logger = getLogger("*" + protocol_name)
+        self.logger = getLogger("*" + protocol_name.title())
         self.config = config
         self.manager = manager
         self.name = protocol_name
@@ -45,6 +50,14 @@ class Factory(protocol.ClientFactory):
         self.r_reset = reconnections["reset-on-success"]
 
     def setup(self):
+        """
+        This is called by Twisted, to tell the factory to set up a protocol.
+
+        The default is usually okay, but we've overridden it here because
+        we don't need the whole "multiple protocols per factory" thing, and
+        we're doing some other Ultros-related stuff here too.
+        """
+
         try:
             current_protocol = importlib.import_module(
                 "system.protocols.%s.protocol" % self.ptype)
@@ -64,10 +77,19 @@ class Factory(protocol.ClientFactory):
                                 "protocol class!")
 
     def buildProtocol(self, addr):
+        """
+        Another overridden standard Twisted function. We're just returning
+        the current protocol here.
+        """
+
         return self.protocol
 
     def clientConnectionLost(self, connector, reason):
-        """ Called when the client loses connection """
+        """
+        Called when the client loses connection. Overridden here for
+        reconnection purposes.
+        """
+
         self.logger.warn("Lost connection: %s" % reason.__str__())
         if self.r_on_drop:
             self.attempts += 1
@@ -76,7 +98,11 @@ class Factory(protocol.ClientFactory):
             reactor.callLater(self.r_delay, connector.connect)
 
     def clientConnectionFailed(self, connector, reason):
-        """ Called when the client fails to connect """
+        """
+        Called when the client fails to connect. Overridden here for
+        reconnection purposes.
+        """
+
         self.logger.warn("Connection failed: %s" % reason.__str__())
         if self.r_on_drop or self.reconnecting:
             if self.attempts >= self.r_attempts:
