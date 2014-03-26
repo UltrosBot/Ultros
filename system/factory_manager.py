@@ -81,6 +81,7 @@ class Manager(object):
         :return: Whether the config was loaded or not
         :rtype: bool
         """
+
         try:
             self.logger.info("Loading global configuration..")
             if not self.main_config.exists:
@@ -104,6 +105,7 @@ class Manager(object):
         """
         Attempt to load all of the plugins.
         """
+
         self.logger.info("Loading plugins..")
 
         self.logger.debug("Configured plugins: %s"
@@ -193,11 +195,12 @@ class Manager(object):
         * PLUGIN_NOT_EXISTS
 
         :param name: The plugin to load.
-        :type name: string
+        :type name: str
 
-        :param unload: Whether to unload the plugin if it's alread loaded.
+        :param unload: Whether to unload the plugin, if it's already loaded.
         :type unload: bool
         """
+
         if name in self.all_plugins:
             if name in self.loaded_plugins:
                 if unload:
@@ -257,6 +260,7 @@ class Manager(object):
         If you're calling this, you should unload all of the plugins
         first.
         """
+
         self.all_plugins = {}
         self.plugman.collectPlugins()
         for info in self.plugman.getAllPlugins():
@@ -266,6 +270,7 @@ class Manager(object):
         """
         Load and set up all of the configured protocols.
         """
+
         self.logger.info("Setting up protocols..")
 
         for protocol in self.main_config["protocols"]:
@@ -297,12 +302,13 @@ class Manager(object):
         * PROTOCOL_SETUP_ERROR
 
         :param name: The name of the protocol
-        :type name: string
+        :type name: str
 
         :param conf_location: The location of the config file, relative
             to the config/ directory
-        :type conf_location: string
+        :type conf_location: str
         """
+
         if name in self.factories:
             return PROTOCOL_ALREADY_LOADED
 
@@ -336,6 +342,17 @@ class Manager(object):
     # Unload stuff
 
     def unload_plugin(self, name):
+        """
+        Attempt to unload a plugin by name. This can return one of the
+        following, from system.constants:
+
+        * PLUGIN_NOT_EXISTS
+        * PLUGIN_UNLOADED
+
+        :param name: The name of the plugin
+        :type name: str
+        """
+
         if name in self.loaded_plugins:
             try:
                 self.plugman.deactivatePluginByName(name)
@@ -349,6 +366,16 @@ class Manager(object):
         return PLUGIN_NOT_EXISTS
 
     def unload_protocol(self, name):  # Removes with a shutdown
+        """
+        Attempt to unload a protocol by name. This will also shut it down.
+
+        :param name: The name of the protocol
+        :type name: str
+
+        :return: Whether the protocol was unloaded
+        :rtype: bool
+        """
+
         if name in self.factories:
             proto = self.factories[name].protocol
             try:
@@ -361,6 +388,10 @@ class Manager(object):
         return False
 
     def unload(self):
+        """
+        Shut down and unload everything.
+        """
+
         # Shut down!
         for name in self.factories.keys():
             self.unload_protocol(name)
@@ -370,16 +401,44 @@ class Manager(object):
     # Grab stuff
 
     def get_protocol(self, name):
+        """
+        Get the instance of a protocol, by name.
+
+        :param name: The name of the protocol
+        :type name: str
+
+        :return: The protocol, or None if it doesn't exist.
+        """
+
         if name in self.factories:
             return self.factories[name].protocol
         return None
 
     def get_factory(self, name):
+        """
+        Get the instance of a protocol's factory, by name.
+
+        :param name: The name of the protocol
+        :type name: str
+
+        :return: The factory, or None if it doesn't exist.
+        """
+
         if name in self.factories:
             return self.factories[name]
         return None
 
     def remove_protocol(self, protocol):  # Removes without shutdown
+        """
+        Remove a protocol without shutting it down. You shouldn't use this.
+
+        :param name: The name of the protocol
+        :type name: str
+
+        :return: Whether the protocol was removed.
+        :rtype: bool
+        """
+
         if protocol in self.factories:
             del self.factories[protocol]
             return True

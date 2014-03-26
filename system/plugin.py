@@ -8,28 +8,23 @@ class PluginObject(IPlugin):
     """
     Super class for creating plugins.
 
-    Inherit this class when you create your plugin. You can override
-    the following methods, but remember to call super() on them!
-    - activate (self): Called on plugin load
-     - It's best not to use this one. It gets called before the plugin info
-       and FactoryManager are available.
-    - deactivate(self): Called on plugin deactivation
-     - You can clean up and save data here.
-    - reload(self): Called when the plugin should reload its configuration
-     - This is optional, don't add it if you don't need it.
-     - return True if the reload succeeded and False if not.
-     - None is returned if not implemented (to signify no config to reload)
-    - setup(self):
-     - Do your plugin setup here. This can include setting up events and other
-       things. The plugin info and FactoryManager are available here.
+    Inherit this class when you create your plugin. Don't forget to call
+    super() on all methods you override!
 
     Remember to be careful when naming your plugin. Be descriptive, but
     concise!
     """
 
+    #: Storage for the PluginInfo object
     info = None
+
+    #: Name of the plugin module, populated automatically
     module = ""
+
+    #: Assigned instance of the standard Python logger
     logger = None
+
+    #: Stored instance of the factory manager, for convenience
     factory_manager = None
 
     def __init__(self):
@@ -43,8 +38,11 @@ class PluginObject(IPlugin):
 
         If you override this and don't call super, your plugin WILL NOT WORK.
 
-        :param info:            PluginInfo      Contains plugin info
-        :param factory_manager: FactoryManager  Used to interact with the core
+        :param info: The plugin info file
+        :type info: PluginInfo instance
+
+        :param factory_manager: The factory manager
+        :type factory_manager: Manager instance
         """
 
         self.info = info
@@ -54,21 +52,29 @@ class PluginObject(IPlugin):
     def activate(self):
         """
         Called when the plugin is loaded.
-        Not to be used for setup! You probably don't need this at all.
+
+        Not to be used for setup! You probably don't need this at all. It's
+        a Yapsy convention, but critical objects aren't available in this
+        function call.
         """
         super(PluginObject, self).activate()
 
     def deactivate(self):
         """
         Called when the plugin is unloaded.
-        Use this for saving data or cleaning up.
+
+        This is intended to be used for last-minute saving and cleanup.
         """
         super(PluginObject, self).deactivate()
 
     def reload(self):
         """
+        Note: **Not currently used**
+
         Called when the plugin should reload its configuration.
-        This is optional; don't implement it if it isn't needed.
+
+        It should return True if the reload succeeded, and False if not.
+        If you return None, then it will be treated as if it doesn't exist.
         """
         return None
 
@@ -78,9 +84,8 @@ class PluginObject(IPlugin):
         This is used for setting up the plugin.
         Remember to override this function!
 
-        Don't use activate for this.
-        self.info and self.factory are only available once this method is
-        called.
+        Remember, **self.info** and **self.factory** are only available once
+        this method is called.
         """
         self.logger.warn("Setup method not defined!")
 
