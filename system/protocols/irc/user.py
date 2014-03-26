@@ -56,7 +56,7 @@ class User(user.User):
         if isinstance(channel, Channel):
             channel = channel.name
         channel = self.protocol.utils.lowercase_nick_chan(channel)
-        if not channel in self._ranks:
+        if channel not in self._ranks:
             self._ranks[channel] = set()
         self._ranks[channel].add(rank)
 

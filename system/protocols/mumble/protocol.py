@@ -374,7 +374,7 @@ class Protocol(ChannelsProtocol):
         self.init_ping()
 
     def handle_msg_channelstate(self, message):
-        if not message.channel_id in self.channels:
+        if message.channel_id not in self.channels:
             parent = None
             if message.HasField('parent'):
                 parent = message.parent
@@ -398,11 +398,12 @@ class Protocol(ChannelsProtocol):
                 self.log.info("Channel link added: %s to %s" %
                               (self.channels[link],
                                self.channels[message.channel_id]))
+
+                # TOTALLY MORE READABLE
+                # GOOD JOB PEP8
                 event = mumble_events.ChannelLinked(self, self.channels[link],
                                                     self.channels
                                                     [message.channel_id])
-                                                    # TOTALLY MORE READABLE
-                                                    # GOOD JOB PEP8
                 self.event_manager.run_callback("Mumble/ChannelLinked", event)
         if message.links_remove:
             for link in message.links_remove:
@@ -410,10 +411,11 @@ class Protocol(ChannelsProtocol):
                 self.log.info("Channel link removed: %s from %s" %
                               (self.channels[link],
                                self.channels[message.channel_id]))
+
+                # Jesus fuck.
                 event = mumble_events.ChannelUnlinked(self, self.channels
                                                       [link], self.channels
                                                       [message.channel_id])
-                                                      # Jesus fuck.
                 self.event_manager.run_callback("Mumble/ChannelUnlinked",
                                                 event)
 
@@ -668,8 +670,9 @@ class Protocol(ChannelsProtocol):
             #                 chan = _id
             #                 break
             #         if chan is None:
-           #             self.msg_user("Could not find channel", message.actor)
-           ## NOTE: The weird indent is because of the stupid line length limit
+            #             self.msg_user("Could not find channel",
+            #                           message.actor)
+            # NOTE: The weird indent is because of the stupid line length limit
             #         else:
             #             self.msg_user("Joining channel", message.actor)
             #             self.join_channel(chan)

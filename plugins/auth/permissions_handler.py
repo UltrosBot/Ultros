@@ -10,9 +10,9 @@ class permissionsHandler(object):
         self.plugin = plugin
 
         with self.data:
-            if not "users" in self.data:
+            if "users" not in self.data:
                 self.data["users"] = {}
-            if not "groups" in self.data:
+            if "groups" not in self.data:
                 self.data["groups"] = {}
 
         if not len(self.data["groups"]):
@@ -63,7 +63,7 @@ class permissionsHandler(object):
         user = user.lower()
 
         with self.data:
-            if not user in self.data["users"]:
+            if user not in self.data["users"]:
                 newuser = {
                     "group": "default",
                     "permissions": [],
@@ -83,7 +83,7 @@ class permissionsHandler(object):
         user = user.lower()
 
         with self.data:
-            if not user in self.data["users"]:
+            if user not in self.data["users"]:
                 return False
             del self.data["users"][user]
         return True
@@ -175,7 +175,7 @@ class permissionsHandler(object):
         group = group.lower()
 
         with self.data:
-            if not group in self.data["groups"]:
+            if group not in self.data["groups"]:
                 new_group = {
                     "permissions": [],
                     "options": {}

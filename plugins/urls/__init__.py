@@ -120,7 +120,7 @@ class Plugin(PluginObject):
                 self.logger.debug("Title: %s" % title)
 
                 if isinstance(target, Channel):
-                    if not protocol.name in self.channels:
+                    if protocol.name not in self.channels:
                         with self.channels:
                             self.channels[protocol.name] = {
                                 target.name: {"last": url,
@@ -128,7 +128,7 @@ class Plugin(PluginObject):
                                               "shortener":
                                               "tinyurl"}
                             }
-                    if not target.name in self.channels[protocol.name]:
+                    if target.name not in self.channels[protocol.name]:
                         with self.channels:
                             self.channels[protocol.name][target.name] = {
                                 "last": url,
@@ -182,7 +182,7 @@ class Plugin(PluginObject):
         operation = args[0].lower()
         value = args[1].lower()
 
-        if not protocol.name in self.channels:
+        if protocol.name not in self.channels:
             with self.channels:
                 self.channels[protocol.name] = {
                     source.name: {
@@ -191,7 +191,7 @@ class Plugin(PluginObject):
                         "shortener": "tinyurl"
                     }
                 }
-        if not source.name in self.channels[protocol.name]:
+        if source.name not in self.channels[protocol.name]:
             with self.channels:
                 self.channels[protocol.name][source.name] = {
                     "status": "on",
@@ -200,7 +200,7 @@ class Plugin(PluginObject):
                 }
 
         if operation == "set":
-            if not value in ["on", "off"]:
+            if value not in ["on", "off"]:
                 caller.respond("Usage: {CHARS}urls set <on|off>")
             else:
                 with self.channels:
@@ -238,8 +238,8 @@ class Plugin(PluginObject):
 
                 caller.respond(shortened)
         else:
-            if not protocol.name in self.channels \
-               or not source.name in self.channels[protocol.name] \
+            if protocol.name not in self.channels \
+               or source.name not in self.channels[protocol.name] \
                or not len(self.channels[protocol.name][source.name]["last"]):
                 caller.respond("Nobody's pasted a URL here yet!")
                 return
@@ -379,7 +379,7 @@ class Plugin(PluginObject):
                       (url, handler.lower()))
             r = c.fetchone()
             self.logger.debug("Result (SQL): %s" % repr(r))
-            if not r is None:
+            if r is not None:
                 return r[2]
         if handler in self.shorteners:
             result = self.shorteners[handler](url)

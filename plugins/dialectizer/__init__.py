@@ -52,10 +52,10 @@ class Plugin(PluginObject):
         target = event.target.name
 
         with self.data:
-            if not name in self.data:
+            if name not in self.data:
                 self.data[name] = {}
 
-            if not target in self.data[name]:
+            if target not in self.data[name]:
                 self.data[name][target] = "off"
 
         subber = self.dialectizers[self.data[name][target]]
@@ -77,14 +77,14 @@ class Plugin(PluginObject):
             return
 
         with self.data:
-            if not protocol.name in self.data:
+            if protocol.name not in self.data:
                 self.data[protocol.name] = {}
 
-            if not source.name in self.data[protocol.name]:
+            if source.name not in self.data[protocol.name]:
                 self.data[protocol.name][source.name] = "off"
 
             setting = args[0].lower()
-            if not setting in self.dialectizers:
+            if setting not in self.dialectizers:
                 caller.respond("Unknown dialectizer: %s" % setting)
                 return
 

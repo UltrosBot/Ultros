@@ -132,7 +132,7 @@ class Manager(object):
                 if name in self.main_config["plugins"]:
                     self.logger.info("Attempting to load plugin: %s" % name)
                     result = self.load_plugin(name)
-                    if not result is PLUGIN_LOADED:
+                    if result is not PLUGIN_LOADED:
                         if result is PLUGIN_LOAD_ERROR:
                             self.logger.warn("Error detected while loading "
                                              "plugin.")
@@ -170,7 +170,7 @@ class Manager(object):
                             raise e
                     except Exception as e:
                         raise e
-                    if not result is PLUGIN_LOADED:
+                    if result is not PLUGIN_LOADED:
                         if result is PLUGIN_LOAD_ERROR:
                             self.logger.warn("Error detected while loading "
                                              "plugin.")
@@ -221,7 +221,7 @@ class Manager(object):
                         return PLUGIN_DEPENDENCY_MISSING
                 for d_name in depends:
                     result = self.load_plugin(d_name)
-                    if not result is PLUGIN_LOADED:
+                    if result is not PLUGIN_LOADED:
                         if result is PLUGIN_ALREADY_LOADED:
                             continue
 
@@ -278,7 +278,7 @@ class Manager(object):
             conf_location = "protocols/%s.yml" % protocol
             result = self.load_protocol(protocol, conf_location)
 
-            if not result is PROTOCOL_LOADED:
+            if result is not PROTOCOL_LOADED:
                 if result is PROTOCOL_ALREADY_LOADED:
                     self.logger.warn("Protocol is already loaded.")
                 elif result is PROTOCOL_CONFIG_NOT_EXISTS:

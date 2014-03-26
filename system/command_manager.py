@@ -136,7 +136,7 @@ class CommandManager(object):
 
         :rtype: Tuple of (Boolean, [None, Exception or Boolean))
         """
-        if not command in self.commands:
+        if command not in self.commands:
             return False, None
         # Parse args
         raw_args = args
