@@ -6,7 +6,7 @@
 
 <sub>(I've seen enough hentai...)</sub>
 
-Ultros is an IRC/Mumble/Teamspeak/etc bot, extensible to pretty much any protocol, with a full-featured plugin system.
+Ultros is an IRC/Mumble/etc. bot, extensible to pretty much any protocol, with a full-featured plugin system.
 
 Current build status: [![Build Status](https://travis-ci.org/UltrosBot/Ultros.png?branch=master)](https://travis-ci.org/UltrosBot/Ultros) (Click for more info)
 
