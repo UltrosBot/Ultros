@@ -2,7 +2,7 @@ __author__ = 'Gareth Coles'
 
 YAML = "Yaml"
 JSON = "JSON"
-SQLITE = "Sqlite"
+SQLITE = "SQLite"
 MEMORY = "Memory"
 
 DATA = [YAML, JSON, SQLITE, MEMORY]
