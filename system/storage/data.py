@@ -378,7 +378,7 @@ class JSONData(Data):
         return True
 
 
-class SqliteData(Data):
+class SQLiteData(Data):
     """
     Data object that uses SQLite for storage.
 
