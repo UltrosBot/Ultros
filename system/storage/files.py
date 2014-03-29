@@ -16,8 +16,9 @@ file_formats_map = {
     "data": {
         Formats.JSON: Data.JSONData,
         Formats.MEMORY: Data.MemoryData,
-        Formats.SQLITE: Data.SqliteData,
-        Formats.YAML: Data.YamlData
+        Formats.SQLITE: Data.SQLiteData,
+        Formats.YAML: Data.YamlData,
+        # Formats.DBAPI: Data.DBAPIData
     }
 }
 
@@ -34,7 +35,10 @@ class StorageFile(object):
     path = ""
     type_ = ""
 
-    def __init__(self, type_, path, base_path, manager_class):
+    args = []
+    kwargs = {}
+
+    def __init__(self, type_, path, base_path, manager_class, *args, **kwargs):
         if type_ not in self.formats:
             raise TypeError("Type '%s' is unknown or not supported for %s "
                             "files." % (type_, self.file_type))
@@ -43,8 +47,13 @@ class StorageFile(object):
         self.type_ = type_
         self.manager_class = manager_class
 
+        self.args = args
+        self.kwargs = kwargs
+
     def load(self):
-        self.obj = file_formats_map[self.file_type][self.type_](self.path)
+        self.obj = file_formats_map[self.file_type][self.type_](self.path,
+                                                                *self.args,
+                                                                **self.kwargs)
 
     def get(self):
         if self._ready and self.obj:
