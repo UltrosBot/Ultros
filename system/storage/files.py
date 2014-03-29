@@ -18,7 +18,7 @@ file_formats_map = {
         Formats.MEMORY: Data.MemoryData,
         Formats.SQLITE: Data.SQLiteData,
         Formats.YAML: Data.YamlData,
-        # Formats.DBAPI: Data.DBAPIData
+        Formats.DBAPI: Data.DBAPIData
     }
 }
 

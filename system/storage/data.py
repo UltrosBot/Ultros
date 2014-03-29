@@ -25,6 +25,7 @@ import sqlite3
 import yaml
 
 from threading import Lock
+from twisted.enterprise import adbapi
 
 from utils.log import getLogger
 
@@ -442,6 +443,109 @@ class SQLiteData(Data):
 
     def __str__(self):
         return "<Ultros SQLite data handler: %s>" % self.filename
+
+    def __nonzero__(self):
+        return True
+
+
+class DBAPIData(Data):
+    """
+    Data object that uses Twisted's async DBAPI adapters.
+
+    As with SQLite, there is no dictionary access here, instead use the
+    `with...as` construct. This will return a ConnectionPool instance
+    for you to work with.
+
+    For example:
+
+    with data as c:
+        d = c.runQuery("SELECT * FROM data WHERE thing = ?", (thing,))
+        d.addCallback(...)
+
+    To specify your connection info, you'll have to pass in some extra args
+    to describe your connection::
+
+        manager.get_file("module:path", *args, **kwargs)
+
+    The first argument here has two uses.
+
+    * As an identifier for the storage manager, for ownership reasons
+    * To specify the module to connect with
+        * This module MUST implement the DBAPI!
+
+    So, here's some examples::
+
+        # Connect to local SQLite database
+        manager.get_file(
+            "sqlite3:data/test.sqlite",
+            "data/test.sqlite"
+        )
+
+        # Connect to remote PostgreSQL with a username and password
+        manager.get_file(
+            "psycopg2:my.site/database",
+            "host": "my.site",
+            "user": "root",
+            "password": "password",
+            "db": "database"
+        )
+
+        // Connect to remote MySQL with a username and no password
+        manager.get_file(
+            "pymysql:my.site/database",
+            "host": "my.site",
+            "user": "root",
+            "db": "database"
+        )
+
+        // Connect to local MySQL with no username or password
+        manager.get_file(
+            "pymysql:my.site/database",
+            "host": "localhost",
+            "db": "database"
+        )
+
+    If there are problems using this database abstraction then you should run
+    the bot in debug mode and report the output to us in a ticket.
+
+    Please note that this isn't an ORM - you'll still have to support
+    separate SQL dialects yourself.
+
+    More info: https://twistedmatrix.com/documents/12.0.0/core/howto/rdbms.html
+    """
+
+    pool = None
+    info = ""
+
+    def __init__(self, path, *args, **kwargs):
+        self.logger = getLogger("DBAPI")
+
+        path = path.replace("//", "/")
+        path = path.split("/", 1)[1]
+
+        self.path = path
+
+        self.logger.debug("Path: %s" % path)
+        self.logger.debug("Args: %s" % (args or "[]"))
+        self.logger.debug("KWArgs: %s" % (kwargs or "{}"))
+
+        parsed_module = path.split(":", 1)[0]
+        self.parsed_module = parsed_module
+
+        self.logger.debug("Parsed module: %s" % parsed_module)
+
+        self.pool = adbapi.ConnectionPool(parsed_module, *args, **kwargs)
+
+    def __enter__(self):
+        return self.pool
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is None:
+            return True
+        return False
+
+    def __str__(self):
+        return "<Ultros DBAPI data handler: %s>" % self.path
 
     def __nonzero__(self):
         return True
