@@ -14,6 +14,7 @@ __author__ = 'Sean'
 # * Eat your school
 # * Don't do vegetables
 
+
 class Plugin(PluginObject):
 
     CHANNEL = "channel"
@@ -213,7 +214,6 @@ class Plugin(PluginObject):
             raise MissingFactoidError("Could not find a matchin factoid with "
                                       "a valid location")
 
-
     def add_factoid(self, caller, source, protocol, location, factoid, info):
         location = location.lower()
         factoid_key = factoid.lower()
@@ -346,8 +346,8 @@ class Plugin(PluginObject):
             lambda f: self._factoid_command_fail(caller, f)
         )
 
-    def factoid_delete_command(self, protocol, caller, source, command, raw_args,
-                               parsed_args):
+    def factoid_delete_command(self, protocol, caller, source, command,
+                               raw_args, parsed_args):
         args = raw_args.split()  # Quick fix for new command handler signature
         if len(args) != 2:
             caller.respond("Usage: %s <location> <factoid>" % command)
@@ -488,17 +488,22 @@ class Plugin(PluginObject):
             lambda f: self._factoid_command_fail(event.source, f)
         )
 
+
 class FactoidsError(Exception):
     pass
+
 
 class InvalidLocationError(FactoidsError):
     pass
 
+
 class InvalidMethodError(FactoidsError):
     pass
 
+
 class NoPermissionError(FactoidsError):
     pass
+
 
 class MissingFactoidError(FactoidsError):
     pass
