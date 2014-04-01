@@ -236,7 +236,7 @@ class MemoryData(Data):
         return self.data.values()
 
     def get(self, key, default):
-        return self.data.get(key, item)
+        return self.data.get(key, default)
 
     keys.__doc__ = data.keys.__doc__
     items.__doc__ = data.items.__doc__
