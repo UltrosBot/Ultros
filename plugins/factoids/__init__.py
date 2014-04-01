@@ -74,11 +74,6 @@ class Plugin(PluginObject):
                                        self.factoid_get_command,
                                        self,
                                        None)
-        # TODO: Remove below debug commands
-        self.commands.register_command("anus",
-                                       self.anus_command,
-                                       self,
-                                       None)
         # TODO: Replace commands below with aliases when implemented
         self.commands.register_command("delfactoid",
                                        self.factoid_delete_command,
@@ -422,12 +417,6 @@ class Plugin(PluginObject):
             lambda r: self._factoid_get_command_success(source, r),
             lambda f: self._factoid_command_fail(caller, f)
         )
-
-    def anus_command(self, protocol, caller, source, command, raw_args,
-                     parsed_args):
-        from pprint import pprint
-        with self.database as db:
-            db.runQuery("SELECT * FROM factoids").addCallbacks(pprint)
 
     # endregion
 
