@@ -25,6 +25,7 @@ class permissionsHandler(object):
                                         "auth.register",
                                         "auth.passwd",
                                         "bridge.relay",
+                                        "factoids.get.*",
                                         "urls.shorten",
                                         "urls.title"])
 
@@ -180,7 +181,8 @@ class permissionsHandler(object):
             if group not in self.data["groups"]:
                 new_group = {
                     "permissions": [],
-                    "options": {}
+                    "options": {},
+                    "inherit": None
                 }
                 self.data["groups"][group] = new_group
                 return True
@@ -202,6 +204,20 @@ class permissionsHandler(object):
         with self.data:
             if group in self.data["groups"]:
                 self.data["groups"][group]["options"][option] = value
+                return True
+        return False
+
+    def set_group_inheritance(self, group, inherit):
+        group = group.lower()
+
+        if isinstance(inherit, str):
+            inherit = inherit.lower()
+        elif inherit is not None:
+            raise TypeError("Inheritance must either be a string or None")
+
+        with self.data:
+            if group in self.data["groups"]:
+                self.data["groups"][group]["inherit"] = inherit
                 return True
         return False
 
@@ -245,13 +261,36 @@ class permissionsHandler(object):
             return None
         return False
 
+    def get_group_inheritance(self, group):
+        group = group.lower()
+
+        if group in self.data["groups"]:
+            if "inherit" in self.data["groups"][group]:
+                return self.data["groups"][group]["inherit"]
+            return None
+        return False
+
     def group_has_permission(self, group, permission):
         group = group.lower()
         permission = permission.lower()
 
+        groups = []
+        all_perms = set()
+
+        def _recur(_group):
+            if _group in self.data["groups"]:
+                if _group not in groups:
+                    groups.append(_group)
+                    perms_list = self.data["groups"][_group]["permissions"]
+                    all_perms.update(set(perms_list))
+
+                    inherit = self.get_group_inheritance(_group)
+                    if inherit:
+                        _recur(inherit)
+
         if group in self.data["groups"]:
-            perms = self.data["groups"][group]["permissions"]
-            return self.compare_permissions(permission, perms)
+            _recur(group)
+            return self.compare_permissions(permission, list(all_perms))
         return False
 
     # Permissions comparisons
