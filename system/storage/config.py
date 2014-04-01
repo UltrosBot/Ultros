@@ -31,7 +31,7 @@ from utils.log import getLogger
 
 
 class Config(object):
-    pass
+    editable = False
 
 
 class YamlConfig(Config):
