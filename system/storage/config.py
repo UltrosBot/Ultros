@@ -240,6 +240,9 @@ class MemoryConfig(Config):
     def values(self):
         return self.data.values()
 
+    def get(self, item):
+        return self.data.get(item)
+
     keys.__doc__ = data.keys.__doc__
     items.__doc__ = data.items.__doc__
     values.__doc__ = data.values.__doc__
