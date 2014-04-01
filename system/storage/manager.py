@@ -1,10 +1,34 @@
 __author__ = 'Gareth Coles'
 
+import system.storage.files as files
+from system.storage.config import YamlConfig
+
 from system.storage.exceptions import OtherOwnershipError, \
     UnknownStorageTypeError
 from system.singleton import Singleton
+from utils.log import getLogger
 
-import system.storage.files as files
+
+warning = """
+************************************************
+*              /!\\ WARNING! /!\\              *
+*                                              *
+* A plugin has registered itself as an editor. *
+* This means that it can edit and read all of  *
+* the data files registered by other plugins.  *
+*                                              *
+* The plugin details are as follows:           *
+* Instance: %s                                 *
+*                                              *
+* If you don't recognise this plugin or don't  *
+* know why it would need this kind of access,  *
+* then you should stop the bot immediately and *
+* do some research!                            *
+*                                              *
+* This warning can be disabled by setting      *
+* `editor_warning` in settings.yml to `off`.   *
+************************************************
+"""
 
 
 class StorageManager(object):
@@ -20,9 +44,18 @@ class StorageManager(object):
     config_files = {}
     data_files = {}
 
+    editors = []
+
+    editor_warning = False
+
     def __init__(self, conf_path="config/", data_path="data/"):
         self.conf_path = conf_path
         self.data_path = data_path
+
+        self.log = getLogger("Storage")
+
+        config = YamlConfig("config/settings.yml")
+        self.editor_warning = config.get("editor_warning", self.editor_warning)
 
     def get_file(self, obj, storage_type, file_format, path, *args, **kwargs):
         if ".." in path:
@@ -30,7 +63,8 @@ class StorageManager(object):
 
         if storage_type == "data":
             if path in self.data_files:
-                if not self.data_files[path].is_owner(obj):
+                if not self.data_files[path].is_owner(obj) \
+                   or not obj in self.editors:
                     raise OtherOwnershipError("Data file %s is owned by "
                                               "another object." % path)
                 return self.data_files[path].get()
@@ -46,8 +80,9 @@ class StorageManager(object):
 
         elif storage_type == "config":
             if path in self.config_files:
-                if not self.config_files[path].is_owner(obj):
-                    raise OtherOwnershipError("Data file %s is owned by "
+                if not self.config_files[path].is_owner(obj) \
+                   or not obj in self.editors:
+                    raise OtherOwnershipError("Config file %s is owned by "
                                               "another object." % path)
                 return self.config_files[path].get()
             storage_file = files.ConfigFile(file_format, path, self.conf_path,
@@ -91,3 +126,11 @@ class StorageManager(object):
         else:
             raise UnknownStorageTypeError("Unknown storage type: %s"
                                           % storage_type)
+
+    def register_editor(self, instance):
+        if instance not in self.editors:
+            if self.editor_warning:
+                self.log.warn(warning % instance)
+            self.editors.append(instance)
+            return True
+        return False

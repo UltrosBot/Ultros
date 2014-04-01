@@ -38,7 +38,7 @@ Don't forget that you should only use characters here that can be used in filena
 .. literalinclude:: ../../config/settings.yml.example
     :language: yaml
     :linenos:
-    :lines: 17-20
+    :lines: 22-26
 
 In this section, you can list off the names of all of the plugins you want Ultros to load. The names here are specified
 per-plugin, and you can usually find the names of the plugin in their documentation. If you can't, then you can also
@@ -49,13 +49,14 @@ The plugins that ship with Ultros are as follows:
 * Auth
 * Bridge
 * Dialectizer
+* Factoids
 * URLs
 
 .. Reconnections
 .. literalinclude:: ../../config/settings.yml.example
     :language: yaml
     :linenos:
-    :lines: 22-
+    :lines: 28-
 
 In this section, you specify how Ultros should behave when it loses connection or flat-out fails to connect. The options
 are explained in the snippet above. You should note that the reconnection counters are not shared between protocols,

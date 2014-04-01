@@ -8,6 +8,11 @@
 protocols:
   - irc-esper
 
+# This will warn you when a plugin tries to register itself as an editor.
+# Editors have access to all plugin data files. However, you may choose to
+#   disable this as some may find it annoying.
+editor_warning: on
+
 # Any protocol-specific configuration goes in its own configuration file in the
 # "protocols" folder. This will include connection information, so make sure
 # you fill the file out!
