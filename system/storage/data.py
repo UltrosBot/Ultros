@@ -142,8 +142,8 @@ class YamlData(Data):
     def values(self):
         return self.data.values()
 
-    def get(self, item):
-        return self.data.get(item)
+    def get(self, key, default):
+        return self.data.get(key, default)
 
     keys.__doc__ = data.keys.__doc__
     items.__doc__ = data.items.__doc__
@@ -235,8 +235,8 @@ class MemoryData(Data):
     def values(self):
         return self.data.values()
 
-    def get(self, item):
-        return self.data.get(item)
+    def get(self, key, default):
+        return self.data.get(key, item)
 
     keys.__doc__ = data.keys.__doc__
     items.__doc__ = data.items.__doc__
@@ -362,8 +362,8 @@ class JSONData(Data):
     def values(self):
         return self.data.values()
 
-    def get(self, item):
-        return self.data.get(item)
+    def get(self, key, default):
+        return self.data.get(key, default)
 
     def __enter__(self):
         with self.context_mutex:

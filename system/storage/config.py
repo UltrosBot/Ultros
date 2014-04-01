@@ -89,8 +89,8 @@ class YamlConfig(Config):
     def values(self):
         return self.data.values()
 
-    def get(self, item):
-        return self.data.get(item)
+    def get(self, key, default):
+        return self.data.get(key, default)
 
     keys.__doc__ = data.keys.__doc__
     items.__doc__ = data.items.__doc__
@@ -172,8 +172,8 @@ class JSONConfig(Config):
     def values(self):
         return self.data.values()
 
-    def get(self, item):
-        return self.data.get(item)
+    def get(self, key, default):
+        return self.data.get(key, default)
 
     keys.__doc__ = data.keys.__doc__
     items.__doc__ = data.items.__doc__
@@ -240,8 +240,8 @@ class MemoryConfig(Config):
     def values(self):
         return self.data.values()
 
-    def get(self, item):
-        return self.data.get(item)
+    def get(self, key, default):
+        return self.data.get(key, default)
 
     keys.__doc__ = data.keys.__doc__
     items.__doc__ = data.items.__doc__
