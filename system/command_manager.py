@@ -60,7 +60,8 @@ class CommandManager(object):
         """
         self.factory_manager = factory_manager
 
-    def register_command(self, command, handler, owner, permission=None):
+    def register_command(self, command, handler, owner, permission=None,
+                         aliases=None):
         """
         Register a command, provided it hasn't been registered already.
         The params should go like this..
@@ -69,15 +70,20 @@ class CommandManager(object):
         :param handler: The command handler
         :param owner: The plugin or object registering the command
         :param permission: The permission needed to run the command
+        :param aliases: A list of aliases for the command being registered.
 
         :type command: str
         :type handler: function
         :type owner: PluginObject
         :type permission: str, None
+        :type aliases: list, None
 
         :returns: Whether the command was registered or not
         :rtype: Boolean
         """
+
+        if aliases is None:
+            aliases = []
 
         if command in self.commands:
             self.logger.warn("Object '%s' tried to register command '%s' but"
@@ -87,13 +93,26 @@ class CommandManager(object):
                                 self.commands[command]["owner"])
                              )
             return False
+
         self.logger.debug("Registering command: %s (%s)"
                           % (command, owner))
-        self.commands[command] = {
+        commandobj = {
             "f": handler,
             "permission": permission,
             "owner": owner
         }
+
+        self.commands[command] = commandobj
+
+        for alias in aliases:
+            if alias in self.commands:
+                self.logger.warn("Failed to register command alias '%s' as it"
+                                 "already belongs to another command." % alias)
+                continue
+
+            self.logger.debug("Registering alias: %s -> %s (%s)"
+                              % (alias, command, owner))
+            self.commands[alias] = commandobj
         return True
 
     def unregister_commands_for_owner(self, owner):
