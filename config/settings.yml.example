@@ -17,6 +17,7 @@ protocols:
 plugins:
   - Auth  # Configurable permissions and authentication system that ships with Ultros
   - Bridge  # Configurable message relaying between protocols or within a protocol
+  - Factoids  # Create and retrieve factoids
   - URLs  # Tools for working with URLs, URL titles and URL shorteners
 
 reconnections: # Settings for reconnecting on connection failures.
