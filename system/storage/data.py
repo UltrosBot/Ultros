@@ -34,7 +34,7 @@ class Data(object):
     """
     Base class for data storage objects, mostly for type-checking.
     """
-    pass
+    editable = False
 
 
 class YamlData(Data):
@@ -72,6 +72,8 @@ class YamlData(Data):
     For sanity's sake, all YAML files should end in .yml - but this is not
     enforced.
     """
+
+    editable = True
 
     data = {}
 
@@ -281,6 +283,8 @@ class JSONData(Data):
     For sanity's sake, all JSON files should end in .json - but this is not
     enforced.
     """
+
+    editable = True
 
     data = {}
 
