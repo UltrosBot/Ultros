@@ -64,7 +64,7 @@ class StorageManager(object):
         if storage_type == "data":
             if path in self.data_files:
                 if not self.data_files[path].is_owner(obj) \
-                   or not obj in self.editors:
+                   or obj not in self.editors:
                     raise OtherOwnershipError("Data file %s is owned by "
                                               "another object." % path)
                 return self.data_files[path].get()
@@ -81,7 +81,7 @@ class StorageManager(object):
         elif storage_type == "config":
             if path in self.config_files:
                 if not self.config_files[path].is_owner(obj) \
-                   or not obj in self.editors:
+                   or obj not in self.editors:
                     raise OtherOwnershipError("Config file %s is owned by "
                                               "another object." % path)
                 return self.config_files[path].get()
