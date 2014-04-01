@@ -33,9 +33,6 @@ class Plugin(PluginObject):
 
     commands = None
     config = None
-    db = None
-    events = None
-    storage = None
 
     def setup(self):
         ### Grab important shit
@@ -44,12 +41,12 @@ class Plugin(PluginObject):
         self.storage = StorageManager()
 
         ### Set up database
-        self.db = self.storage.get_file(self,
-                                        "data",
-                                        DBAPI,
-                                        "sqlite3:data/plugins/factoids.sqlite",
-                                        "data/plugins/factoids.sqlite")
-        with self.db as db:
+        self.database = self.storage.get_file(self,
+                                              "data",
+                                              DBAPI,
+                                              "sqlite3:data/test.sqlite",
+                                              "data/plugins/factoids.sqlite")
+        with self.database as db:
             db.runQuery("CREATE TABLE IF NOT EXISTS factoids ("
                         "factoid_key TEXT, "
                         "location TEXT, "
@@ -230,7 +227,7 @@ class Plugin(PluginObject):
                                  protocol):
             return defer.fail(
                 NoPermissionError("User does not have required permission"))
-        with self.db as db:
+        with self.database as db:
             return db.runInteraction(self._add_factoid_interaction,
                                      factoid_key,
                                      location,
@@ -250,7 +247,7 @@ class Plugin(PluginObject):
                                  protocol):
             return defer.fail(
                 NoPermissionError("User does not have required permission"))
-        with self.db as db:
+        with self.database as db:
             return db.runQuery(
                 # Fuck you PEP8
                 "INSERT INTO factoids VALUES(?, ?, ?, ?)",
@@ -274,7 +271,7 @@ class Plugin(PluginObject):
                                  protocol):
             return defer.fail(
                 NoPermissionError("User does not have required permission"))
-        with self.db as db:
+        with self.database as db:
             return db.runInteraction(self._delete_factoid_interaction,
                                      factoid_key,
                                      location)
@@ -293,7 +290,7 @@ class Plugin(PluginObject):
                                  protocol):
             return defer.fail(
                 NoPermissionError("User does not have required permission"))
-        with self.db as db:
+        with self.database as db:
             return db.runInteraction(self._get_factoid_interaction,
                                      factoid_key,
                                      location)
