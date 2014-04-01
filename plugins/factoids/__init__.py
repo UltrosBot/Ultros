@@ -265,7 +265,7 @@ class Plugin(PluginObject):
             valid = location is None or self.valid_location(location, source)
         except Exception as ex:
             return defer.fail(ex)
-        if not self.__check_perm(self.PERM_SET % location,
+        if not self.__check_perm(self.PERM_DEL % location,
                                  caller,
                                  source,
                                  protocol):
@@ -284,7 +284,7 @@ class Plugin(PluginObject):
             valid = location is None or self.valid_location(location, source)
         except Exception as ex:
             return defer.fail(ex)
-        if not self.__check_perm(self.PERM_SET % location,
+        if not self.__check_perm(self.PERM_GET % location,
                                  caller,
                                  source,
                                  protocol):
