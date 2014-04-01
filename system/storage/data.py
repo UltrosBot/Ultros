@@ -452,15 +452,20 @@ class DBAPIData(Data):
     """
     Data object that uses Twisted's async DBAPI adapters.
 
-    As with SQLite, there is no dictionary access here, instead use the
-    `with...as` construct. This will return a ConnectionPool instance
-    for you to work with.
+    As with SQLite, there is no dictionary access here. Instead, you can
+    call the three usual functions directly on the class instance, and
+    they'll be passed through to the underlying DBAPI implementation.
 
-    For example:
+    For example::
 
-    with data as c:
-        d = c.runQuery("SELECT * FROM data WHERE thing = ?", (thing,))
+        d = data.runQuery("SELECT * FROM data WHERE thing = ?", (thing,))
         d.addCallback(...)
+
+    If you need full access to the underlying ConnectionPool, you can use
+    the **with** construct::
+
+        with data as c:
+            # Do stuff with c here
 
     To specify your connection info, you'll have to pass in some extra args
     to describe your connection::
@@ -535,6 +540,15 @@ class DBAPIData(Data):
         self.logger.debug("Parsed module: %s" % parsed_module)
 
         self.pool = adbapi.ConnectionPool(parsed_module, *args, **kwargs)
+
+    def runInteraction(self, *args, **kwargs):
+        return self.pool.runInteraction(*args, **kwargs)
+
+    def runOperation(self, *args, **kwargs):
+        return self.pool.runOperation(*args, **kwargs)
+
+    def runQuery(self, *args, **kwargs):
+        return self.pool.runQuery(*args, **kwargs)
 
     def __enter__(self):
         return self.pool
