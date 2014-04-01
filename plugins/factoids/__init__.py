@@ -52,7 +52,7 @@ class Plugin(PluginObject):
                         "channel TEXT, "
                         "factoid_name TEXT, "
                         "info TEXT, "
-                        "UNIQUE(factoid_key, location) "
+                        "UNIQUE(factoid_key, location, protocol, channel) "
                         "ON CONFLICT REPLACE)")
 
         ### Register commands
@@ -72,6 +72,11 @@ class Plugin(PluginObject):
                                        None)
         self.commands.register_command("getfactoid",
                                        self.factoid_get_command,
+                                       self,
+                                       None)
+        # TODO: Remove below debug commands
+        self.commands.register_command("anus",
+                                       self.anus_command,
                                        self,
                                        None)
         # TODO: Replace commands below with aliases when implemented
@@ -195,45 +200,56 @@ class Plugin(PluginObject):
     def _get_factoid_interaction(self, txn, factoid_key, location, protocol,
                                  channel):
         """
-        Deletes a factoid if it exists, otherwise raises MissingFactoidError
+        Gets a factoid if it exists, otherwise raises MissingFactoidError
         :return: (factoid_name, [entry, entry, ...])
         """
+        self.logger.debug("Getting factoid params: factoid_key = '%s', "
+                          "location = '%s', protocol = '%s', channel = '%s'",
+                          factoid_key,
+                          location,
+                          protocol,
+                          channel)
         if location is None:
+            self.logger.debug("Location is None - getting all factoids with "
+                              "key '%s'", factoid_key)
             txn.execute("SELECT location, protocol, channel, factoid_name, "
                         "info FROM factoids WHERE factoid_key = ?",
                         (factoid_key,))
+            results = txn.fetchall()
+            if len(results) > 0:
+                # Check for channel match
+                for row in results:
+                    if ((row[0] == self.CHANNEL and row[1] == protocol and
+                         row[2] == channel)):
+                        self.logger.debug("Match found (channel)!")
+                        return (row[3], row[4].split("\n"))
+                # Check for protocol match
+                for row in results:
+                    if row[0] == self.PROTOCOL and row[1] == protocol:
+                        self.logger.debug("Match found (protocol)!")
+                        return (row[3], row[4].split("\n"))
+                # Check for global match
+                for row in results:
+                    if row[0] == self.GLOBAL:
+                        self.logger.debug("Match found (global)!")
+                        return (row[3], row[4].split("\n"))
         else:
             txn.execute("SELECT location, protocol, channel, factoid_name, "
                         "info FROM factoids WHERE factoid_key = ? AND "
                         "location = ? AND protocol = ? AND channel = ?",
                         (factoid_key, location, protocol, channel))
-        results = txn.fetchall()
-        if len(results) == 0:
-            raise MissingFactoidError("Factoid '%s' does not exist" %
-                                      factoid_key)
-        else:
-            for loc in (self.CHANNEL, self.PROTOCOL, self.GLOBAL):
-                for row in results:
-                    if row[0] == loc:
-                        return (row[3], row[4].split("\n"))
-            # We shouldn't get here unless something else messes with the db
-            self.logger.error("Unexpected location(s) in database for factoid "
-                              "'%s'" % factoid_key)
-            raise MissingFactoidError("Could not find a matching factoid with "
-                                      "a valid location")
+            results = txn.fetchall()
+            if len(results) > 0:
+                return (results[0][3], results[0][4].split("\n"))
+        raise MissingFactoidError("Factoid '%s' does not exist" % factoid_key)
 
     def add_factoid(self, caller, source, protocol, location, factoid, info):
         location = location.lower()
         factoid_key = factoid.lower()
-        protocol_key = ""
-        channel_key = ""
+        protocol_key = protocol.name.lower()
+        channel_key = source.name.lower()
         try:
             valid = location is None or self.valid_location(location, source)
-            if location == self.CHANNEL:
-                protocol_key = protocol.name.lower()
-                channel_key = source.name.lower()
-            elif location == self.PROTOCOL:
-                protocol_key = protocol.name.lower()
         except Exception as ex:
             return defer.fail(ex)
         if not self.__check_perm(self.PERM_ADD % location,
@@ -254,15 +270,10 @@ class Plugin(PluginObject):
     def set_factoid(self, caller, source, protocol, location, factoid, info):
         location = location.lower()
         factoid_key = factoid.lower()
-        protocol_key = ""
-        channel_key = ""
+        protocol_key = protocol.name.lower()
+        channel_key = source.name.lower()
         try:
             valid = location is None or self.valid_location(location, source)
-            if location == self.CHANNEL:
-                protocol_key = protocol.name.lower()
-                channel_key = source.name.lower()
-            elif location == self.PROTOCOL:
-                protocol_key = protocol.name.lower()
         except Exception as ex:
             return defer.fail(ex)
         if not self.__check_perm(self.PERM_SET % location,
@@ -286,15 +297,10 @@ class Plugin(PluginObject):
     def delete_factoid(self, caller, source, protocol, location, factoid):
         location = location.lower()
         factoid_key = factoid.lower()
-        protocol_key = ""
-        channel_key = ""
+        protocol_key = protocol.name.lower()
+        channel_key = source.name.lower()
         try:
             valid = location is None or self.valid_location(location, source)
-            if location == self.CHANNEL:
-                protocol_key = protocol.name.lower()
-                channel_key = source.name.lower()
-            elif location == self.PROTOCOL:
-                protocol_key = protocol.name.lower()
         except Exception as ex:
             return defer.fail(ex)
         if not self.__check_perm(self.PERM_DEL % location,
@@ -314,15 +320,10 @@ class Plugin(PluginObject):
         if location is not None:
             location = location.lower()
         factoid_key = factoid.lower()
-        protocol_key = ""
-        channel_key = ""
+        protocol_key = protocol.name.lower()
+        channel_key = source.name.lower()
         try:
             valid = location is None or self.valid_location(location, source)
-            if location == self.CHANNEL:
-                protocol_key = protocol.name.lower()
-                channel_key = source.name.lower()
-            elif location == self.PROTOCOL:
-                protocol_key = protocol.name.lower()
         except Exception as ex:
             return defer.fail(ex)
         if not self.__check_perm(self.PERM_GET % location,
@@ -422,6 +423,12 @@ class Plugin(PluginObject):
             lambda f: self._factoid_command_fail(caller, f)
         )
 
+    def anus_command(self, protocol, caller, source, command, raw_args,
+                     parsed_args):
+        from pprint import pprint
+        with self.database as db:
+            db.runQuery("SELECT * FROM factoids").addCallbacks(pprint)
+
     # endregion
 
     def _print_query(self, result):
@@ -467,7 +474,7 @@ class Plugin(PluginObject):
             return
         d = self.get_factoid(event.source,
                              event.target,
-                             event.source,
+                             event.caller,
                              None,
                              factoid)
         d.addCallbacks(
