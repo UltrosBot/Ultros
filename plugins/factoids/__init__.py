@@ -31,9 +31,6 @@ class Plugin(PluginObject):
      RES_NO_PERMS,
      RES_MISSING_FACTOID) = xrange(4)
 
-    commands = None
-    config = None
-
     def setup(self):
         ### Grab important shit
         self.commands = CommandManager()
@@ -44,12 +41,15 @@ class Plugin(PluginObject):
         self.database = self.storage.get_file(self,
                                               "data",
                                               DBAPI,
-                                              "sqlite3:data/test.sqlite",
+                                              "sqlite3:data/plugins/factoids."
+                                              "sqlite",  # FUCK YOU PEP8
                                               "data/plugins/factoids.sqlite")
         with self.database as db:
             db.runQuery("CREATE TABLE IF NOT EXISTS factoids ("
                         "factoid_key TEXT, "
                         "location TEXT, "
+                        "protocol TEXT, "
+                        "channel TEXT, "
                         "factoid_name TEXT, "
                         "info TEXT, "
                         "UNIQUE(factoid_key, location) "
@@ -144,61 +144,69 @@ class Plugin(PluginObject):
 
     # region API functions to access factoids
 
-    def _add_factoid_interaction(self, txn, factoid_key, location, factoid,
-                                 info):
+    def _add_factoid_interaction(self, txn, factoid_key, location, protocol,
+                                 channel, factoid, info):
         """
         Appends a factoid to an existing one if there, otherwise creates it.
         :return: True if already exists, otherwise False
         """
         txn.execute("SELECT * FROM factoids WHERE "
-                    "factoid_key = ? AND location = ?",
-                    (factoid_key, location))
+                    "factoid_key = ? AND location = ? AND "
+                    "protocol = ? AND channel = ?",
+                    (factoid_key, location, protocol, channel))
         results = txn.fetchall()
         if len(results) == 0:
             # Factoid doesn't exist yet, create it
-            txn.execute("INSERT INTO factoids VALUES(?, ?, ?, ?)",
+            txn.execute("INSERT INTO factoids VALUES(?, ?, ?, ?, ?, ?)",
                         (
                             factoid_key,
                             location,
+                            protocol,
+                            channel,
                             factoid,
                             info
                         ))
             return False
         else:
             # Factoid already exists, append
-            txn.execute("INSERT INTO factoids VALUES(?, ?, ?, ?)",
+            txn.execute("INSERT INTO factoids VALUES(?, ?, ?, ?, ?, ?)",
                         (
                             results[0][0],
                             results[0][1],
                             results[0][2],
-                            results[0][3] + "\n" + info
+                            results[0][3],
+                            results[0][4],
+                            results[0][5] + "\n" + info
                         ))
             return True
 
-    def _delete_factoid_interaction(self, txn, factoid_key, location):
+    def _delete_factoid_interaction(self, txn, factoid_key, location, protocol,
+                                    channel):
         """
         Deletes a factoid if it exists, otherwise raises MissingFactoidError
         """
-        txn.execute("DELETE FROM factoids WHERE "
-                    "factoid_key = ? AND location = ?",
-                    (factoid_key, location))
+        txn.execute("DELETE FROM factoids WHERE factoid_key = ? AND "
+                    "location = ? AND protocol = ? AND channel = ?",
+                    (factoid_key, location, protocol, channel))
         if txn.rowcount == 0:
             raise MissingFactoidError("Factoid '%s' does not exist" %
                                       factoid_key)
 
-    def _get_factoid_interaction(self, txn, factoid_key, location):
+    def _get_factoid_interaction(self, txn, factoid_key, location, protocol,
+                                 channel):
         """
         Deletes a factoid if it exists, otherwise raises MissingFactoidError
         :return: (factoid_name, [entry, entry, ...])
         """
         if location is None:
-            txn.execute("SELECT location, factoid_name, info FROM factoids "
-                        "WHERE factoid_key = ?",
+            txn.execute("SELECT location, protocol, channel, factoid_name, "
+                        "info FROM factoids WHERE factoid_key = ?",
                         (factoid_key,))
         else:
-            txn.execute("SELECT location, factoid_name, info FROM factoids "
-                        "WHERE factoid_key = ? AND location = ?",
-                        (factoid_key, location))
+            txn.execute("SELECT location, protocol, channel, factoid_name, "
+                        "info FROM factoids WHERE factoid_key = ? AND "
+                        "location = ? AND protocol = ? AND channel = ?",
+                        (factoid_key, location, protocol, channel))
         results = txn.fetchall()
         if len(results) == 0:
             raise MissingFactoidError("Factoid '%s' does not exist" %
@@ -207,18 +215,25 @@ class Plugin(PluginObject):
             for loc in (self.CHANNEL, self.PROTOCOL, self.GLOBAL):
                 for row in results:
                     if row[0] == loc:
-                        return (row[1], row[2].split("\n"))
+                        return (row[3], row[4].split("\n"))
             # We shouldn't get here unless something else messes with the db
             self.logger.error("Unexpected location(s) in database for factoid "
                               "'%s'" % factoid_key)
-            raise MissingFactoidError("Could not find a matchin factoid with "
+            raise MissingFactoidError("Could not find a matching factoid with "
                                       "a valid location")
 
     def add_factoid(self, caller, source, protocol, location, factoid, info):
         location = location.lower()
         factoid_key = factoid.lower()
+        protocol_key = ""
+        channel_key = ""
         try:
             valid = location is None or self.valid_location(location, source)
+            if location == self.CHANNEL:
+                protocol_key = protocol.name.lower()
+                channel_key = source.name.lower()
+            elif location == self.PROTOCOL:
+                protocol_key = protocol.name.lower()
         except Exception as ex:
             return defer.fail(ex)
         if not self.__check_perm(self.PERM_ADD % location,
@@ -231,14 +246,23 @@ class Plugin(PluginObject):
             return db.runInteraction(self._add_factoid_interaction,
                                      factoid_key,
                                      location,
+                                     protocol_key,
+                                     channel_key,
                                      factoid,
                                      info)
 
     def set_factoid(self, caller, source, protocol, location, factoid, info):
         location = location.lower()
         factoid_key = factoid.lower()
+        protocol_key = ""
+        channel_key = ""
         try:
             valid = location is None or self.valid_location(location, source)
+            if location == self.CHANNEL:
+                protocol_key = protocol.name.lower()
+                channel_key = source.name.lower()
+            elif location == self.PROTOCOL:
+                protocol_key = protocol.name.lower()
         except Exception as ex:
             return defer.fail(ex)
         if not self.__check_perm(self.PERM_SET % location,
@@ -249,11 +273,12 @@ class Plugin(PluginObject):
                 NoPermissionError("User does not have required permission"))
         with self.database as db:
             return db.runQuery(
-                # Fuck you PEP8
-                "INSERT INTO factoids VALUES(?, ?, ?, ?)",
+                "INSERT INTO factoids VALUES(?, ?, ?, ?, ?, ?)",
                 (
                     factoid_key,
                     location,
+                    protocol_key,
+                    channel_key,
                     factoid,
                     info
                 ))
@@ -261,8 +286,15 @@ class Plugin(PluginObject):
     def delete_factoid(self, caller, source, protocol, location, factoid):
         location = location.lower()
         factoid_key = factoid.lower()
+        protocol_key = ""
+        channel_key = ""
         try:
             valid = location is None or self.valid_location(location, source)
+            if location == self.CHANNEL:
+                protocol_key = protocol.name.lower()
+                channel_key = source.name.lower()
+            elif location == self.PROTOCOL:
+                protocol_key = protocol.name.lower()
         except Exception as ex:
             return defer.fail(ex)
         if not self.__check_perm(self.PERM_DEL % location,
@@ -274,14 +306,23 @@ class Plugin(PluginObject):
         with self.database as db:
             return db.runInteraction(self._delete_factoid_interaction,
                                      factoid_key,
-                                     location)
+                                     location,
+                                     protocol_key,
+                                     channel_key)
 
     def get_factoid(self, caller, source, protocol, location, factoid):
         if location is not None:
             location = location.lower()
         factoid_key = factoid.lower()
+        protocol_key = ""
+        channel_key = ""
         try:
             valid = location is None or self.valid_location(location, source)
+            if location == self.CHANNEL:
+                protocol_key = protocol.name.lower()
+                channel_key = source.name.lower()
+            elif location == self.PROTOCOL:
+                protocol_key = protocol.name.lower()
         except Exception as ex:
             return defer.fail(ex)
         if not self.__check_perm(self.PERM_GET % location,
@@ -293,7 +334,9 @@ class Plugin(PluginObject):
         with self.database as db:
             return db.runInteraction(self._get_factoid_interaction,
                                      factoid_key,
-                                     location)
+                                     location,
+                                     protocol_key,
+                                     channel_key)
 
     # endregion
 
