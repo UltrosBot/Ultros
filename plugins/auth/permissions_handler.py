@@ -2,6 +2,8 @@ __author__ = 'Gareth Coles'
 
 # Required: check(permission, caller, source, protocol)
 
+import fnmatch
+
 
 class permissionsHandler(object):
 
@@ -158,7 +160,7 @@ class permissionsHandler(object):
                     return True
 
             user_perms = self.data["users"][user]["permissions"]
-            if permission in user_perms:
+            if self.compare_permissions(permission, user_perms):
                 return True
 
             if check_group:
@@ -248,6 +250,16 @@ class permissionsHandler(object):
         permission = permission.lower()
 
         if group in self.data["groups"]:
-            if permission in self.data["groups"][group]["permissions"]:
+            perms = self.data["groups"][group]["permissions"]
+            return self.compare_permissions(permission, perms)
+        return False
+
+    # Permissions comparisons
+    def compare_permissions(self, perm, permissions, wildcard=True):
+        perm = perm.lower()
+        for element in permissions:
+            if wildcard and fnmatch.fnmatch(perm, element.lower()):
+                return True
+            elif (not wildcard) and perm == element.lower():
                 return True
         return False
