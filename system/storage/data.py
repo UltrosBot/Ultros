@@ -142,6 +142,9 @@ class YamlData(Data):
     def values(self):
         return self.data.values()
 
+    def get(self, item):
+        return self.data.get(item)
+
     keys.__doc__ = data.keys.__doc__
     items.__doc__ = data.items.__doc__
     values.__doc__ = data.values.__doc__
@@ -346,6 +349,10 @@ class JSONData(Data):
         fh.write(data)
         fh.flush()
         fh.close()
+
+
+    def get(self, item):
+        return self.data.get(item)
 
     def __enter__(self):
         with self.context_mutex:
