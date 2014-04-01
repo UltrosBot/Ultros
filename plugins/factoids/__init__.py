@@ -14,6 +14,8 @@ __author__ = 'Sean'
 # * Eat your school
 # * Don't do vegetables
 
+# I AM THE ONE AND ONLY
+
 
 class Plugin(PluginObject):
 
