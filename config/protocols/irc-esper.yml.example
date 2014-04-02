@@ -7,6 +7,11 @@ network: # Network connection settings
   port: 6697 # Port to connect to
   ssl: yes # Use SSL?
   password: ""
+# You may set this if you need the bot to bind to a certain IP address (for example, for a VHOST).
+# If you don't need it, you should omit it. Note that your bot will be unable to connect if you
+#   don't set this properly - It should either be an IP address assigned to your machine, or a
+#   domain that resolves to an IP address assigned to your machine.
+#  bindaddr: 127.0.0.1
 
 identity: # Settings relating to identification and authentication
   nick: Ultros # The bot's nickname

@@ -112,6 +112,14 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
         self.nickname = self.identity["nick"]
 
+        binding = self.networking.get("bindaddr", None)
+
+        if binding is None:
+            bindaddr = None
+        else:
+            self.log.warn("Binding to address: %s" % binding)
+            bindaddr = (binding, 0)
+
         event = general_events.PreConnectEvent(self, config)
         self.event_manager.run_callback("PreConnect", event)
 
@@ -140,7 +148,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                 self.networking["port"],
                 self.factory,
                 ssl.ClientContextFactory(),
-                120
+                120,
+                bindAddress=bindaddr  # ("192.168.1.2", 0)
             )
         else:
             self.log.debug("Connecting without SSL")
@@ -148,7 +157,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                 self.networking["address"],
                 self.networking["port"],
                 self.factory,
-                120
+                120,
+                bindAddress=bindaddr  # ("192.168.1.2", 0)
             )
 
         event = general_events.PostConnectEvent(self, config)
