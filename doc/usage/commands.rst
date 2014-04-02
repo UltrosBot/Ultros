@@ -46,8 +46,8 @@ Dialectizer
 +-------------------+--------+-------------------------+---------------------------------------------------+
 | Commmand          | Params | Permission              | Description                                       |
 +===================+========+=========================+===================================================+
-| **.dialectizer**  | Name   | dialectizer.set         | Allows you to set a dialectizer for the current   |
-| |br| .dialectiser |        |                         | channel.                                          |
+| **.dialectizer**  | Name   | dialectizer.set         | Allows you to set a dialectizer for the      |br| |
+| |br| .dialectiser |        |                         | current channel.                                  |
 |                   |        |                         |                                                   |
 +-------------------+--------+-------------------------+---------------------------------------------------+
 
@@ -77,41 +77,41 @@ Factoids
 +-------------------+---------------+-------------------------+---------------------------------------------------+
 | **Short commands for getting factoids**                                                                         |
 +-------------------+---------------+-------------------------+---------------------------------------------------+
-| ??                | Key           | factoids.get.[location] | Retrieve a factoid in the current channel.        |
+| ??                | Key           | factoids.get.channel    | Retrieve a factoid in the current channel.        |
 +-------------------+---------------+-------------------------+---------------------------------------------------+
-| ??<               | Key           | factoids.get.[location] | Retrieve a factoid privately.                     |
+| ??<               | Key           | factoids.get.channel    | Retrieve a factoid privately.                     |
 +-------------------+---------------+-------------------------+---------------------------------------------------+
-| ??>               | Key      |br| | factoids.get.[location] | Retrieve a factoid and have it sent to       |br| |
+| ??>               | Key      |br| | factoids.get.channel    | Retrieve a factoid and have it sent to       |br| |
 |                   | Username      |                         | another user privately.                           |
 +-------------------+---------------+-------------------------+---------------------------------------------------+
 | **Short commands for adding to factoids**                                                                       |
 +-------------------+---------------+-------------------------+---------------------------------------------------+
-| ??+               | Key      |br| | factoids.add.[location] | Create or add to a factoid for the current   |br| |
+| ??+               | Key      |br| | factoids.add.channel    | Create or add to a factoid for the current   |br| |
 |                   | Data          |                         | channel.                                          |
 +-------------------+---------------+-------------------------+---------------------------------------------------+
-| @?+               | Key      |br| | factoids.add.[location] | Create or add to a factoid for the current   |br| |
+| @?+               | Key      |br| | factoids.add.protocol   | Create or add to a factoid for the current   |br| |
 |                   | Data          |                         | protocol.                                         |
 +-------------------+---------------+-------------------------+---------------------------------------------------+
-| !?+               | Key      |br| | factoids.add.[location] | Create or add to a factoid in the global scope.   |
+| !?+               | Key      |br| | factoids.add.global     | Create or add to a factoid in the global scope.   |
 |                   | Data          |                         |                                                   |
 +-------------------+---------------+-------------------------+---------------------------------------------------+
 | **Short commands for deleting factoids**                                                                        |
 +-------------------+---------------+-------------------------+---------------------------------------------------+
-| ??-               | Key           | factoids.del.[location] | Delete a factoid from the current channel.        |
+| ??-               | Key           | factoids.del.channel    | Delete a factoid from the current channel.        |
 +-------------------+---------------+-------------------------+---------------------------------------------------+
-| @?-               | Key           | factoids.del.[location] | Delete a factoid from the current protocol.       |
+| @?-               | Key           | factoids.del.protocol   | Delete a factoid from the current protocol.       |
 +-------------------+---------------+-------------------------+---------------------------------------------------+
-| !?-               | Key           | factoids.del.[location] | Delete a factoid from the global scope.           |
+| !?-               | Key           | factoids.del.global     | Delete a factoid from the global scope.           |
 +-------------------+---------------+-------------------------+---------------------------------------------------+
 | **Short commands for setting factoids**                                                                         |
 +-------------------+---------------+-------------------------+---------------------------------------------------+
-| ??~               | Key      |br| | factoids.set.[location] | Create or replace a factoid from the current |br| |
+| ??~               | Key      |br| | factoids.set.channel    | Create or replace a factoid from the current |br| |
 |                   | Data          |                         | channel.                                          |
 +-------------------+---------------+-------------------------+---------------------------------------------------+
-| @?~               | Key      |br| | factoids.set.[location] | Create or replace a factoid for the current  |br| |
+| @?~               | Key      |br| | factoids.set.protocol   | Create or replace a factoid for the current  |br| |
 |                   | Data          |                         | protocol.                                         |
 +-------------------+---------------+-------------------------+---------------------------------------------------+
-| !?~               | Key      |br| | factoids.set.[location] | Create or replace a factoid from the global  |br| |
+| !?~               | Key      |br| | factoids.set.global     | Create or replace a factoid from the global  |br| |
 |                   | Data          |                         | scope.                                            |
 +-------------------+---------------+-------------------------+---------------------------------------------------+
 
