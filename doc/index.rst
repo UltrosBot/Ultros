@@ -18,6 +18,8 @@ out very soon!
    installation/index
    installation/configuration
 
+   usage/commands
+
    api/index
 
 Indexes

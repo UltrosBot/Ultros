@@ -40,9 +40,8 @@ class Plugin(PluginObject):
         self.events.add_callback("MessageSent", self, self.handle_msg_sent,
                                  1)
         self.commands.register_command("dialectizer", self.dialectizer_command,
-                                       self, "dialectizer.set")
-        self.commands.register_command("dialectiser", self.dialectizer_command,
-                                       self, "dialectizer.set")
+                                       self, "dialectizer.set",
+                                       aliases=["dialectiser"])
 
     def handle_msg_sent(self, event=MessageSent):
         if isinstance(event.target, User):
