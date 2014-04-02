@@ -69,14 +69,10 @@ class Plugin(PluginObject):
         self.commands.register_command("deletefactoid",
                                        self.factoid_delete_command,
                                        self,
-                                       None)
+                                       None,
+                                       ["delfactoid"])
         self.commands.register_command("getfactoid",
                                        self.factoid_get_command,
-                                       self,
-                                       None)
-        # TODO: Replace commands below with aliases when implemented
-        self.commands.register_command("delfactoid",
-                                       self.factoid_delete_command,
                                        self,
                                        None)
 
@@ -185,9 +181,18 @@ class Plugin(PluginObject):
         """
         Deletes a factoid if it exists, otherwise raises MissingFactoidError
         """
-        txn.execute("DELETE FROM factoids WHERE factoid_key = ? AND "
-                    "location = ? AND protocol = ? AND channel = ?",
-                    (factoid_key, location, protocol, channel))
+
+        self.logger.debug("DELETE | Key: %s | Loc: %s | Pro: %s | Cha: %s"
+                          % (factoid_key, location, protocol, channel))
+
+        if location == self.CHANNEL:
+            txn.execute("DELETE FROM factoids WHERE factoid_key = ? AND "
+                        "location = ? AND protocol = ? AND channel = ?",
+                        (factoid_key, location, protocol, channel))
+        else:
+            txn.execute("DELETE FROM factoids WHERE factoid_key = ? AND "
+                        "location = ? AND protocol = ?",
+                        (factoid_key, location, protocol))
         if txn.rowcount == 0:
             raise MissingFactoidError("Factoid '%s' does not exist" %
                                       factoid_key)
@@ -431,15 +436,24 @@ class Plugin(PluginObject):
         """
         handlers = {
             "??": self._message_handler_get,
+            "?<": self._message_handler_get_self,
+            "?>": self._message_handler_get_other,
             "??+": self._message_handler_add,
             "??~": self._message_handler_set,
-            "??-": self._message_handler_delete
+            "??-": self._message_handler_delete,
+            "!?+": self._message_handler_add_global,
+            "!?~": self._message_handler_set_global,
+            "!?-": self._message_handler_delete_global,
+            "@?+": self._message_handler_add_protocol,
+            "@?~": self._message_handler_set_protocol,
+            "@?-": self._message_handler_delete_protocol
         }
         msg = event.message
         command = None
         factoid = ""
         args = ""
         pos = msg.find(" ")
+        split = msg.split(" ")
         if pos < 0:
             command = msg
         else:
@@ -451,9 +465,11 @@ class Plugin(PluginObject):
                 factoid = msg[pos + 1:pos2].strip()
                 args = msg[pos2 + 1:].strip()
         if command in handlers:
-            handlers[command](command, factoid, args, event)
+            handlers[command](command, factoid, args, event, split)
 
-    def _message_handler_get(self, command, factoid, args, event):
+    ### Getting "commands"
+
+    def _message_handler_get(self, command, factoid, args, event, split):
         """
         Handle ?? factoid "command"
         :type event: MessageReceived
@@ -471,7 +487,54 @@ class Plugin(PluginObject):
             lambda f: self._factoid_command_fail(event.source, f)
         )
 
-    def _message_handler_add(self, command, factoid, args, event):
+    def _message_handler_get_self(self, command, factoid, args, event, split):
+        """
+        Handle ?< factoid "command"
+        :type event: MessageReceived
+        """
+        if not factoid:
+            event.source.respond("Usage: ?< <factoid>")
+            return
+        d = self.get_factoid(event.source,
+                             event.target,
+                             event.caller,
+                             None,
+                             factoid)
+        d.addCallbacks(
+            lambda r: self._factoid_get_command_success(event.source, r),
+            lambda f: self._factoid_command_fail(event.source, f)
+        )
+
+    def _message_handler_get_other(self, command, factoid, args, event, split):
+        """
+        Handle ?> factoid "command"
+        :type event: MessageReceived
+        """
+        if not len(split) > 2:
+            event.source.respond("Usage: ?> <user> <factoid>")
+            return
+
+        wanted = split[1]
+        factoid = split[2]
+        user = event.caller.get_user(wanted)
+
+        if user is None:
+            event.source.respond("Unable to find that user.")
+            return
+
+        d = self.get_factoid(event.source,
+                             event.target,
+                             event.caller,
+                             None,
+                             factoid)
+        d.addCallbacks(
+            lambda r: self._factoid_get_command_success(user, r),
+            lambda f: self._factoid_command_fail(event.source, f)
+        )
+
+    ### Channel "commands"
+
+    def _message_handler_add(self, command, factoid, args, event, split):
         """
         Handle ??+ factoid "command"
         :type event: MessageReceived
@@ -490,7 +553,7 @@ class Plugin(PluginObject):
             lambda f: self._factoid_command_fail(event.source, f)
         )
 
-    def _message_handler_set(self, command, factoid, args, event):
+    def _message_handler_set(self, command, factoid, args, event, split):
         """
         Handle ??~ factoid "command"
         :type event: MessageReceived
@@ -509,7 +572,7 @@ class Plugin(PluginObject):
             lambda f: self._factoid_command_fail(event.source, f)
         )
 
-    def _message_handler_delete(self, command, factoid, args, event):
+    def _message_handler_delete(self, command, factoid, args, event, split):
         """
         Handle ??- factoid "command"
         :type event: MessageReceived
@@ -521,6 +584,128 @@ class Plugin(PluginObject):
                                 event.target,
                                 event.caller,
                                 self.CHANNEL,
+                                factoid)
+        d.addCallbacks(
+            lambda r: event.source.respond("Factoid deleted"),
+            lambda f: self._factoid_command_fail(event.source, f)
+        )
+
+    ### Global "commands"
+
+    def _message_handler_add_global(self, command, factoid, args, event,
+                                    split):
+        """
+        Handle !?+ factoid "command"
+        :type event: MessageReceived
+        """
+        if not factoid or not args:
+            event.source.respond("Usage: !?+ <factoid> <info>")
+            return
+        d = self.add_factoid(event.source,
+                             event.target,
+                             event.caller,
+                             self.GLOBAL,
+                             factoid,
+                             args)
+        d.addCallbacks(
+            lambda r: event.source.respond("Factoid added"),
+            lambda f: self._factoid_command_fail(event.source, f)
+        )
+
+    def _message_handler_set_global(self, command, factoid, args, event,
+                                    split):
+        """
+        Handle !?~ factoid "command"
+        :type event: MessageReceived
+        """
+        if not factoid or not args:
+            event.source.respond("Usage: !?~ <factoid> <info>")
+            return
+        d = self.set_factoid(event.source,
+                             event.target,
+                             event.caller,
+                             self.GLOBAL,
+                             factoid,
+                             args)
+        d.addCallbacks(
+            lambda r: event.source.respond("Factoid set"),
+            lambda f: self._factoid_command_fail(event.source, f)
+        )
+
+    def _message_handler_delete_global(self, command, factoid, args, event,
+                                       split):
+        """
+        Handle !?- factoid "command"
+        :type event: MessageReceived
+        """
+        if factoid is None:
+            event.source.respond("Usage: !?- <factoid>")
+            return
+        d = self.delete_factoid(event.source,
+                                event.target,
+                                event.caller,
+                                self.GLOBAL,
+                                factoid)
+        d.addCallbacks(
+            lambda r: event.source.respond("Factoid deleted"),
+            lambda f: self._factoid_command_fail(event.source, f)
+        )
+
+    ### Protocol-specific "commands"
+
+    def _message_handler_add_protocol(self, command, factoid, args, event,
+                                      split):
+        """
+        Handle @?+ factoid "command"
+        :type event: MessageReceived
+        """
+        if not factoid or not args:
+            event.source.respond("Usage: @?+ <factoid> <info>")
+            return
+        d = self.add_factoid(event.source,
+                             event.target,
+                             event.caller,
+                             self.PROTOCOL,
+                             factoid,
+                             args)
+        d.addCallbacks(
+            lambda r: event.source.respond("Factoid added"),
+            lambda f: self._factoid_command_fail(event.source, f)
+        )
+
+    def _message_handler_set_protocol(self, command, factoid, args, event,
+                                      split):
+        """
+        Handle @?~ factoid "command"
+        :type event: MessageReceived
+        """
+        if not factoid or not args:
+            event.source.respond("Usage: @?~ <factoid> <info>")
+            return
+        d = self.set_factoid(event.source,
+                             event.target,
+                             event.caller,
+                             self.PROTOCOL,
+                             factoid,
+                             args)
+        d.addCallbacks(
+            lambda r: event.source.respond("Factoid set"),
+            lambda f: self._factoid_command_fail(event.source, f)
+        )
+
+    def _message_handler_delete_protocol(self, command, factoid, args, event,
+                                         split):
+        """
+        Handle @?- factoid "command"
+        :type event: MessageReceived
+        """
+        if factoid is None:
+            event.source.respond("Usage: @?- <factoid>")
+            return
+        d = self.delete_factoid(event.source,
+                                event.target,
+                                event.caller,
+                                self.PROTOCOL,
                                 factoid)
         d.addCallbacks(
             lambda r: event.source.respond("Factoid deleted"),

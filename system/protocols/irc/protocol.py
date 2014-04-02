@@ -868,6 +868,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         return user
 
     def get_user(self, *args, **kwargs):
+        # self.log.debug("Searching for user | %s | %s" % (args, kwargs))
         try:
             return self.get_users(*args, **kwargs)[0]
         except IndexError:
