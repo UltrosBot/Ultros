@@ -3,6 +3,7 @@ __author__ = 'Gareth Coles'
 # Required: check(permission, caller, source, protocol)
 
 import fnmatch
+from system.protocols.generic.user import User
 
 
 class permissionsHandler(object):
@@ -49,13 +50,22 @@ class permissionsHandler(object):
     def check(self, permission, caller, source, protocol):
         permission = permission.lower()
 
+        if isinstance(source, User):
+            source = None
+        else:
+            source = source.name.lower()
+
+        protocol = protocol.name.lower()
+
         if caller is None:
-            return self.group_has_permission("default", permission)
+            return self.group_has_permission("default", permission, source,
+                                             protocol)
 
         if caller.authorized:
             username = caller.auth_name
             superuser = self.plugin.config["use-superuser"]
-            return self.user_has_permission(username, permission,
+            return self.user_has_permission(username, permission, source,
+                                            protocol,
                                             check_superadmin=superuser)
         return False
 
@@ -150,6 +160,7 @@ class permissionsHandler(object):
         return False
 
     def user_has_permission(self, user, permission,
+                            source=None, protocol=None,
                             check_group=True, check_superadmin=True):
         user = user.lower()
         permission = permission.lower()
@@ -161,12 +172,25 @@ class permissionsHandler(object):
                     return True
 
             user_perms = self.data["users"][user]["permissions"]
+
+            _protos = self.data["users"][user].get("protocols", {})
+
+            if protocol:
+                _proto = _protos.get(protocol, {})
+                user_perms = user_perms + _proto.get("permissions", [])
+
+                _sources = _protos.get("sources", {})
+
+                if source:
+                    user_perms = user_perms + _sources.get(source, [])
+
             if self.compare_permissions(permission, user_perms):
                 return True
 
             if check_group:
                 user_group = self.data["users"][user]["group"]
-                has_perm = self.group_has_permission(user_group, permission)
+                has_perm = self.group_has_permission(user_group, permission,
+                                                     source, protocol)
                 if has_perm:
                     return True
         return False
@@ -270,12 +294,19 @@ class permissionsHandler(object):
             return None
         return False
 
-    def group_has_permission(self, group, permission):
+    def group_has_permission(self, group, permission,
+                             source=None, protocol=None):
         group = group.lower()
         permission = permission.lower()
 
         groups = []
         all_perms = set()
+
+        self.plugin.logger.debug("Checking group perms...")
+        self.plugin.logger.debug("GROUP | %s" % group)
+        self.plugin.logger.debug("PERMI | %s" % permission)
+        self.plugin.logger.debug("SOURC | %s" % source)
+        self.plugin.logger.debug("PROTO | %s" % protocol)
 
         def _recur(_group):
             if _group in self.data["groups"]:
@@ -283,6 +314,18 @@ class permissionsHandler(object):
                     groups.append(_group)
                     perms_list = self.data["groups"][_group]["permissions"]
                     all_perms.update(set(perms_list))
+
+                    _protos = self.data["groups"][_group].get("protocols", {})
+
+                    if protocol:
+                        _proto = _protos.get(protocol, {})
+
+                        all_perms.update(set(_proto.get("permissions", [])))
+
+                        _sources = _proto.get("sources", {})
+
+                        if source:
+                            all_perms.update(set(_sources.get(source, [])))
 
                     inherit = self.get_group_inheritance(_group)
                     if inherit:
