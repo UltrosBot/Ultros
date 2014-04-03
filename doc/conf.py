@@ -117,7 +117,12 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
         import sphinx_rtd_theme
     except ImportError:
         import pip
-        pip.main(["install", "sphinx_rtd_theme"])
+        pip.main(["install", "sphinx_rtd_theme", "--upgrade"])
+    else:
+        del sphinx_rtd_theme
+        import pip
+        pip.main(["install", "sphinx_rtd_theme", "--upgrade"])
+
         import sphinx_rtd_theme
     html_theme = 'sphinx_rtd_theme'
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
