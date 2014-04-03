@@ -7,15 +7,14 @@ This page is simply a big ol' list of commands, the plugin they're from and thei
 permissions nodes. You can use this as a guide when configuring your instance of
 Ultros.
 
-== Bundled plugins ==
----------------------
+Remember, a **.** is the default command prefix, you can change it in your protocol-specific configuration file.
+Commands that don't start with a **.** here do not use the command prefix.
 
-These plugins are bundled with Ultros. Remember, a **.** is the default command prefix, you can change it in
-your protocol-specific configuration file. Commands that don't start with a **.** here do not use the command
-prefix.
+Additionally, where there are multiple commands, those that are in **bold** are the "real" commands (any others are aliases).
+Any params that are in **bold** are required for that command.
 
-Auth
-----
+Core » Auth
+-----------
 
 +-------------------+-------------------+-------------------------+---------------------------------------------------+
 | Commmand          | Params            | Permission              | Description                                       |
@@ -32,17 +31,13 @@ Auth
 |                   | **Password**      |                         |                                                   |
 +-------------------+-------------------+-------------------------+---------------------------------------------------+
 
-Bridge
-------
+Core » Bridge
+-------------
 
-+-------------------+--------+------------+--------------+
-| Commmand          | Params | Permission | Description  |
-+===================+========+============+==============+
-| **No commands**   | N/A    | N/A        | N/A          |
-+-------------------+--------+------------+--------------+
+This plugin has **no commands**.
 
-Dialectizer
------------
+Core » Dialectizer
+------------------
 
 +-------------------+----------+-------------------------+---------------------------------------------------+
 | Commmand          | Params   | Permission              | Description                                       |
@@ -52,13 +47,15 @@ Dialectizer
 |                   |          |                         |                                                   |
 +-------------------+----------+-------------------------+---------------------------------------------------+
 
-Factoids
---------
+Core » Factoids
+---------------
 
 +-------------------+-------------------+----------------------------+---------------------------------------------------+
 | Commmand          | Params            | Permission                 | Description                                       |
 +===================+===================+============================+===================================================+
-| **Standard commands**                                                                                                  |
+| .. rst-class:: align-center                                                                                            |
+|                                                                                                                        |
+|     **Standard commands**                                                                                              |
 +-------------------+-------------------+----------------------------+---------------------------------------------------+
 | .addfactoid       | **Location** |br| | factoids.add.[location]    | Used to create a new factoid or add a line   |br| |
 |                   | **Key**           |                            | to an existing one.                               |
@@ -76,7 +73,9 @@ Factoids
 |                   | **Key**      |br| |                            | existing one.                                     |
 |                   | **Data**          |                            |                                                   |
 +-------------------+-------------------+----------------------------+---------------------------------------------------+
-| **Short commands for getting factoids**                                                                                |
+| .. rst-class:: align-center                                                                                            |
+|                                                                                                                        |
+|     **Short commands for getting factoids**                                                                            |
 +-------------------+-------------------+----------------------------+---------------------------------------------------+
 | ??                | **Key**           | factoids.get.channel       | Retrieve a factoid in the current channel.        |
 +-------------------+-------------------+----------------------------+---------------------------------------------------+
@@ -85,7 +84,9 @@ Factoids
 | ??>               | **Key**      |br| | factoids.get.channel       | Retrieve a factoid and have it sent to       |br| |
 |                   | **Username**      |                            | another user privately.                           |
 +-------------------+-------------------+----------------------------+---------------------------------------------------+
-| **Short commands for adding to factoids**                                                                              |
+| .. rst-class:: align-center                                                                                            |
+|                                                                                                                        |
+|     **Short commands for adding to factoids**                                                                          |
 +-------------------+-------------------+----------------------------+---------------------------------------------------+
 | ??+               | **Key**      |br| | factoids.add.channel       | Create or add to a factoid for the current   |br| |
 |                   | **Data**          |                            | channel.                                          |
@@ -96,7 +97,9 @@ Factoids
 | !?+               | **Key**      |br| | factoids.add.global        | Create or add to a factoid in the global     |br| |
 |                   | **Data**          |                            | scope.                                            |
 +-------------------+-------------------+----------------------------+---------------------------------------------------+
-| **Short commands for deleting factoids**                                                                               |
+| .. rst-class:: align-center                                                                                            |
+|                                                                                                                        |
+|     **Short commands for deleting factoids**                                                                           |
 +-------------------+-------------------+----------------------------+---------------------------------------------------+
 | ??-               | **Key**           | factoids.delete.channel    | Delete a factoid from the current channel.        |
 +-------------------+-------------------+----------------------------+---------------------------------------------------+
@@ -104,7 +107,9 @@ Factoids
 +-------------------+-------------------+----------------------------+---------------------------------------------------+
 | !?-               | **Key**           | factoids.delete.global     | Delete a factoid from the global scope.           |
 +-------------------+-------------------+----------------------------+---------------------------------------------------+
-| **Short commands for setting factoids**                                                                                |
+| .. rst-class:: align-center                                                                                            |
+|                                                                                                                        |
+|     **Short commands for setting factoids**                                                                            |
 +-------------------+-------------------+----------------------------+---------------------------------------------------+
 | ??~               | **Key**      |br| | factoids.set.channel       | Create or replace a factoid from the         |br| |
 |                   | **Data**          |                            | current channel.                                  |
@@ -116,11 +121,57 @@ Factoids
 |                   | **Data**          |                            | scope.                                            |
 +-------------------+-------------------+----------------------------+---------------------------------------------------+
 
-== Contributed plugins ==
--------------------------
+DrunkOctopus » DrunkOctopus
+---------------------------
 
-The following plugins are from the current contrib repository. You can find them in the package manager, or by
-going to the site_ and clicking on "Extensions".
++-------------------+-----------+--------------------------+---------------------------------------------------+
+| Commmand          | Params    | Permission               | Description                                       |
++===================+===========+==========================+===================================================+
+| **.drunkenness**  | Amount    | drunkoctopus.drunkenness | Shows you the bot's drunkenness level,       |br| |
+|                   |           |                          | and allows you to change it.                      |
++-------------------+-----------+--------------------------+---------------------------------------------------+
+| **.drink**        | **Drink** | drunkoctopus.drink       | Give the bot a drink. Drinks are specified   |br| |
+|                   |           |                          | in the configuration file.                        |
++-------------------+-----------+--------------------------+---------------------------------------------------+
+
+Feeds » Feeds
+-------------
+
+This plugin has **no commands**.
+
+LastFM » LastFM
+---------------
+
++----------------------+-----------+--------------------------+---------------------------------------------------+
+| Commmand             | Params    | Permission               | Description                                       |
++======================+===========+==========================+===================================================+
+| **.nowplaying** |br| | Username  | lastfm.nowplaying        | Shows what track you (or someone else) are   |br| |
+| .np                  |           |                          | currently playing.                                |
++----------------------+-----------+--------------------------+---------------------------------------------------+
+| **.lastfmnick**      | Username  | lastfm.lastfmnick        | Set your Last.FM nickname, or check what     |br| |
+|                      |           |                          | you specified for it.                             |
++----------------------+-----------+--------------------------+---------------------------------------------------+
+
+Minecraft » Minecraft
+---------------------
+
++----------------------+------------------+-----------------+---------------------------------------------------+
+| Commmand             | Params           | Permission      | Description                                       |
++======================+==================+=================+===================================================+
+| **.mcquery**    |br| | **Address** |br| | minecraft.query | Retrieves information on a Minecraft server. |br| |
+|                      | Port             |                 | Port defaults to 25565.                           |
++----------------------+------------------+-----------------+---------------------------------------------------+
+
+Money » Money
+-------------
+
++----------------------+------------------+-----------------+---------------------------------------------------+
+| Commmand             | Params           | Permission      | Description                                       |
++======================+==================+=================+===================================================+
+| **.money**      |br| | **Amount** |br|  | money.main      | Perform a currency conversion. You need to   |br| |
+|                      | **Currencies**   |                 | specify at least one currency code.               |
++----------------------+------------------+-----------------+---------------------------------------------------+
+
 
 .. Footnote links, etc
 
