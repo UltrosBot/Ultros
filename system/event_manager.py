@@ -91,7 +91,7 @@ class EventManager(object):
         :param extra_kwargs: Extra keyword arguments to pass to the handler.
 
         :type callback: str
-        :type plugin: Plugin
+        :type plugin: PluginObject
         :type function: function
         :type priority: int
         :type fltr: function

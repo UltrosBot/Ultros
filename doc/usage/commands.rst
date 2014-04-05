@@ -127,10 +127,10 @@ DrunkOctopus » DrunkOctopus
 +-------------------+-----------+--------------------------+---------------------------------------------------+
 | Commmand          | Params    | Permission               | Description                                       |
 +===================+===========+==========================+===================================================+
-| **.drunkenness**  | Amount    | drunkoctopus.drunkenness | Shows you the bot's drunkenness level,       |br| |
+| .drunkenness      | Amount    | drunkoctopus.drunkenness | Shows you the bot's drunkenness level,       |br| |
 |                   |           |                          | and allows you to change it.                      |
 +-------------------+-----------+--------------------------+---------------------------------------------------+
-| **.drink**        | **Drink** | drunkoctopus.drink       | Give the bot a drink. Drinks are specified   |br| |
+| .drink            | **Drink** | drunkoctopus.drink       | Give the bot a drink. Drinks are specified   |br| |
 |                   |           |                          | in the configuration file.                        |
 +-------------------+-----------+--------------------------+---------------------------------------------------+
 
@@ -148,7 +148,7 @@ LastFM » LastFM
 | **.nowplaying** |br| | Username  | lastfm.nowplaying        | Shows what track you (or someone else) are   |br| |
 | .np                  |           |                          | currently playing.                                |
 +----------------------+-----------+--------------------------+---------------------------------------------------+
-| **.lastfmnick**      | Username  | lastfm.lastfmnick        | Set your Last.FM nickname, or check what     |br| |
+| .lastfmnick          | Username  | lastfm.lastfmnick        | Set your Last.FM nickname, or check what     |br| |
 |                      |           |                          | you specified for it.                             |
 +----------------------+-----------+--------------------------+---------------------------------------------------+
 
@@ -158,7 +158,7 @@ Minecraft » Minecraft
 +----------------------+------------------+-----------------+---------------------------------------------------+
 | Commmand             | Params           | Permission      | Description                                       |
 +======================+==================+=================+===================================================+
-| **.mcquery**    |br| | **Address** |br| | minecraft.query | Retrieves information on a Minecraft server. |br| |
+| .mcquery             | **Address** |br| | minecraft.query | Retrieves information on a Minecraft server. |br| |
 |                      | Port             |                 | Port defaults to 25565.                           |
 +----------------------+------------------+-----------------+---------------------------------------------------+
 
@@ -168,7 +168,7 @@ Money » Money
 +----------------------+------------------+-----------------+---------------------------------------------------+
 | Commmand             | Params           | Permission      | Description                                       |
 +======================+==================+=================+===================================================+
-| **.money**      |br| | **Amount** |br|  | money.main      | Perform a currency conversion. You need to   |br| |
+| .money               | **Amount** |br|  | money.main      | Perform a currency conversion. You need to   |br| |
 |                      | **Currencies**   |                 | specify at least one currency code.               |
 +----------------------+------------------+-----------------+---------------------------------------------------+
 
@@ -183,7 +183,7 @@ Old-plugins » Brainfuck
 +----------------------+------------------+-----------------+-----------------------------------------------+
 | Commmand             | Params           | Permission      | Description                                   |
 +======================+==================+=================+===============================================+
-| **.bf**         |br| | **Code** |br|    | brainfuck.exec  | -[--->+<]>---.----[-->+++<]>.-------.-[->++++ |
+| .bf                  | **Code**         | brainfuck.exec  | -[--->+<]>---.----[-->+++<]>.-------.-[->++++ |
 +----------------------+------------------+-----------------+                                               +
 |                                                           | +<]>-.---[->++++<]>-.----.--.--------.--[---> |
 +                                                           +                                               +
@@ -199,17 +199,35 @@ Old-plugins » Brainfuck
 Old-plugins » GeoIP
 -------------------
 
-This plugin has **no commands**.
++----------------------+------------------+-----------------+---------------------------------------------------+
+| Commmand             | Params           | Permission      | Description                                       |
++======================+==================+=================+===================================================+
+| .geoip               | **Address**      | geoip.command   | Perform a geoip lookup on a web address or   |br| |
+|                      |                  |                 | IP address.                                       |
++----------------------+------------------+-----------------+---------------------------------------------------+
 
 Old-plugins » Items
 -------------------
 
-This plugin has **no commands**.
++----------------------+------------------+-----------------+---------------------------------------------------+
+| Commmand             | Params           | Permission      | Description                                       |
++======================+==================+=================+===================================================+
+| .get                 |                  | items.get       | Receive a random item that someone has given |br| |
+|                      |                  |                 | to the bot.                                       |
++----------------------+------------------+-----------------+---------------------------------------------------+
+| .give                | **Item**         | items.give      | Give an item to the bot.                          |
++----------------------+------------------+-----------------+---------------------------------------------------+
 
 Old-plugins » Lastseen
 ----------------------
 
-This plugin has **no commands**.
++----------------------+------------------+-----------------+--------------------------------------------+
+| Commmand             | Params           | Permission      | Description                                |
++======================+==================+=================+============================================+
+| .seen                | **Username**     | seen.seen       | Check when a user was last seen being |br| |
+|                      |                  |                 | active.                                    |
++----------------------+------------------+-----------------+--------------------------------------------+
+
 
 Old-plugins » Memos
 --------------------
@@ -219,7 +237,12 @@ This plugin has **no commands**. It's also **not written yet**.
 Old-plugins » Russian-roulette
 ------------------------------
 
-This plugin has **no commands**.
++----------------------+--------+---------------------------+-----------------------------+
+| Commmand             | Params | Permission                | Description                 |
++======================+========+===========================+=============================+
+| **.rroulette**  |br| |        | russianroulette.rroulette | Play some Russian Roulette! |
+| .roulette            |        |                           |                             |
++----------------------+--------+---------------------------+-----------------------------+
 
 
 .. Footnote links, etc
