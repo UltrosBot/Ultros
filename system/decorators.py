@@ -94,11 +94,11 @@ def run_async_threadpool(func):
     :type func: function
     """
 
-    if not pool.started:
-        pool.start()
-
     @wraps(func)
     def async_func(*args, **kwargs):
+        if not pool.started:
+            pool.start()
+
         return pool.callInThread(func, *args, **kwargs)
 
     return async_func
@@ -140,13 +140,12 @@ def run_async_threadpool_callback(cb):
     :type cb: function
     """
 
-    if not pool.started:
-        pool.start()
-
     def inner(func):
 
         @wraps(func)
         def async_func(*args, **kwargs):
+            if not pool.started:
+                pool.start()
             return pool.callInThreadWithCallback(cb, func, *args, **kwargs)
 
         return async_func
