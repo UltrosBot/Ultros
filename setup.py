@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 
 print ""
 print "*******************************"
@@ -19,5 +19,6 @@ setup(
     license='',
     author='Gareth Coles',
     author_email='ultros@ultros.io',
-    description=''
+    description='',
+    install_requires=["six >= 1.6.1"]
 )
