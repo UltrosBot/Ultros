@@ -10,6 +10,7 @@ from twisted.internet import reactor
 from system.command_manager import CommandManager
 from system.constants import *
 from system.event_manager import EventManager
+from system.events.general import PluginsLoadedEvent
 from system.factory import Factory
 from system.plugin_manager import YamlPluginManagerSingleton
 from system.singleton import Singleton
@@ -180,6 +181,8 @@ class Manager(object):
                             self.logger.warn("Plugin doesn't exist.")
                         elif result is PLUGIN_DEPENDENCY_MISSING:
                             self.logger.warn("Plugin dependency is missing.")
+            event = PluginsLoadedEvent(self, self.loaded_plugins)
+            self.event_manager.run_callback("PluginsLoadedEvent", event)
         else:
             self.logger.info("No plugins are configured to load.")
 

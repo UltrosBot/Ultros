@@ -16,6 +16,21 @@ class GeneralEvent(BaseEvent):
         super(GeneralEvent, self).__init__(caller)
 
 
+class PluginsLoadedEvent(GeneralEvent):
+    """
+    This event is fired when all of the plugins have been loaded.
+    The caller will be the factory manager instead of a protocol.
+
+    This also includes a dictionary of all loaded plugins.
+    """
+
+    loaded_plugins = {}
+
+    def __init__(self, caller, plugins):
+        self.loaded_plugins = plugins
+        super(PluginsLoadedEvent, self).__init__(caller)
+
+
 class PreConnectEvent(GeneralEvent):
     """
     Thrown just before we connect. Includes the configuration of the protocol
