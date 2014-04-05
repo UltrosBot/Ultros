@@ -10,7 +10,7 @@ from twisted.internet import reactor
 from system.command_manager import CommandManager
 from system.constants import *
 from system.event_manager import EventManager
-from system.events.general import PluginsLoadedEvent
+from system.events.general import PluginsLoadedEvent, ReactorStartedEvent
 from system.factory import Factory
 from system.plugin_manager import YamlPluginManagerSingleton
 from system.singleton import Singleton
@@ -70,6 +70,11 @@ class Manager(object):
             self.logger.info("It seems like no protocols are loaded. Shutting "
                              "down..")
             return
+
+        event = ReactorStartedEvent(self)
+
+        reactor.callLater(0, self.event_manager.run_callback,
+                          "ReactorStarted", event)
 
         reactor.run()
 
@@ -182,7 +187,7 @@ class Manager(object):
                         elif result is PLUGIN_DEPENDENCY_MISSING:
                             self.logger.warn("Plugin dependency is missing.")
             event = PluginsLoadedEvent(self, self.loaded_plugins)
-            self.event_manager.run_callback("PluginsLoadedEvent", event)
+            self.event_manager.run_callback("PluginsLoaded", event)
         else:
             self.logger.info("No plugins are configured to load.")
 

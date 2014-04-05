@@ -34,7 +34,7 @@ class Factory(protocol.ClientFactory):
     attempts = 0
 
     def __init__(self, protocol_name, config, manager):
-        self.logger = getLogger("*" + protocol_name.title())
+        self.logger = getLogger("F: %s" % protocol_name)
         self.config = config
         self.manager = manager
         self.name = protocol_name

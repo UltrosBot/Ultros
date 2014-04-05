@@ -31,6 +31,16 @@ class PluginsLoadedEvent(GeneralEvent):
         super(PluginsLoadedEvent, self).__init__(caller)
 
 
+class ReactorStartedEvent(GeneralEvent):
+    """
+    This event is fired just after the reactor is started.
+    The caller will be the factory manager instead of a protocol.
+    """
+
+    def __init__(self, caller):
+        super(ReactorStartedEvent, self).__init__(caller)
+
+
 class PreConnectEvent(GeneralEvent):
     """
     Thrown just before we connect. Includes the configuration of the protocol
