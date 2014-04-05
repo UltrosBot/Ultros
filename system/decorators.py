@@ -3,6 +3,11 @@
 from functools import wraps
 from threading import Thread
 
+from twisted.python.threadpool import ThreadPool
+
+pool = ThreadPool(name="Decorators")
+pool.start()
+
 
 def run_async(func):
     """
@@ -66,6 +71,33 @@ def run_async_daemon(func):
         func_hl.daemon = True
         func_hl.start()
         return func_hl
+
+    return async_func
+
+
+def run_async_threadpool(func):
+    """
+    A function decorator intended to cause the function to run in another
+    thread (in other words, asynchronously).
+
+    These threads are run using a special threadpool which is only used for
+    decorators. You will not be able to join these threads, nor will you
+    be able to assign callbacks to them.
+
+    For example::
+
+        @run_async_threadpool
+        def func():
+            # Something that takes forever to run
+            pass
+
+    :param func: The function to decorate
+    :type func: function
+    """
+
+    @wraps(func)
+    def async_func(*args, **kwargs):
+        return pool.callInThread(func, *args, **kwargs)
 
     return async_func
 

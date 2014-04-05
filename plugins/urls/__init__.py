@@ -10,13 +10,11 @@ from bs4 import BeautifulSoup
 from kitchen.text.converters import to_unicode
 from netaddr import all_matching_cidrs
 
-from system.plugin import PluginObject
-
 from system.command_manager import CommandManager
+from system.decorators import run_async_threadpool
 from system.event_manager import EventManager
-
 from system.events.general import MessageReceived
-
+from system.plugin import PluginObject
 from system.protocols.generic.channel import Channel
 from system.protocols.generic.user import User
 
@@ -80,6 +78,7 @@ class Plugin(PluginObject):
         self.commands.register_command("shorten", self.shorten_command, self,
                                        "urls.shorten")
 
+    @run_async_threadpool
     def message_handler(self, event=MessageReceived):
         protocol = event.caller
         source = event.source
