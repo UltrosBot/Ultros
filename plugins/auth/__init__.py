@@ -169,7 +169,8 @@ class AuthPlugin(PluginObject):
             caller.respond("Your account has been created and you will now be "
                            "logged in. Thanks for registering!")
             self.perms_h.create_user(username)
-            self.login_command(caller, source, [username, password], protocol)
+            self.login_command(caller, source, [username, password], protocol,
+                               raw_args, parsed_args)
         else:
             caller.respond("Something went wrong when creating your account! "
                            "You should ask the bot operators about this.")
