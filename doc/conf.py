@@ -140,7 +140,7 @@ else:  # RTD doesn't know how to install requirements, so let's do it ourselves
     import pip
 
     fh = open("../requirements.txt")
-    packages = fh.readall().splitlines()
+    packages = fh.read().splitlines()
     packages.remove("pyopenssl")
     packages.remove("gitpython==0.1.7")
     packages.remove("gitdb")
