@@ -126,6 +126,35 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
         reload(sphinx_rtd_theme)
     html_theme = 'sphinx_rtd_theme'
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+else:  # RTD doesn't know how to install requirements, so let's do it ourselves
+    print "**********************************************"
+    print "* RTD build detected.                        *"
+    print "*                                            *"
+    print "* We're going to do some hacky stuff now, to *"
+    print "* work around a bug in RTD's environment.    *"
+    print "*                                            *"
+    print "* Hopefully they fix this soon!              *"
+    print "**********************************************"
+    print ""
+
+    import pip
+
+    fh = open("../requirements.txt")
+    packages = fh.readlines()
+
+    print "*******************"
+    print "*   HACKY STUFF   *"
+    print "*******************"
+    print "Manually installing packages: %s" % " ".join(packages)
+
+    pip.main(["install", "--upgrade"] + packages)
+
+    print "*******************"
+    print "* END HACKY STUFF *"
+    print "*******************"
+
+    del pip
+
 
 # otherwise, readthedocs.org uses their theme by default, so no need to specify
 
