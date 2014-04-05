@@ -84,6 +84,7 @@ if __name__ == "__main__":
             manager.unload()
             close_log("output.log")
 
-            raw_input("Press enter to exit.")
+            if "--no-catch" not in sys.argv:
+                raw_input("Press enter to exit.")
         except:
             pass
