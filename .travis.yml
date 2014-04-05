@@ -11,9 +11,9 @@ install:
 script:
   - flake8 .
   - nosetests -v
-  - mkdir -p doc/_build/html -v
-  - sphinx-build -v doc doc/_build/html
-  - rm -rf doc/_build/html -v
+#  - mkdir -p doc/_build/html -v
+#  - sphinx-build -v doc doc/_build/html
+#  - rm -rf doc/_build/html -v
 notifications:
   irc:
     channels:
