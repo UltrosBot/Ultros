@@ -6,7 +6,6 @@ from threading import Thread
 from twisted.python.threadpool import ThreadPool
 
 pool = ThreadPool(name="Decorators")
-pool.start()
 
 
 def run_async(func):
@@ -95,6 +94,9 @@ def run_async_threadpool(func):
     :type func: function
     """
 
+    if not pool.started:
+        pool.start()
+
     @wraps(func)
     def async_func(*args, **kwargs):
         return pool.callInThread(func, *args, **kwargs)
@@ -137,6 +139,9 @@ def run_async_threadpool_callback(cb):
     :param cb: The callback to run when the wrapped function completes.
     :type cb: function
     """
+
+    if not pool.started:
+        pool.start()
 
     def inner(func):
 
