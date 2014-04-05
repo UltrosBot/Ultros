@@ -10,7 +10,7 @@ install:
 # command to run tests
 script:
   - flake8 .
-  - nosetests -v
+  - "nosetests -v tests/"
 #  - mkdir -p doc/_build/html -v
 #  - sphinx-build -v doc doc/_build/html
 #  - rm -rf doc/_build/html -v
