@@ -101,6 +101,53 @@ def run_async_threadpool(func):
 
     return async_func
 
+
+def run_async_threadpool_callback(cb):
+    """
+    A function decorator intended to cause the function to run in another
+    thread (in other words, asynchronously).
+
+    These threads are run using a special threadpool which is only used for
+    decorators (the same one run_async_threadpool uses). The callback function
+    will be called with the following parameters:
+
+    * success: True if the call succeeded, false otherwise
+    * result: Whatever the call returned, or a Failure if it didn't succeed
+
+    Your callback **must not block** and should perform as little work as
+    possible. For example, a very common use is to schedule a Deferred to
+    fire in the main reactor thread using **.callFromThread**.
+
+    Note that the callback is run from the separate thread, not the main
+    reactor thread.
+
+    For example::
+
+        def cb(success, result):
+            if success:
+                print "Success: %s" % result
+            else:
+                print "Failure: %s" % result
+
+        @run_async_threadpool_callback(cb)
+        def func():
+            # Something that takes forever to run
+            pass
+
+    :param cb: The callback to run when the wrapped function completes.
+    :type cb: function
+    """
+
+    def inner(func):
+
+        @wraps(func)
+        def async_func(*args, **kwargs):
+            return pool.callInThreadWithCallback(cb, func, *args, **kwargs)
+
+        return async_func
+
+    return inner
+
 # Yeah, I know how non-Pythonic the `accepts` decorator is, but it's
 #   somewheat necessary to help new Python devs get into working with
 #   the plugin system, especially if they come from a non-Python background.
