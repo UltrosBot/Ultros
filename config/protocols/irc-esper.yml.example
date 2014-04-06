@@ -24,7 +24,7 @@ identity: # Settings relating to identification and authentication
   auth_target: NickServ # Only used for NickServ auth, change this if the network has renamed their NickServ.
                         # Do not use this if you're on Quakenet, use Auth instead.
 
-channels: # Initial channels to join. The bot will remember what channels it was in, you don't need to keep updating this.
+channels: # Initial channels to join.
           # Remember, channel names must be surrounded in "quotes"
   - name: "#Ultros"
     key:
