@@ -24,7 +24,7 @@ from utils import irc, misc, password, strings, html, console
 
 class test_utils:
     """
-    Test modules in the utils package
+    UTILS | Test modules in the utils package
     """
 
     # Config
@@ -34,7 +34,7 @@ class test_utils:
     if sys.stdout.isatty():
         def test_console(self):
             """
-            Test console size retrieval (when we are a TTY)
+            UTILS | Test console size retrieval (when we are a TTY)
             """
             data = console.getTerminalSize()
             nosetools.assert_true(isinstance(data, tuple))
@@ -44,7 +44,7 @@ class test_utils:
         @nosetools.raises(Exception)
         def test_console(self):
             """
-            Test console size retrieval (when we are *NOT* a TTY)
+            UTILS | Test console size retrieval (when we are *NOT* a TTY)
             """
             console.getTerminalSize()
 
@@ -54,7 +54,7 @@ class test_utils:
 
     def test_html_parse(self):
         """
-        Test HTML parser with HTML
+        UTILS | Test HTML parser with HTML
         """
 
         result = html.html_to_text("<html><body>Some body that I used to "
@@ -84,7 +84,7 @@ class test_utils:
 
     def test_html_noparse(self):
         """
-        Test HTML parser without HTML
+        UTILS | Test HTML parser without HTML
         """
 
         result = html.html_to_text("Some body that I used to "
@@ -109,7 +109,7 @@ class test_utils:
 
     def test_irc_split_hostmask(self):
         """
-        Test IRC hostmask splitting
+        UTILS | Test IRC hostmask splitting
         """
 
         parts = irc.split_hostmask("aaa!bbb@ccc")
@@ -121,7 +121,7 @@ class test_utils:
     @nosetools.raises(ValueError)
     def test_irc_split_hostmask_exception(self):
         """
-        Test that IRC hostmask splitting throws the right exception
+        UTILS | Test that IRC hostmask splitting throws the right exception
         """
 
         irc.split_hostmask("aaa!bbbccc")
@@ -130,7 +130,7 @@ class test_utils:
 
     def test_misc_chunker(self):
         """
-        Test iterable chunker
+        UTILS | Test iterable chunker
         """
 
         chunks = list(misc.chunker("xxxxxx", 6))
@@ -147,7 +147,7 @@ class test_utils:
 
     def test_misc_string_split_readable(self):
         """
-        Test readable string splitter
+        UTILS | Test readable string splitter
         """
 
         chunks = list(misc.string_split_readable("xxxxxx", 6))
@@ -165,7 +165,8 @@ class test_utils:
     @nosetools.raises(ValueError)
     def test_misc_string_split_exception(self):
         """
-        Test that the readable string splitter throws the right exception
+        UTILS | Test that the readable string splitter throws the right \
+        exception
         """
 
         misc.string_split_readable("word", 3)
@@ -174,7 +175,7 @@ class test_utils:
 
     def test_password_conforms(self):
         """
-        Test whether passwords conform to defined specifications
+        UTILS | Test whether passwords conform to defined specifications
         """
 
         digits = "0123456789"
@@ -207,7 +208,7 @@ class test_utils:
 
     def test_password_short_password_uniqueness(self):
         """
-        Test uniqueness of short generated passwords
+        UTILS | Test uniqueness of short generated passwords
         """
         passwords = []
         duplicates = []
@@ -235,7 +236,7 @@ class test_utils:
 
     def test_password_long_password_uniqueness(self):
         """
-        Test uniqueness of long generated passwords
+        UTILS | Test uniqueness of long generated passwords
         """
         passwords = []
         duplicates = []
@@ -265,7 +266,7 @@ class test_utils:
 
     def test_strings_formatter_replacements(self):
         """
-        Test non-blank replacements in the string formatter
+        UTILS | Test non-blank replacements in the string formatter
         """
 
         formatter = strings.EmptyStringFormatter()
@@ -284,7 +285,7 @@ class test_utils:
 
     def test_strings_formatter_blanks(self):
         """
-        Test blank replacements in the string formatter
+        UTILS | Test blank replacements in the string formatter
         """
 
         formatter = strings.EmptyStringFormatter()

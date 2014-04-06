@@ -58,14 +58,14 @@ class permissionsHandler(object):
         protocol = protocol.name.lower()
 
         if caller is None:
-            return self.group_has_permission("default", permission, source,
-                                             protocol)
+            return self.group_has_permission("default", permission, protocol,
+                                             source)
 
         if caller.authorized:
             username = caller.auth_name
             superuser = self.plugin.config["use-superuser"]
-            return self.user_has_permission(username, permission, source,
-                                            protocol,
+            return self.user_has_permission(username, permission,
+                                            protocol, source,
                                             check_superadmin=superuser)
         return False
 
@@ -115,24 +115,84 @@ class permissionsHandler(object):
                 return True
         return False
 
-    def add_user_permission(self, user, permission):
+    def add_user_permission(self, user, permission, protocol=None,
+                            source=None):
         user = user.lower()
         permission = permission.lower()
 
         with self.data:
             if user in self.data["users"]:
-                if permission not in self.data["users"]["permissions"]:
+                sauce = None
+                if protocol:
+                    result = False
+
+                    protos = self.data["users"][user].get("protocol", {})
+
+                    proto = protos.get(protocol, {})
+                    pperms = proto.get("permissions", [])
+                    sources = proto.get("sources", {})
+
+                    if source:
+                        sauce = sources.get(source, [])
+                        if permission not in source:
+                            sauce.append(permission)
+                            result = True
+                    elif permission not in pperms:
+                        pperms.append(permission)
+                        result = True
+
+                    if sauce:
+                        sources[source] = sauce
+
+                    proto["sources"] = sources
+                    proto["permissions"] = pperms
+                    protos[protocol] = proto
+                    self.data["users"][user]["protocols"] = protos
+
+                    return result
+
+                elif permission not in self.data["users"]["permissions"]:
                     self.data["users"]["permissions"].append(permission)
                     return True
         return False
 
-    def remove_user_permission(self, user, permission):
+    def remove_user_permission(self, user, permission, protocol=None,
+                               source=None):
         user = user.lower()
         permission = permission.lower()
 
         with self.data:
             if user in self.data["users"]:
-                if permission not in self.data["users"]["permissions"]:
+                sauce = None
+                if protocol:
+                    result = False
+
+                    protos = self.data["users"][user].get("protocol", {})
+
+                    proto = protos.get(protocol, {})
+                    pperms = proto.get("permissions", [])
+                    sources = proto.get("sources", {})
+
+                    if source:
+                        sauce = sources.get(source, [])
+                        if permission in source:
+                            sauce.remove(permission)
+                            result = True
+                    elif permission in pperms:
+                        pperms.remove(permission)
+                        result = True
+
+                    if sauce:
+                        sources[source] = sauce
+
+                    proto["sources"] = sources
+                    proto["permissions"] = pperms
+                    protos[protocol] = proto
+                    self.data["users"][user]["protocols"] = protos
+
+                    return result
+
+                elif permission not in self.data["users"]["permissions"]:
                     self.data["users"]["permissions"].remove(permission)
                     return True
         return False
@@ -160,7 +220,7 @@ class permissionsHandler(object):
         return False
 
     def user_has_permission(self, user, permission,
-                            source=None, protocol=None,
+                            protocol=None, source=None,
                             check_group=True, check_superadmin=True):
         user = user.lower()
         permission = permission.lower()
@@ -190,7 +250,7 @@ class permissionsHandler(object):
             if check_group:
                 user_group = self.data["users"][user]["group"]
                 has_perm = self.group_has_permission(user_group, permission,
-                                                     source, protocol)
+                                                     protocol, source)
                 if has_perm:
                     return True
         return False
@@ -245,7 +305,8 @@ class permissionsHandler(object):
                 return True
         return False
 
-    def add_group_permission(self, group, permission):
+    def add_group_permission(self, group, permission, protocol=None,
+                             source=None):
         group = group.lower()
         permission = permission.lower()
 
@@ -295,7 +356,7 @@ class permissionsHandler(object):
         return False
 
     def group_has_permission(self, group, permission,
-                             source=None, protocol=None):
+                             protocol=None, source=None):
         group = group.lower()
         permission = permission.lower()
 
