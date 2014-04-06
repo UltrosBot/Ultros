@@ -6,7 +6,8 @@ from system.event_manager import EventManager
 from system.events.general import MessageSent
 from system.plugin import PluginObject
 from system.protocols.generic.user import User
-from utils.data import YamlData
+from system.storage.formats import YAML
+from system.storage.manager import StorageManager
 
 from chef import Chef
 from dialectizer import Dialectizer
@@ -22,6 +23,7 @@ class Plugin(PluginObject):
     commands = None
     data = None
     events = None
+    storage = None
 
     dialectizers = {"chef": Chef(),
                     "fudd": Fudd(),
@@ -34,8 +36,10 @@ class Plugin(PluginObject):
     def setup(self):
         self.commands = CommandManager()
         self.events = EventManager()
+        self.storage = StorageManager()
 
-        self.data = YamlData("plugins/dialectizer/settings.yml")
+        self.data = self.storage.get_file(self, "data", YAML,
+                                          "plugins/dialectizer/settings.yml")
 
         self.events.add_callback("MessageSent", self, self.handle_msg_sent,
                                  1)

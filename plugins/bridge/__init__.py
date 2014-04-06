@@ -14,7 +14,9 @@ from system.events.mumble import UserJoined, UserMoved, UserRemove
 from system.plugin import PluginObject
 from system.protocols.generic.channel import Channel
 from system.protocols.generic.user import User
-from utils.config import YamlConfig
+
+from system.storage.formats import YAML
+from system.storage.manager import StorageManager
 
 
 class BridgePlugin(PluginObject):
@@ -22,6 +24,7 @@ class BridgePlugin(PluginObject):
     config = None
     events = None
     commands = None
+    storage = None
 
     rules = {}
 
@@ -29,8 +32,11 @@ class BridgePlugin(PluginObject):
 
     def setup(self):
         self.logger.debug("Entered setup method.")
+        self.storage = StorageManager()
+
         try:
-            self.config = YamlConfig("plugins/bridge.yml")
+            self.config = self.storage.get_file(self, "config", YAML,
+                                                "plugins/bridge.yml")
         except Exception:
             self.logger.exception("Error loading configuration!")
             self.logger.error("Disabling..")

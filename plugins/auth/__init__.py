@@ -9,8 +9,8 @@ from system.event_manager import EventManager
 from system.events.general import PreCommand
 from system.plugin import PluginObject
 from system.protocols.generic.channel import Channel
-from utils.config import YamlConfig
-from utils.data import YamlData
+from system.storage.formats import YAML
+from system.storage.manager import StorageManager
 
 
 class AuthPlugin(PluginObject):
@@ -22,14 +22,18 @@ class AuthPlugin(PluginObject):
 
     commands = None
     events = None
+    storage = None
 
     auth_h = None
     perms_h = None
 
     def setup(self):
         self.logger.debug("Entered setup method.")
+
+        self.storage = StorageManager()
         try:
-            self.config = YamlConfig("plugins/auth.yml")
+            self.config = self.storage.get_file(self, "config", YAML,
+                                                "plugins/auth.yml")
         except Exception:
             self.logger.exception("Error loading configuration!")
             self.logger.error("Disabling..")
@@ -46,7 +50,9 @@ class AuthPlugin(PluginObject):
 
         if self.config["use-permissions"]:
             try:
-                self.permissions = YamlData("plugins/auth/permissions.yml")
+                self.permissions = self.storage.get_file(self, "data", YAML,
+                                                         "plugins/auth/"  # PEP
+                                                         "permissions.yml")
             except Exception:
                 self.logger.exception("Unable to load permissions. They will "
                                       "be unavailable!")
@@ -59,8 +65,12 @@ class AuthPlugin(PluginObject):
 
         if self.config["use-auth"]:
             try:
-                self.passwords = YamlData("plugins/auth/passwords.yml")
-                self.blacklist = YamlData("plugins/auth/blacklist.yml")
+                self.passwords = self.storage.get_file(self, "data", YAML,
+                                                       "plugins/auth/"  # PEP!
+                                                       "passwords.yml")
+                self.blacklist = self.storage.get_file(self, "data", YAML,
+                                                       "plugins/auth/"  # PEP!
+                                                       "blacklist.yml")
             except Exception:
                 self.logger.exception("Unable to load user accounts. They will"
                                       " be unavailable!")

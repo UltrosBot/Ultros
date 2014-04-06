@@ -1,11 +1,11 @@
 from twisted.internet import defer
 
+from system.command_manager import CommandManager
 from system.event_manager import EventManager
+from system.plugin import PluginObject
 from system.protocols.generic.channel import Channel
 from system.storage.formats import DBAPI
 from system.storage.manager import StorageManager
-from system.command_manager import CommandManager
-from system.plugin import PluginObject
 
 __author__ = 'Sean'
 

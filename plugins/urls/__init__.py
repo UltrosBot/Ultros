@@ -18,17 +18,18 @@ from system.plugin import PluginObject
 from system.protocols.generic.channel import Channel
 from system.protocols.generic.user import User
 
-from utils.config import YamlConfig
-from utils.data import YamlData, SqliteData
+from system.storage.formats import YAML, SQLITE
+from system.storage.manager import StorageManager
 
 
 class Plugin(PluginObject):
 
     channels = None
     commands = None
-    events = None
     config = None
+    events = None
     shortened = None
+    storage = None
 
     handlers = {}
     shorteners = {}
@@ -39,8 +40,10 @@ class Plugin(PluginObject):
 
     def setup(self):
         self.logger.debug("Entered setup method.")
+        self.storage = StorageManager()
         try:
-            self.config = YamlConfig("plugins/urls.yml")
+            self.config = self.storage.get_file(self, "config", YAML,
+                                                "plugins/urls.yml")
         except Exception:
             self.logger.exception("Error loading configuration!")
         else:
@@ -52,8 +55,10 @@ class Plugin(PluginObject):
 
         self.logger.debug("Spoofing: %s" % self.spoofing)
 
-        self.channels = YamlData("plugins/urls/channels.yml")
-        self.shortened = SqliteData("plugins/urls/shortened.sqlite")
+        self.channels = self.storage.get_file(self, "data", YAML,
+                                              "plugins/urls/channels.yml")
+        self.shortened = self.storage.get_file(self, "data", SQLITE,
+                                               "plugins/urls/shortened.sqlite")
         self.commands = CommandManager()
         self.events = EventManager()
 
@@ -100,7 +105,7 @@ class Plugin(PluginObject):
         message_stripped = message
         try:
             message_stripped = event.caller.utils.strip_formatting(message)
-        except AttributeError as e:
+        except AttributeError:
             pass
 
         for word in message_stripped.split(" "):
