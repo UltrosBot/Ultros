@@ -54,7 +54,7 @@ class StorageManager(object):
 
         self.log = getLogger("Storage")
 
-        config = YamlConfig("config/settings.yml")
+        config = YamlConfig("%ssettings.yml" % conf_path)
         self.editor_warning = config.get("editor_warning", self.editor_warning)
 
     def get_file(self, obj, storage_type, file_format, path, *args, **kwargs):
