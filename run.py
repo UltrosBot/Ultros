@@ -26,6 +26,7 @@ pull request or otherwise get in contact with us - we'd love your help!
 
 import os
 import sys
+
 from kitchen.text.converters import getwriter
 
 if "--update" in sys.argv:
@@ -57,6 +58,7 @@ if __name__ == "__main__":
     from utils.misc import output_exception
     from system.factory_manager import Manager
     from system import constants
+    from system import decorators
 
     sys.stdout = getwriter('utf-8')(sys.stdout)
     sys.stderr = getwriter('utf-8')(sys.stderr)
@@ -83,6 +85,7 @@ if __name__ == "__main__":
         try:
             manager.unload()
             close_log("output.log")
+            decorators.pool.stop()
 
             if "--no-catch" not in sys.argv:
                 raw_input("Press enter to exit.")
