@@ -7,6 +7,8 @@ from system.protocols.generic.channel import Channel
 from system.storage.formats import DBAPI
 from system.storage.manager import StorageManager
 
+from utils import tokens
+
 __author__ = 'Sean'
 
 # Remember kids:
@@ -360,8 +362,21 @@ class Plugin(PluginObject):
             # TODO: We should probably handle this
             failure.raiseException()
 
-    def _factoid_get_command_success(self, source, result):
+    def _factoid_get_command_success(self, source, result, args=None):
+        if not args:
+            args = []
+
         for line in result[1]:
+            _tokens = tokens.find_tokens(line)
+            _numerical = tokens.find_numerical_tokens(line)
+
+            for i, arg in enumerate(args):
+                line = line.replace("{%d}" % i, arg)
+
+            for token in _numerical:
+                line = line.replace(token, "")
+
+            # TODO: Token handlers
             source.respond("(%s) %s" % (result[0], line))
 
     def factoid_add_command(self, protocol, caller, source, command, raw_args,
@@ -483,7 +498,8 @@ class Plugin(PluginObject):
                              None,
                              factoid)
         d.addCallbacks(
-            lambda r: self._factoid_get_command_success(event.target, r),
+            lambda r: self._factoid_get_command_success(event.target, r,
+                                                        split[2:]),
             lambda f: self._factoid_command_fail(event.source, f)
         )
 
@@ -501,7 +517,8 @@ class Plugin(PluginObject):
                              None,
                              factoid)
         d.addCallbacks(
-            lambda r: self._factoid_get_command_success(event.source, r),
+            lambda r: self._factoid_get_command_success(event.source, r,
+                                                        split[2:]),
             lambda f: self._factoid_command_fail(event.source, f)
         )
 
@@ -528,7 +545,7 @@ class Plugin(PluginObject):
                              None,
                              factoid)
         d.addCallbacks(
-            lambda r: self._factoid_get_command_success(user, r),
+            lambda r: self._factoid_get_command_success(user, r, split[3:]),
             lambda f: self._factoid_command_fail(event.source, f)
         )
 
