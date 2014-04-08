@@ -3,6 +3,7 @@ from twisted.internet import defer
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
 from system.plugin import PluginObject
+from system.plugin_manager import YamlPluginManagerSingleton
 from system.protocols.generic.channel import Channel
 from system.storage.formats import DBAPI
 from system.storage.manager import StorageManager
@@ -38,6 +39,7 @@ class Plugin(PluginObject):
         self.commands = CommandManager()
         self.events = EventManager()
         self.storage = StorageManager()
+        self.plugman = YamlPluginManagerSingleton()
 
         ### Set up database
         self.database = self.storage.get_file(self,
@@ -82,6 +84,11 @@ class Plugin(PluginObject):
         self.events.add_callback("MessageReceived",
                                  self,
                                  self.message_handler,
+                                 1)
+
+        self.events.add_callback("Web/ServerStartedEvent",
+                                 self,
+                                 self.web_routes,
                                  1)
 
     # region Util functions
@@ -244,6 +251,21 @@ class Plugin(PluginObject):
             if len(results) > 0:
                 return (results[0][3], results[0][4].split("\n"))
         raise MissingFactoidError("Factoid '%s' does not exist" % factoid_key)
+
+    def _get_all_factoids_interaction(self, txn):
+        """
+        Gets all factoids
+        :return: (factoid_name, [entry, entry, ...])
+        """
+        self.logger.debug("Getting all factoids.")
+        txn.execute("SELECT location, protocol, channel, factoid_name, "
+                    "info FROM factoids")
+        results = txn.fetchall()
+        return results
+
+    def get_all_factoids(self):
+        with self.database as db:
+            return db.runInteraction(self._get_all_factoids_interaction)
 
     def add_factoid(self, caller, source, protocol, location, factoid, info):
         location = location.lower()
@@ -443,6 +465,57 @@ class Plugin(PluginObject):
     def _print_query(self, result):
         from pprint import pprint
         pprint(result)
+
+    def web_routes(self, event=None):
+        self.logger.info("Registering web routes..")
+
+        web = self.plugman.getPluginByName("Web").plugin_object
+
+        web.add_route("/factoids", ["GET", "POST"], self.web_factoids)
+        web.add_route("/factoids/", ["GET", "POST"], self.web_factoids)
+
+        web.add_navbar_entry("Factoids", "/factoids/")
+
+    def web_factoids_callback_success(self, result, y):
+        web = self.plugman.getPluginByName("Web").plugin_object
+
+        fragment = "<table  class=\"table table-striped table-bordered\">"
+        fragment += "<tr>" \
+                    "<th>Location</th>" \
+                    "<th>Protocol</th>" \
+                    "<th>Channel</th>" \
+                    "<th>Name</th>" \
+                    "<th>Content</th>" \
+                    "</tr>"
+        for row in result:
+            fragment += "<tr>"
+
+            for column in row:
+                fragment += "<td>%s</td>" % column
+            fragment += "</tr>"
+
+        fragment += "</table>"
+
+        y.data = web.wrap_template(fragment, "Factoids", "Factoids")
+
+    def web_factoids_callback_fail(self, failure, y):
+        web = self.plugman.getPluginByName("Web").plugin_object
+
+        y.data = web.wrap_template("Error: %s" % failure, "Factoids",
+                                   "Factoids")
+
+    def web_factoids(self):
+        web = self.plugman.getPluginByName("Web").plugin_object
+
+        d = self.get_all_factoids()
+        y = web.get_yielder()
+
+        d.addCallbacks(self.web_factoids_callback_success,
+                       self.web_factoids_callback_fail,
+                       callbackArgs=(y,),
+                       errbackArgs=(y,))
+
+        return y
 
     def message_handler(self, event):
         """
