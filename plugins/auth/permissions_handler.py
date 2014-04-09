@@ -62,10 +62,10 @@ class permissionsHandler(object):
         else:
             protocol = protocol.name.lower()
 
-        self.plugin.logger.info("CHECK | Permis: %s" % permission)
-        self.plugin.logger.info("CHECK | Caller: %s" % caller)
-        self.plugin.logger.info("CHECK | Source: %s" % source)
-        self.plugin.logger.info("CHECK | Protoc: %s" % protocol)
+        self.plugin.logger.debug("CHECK | Permis: %s" % permission)
+        self.plugin.logger.debug("CHECK | Caller: %s" % caller)
+        self.plugin.logger.debug("CHECK | Source: %s" % source)
+        self.plugin.logger.debug("CHECK | Protoc: %s" % protocol)
 
         # TODO: Remove this hack now that we have inheritance
         if caller is None:
@@ -83,9 +83,8 @@ class permissionsHandler(object):
                                             check_superadmin=superuser)
         else:
             self.plugin.logger.info("CHECK | Not authorized.")
-            self.group_has_permission("default", permission, protocol,
-                                      source)
-        return False
+            return self.group_has_permission("default", permission, protocol,
+                                             source)
 
     # User operations
     #  Modification

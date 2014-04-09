@@ -510,26 +510,25 @@ class Plugin(PluginObject):
 
         r = web.check_permission(self.PERM_GET % "web", r=objs)
 
-        self.logger.info("WEB | Checking permissions..")
+        self.logger.debug("WEB | Checking permissions..")
 
         if not r:
-            self.logger.info("WEB | User does not have permission. "
-                             "Are they logged in?")
+            self.logger.debug("WEB | User does not have permission. "
+                              "Are they logged in?")
             r = web.require_login(r=objs)
 
             if not r[0]:
-                self.logger.info("WEB | Nope. Redirecting..")
                 return r[1]
 
-            self.logger.info("WEB | Yup. They must not have permission.")
-            self.logger.info("WEB | Presenting error..")
+            self.logger.debug("WEB | Yup. They must not have permission.")
+            self.logger.debug("WEB | Presenting error..")
 
             if not r:
                 return web.wrap_template("Error: You do not have permission "
                                          "to list the factoids.", "Factoids",
                                          "Factoids")
 
-        self.logger.info("WEB | User has permission.")
+        self.logger.debug("WEB | User has permission.")
 
         d = self.get_all_factoids()
         y = web.get_yielder()
