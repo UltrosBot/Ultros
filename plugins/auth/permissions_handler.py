@@ -69,12 +69,12 @@ class permissionsHandler(object):
 
         # TODO: Remove this hack now that we have inheritance
         if caller is None:
-            self.plugin.logger.info("CHECK | Caller is None.")
+            self.plugin.logger.debug("CHECK | Caller is None.")
             return self.group_has_permission("default", permission, protocol,
                                              source)
 
         if caller.authorized:
-            self.plugin.logger.info("CHECK | Authorized: %s" %
+            self.plugin.logger.debug("CHECK | Authorized: %s" %
                                      caller.authorized)
             username = caller.auth_name
             superuser = self.plugin.config["use-superuser"]
@@ -82,7 +82,7 @@ class permissionsHandler(object):
                                             protocol, source,
                                             check_superadmin=superuser)
         else:
-            self.plugin.logger.info("CHECK | Not authorized.")
+            self.plugin.logger.debug("CHECK | Not authorized.")
             return self.group_has_permission("default", permission, protocol,
                                              source)
 
