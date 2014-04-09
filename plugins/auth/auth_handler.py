@@ -76,6 +76,19 @@ class authHandler(object):
     def reload(self):
         self.data.reload()
 
+    def check_login(self, username, password):
+        username = username.lower()
+        with self.data:
+            if username not in self.data:
+                return False
+            user_data = self.data[username]
+        calculated = self.hash(user_data["salt"], password)
+        real_hash = user_data["password"]
+
+        if calculated == real_hash:
+            return True
+        return False
+
     def create_user(self, username, password):
         username = username.lower()
 

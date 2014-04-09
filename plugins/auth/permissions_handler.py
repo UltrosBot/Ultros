@@ -52,11 +52,17 @@ class permissionsHandler(object):
 
         if isinstance(source, User):
             source = None
+        elif isinstance(source, str):
+            source = source.lower()
         else:
             source = source.name.lower()
 
-        protocol = protocol.name.lower()
+        if isinstance(protocol, str):
+            protocol = protocol.lower()
+        else:
+            protocol = protocol.name.lower()
 
+        # TODO: Remove this hack now that we have inheritance
         if caller is None:
             return self.group_has_permission("default", permission, protocol,
                                              source)
@@ -67,6 +73,9 @@ class permissionsHandler(object):
             return self.user_has_permission(username, permission,
                                             protocol, source,
                                             check_superadmin=superuser)
+        else:
+            self.group_has_permission("default", permission, protocol,
+                                      source)
         return False
 
     # User operations
