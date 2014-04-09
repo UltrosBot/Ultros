@@ -120,6 +120,12 @@ Core » Factoids
 | !?~               | **Key**      |br| | factoids.set.global        | Create or replace a factoid from the global  |br| |
 |                   | **Data**          |                            | scope.                                            |
 +-------------------+-------------------+----------------------------+---------------------------------------------------+
+| .. rst-class:: align-center                                                                                            |
+|                                                                                                                        |
+|     **Other permissions**                                                                                              |
++-------------------+-------------------+----------------------------+---------------------------------------------------+
+| factoids.get.web  | Allow listing the factoids from the web interface, if installed.                              |br| |
++-------------------+-------------------+----------------------------+---------------------------------------------------+
 
 Core » URLs
 -----------
@@ -251,7 +257,7 @@ Old-plugins » Lastseen
 
 
 Old-plugins » Memos
---------------------
+-------------------
 
 This plugin has **no commands**. It's also **not written yet**.
 
@@ -341,6 +347,8 @@ All permissions
 | factoids.delete.[location] | .delfactoid         | ??-. @?-, !?-       |
 +----------------------------+---------------------+---------------------+
 | factoids.get.[location]    | .getfactoid         | ??, ??<, ??>        |
++----------------------------+---------------------+---------------------+
+| factoids.get.web           | For listing factoids on the web interface |
 +----------------------------+---------------------+---------------------+
 | factoids.set.[location]    | .setfactoid         | ??~, @?~, !?~       |
 +----------------------------+---------------------+---------------------+

@@ -476,7 +476,7 @@ class Plugin(PluginObject):
 
         web.add_navbar_entry("Factoids", "/factoids/")
 
-    def web_factoids_callback_success(self, result, y):
+    def web_factoids_callback_success(self, result, y, objs):
         web = self.plugman.getPluginByName("Web").plugin_object
 
         fragment = "<table  class=\"table table-striped table-bordered\">"
@@ -496,24 +496,40 @@ class Plugin(PluginObject):
 
         fragment += "</table>"
 
-        y.data = web.wrap_template(fragment, "Factoids", "Factoids")
+        y.data = web.wrap_template(fragment, "Factoids", "Factoids", r=objs)
 
-    def web_factoids_callback_fail(self, failure, y):
+    def web_factoids_callback_fail(self, failure, y, objs):
         web = self.plugman.getPluginByName("Web").plugin_object
 
         y.data = web.wrap_template("Error: %s" % failure, "Factoids",
-                                   "Factoids")
+                                   "Factoids", r=objs)
 
     def web_factoids(self):
         web = self.plugman.getPluginByName("Web").plugin_object
+
+        r = web.check_permission(self.PERM_GET % "web")
+
+        if not r:
+            r = web.require_login()
+
+            if not r[0]:
+                return r[1]
+
+            r = web.check_permission(self.PERM_GET % "web")
+
+            if not r:
+                return web.wrap_template("Error: You do not have permissions "
+                                         "to list the factoids.", "Factoids",
+                                         "Factoids")
+        objs = web.get_objects()
 
         d = self.get_all_factoids()
         y = web.get_yielder()
 
         d.addCallbacks(self.web_factoids_callback_success,
                        self.web_factoids_callback_fail,
-                       callbackArgs=(y,),
-                       errbackArgs=(y,))
+                       callbackArgs=(y, objs),
+                       errbackArgs=(y, objs))
 
         return y
 
