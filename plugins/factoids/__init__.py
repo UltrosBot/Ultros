@@ -506,22 +506,30 @@ class Plugin(PluginObject):
 
     def web_factoids(self):
         web = self.plugman.getPluginByName("Web").plugin_object
+        objs = web.get_objects()
 
-        r = web.check_permission(self.PERM_GET % "web")
+        r = web.check_permission(self.PERM_GET % "web", r=objs)
+
+        self.logger.info("WEB | Checking permissions..")
 
         if not r:
-            r = web.require_login()
+            self.logger.info("WEB | User does not have permission. "
+                             "Are they logged in?")
+            r = web.require_login(r=objs)
 
             if not r[0]:
+                self.logger.info("WEB | Nope. Redirecting..")
                 return r[1]
 
-            r = web.check_permission(self.PERM_GET % "web")
+            self.logger.info("WEB | Yup. They must not have permission.")
+            self.logger.info("WEB | Presenting error..")
 
             if not r:
-                return web.wrap_template("Error: You do not have permissions "
+                return web.wrap_template("Error: You do not have permission "
                                          "to list the factoids.", "Factoids",
                                          "Factoids")
-        objs = web.get_objects()
+
+        self.logger.info("WEB | User has permission.")
 
         d = self.get_all_factoids()
         y = web.get_yielder()
