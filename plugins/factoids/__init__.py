@@ -479,7 +479,8 @@ class Plugin(PluginObject):
     def web_factoids_callback_success(self, result, y, objs):
         web = self.plugman.getPluginByName("Web").plugin_object
 
-        fragment = "<table class=\"table table-striped table-bordered\">"
+        fragment = "<table class=\"table table-striped table-bordered" \
+                   " table-sortable\">"
         fragment += "<thead>" \
                     "<tr>" \
                     "<th>Location</th>" \
