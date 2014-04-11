@@ -479,14 +479,16 @@ class Plugin(PluginObject):
     def web_factoids_callback_success(self, result, y, objs):
         web = self.plugman.getPluginByName("Web").plugin_object
 
-        fragment = "<table  class=\"table table-striped table-bordered\">"
-        fragment += "<tr>" \
+        fragment = "<table class=\"table table-striped table-bordered\">"
+        fragment += "<thead>" \
+                    "<tr>" \
                     "<th>Location</th>" \
                     "<th>Protocol</th>" \
                     "<th>Channel</th>" \
                     "<th>Name</th>" \
                     "<th>Content</th>" \
-                    "</tr>"
+                    "</tr></thead>" \
+                    "<tbody>"
         for row in result:
             fragment += "<tr>"
 
@@ -494,7 +496,8 @@ class Plugin(PluginObject):
                 fragment += "<td>%s</td>" % column
             fragment += "</tr>"
 
-        fragment += "</table>"
+        fragment += "</tbody>" \
+                    "</table>"
 
         y.data = web.wrap_template(fragment, "Factoids", "Factoids", r=objs)
 
