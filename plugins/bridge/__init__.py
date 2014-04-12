@@ -212,8 +212,8 @@ class BridgePlugin(PluginObject):
                 if from_["source-type"].lower() != "channel":
                     self.logger.debug("Target type isn't a Channel.")
                     continue
-                if from_["source"].lower() == "*" \
-                   or from_["source"].lower() != t_name.lower():
+                if from_["source"].lower() != "*" \
+                   and from_["source"].lower() != t_name.lower():
                     self.logger.debug("Target name doesn't match the source.")
                     continue
             else:
