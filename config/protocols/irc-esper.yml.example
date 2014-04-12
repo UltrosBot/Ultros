@@ -44,3 +44,6 @@ kick_rejoin: no
 
 # How long to wait before rejoining channels, in seconds
 rejoin_delay: 2
+
+perform:  # Raw lines to send to the server after we've identified but before we join channels
+- "PRIVMSG ChanServ :INVITE #staff"

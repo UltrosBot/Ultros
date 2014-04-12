@@ -193,6 +193,19 @@ configure this for individual channels.
 
 The **rejoin_delay** option simply specifies how long to wait before rejoining a channel the bot was kicked from, in seconds.
 
+.. Perform
+.. literalinclude:: ../../config/protocols/irc-esper.yml.example
+    :language: yaml
+    :linenos:
+    :lines: 48-49
+
+For **advanced users**, the **perform** section is a list of raw IRC messages to send to the server - after identifying, but
+before joining channels. For example, to have the bot be invited to an invite-only channel, you could do something like::
+
+    perform:
+    - "PRIVMSG ChanServ :INVITE #staff"
+    - "PRIVMSG ChanServ :INVITE #HERPDERP"
+
 Protocols » Mumble
 ------------------
 

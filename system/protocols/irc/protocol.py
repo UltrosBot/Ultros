@@ -177,10 +177,13 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
     # functions should be used.                                           #
     #######################################################################
 
-    def sendLine(self, line):
+    def sendLine(self, line, output=False):
         """
         Overriding this because fuck Twisted unicode support.
         """
+        if output:
+            self.log.info("SERVER -> %s" % line)
+
         line = to_bytes(line)  # The magical line
 
         irc.IRCClient.sendLine(self, line)
@@ -220,6 +223,13 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                 self.sendLine("PASS %s:%s" % (
                     self.identity["auth_name"], self.identity["auth_pass"]))
 
+            if "perform" in self.config:
+                for line in self.config["perform"]:
+                    self.sendLine(line.replace("{NICK}", self.nickname),
+                                  output=True)
+
+            reactor.callLater(5, do_channel_joins)
+
         def do_channel_joins():
             for channel in self.config["channels"]:
                 self.join(channel["name"], channel["key"])
@@ -231,7 +241,6 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             "Scheduling Deferreds for signing on and joining channels")
 
         reactor.callLater(5, do_sign_on)
-        reactor.callLater(10, do_channel_joins)
 
         event = general_events.PreSetupEvent(self, self.config)
         self.event_manager.run_callback("PreSetup", event)
