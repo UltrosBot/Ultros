@@ -14,7 +14,8 @@ import urllib
 import urllib2
 import yaml
 
-from utils.data import YamlData
+from system.storage.formats import YAML
+from system.storage.manager import StorageManager
 
 
 class Packages(object):
@@ -30,6 +31,7 @@ class Packages(object):
     data = {}
     packages = []
     config = None
+    storage = None
 
     base_file_url = "https://raw.github.com/McBlockitHelpbot/Ultros-contrib/" \
                     "master/"
@@ -39,6 +41,7 @@ class Packages(object):
     package_versions_file = "versions.yml"
 
     def __init__(self, get=True):
+        self.storage = StorageManager()
         if get:
             info_url = self.base_file_url + self.info_file
             response = urllib2.urlopen(info_url)
@@ -46,7 +49,7 @@ class Packages(object):
             self.data = yaml.load(data)
             self.packages = sorted(self.data.keys())
 
-        self.config = YamlData("packages.yml")
+        self.config = self.storage.get_file(self, "data", YAML, "packages.yml")
         if len(self.config) == 0:
             self.config["installed"] = {}
 

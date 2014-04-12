@@ -14,7 +14,10 @@ from system.events.general import PluginsLoadedEvent, ReactorStartedEvent
 from system.factory import Factory
 from system.plugin_manager import YamlPluginManagerSingleton
 from system.singleton import Singleton
-from utils.config import Config, YamlConfig
+from system.storage.formats import YAML
+from system.storage.config import Config
+from system.storage.manager import StorageManager
+
 from utils.log import getLogger
 from utils.misc import output_exception
 
@@ -28,6 +31,9 @@ class Manager(object):
     """
 
     __metaclass__ = Singleton
+
+    #: Instance of the storage manager
+    storage = None
 
     #: Storage for all of our factories:.
     factories = {}
@@ -50,7 +56,9 @@ class Manager(object):
     def __init__(self):
         # Set up the logger
         self.logger = getLogger("Manager")
-        self.main_config = YamlConfig("settings.yml")
+        self.storage = StorageManager()
+        self.main_config = self.storage.get_file(self, "config", YAML,
+                                                 "settings.yml")
 
         self.commands = CommandManager()
         self.commands.set_factory_manager(self)
@@ -325,7 +333,8 @@ class Manager(object):
             # TODO: Prevent upward directory traversal properly
             conf_location = conf_location.replace("..", "")
             try:
-                config = YamlConfig(conf_location)
+                config = self.storage.get_file(self, "config", YAML,
+                                               conf_location)
                 if not config.exists:
                     return PROTOCOL_CONFIG_NOT_EXISTS
             except Exception:
