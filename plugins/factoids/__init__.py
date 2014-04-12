@@ -494,7 +494,8 @@ class Plugin(PluginObject):
             fragment += "<tr>"
 
             for column in row:
-                fragment += "<td>%s</td>" % column
+                fragment += "<td>%s</td>" % column.replace("\n",
+                                                           "<br /><br />")
             fragment += "</tr>"
 
         fragment += "</tbody>" \
