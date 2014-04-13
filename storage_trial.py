@@ -13,7 +13,7 @@ if os.path.exists("data/test.sqlite"):
 i = StorageManager()
 d = Plugin()
 f = i.get_file(d, "data", DBAPI, "sqlite3:data/test.sqlite",
-               "data/test.sqlite")
+               "data/test.sqlite", check_same_thread=False)
 
 print f
 

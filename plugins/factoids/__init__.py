@@ -47,7 +47,8 @@ class Plugin(PluginObject):
             "data",
             DBAPI,
             "sqlite3:data/plugins/factoids.sqlite",
-            "data/plugins/factoids.sqlite"
+            "data/plugins/factoids.sqlite",
+            check_same_thread=False
         )
         with self.database as db:
             db.runQuery("CREATE TABLE IF NOT EXISTS factoids ("

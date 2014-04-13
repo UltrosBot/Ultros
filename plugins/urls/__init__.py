@@ -62,7 +62,8 @@ class Plugin(PluginObject):
             "data",
             DBAPI,
             "sqlite3:data/plugins/urls/shortened.sqlite",
-            "data/plugins/urls/shortened.sqlite"
+            "data/plugins/urls/shortened.sqlite",
+            check_same_thread=False
         )
 
         self.commands = CommandManager()
