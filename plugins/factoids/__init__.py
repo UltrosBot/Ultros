@@ -42,12 +42,13 @@ class Plugin(PluginObject):
         self.plugman = YamlPluginManagerSingleton()
 
         ### Set up database
-        self.database = self.storage.get_file(self,
-                                              "data",
-                                              DBAPI,
-                                              "sqlite3:data/plugins/factoids."
-                                              "sqlite",  # FUCK YOU PEP8
-                                              "data/plugins/factoids.sqlite")
+        self.database = self.storage.get_file(
+            self,
+            "data",
+            DBAPI,
+            "sqlite3:data/plugins/factoids.sqlite",
+            "data/plugins/factoids.sqlite"
+        )
         with self.database as db:
             db.runQuery("CREATE TABLE IF NOT EXISTS factoids ("
                         "factoid_key TEXT, "
