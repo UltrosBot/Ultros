@@ -415,9 +415,26 @@ class permissionsHandler(object):
         return False
 
     # Permissions comparisons
-    def compare_permissions(self, perm, permissions, wildcard=True):
+    def compare_permissions(self, perm, permissions, wildcard=True,
+                            deny_nodes=True):
         perm = perm.lower()
+
+        grant = []
+        deny = []
         for element in permissions:
+            if element.startswith("^"):
+                deny.append(element[1:])
+            else:
+                grant.append(element)
+
+        if deny_nodes:
+            for element in deny:
+                if wildcard and fnmatch.fnmatch(perm, element.lower()):
+                    return False
+                elif (not wildcard) and perm == element.lower():
+                    return False
+
+        for element in grant:
             if wildcard and fnmatch.fnmatch(perm, element.lower()):
                 return True
             elif (not wildcard) and perm == element.lower():
