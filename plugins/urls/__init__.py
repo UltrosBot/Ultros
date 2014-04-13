@@ -18,7 +18,7 @@ from system.plugin import PluginObject
 from system.protocols.generic.channel import Channel
 from system.protocols.generic.user import User
 
-from system.storage.formats import YAML, SQLITE
+from system.storage.formats import YAML, DBAPI
 from system.storage.manager import StorageManager
 
 
@@ -57,14 +57,24 @@ class Plugin(PluginObject):
 
         self.channels = self.storage.get_file(self, "data", YAML,
                                               "plugins/urls/channels.yml")
-        self.shortened = self.storage.get_file(self, "data", SQLITE,
-                                               "plugins/urls/shortened.sqlite")
+        self.shortened = self.storage.get_file(
+            self,
+            "data",
+            DBAPI,
+            "sqlite3:data/plugins/urls/shortened.sqlite",
+            "plugins/urls/shortened.sqlite"
+        )
+
         self.commands = CommandManager()
         self.events = EventManager()
 
-        with self.shortened as c:
-            c.execute("CREATE TABLE IF NOT EXISTS urls (url TEXT, \
-                      shortener TEXT, result TEXT)")
+        def table_errback(failure, result):
+            self.logger.error("Error creating table: %s" % failure)
+
+        self.shortened.runQuery("CREATE TABLE IF NOT EXISTS urls ("
+                                "url TEXT, "
+                                "shortener TEXT, "
+                                "result TEXT)").addErrback(table_errback)
 
         def message_event_filter(event=MessageReceived):
             target = event.target
@@ -223,6 +233,16 @@ class Plugin(PluginObject):
         else:
             caller.respond("Unknown operation: '%s'." % operation)
 
+    def _respond_shorten(self, result, source, handler):
+        if result is not None:
+            return source.respond(result)
+        return source.respond("Unable to shorten using handler %s. Poke the"
+                              "bot owner!" % handler)
+
+    def _respond_shorten_fail(self, failure, source, handler):
+        return source.respond("Error shortening url with handler %s: %s"
+                              % (handler, failure))
+
     def shorten_command(self, protocol, caller, source, command, raw_args,
                         parsed_args):
         args = parsed_args  # Quick fix for new command handler signature
@@ -234,13 +254,15 @@ class Plugin(PluginObject):
                 handler = "tinyurl"
                 url = args[1]
                 try:
-                    shortened = self.shorten_url(url, handler)
+                    d = self.shorten_url(url, handler)
+                    d.addCallbacks(self._respond_shorten,
+                                   self._respond_shorten_fail,
+                                   callbackArgs=(source, handler),
+                                   errbackArgs=(source, handler))
                 except Exception as e:
                     self.logger.exception("Error fetching short URL.")
                     caller.respond("Error: %s" % e)
                     return
-
-                caller.respond(shortened)
         else:
             if protocol.name not in self.channels \
                or source.name not in self.channels[protocol.name] \
@@ -264,18 +286,15 @@ class Plugin(PluginObject):
                 url = args[0]
 
             try:
-                shortened = self.shorten_url(url, handler)
+                d = self.shorten_url(url, handler)
+                d.addCallbacks(self._respond_shorten,
+                               self._respond_shorten_fail,
+                               callbackArgs=(source, handler),
+                               errbackArgs=(source, handler))
             except Exception as e:
                 self.logger.exception("Error fetching short URL.")
                 caller.respond("Error: %s" % e)
                 return
-
-            if shortened is None:
-                source.respond("Unable to shorten URL %s using handler %s for "
-                               "some reason. Poke the bot owner!"
-                               % (url, handler))
-
-            source.respond("%s: %s" % (caller.nickname, shortened))
 
     def tinyurl(self, url):
         return urllib2.urlopen("http://tinyurl.com/api-create.php?url="
@@ -375,23 +394,29 @@ class Plugin(PluginObject):
                 return str(e), domain
             return None, None
 
-    def shorten_url(self, url, handler):
-        with self.shortened as c:
-            self.logger.debug("URL: %s" % url)
-            self.logger.debug("Handler: %s" % handler)
-            c.execute("SELECT * FROM urls WHERE  url=? AND shortener=?",
-                      (url, handler.lower()))
-            r = c.fetchone()
-            self.logger.debug("Result (SQL): %s" % repr(r))
-            if r is not None:
-                return r[2]
+    def _shorten(self, txn, url, handler):
+        txn.execute("SELECT * FROM urls WHERE url=? AND shortener=?",
+                    (url, handler.lower()))
+        r = txn.fetchone()
+
+        self.logger.debug("Result (SQL): %s" % repr(r))
+
+        if r is not None:
+            return r[2]
+
         if handler in self.shorteners:
             result = self.shorteners[handler](url)
-            with self.shortened as c:
-                c.execute("INSERT INTO urls VALUES (?, ?, ?)",
-                          (url, handler.lower(), result))
+
+            txn.execute("INSERT INTO urls VALUES (?, ?, ?)",
+                        (url, handler.lower(), result))
             return result
         return None
+
+    def shorten_url(self, url, handler):
+        self.logger.debug("URL: %s" % url)
+        self.logger.debug("Handler: %s" % handler)
+
+        return self.shortened.runInteraction(self._shorten, url, handler)
 
     def add_handler(self, domain, handler):
         if domain.startswith("www."):
