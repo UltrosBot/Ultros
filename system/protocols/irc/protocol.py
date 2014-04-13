@@ -130,14 +130,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                            "disabled in the configuration.")
 
             # Clean up so everything can be garbage-collected
-            self.factory.manager.remove_protocol("irc")
-
-            del self.event_manager
-            del self.utils
-            del self.ranks
-            del self.log
-            del self.factory
-            del self.config
+            self.factory.manager.remove_protocol(self.name)
 
             return
 
