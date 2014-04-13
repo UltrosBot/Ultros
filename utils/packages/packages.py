@@ -14,11 +14,14 @@ import urllib
 import urllib2
 import yaml
 
+from system.singleton import Singleton
 from system.storage.formats import YAML
 from system.storage.manager import StorageManager
 
 
 class Packages(object):
+
+    __metaclass__ = Singleton
 
     """
     Class responsible for loading up plugin info, retrieving files
