@@ -16,7 +16,6 @@ file_formats_map = {
     "data": {
         Formats.JSON: Data.JSONData,
         Formats.MEMORY: Data.MemoryData,
-        Formats.SQLITE: Data.SQLiteData,
         Formats.YAML: Data.YamlData,
         Formats.DBAPI: Data.DBAPIData
     }

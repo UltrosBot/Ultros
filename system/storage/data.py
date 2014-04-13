@@ -21,7 +21,6 @@ __author__ = "Gareth Coles"
 
 import json
 import os
-import sqlite3
 import yaml
 
 from threading import Lock
@@ -401,80 +400,11 @@ class JSONData(Data):
         return True
 
 
-class SQLiteData(Data):
-    """
-    Data object that uses SQLite for storage.
-
-    This is a very different data storage object! There is no dictionary
-    access here, instead use the `with...as` construct. This will return
-    a standard cursor for you to work with, which will be committed
-    automatically for you when the block exits.
-
-    For example:
-
-    with data as c:
-        c.execute("SELECT * FROM data WHERE thing = ?", (thing,))
-
-    Don't try to do any other kind of access, this is a relational database
-    and that won't work.
-
-    You can specify the filename as ":memory:" if you want an in-memory
-    database.
-
-    More info: http://docs.python.org/2/library/sqlite3.html
-    """
-
-    context_mutex = Lock()
-    _context_guarded = False
-
-    cur = None
-
-    def __init__(self, filename):
-        self.logger = getLogger("Data")
-        if filename == ":memory:":
-            pass
-        else:
-            filename = filename.strip("..")
-
-            folders = filename.split("/")
-            folders.pop()
-            folders = "/".join(folders)
-
-            if not os.path.exists(folders):
-                os.makedirs(folders)
-
-            if not os.path.exists(filename):
-                open(filename, "w").close()
-
-        self.filename = filename
-
-        self.conn = sqlite3.connect(self.filename)
-
-    def __enter__(self):
-        with self.context_mutex:
-            self.cur = self.conn.cursor()
-            return self.cur
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.conn.commit()
-        self.cur.close()
-        self._context_guarded = False
-        if exc_type is None:
-            return True
-        return False
-
-    def __str__(self):
-        return "<Ultros SQLite data handler: %s>" % self.filename
-
-    def __nonzero__(self):
-        return True
-
-
 class DBAPIData(Data):
     """
     Data object that uses Twisted's async DBAPI adapters.
 
-    As with SQLite, there is no dictionary access here. Instead, you can
+    Tere is no dictionary access here. Instead, you can
     call the three usual functions directly on the class instance, and
     they'll be passed through to the underlying DBAPI implementation.
 
