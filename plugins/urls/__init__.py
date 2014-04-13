@@ -68,13 +68,10 @@ class Plugin(PluginObject):
         self.commands = CommandManager()
         self.events = EventManager()
 
-        def table_errback(failure, result):
-            self.logger.error("Error creating table: %s" % failure)
-
         self.shortened.runQuery("CREATE TABLE IF NOT EXISTS urls ("
                                 "url TEXT, "
                                 "shortener TEXT, "
-                                "result TEXT)").addErrback(table_errback)
+                                "result TEXT)")
 
         def message_event_filter(event=MessageReceived):
             target = event.target
