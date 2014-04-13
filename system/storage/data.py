@@ -127,7 +127,7 @@ class YamlData(Data):
             self._save()
 
     def _save(self):
-        data = yaml.dump(self.data)
+        data = yaml.dump(self.data, default_flow_style=False)
         fh = open(self.filename, "w")
         fh.write(data)
         fh.flush()
