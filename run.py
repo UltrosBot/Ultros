@@ -24,6 +24,7 @@ If, however, you do fork yourself a copy and make some changes, submit a
 pull request or otherwise get in contact with us - we'd love your help!
 """
 
+import logging
 import os
 import sys
 
@@ -69,6 +70,9 @@ if __name__ == "__main__":
     open_log("output.log")
 
     logger = getLogger("System")
+
+    requests_log = logging.getLogger("requests")
+    requests_log.setLevel(logging.WARNING)
 
     logger.info("Starting up, version \"%s\"" % constants.__version__)
 
