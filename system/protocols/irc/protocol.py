@@ -1055,6 +1055,15 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             return False
         return False
 
+    def send_raw(self, message):
+        if "\n" in message:
+            messages = message.replace("\r", "").split("\n")
+        else:
+            messages = [message]
+
+        for line in messages:
+            self.sendLine(line, True)
+
     def kick(self, user, channel=None, reason=None):
         # TODO: Event?
         if channel is None:
