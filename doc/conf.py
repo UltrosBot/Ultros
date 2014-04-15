@@ -141,12 +141,12 @@ else:  # RTD doesn't know how to install requirements, so let's do it ourselves
 
     fh = open("../requirements.txt")
     packages = fh.read().splitlines()
-    packages.remove("pyopenssl")
-    packages.remove("gitpython==0.1.7")
-    packages.remove("gitdb")
-    packages.remove("pycrypto")
-    packages.remove("twisted")
-    packages.remove("zope.interface")
+
+    reqs = ["pyopenssl", "gitpython==0.1.7", "gitdb", "pycrypto", "twisted",
+            "zope.interface"]
+    for x in reqs:
+        if x in packages:
+            packages.remove(x)
 
     print "*******************"
     print "*   HACKY STUFF   *"
