@@ -3,8 +3,6 @@ __author__ = "Gareth Coles"
 
 from system.command_manager import CommandManager
 from system.plugin import PluginObject
-from system.protocols.generic.user import User
-from system.storage.formats import YAML
 from system.storage.manager import StorageManager
 
 
@@ -29,7 +27,7 @@ class Plugin(PluginObject):
                                        self, "control.func")
 
     def join_command(self, protocol, caller, source, command, raw_args,
-                            args):
+                     args):
         if not len(args) > 0:
             caller.respond("Usage: {CHARS}join <channel>")
             return
@@ -46,7 +44,7 @@ class Plugin(PluginObject):
             caller.respond("This protocol doesn't support channels.")
 
     def leave_command(self, protocol, caller, source, command, raw_args,
-                            args):
+                      args):
         if not len(args) > 0:
             caller.respond("Usage: {CHARS}leave <channel>")
             return
@@ -63,7 +61,7 @@ class Plugin(PluginObject):
             caller.respond("This protocol doesn't support channels.")
 
     def raw_command(self, protocol, caller, source, command, raw_args,
-                            args):
+                    args):
         if not len(args) > 0:
             caller.respond("Usage: {CHARS}raw <data>")
             return
@@ -76,7 +74,7 @@ class Plugin(PluginObject):
             caller.respond("This protocol doesn't support sending raw data.")
 
     def func_command(self, protocol, caller, source, command, raw_args,
-                            args):
+                     args):
         if not len(args) > 1:
             caller.respond("Usage: {CHARS}func <function> <data>")
             return
@@ -90,7 +88,7 @@ class Plugin(PluginObject):
         for arg in arguments:
             if "=" in arg:
                 pos = arg.find("=")
-                if arg[pos-1] != "\\":
+                if arg[pos - 1] != "\\":
                     split = arg.split("=", 1)
                     _kwargs[split[0]] = split[1]
             else:
