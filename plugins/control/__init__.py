@@ -21,6 +21,10 @@ class Plugin(PluginObject):
                                        self, "control.join")
         self.commands.register_command("leave", self.leave_command,
                                        self, "control.leave")
+        self.commands.register_command("say", self.say_command,
+                                       self, "control.say")
+        self.commands.register_command("action", self.action_command,
+                                       self, "control.action")
         self.commands.register_command("raw", self.raw_command,
                                        self, "control.raw")
         self.commands.register_command("func", self.func_command,
@@ -72,6 +76,38 @@ class Plugin(PluginObject):
             caller.respond("Done!")
         else:
             caller.respond("This protocol doesn't support sending raw data.")
+
+    def say_command(self, protocol, caller, source, command, raw_args,
+                    args):
+        if not len(args) > 1:
+            caller.respond("Usage: {CHARS}say <target> <message>")
+            return
+
+        channel = args[0]
+        message = raw_args[len(channel):].strip()
+
+        if hasattr(protocol, "send_msg"):
+            protocol.send_msg(channel, message)
+
+            caller.respond("Done!")
+        else:
+            caller.respond("This protocol doesn't support sending messages.")
+
+    def action_command(self, protocol, caller, source, command, raw_args,
+                       args):
+        if not len(args) > 1:
+            caller.respond("Usage: {CHARS}action <target> <message>")
+            return
+
+        channel = args[0]
+        message = raw_args[len(channel):].strip()
+
+        if hasattr(protocol, "send_action"):
+            protocol.send_action(channel, message)
+
+            caller.respond("Done!")
+        else:
+            caller.respond("This protocol doesn't support sending actions.")
 
     def func_command(self, protocol, caller, source, command, raw_args,
                      args):
