@@ -350,9 +350,38 @@ class Plugin(PluginObject):
 
             headers = response.info().headers
             new_url = response.geturl()
-            if "//" in new_url:
-                new_url = new_url.split("//")[1]
-            domain = new_url.split("/")[0]
+
+            _domain = domain
+
+            parsed = urlparse.urlparse(new_url)
+            domain = parsed.hostname
+
+            if _domain != domain:
+                self.logger.info("URL: %s" % new_url)
+                self.logger.info("Domain: %s" % domain)
+
+                ip = socket.gethostbyname(domain)
+
+                matches = all_matching_cidrs(ip, ["10.0.0.0/8", "0.0.0.0/8",
+                                                  "172.16.0.0/12",
+                                                  "192.168.0.0/16",
+                                                  "127.0.0.0/8"])
+
+                if matches:
+                    self.logger.warn("Prevented a portscan: %s" % new_url)
+                    return None, None
+
+                if domain.startswith("www."):
+                    domain = domain[4:]
+
+                if domain in self.handlers and use_handler:
+                    try:
+                        result = self.handlers[domain](new_url)
+                        if result:
+                            return to_unicode(result), None
+                    except Exception:
+                        self.logger.exception("Error running handler, parsing "
+                                              "title normally.")
 
             headers_dict = {}
 
