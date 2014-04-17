@@ -23,6 +23,10 @@ Ultros requires the following for its basic functions:
     * For the URLs plugin:
         * BeautifulSoup 4
         * Netaddr
+* On linux, you'll need the following
+    * libffi
+    * libffi-dev
+    * build-essential
 
 .. _downloading:
 
@@ -112,14 +116,16 @@ if you plan to keep it online for long periods of time. Linux also has a much ea
 * Install Python from your package manager.
     * Most package managers will install the latest version of Python 2, but some versions of Linux will install Python 3.
       Remember to check which version it installs!
+* Install libffi and libffi-dev from your package manager.
 * If you need SSL, remember to install the standard OpenSSL package from your package manger, as well as a compiler (such as gcc) and the Python development package.
     * You'll see some errors in the next step if you don't do this, but Ultros should still work just fine for things that don't need SSL.
 * Use pip to install all of the required modules.
+    * On some distros, you may also need to install python-pip
 
 If you're on a recent version of Ubuntu or Debian, you should be able to do all of this in a method similar to the following, replacing <path> with the path
 to your copy of Ultros. ::
 
-    sudo apt-get install python python-dev openssl gcc
+    sudo apt-get install python python-dev openssl build-essential libffi libffi-dev
     cd <path>
     pip install -r requirements.txt
 
