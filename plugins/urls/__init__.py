@@ -250,7 +250,7 @@ class Plugin(PluginObject):
                 return
             else:
                 handler = "tinyurl"
-                url = args[1]
+                url = args[0]
                 try:
                     d = self.shorten_url(url, handler)
                     d.addCallbacks(self._respond_shorten,
