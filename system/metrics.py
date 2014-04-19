@@ -69,7 +69,7 @@ class Metrics(object):
     task = None
     manager = None
 
-    interval = 600
+    interval = 300  # Every 5 minutes
 
     domain = "http://ultros.io"
 
