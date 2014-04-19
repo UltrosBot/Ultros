@@ -1,3 +1,4 @@
+from kitchen.text.converters import to_unicode
 from twisted.internet import defer
 
 from system.command_manager import CommandManager
@@ -160,30 +161,35 @@ class Plugin(PluginObject):
         txn.execute("SELECT * FROM factoids WHERE "
                     "factoid_key = ? AND location = ? AND "
                     "protocol = ? AND channel = ?",
-                    (factoid_key, location, protocol, channel))
+                    (
+                        to_unicode(factoid_key),
+                        to_unicode(location),
+                        to_unicode(protocol),
+                        to_unicode(channel)
+                    ))
         results = txn.fetchall()
         if len(results) == 0:
             # Factoid doesn't exist yet, create it
             txn.execute("INSERT INTO factoids VALUES(?, ?, ?, ?, ?, ?)",
                         (
-                            factoid_key,
-                            location,
-                            protocol,
-                            channel,
-                            factoid,
-                            info
+                            to_unicode(factoid_key),
+                            to_unicode(location),
+                            to_unicode(protocol),
+                            to_unicode(channel),
+                            to_unicode(factoid),
+                            to_unicode(info)
                         ))
             return False
         else:
             # Factoid already exists, append
             txn.execute("INSERT INTO factoids VALUES(?, ?, ?, ?, ?, ?)",
                         (
-                            results[0][0],
-                            results[0][1],
-                            results[0][2],
-                            results[0][3],
-                            results[0][4],
-                            results[0][5] + "\n" + info
+                            to_unicode(results[0][0]),
+                            to_unicode(results[0][1]),
+                            to_unicode(results[0][2]),
+                            to_unicode(results[0][3]),
+                            to_unicode(results[0][4]),
+                            to_unicode(results[0][5] + "\n" + info)
                         ))
             return True
 
@@ -225,7 +231,9 @@ class Plugin(PluginObject):
                               "key '%s'", factoid_key)
             txn.execute("SELECT location, protocol, channel, factoid_name, "
                         "info FROM factoids WHERE factoid_key = ?",
-                        (factoid_key,))
+                        (
+                            to_unicode(factoid_key),
+                        ))
             results = txn.fetchall()
             if len(results) > 0:
                 # Check for channel match
@@ -248,7 +256,12 @@ class Plugin(PluginObject):
             txn.execute("SELECT location, protocol, channel, factoid_name, "
                         "info FROM factoids WHERE factoid_key = ? AND "
                         "location = ? AND protocol = ? AND channel = ?",
-                        (factoid_key, location, protocol, channel))
+                        (
+                            to_unicode(factoid_key),
+                            to_unicode(location),
+                            to_unicode(protocol),
+                            to_unicode(channel)
+                        ))
             results = txn.fetchall()
             if len(results) > 0:
                 return (results[0][3], results[0][4].split("\n"))
@@ -312,12 +325,12 @@ class Plugin(PluginObject):
             return db.runQuery(
                 "INSERT INTO factoids VALUES(?, ?, ?, ?, ?, ?)",
                 (
-                    factoid_key,
-                    location,
-                    protocol_key,
-                    channel_key,
-                    factoid,
-                    info
+                    to_unicode(factoid_key),
+                    to_unicode(location),
+                    to_unicode(protocol_key),
+                    to_unicode(channel_key),
+                    to_unicode(factoid),
+                    to_unicode(info)
                 ))
 
     def delete_factoid(self, caller, source, protocol, location, factoid):
