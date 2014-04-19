@@ -12,6 +12,7 @@ from system.constants import *
 from system.event_manager import EventManager
 from system.events.general import PluginsLoadedEvent, ReactorStartedEvent
 from system.factory import Factory
+from system.metrics import Metrics
 from system.plugin_manager import YamlPluginManagerSingleton
 from system.singleton import Singleton
 from system.storage.formats import YAML
@@ -35,7 +36,7 @@ class Manager(object):
     #: Instance of the storage manager
     storage = None
 
-    #: Storage for all of our factories:.
+    #: Storage for all of our factories.
     factories = {}
 
     #: Storage for all of the protocol configs.
@@ -78,6 +79,11 @@ class Manager(object):
             self.logger.info("It seems like no protocols are loaded. Shutting "
                              "down..")
             return
+
+        try:
+            self.metrics = Metrics(self.main_config, self)
+        except:
+            self.logger.exception("Error setting up metrics.")
 
         event = ReactorStartedEvent(self)
 
