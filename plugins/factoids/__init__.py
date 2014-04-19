@@ -205,11 +205,20 @@ class Plugin(PluginObject):
         if location == self.CHANNEL:
             txn.execute("DELETE FROM factoids WHERE factoid_key = ? AND "
                         "location = ? AND protocol = ? AND channel = ?",
-                        (factoid_key, location, protocol, channel))
+                        (
+                            to_unicode(factoid_key),
+                            to_unicode(location),
+                            to_unicode(protocol),
+                            to_unicode(channel)
+                        ))
         else:
             txn.execute("DELETE FROM factoids WHERE factoid_key = ? AND "
                         "location = ? AND protocol = ?",
-                        (factoid_key, location, protocol))
+                        (
+                            to_unicode(factoid_key),
+                            to_unicode(location),
+                            to_unicode(protocol)
+                        ))
         if txn.rowcount == 0:
             raise MissingFactoidError("Factoid '%s' does not exist" %
                                       factoid_key)
