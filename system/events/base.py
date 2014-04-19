@@ -13,6 +13,7 @@ class BaseEvent(object):
     well.. Are you really a programmer?
     """
 
+    #: What threw the event (the protocol)
     caller = None
     cancelled = False
 

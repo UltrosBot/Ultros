@@ -6,5 +6,5 @@ info:
   description: "Allows factoids to be added to the bot, then recalled at any point in the future."
   author: Sean Gordon
   version: 0.1.0
-  website: https://github.com/McBlockitHelpbot/Ultros-contrib/blob/master/Factoids
+  website: https://github.com/McBlockitHelpbot/Ultros/blob/master/Factoids
   copyright: BSD 3-Clause
