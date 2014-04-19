@@ -32,3 +32,18 @@ reconnections: # Settings for reconnecting on connection failures.
   on-drop: yes # Whether to reconnect if we lose connection
   on-failure: yes # Whether to reconnect if we fail to connect
   reset-on-success: yes # Whether to reset the counter if we successfully reconnect
+
+# Simple metrics, for http://ultros.io/metrics
+
+# Set this to "on" to enable the sending of some basic, anonymous metrics to the site.
+#     This will assign this instance of the bot with a UUID if it doesn't have one already.
+
+# Set this to "off" to alert the server that your UUID is not to have metrics collected, and
+# disable metrics reporting.
+#     If you have no UUID, this will prevent the bot from ever connecting to the server.
+
+# Set this to "destroy" to have the server delete its records of your UUID, and delete it from
+# this bot's instanec.
+#     If you have no UUID, this will prevent the bot from connecting to the server. You don't have
+#     to change this to "off" when the UUID is destroyed, for that reason.
+metrics: on

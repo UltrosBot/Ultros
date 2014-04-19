@@ -57,11 +57,34 @@ The plugins that ship with Ultros are as follows:
 .. literalinclude:: ../../config/settings.yml.example
     :language: yaml
     :linenos:
-    :lines: 28-
+    :lines: 28-34
 
 In this section, you specify how Ultros should behave when it loses connection or flat-out fails to connect. The options
 are explained in the snippet above. You should note that the reconnection counters are not shared between protocols,
 which means that they will reconnect independently of each other.
+
+.. Metrics
+.. literalinclude:: ../../config/settings.yml.example
+    :language: yaml
+    :linenos:
+    :lines: 49
+
+This final option is for configuring Ultros' basic metrics. If you don't like metrics and you haven't yet started your bot,
+then set this to **off** and it will never contact the server.
+
+* **on** - The bot will connect to the server, be assigned a UUID (if it doesn't have one already) and submit metrics every
+  ten minutes. The only metrics we send to the server is a list of the types of protocols that are loaded, the currently enabled
+  plugins, and which packages are installed.
+* **off** - If the bot has already been assigned a UUID, it will contact the server once to clear its protocols, plugins and packages
+  lists and to let it know that metrics will be disabled. After this is done, the bot won't contact the server again.
+    * If the bot doesn't have a UUID, it won't contact the server.
+** **destroy** - If you want your UUID to be unassigned and all of the bot's information to be removed from the server, you can set
+  your metrics setting to **destroy**. This will tell the server to delete all its stored data on the current UUID, and will also
+  delete the UUID that's stored locally.
+    * If the bot doesn't have a UUID, it won't contact the server. Therefore, you don't need to change this to **off** when you've
+      had the data removed.
+
+If you want to look at the metrics, you can find them here: http://ultros.io/metrics
 
 Protocols » All
 ---------------
