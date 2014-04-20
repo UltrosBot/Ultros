@@ -581,6 +581,8 @@ class Protocol(ChannelsProtocol):
             replaced = message[len(cc):]
 
             split = replaced.split(None, 1)
+            if not split:
+                return False
             command = split[0]
             args = ""
             if len(split) > 1:
