@@ -59,6 +59,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
     nickname = ""
     name = "irc"
 
+    invite_join = False
+
     _channels = {}  # key is lowercase "#channel" - use get/set/del_channel()
 
     @property
@@ -111,6 +113,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             self.log.warning("Config doesn't contain network/password entry")
 
         self.nickname = self.identity["nick"]
+
+        self.invite_join = self.config.get("invite_join", False)
 
         binding = self.networking.get("bindaddr", None)
 
@@ -855,6 +859,10 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         elif command == "PONG":
             event = irc_events.PongEvent(self)
             self.event_manager.run_callback("IRC/Pong", event)
+
+        elif command == "INVITE":
+            if self.invite_join:
+                self.join_channel(params[1])
 
         else:
             self.log.debug(
