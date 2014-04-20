@@ -220,8 +220,10 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                 self.sendLine("PASS %s:%s" % (
                     self.identity["auth_name"], self.identity["auth_pass"]))
 
-            if "perform" in self.config:
-                for line in self.config["perform"]:
+            perform = self.config.get("perform", [])
+
+            if perform:
+                for line in perform:
                     self.sendLine(line.replace("{NICK}", self.nickname),
                                   output=True)
 
