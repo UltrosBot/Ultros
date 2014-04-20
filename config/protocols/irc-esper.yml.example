@@ -48,4 +48,4 @@ rejoin_delay: 2
 perform:  # Raw lines to send to the server after we've identified but before we join channels
 - "PRIVMSG ChanServ :INVITE #staff"
 
-invite_join: yes  # Whether to automatically join channels on invite
+invite_join: no  # Whether to automatically join channels on invite

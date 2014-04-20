@@ -229,6 +229,15 @@ before joining channels. For example, to have the bot be invited to an invite-on
     - "PRIVMSG ChanServ :INVITE #staff"
     - "PRIVMSG ChanServ :INVITE #HERPDERP"
 
+.. Join-on-invite
+.. literalinclude:: ../../config/protocols/irc-esper.yml.example
+    :language: yaml
+    :linenos:
+    :lines: 51
+
+This section allows the bot to join channels automatically when someone on the network invites it. Note that turning this on
+will mean that anyone can have your bot join any channels they can use /invite in, so be aware of that.
+
 Protocols » Mumble
 ------------------
 

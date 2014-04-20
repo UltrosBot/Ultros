@@ -865,7 +865,16 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             self.event_manager.run_callback("IRC/Pong", event)
 
         elif command == "INVITE":
+            user = self.get_user(prefix.split("!", 1)[0])
+            channel = params[1]
+
+            self.log.info("Invited to %s by %s." % (channel, user.nickname))
+
+            event = irc_events.InvitedEvent(self, user, channel,
+                                            self.invite_join)
+            self.event_manager.run_callback("IRC/Invited", event)
             if self.invite_join:
+                self.log.info("Automatically joining %s.." % channel)
                 self.join_channel(params[1])
 
         else:

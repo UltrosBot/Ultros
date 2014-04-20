@@ -364,6 +364,22 @@ class PongEvent(IRCEvent):
         super(PongEvent, self).__init__(caller)
 
 
+class InvitedEvent(IRCEvent):
+    """
+    Thrown when we get invited to a channel.
+    """
+
+    user = None
+    channel = ""
+    auto_join = False
+
+    def __init__(self, caller, user, channel, auto_join):
+        self.user = user
+        self.channel = channel
+        self.auto_join = auto_join
+        super(InvitedEvent, self).__init__(caller)
+
+
 class ModeChangedEvent(IRCEvent):
     """
     Thrown when a mode is changed.
