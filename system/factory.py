@@ -58,9 +58,16 @@ class Factory(protocol.ClientFactory):
         we're doing some other Ultros-related stuff here too.
         """
 
+        self.logger.debug("Entering setup method.")
+
         try:
-            current_protocol = importlib.import_module(
-                "system.protocols.%s.protocol" % self.ptype)
+            if self.protocol_class is None:
+                self.logger.debug("First-time setup; not reloading.")
+                current_protocol = importlib.import_module(
+                    "system.protocols.%s.protocol" % self.ptype)
+            else:
+                self.logger.debug("Reloading module.")
+                current_protocol = reload(self.protocol_class)
             self.protocol_class = current_protocol
         except ImportError:
             self.logger.error(
@@ -92,10 +99,14 @@ class Factory(protocol.ClientFactory):
 
         self.logger.warn("Lost connection: %s" % reason.__str__())
         if self.r_on_drop:
+            if self.attempts >= self.r_attempts:
+                self.logger.error("Unable to connect after %s attempts, "
+                                  "aborting." % self.attempts)
+                return
             self.attempts += 1
             self.logger.info("Reconnecting after %s seconds (attempt %s/%s)"
                              % (self.r_delay, self.attempts, self.r_attempts))
-            reactor.callLater(self.r_delay, connector.connect)
+            reactor.callLater(self.r_delay, self.setup)
 
     def clientConnectionFailed(self, connector, reason):
         """
@@ -112,4 +123,4 @@ class Factory(protocol.ClientFactory):
             self.attempts += 1
             self.logger.info("Reconnecting after %s seconds (attempt %s/%s)"
                              % (self.r_delay, self.attempts, self.r_attempts))
-            reactor.callLater(self.r_delay, connector.connect)
+            reactor.callLater(self.r_delay, self.setup)
