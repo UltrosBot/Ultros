@@ -124,3 +124,7 @@ class Factory(protocol.ClientFactory):
             self.logger.info("Reconnecting after %s seconds (attempt %s/%s)"
                              % (self.r_delay, self.attempts, self.r_attempts))
             reactor.callLater(self.r_delay, self.setup)
+
+    def clientConnected(self):
+        if self.r_reset:
+            self.attempts = 0

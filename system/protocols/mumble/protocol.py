@@ -173,6 +173,8 @@ class Protocol(ChannelsProtocol):
 
         self.sendProtobuf(message)
 
+        self.factory.clientConnected()
+
     def dataReceived(self, recv):
         # Append our received data
         self.received = self.received + recv

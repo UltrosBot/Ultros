@@ -205,6 +205,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         self._users = []
         self._channels = {}
 
+        self.factory.clientConnected()
+
         def do_sign_on():
             if self.identity["authentication"].lower() == "nickserv":
                 self.msg(self.identity["auth_target"],
