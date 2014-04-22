@@ -865,7 +865,10 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             self.event_manager.run_callback("IRC/Pong", event)
 
         elif command == "INVITE":
-            user = self.get_user(prefix.split("!", 1)[0])
+            mask = self.utils.split_hostmask(prefix)
+            user = self.get_user(*mask)
+            if not user:
+                user = User(self, *mask, is_tracked=False)
             channel = params[1]
 
             self.log.info("Invited to %s by %s." % (channel, user.nickname))
