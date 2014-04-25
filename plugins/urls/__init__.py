@@ -21,9 +21,12 @@ from system.protocols.generic.user import User
 from system.storage.formats import YAML, DBAPI
 from system.storage.manager import StorageManager
 
+from .catcher import Catcher
+
 
 class Plugin(PluginObject):
 
+    catcher = None
     channels = None
     commands = None
     config = None
@@ -82,6 +85,8 @@ class Plugin(PluginObject):
                 or isinstance(target, Channel) \
                 or isinstance(target, User)
 
+        self.catcher = Catcher(self, self.config, self.storage, self.logger)
+
         self.add_shortener("tinyurl", self.tinyurl)
 
         self.events.add_callback("MessageReceived", self, self.message_handler,
@@ -126,6 +131,13 @@ class Plugin(PluginObject):
                     url = word[pos:end]
                 else:
                     url = word[pos:]
+
+                if isinstance(target, Channel):
+                    try:
+                        self.catcher.insert_url(url, source.nickname,
+                                                target.name, protocol.name)
+                    except:
+                        self.logger.exception("Error catching URL")
 
                 title, domain = self.parse_title(url)
 

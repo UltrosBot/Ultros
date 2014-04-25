@@ -1,1 +1,1 @@
-SELECT url FROM urls WHERE url=?
+SELECT url FROM {TABLE} WHERE url=%s
