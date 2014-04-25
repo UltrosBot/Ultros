@@ -10,7 +10,7 @@ content_types:  # Content-types to parse the title from. Be careful when modifyi
 catcher:
   # This is an advanced feature for people that run websites.
   # If you don't need /every URL in a database/ or are technically challenged, then don't enable this.
-  use: yes
+  use: no
 
   table_prefix: "bot"  # All tables created will be prefixed with this.
   dialect: "mysql"  # mysql or postgresql by default; you can define your own too if you want.
