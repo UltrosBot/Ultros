@@ -1,15 +1,17 @@
 # coding=utf-8
-import logging
-from operator import itemgetter
-from utils.log import getLogger
-from utils.misc import output_exception
-
-from types import FunctionType
-
 __author__ = "Gareth Coles"
 
-from system.decorators import run_async
+import logging
+
+from operator import itemgetter
+from types import FunctionType
+
+from twisted.internet import reactor
+
 from system.singleton import Singleton
+from system.decorators import run_async
+from utils.log import getLogger
+from utils.misc import output_exception
 
 
 class EventManager(object):
@@ -240,19 +242,30 @@ class EventManager(object):
             else:
                 del self.callbacks[key]
 
-    def run_callback(self, callback, event, threaded=False):
+    def run_callback(self, callback, event, threaded=False, from_thread=False):
         """
         Run all handlers for a certain callback with an event.
 
         :param callback: The callback to run
         :param event: An instance of the event to pass through the handlers
-        :param threaded: Whether to run each callback in its own thread
+        :param threaded: default False, Whether to run each callback in its own
+            thread
+        :param from_thread: default False, If the callback is being run from
+            another thread, use this to specify that it should be run in the
+            main reactor thread.
 
         :type callback: str
         :type event: object
         :type threaded: bool
+        :type from_thread: bool
         """
+        if from_thread:
+            # Mostly useful for DB async callbacks, which are not supposed
+            # to do any work.
+            return reactor.callFromThread(self.run_callback, callback,
+                                          event, threaded)
         if self.has_callback(callback):
+            event.threaded = threaded  # So devs can detect it easily.
 
             self.logger.debug("Event: %s" % event)
 
