@@ -11,6 +11,9 @@ from system.storage.manager import StorageManager
 
 from utils import tokens
 
+# Hah, eat it, line length limit.
+from .events import FactoidAddedEvent, FactoidDeletedEvent, FactoidUpdatedEvent
+
 __author__ = 'Sean'
 
 # Remember kids:
@@ -179,6 +182,9 @@ class Plugin(PluginObject):
                             to_unicode(factoid),
                             to_unicode(info)
                         ))
+
+            e = FactoidAddedEvent(self, factoid_key, factoid)
+            self.events.run_callback("Factoids/Added", e, from_thread=True)
             return False
         else:
             # Factoid already exists, append
@@ -191,6 +197,8 @@ class Plugin(PluginObject):
                             to_unicode(results[0][4]),
                             to_unicode(results[0][5] + "\n" + info)
                         ))
+            e = FactoidUpdatedEvent(self, factoid_key, factoid)
+            self.events.run_callback("Factoids/Updated", e, from_thread=True)
             return True
 
     def _delete_factoid_interaction(self, txn, factoid_key, location, protocol,
@@ -222,6 +230,9 @@ class Plugin(PluginObject):
         if txn.rowcount == 0:
             raise MissingFactoidError("Factoid '%s' does not exist" %
                                       factoid_key)
+
+        e = FactoidDeletedEvent(self, factoid_key)
+        self.events.run_callback("Factoids/Deleted", e, from_thread=True)
 
     def _get_factoid_interaction(self, txn, factoid_key, location, protocol,
                                  channel):
