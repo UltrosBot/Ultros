@@ -651,6 +651,9 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         newnick = params[0]
 
         user_obj = self.get_user(nickname=oldnick)
+
+        if not user_obj:
+            user_obj = User(self, newnick, is_tracked=False)
         user_obj.nickname = newnick
 
         self.log.info("%s is now known as %s" % (oldnick, newnick))
