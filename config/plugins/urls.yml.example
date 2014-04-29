@@ -38,3 +38,7 @@ catcher:
   # This should be in the form "user@host/database". We would love to generate this for you
   # but each database adapter takes different params!
   descriptor: "ultros@127.0.0.1/ultros"
+
+  ignored:  # A list of channels to ignore links from
+            # Channels are in the format "protocol:channel"
+  - "irc-esper:#staff"

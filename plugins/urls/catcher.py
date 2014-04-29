@@ -3,6 +3,7 @@ __author__ = 'Gareth Coles'
 import datetime
 import os
 
+from system.protocols.generic.channel import Channel
 from system.storage.formats import DBAPI
 
 
@@ -16,6 +17,8 @@ class Catcher(object):
 
     sql = None
     db = None
+
+    ignored = []
 
     enabled = False
 
@@ -32,6 +35,7 @@ class Catcher(object):
             return
 
         self.config = config["catcher"]
+        self.ignored = self.config.get("ignored", [])
         self.plugin = plugin
         self.storage = storage
         self.logger = logger
@@ -118,6 +122,9 @@ class Catcher(object):
 
     def insert_url(self, url, user, target, protocol):
         if self.enabled:
+            if isinstance(target, Channel):
+                if "%s:%s" % (protocol.name, target.name) in self.ignored:
+                    return
             d = self.db.runInteraction(self.insert_interaction,
                                        url, user, target, protocol)
 
