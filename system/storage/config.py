@@ -26,6 +26,7 @@ import logging
 import os
 import yaml
 
+from system.storage import formats
 from utils.misc import output_exception
 from utils.log import getLogger
 
@@ -54,6 +55,8 @@ class YamlConfig(Config):
     """
 
     data = {}
+    format = formats.YAML
+
     exists = True
     fh = None
 
@@ -137,6 +140,8 @@ class JSONConfig(Config):
     """
 
     data = {}
+    format = formats.JSON
+
     exists = True
     fh = None
 
@@ -215,6 +220,8 @@ class MemoryConfig(Config):
     """
 
     data = {}
+    format = formats.MEMORY
+
     exists = True
     fh = None
 

@@ -196,6 +196,9 @@ def getLogger(name, path=None,
     :return: Logger
     """
 
+    if len(name) > 20:
+        raise ValueError("Logger name cannot be longer than 20 characters.")
+
     if displayname is None:
         displayname = name
 

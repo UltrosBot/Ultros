@@ -90,6 +90,20 @@ class StorageFile(object):
         else:
             raise TypeError("Only the storage manager can release files.")
 
+    def validate(self, data):
+        # Override this for admin interfaces, where applicable.
+        # If there are errors on certain lines, you can return something like..
+        # [ [12, "Dick too big"], [15, "Not enough lube"] ]
+        # Otherwise, return [True] for a success, or [False, "reason"] for a
+        # failure.
+        return [True]
+
+    def write(self, data):
+        # Override this for admin interfaces, where applicable.
+        # Return True if successful, False if unsuccessful, or None if not
+        # applicable.
+        return None
+
 
 class DataFile(StorageFile):
     formats = Formats.DATA

@@ -26,6 +26,7 @@ import yaml
 from threading import Lock
 from twisted.enterprise import adbapi
 
+from system.storage import formats
 from utils.log import getLogger
 
 
@@ -80,6 +81,8 @@ class YamlData(Data):
     context_mutex = Lock()
     _context_guarded = False
 
+    format = formats.YAML
+
     def __init__(self, filename):
         self.logger = getLogger("Data")
         filename = filename.strip("..")
@@ -131,6 +134,31 @@ class YamlData(Data):
         fh.write(data)
         fh.flush()
         fh.close()
+
+    def validate(self, data):
+        try:
+            yaml.load(data)
+        except yaml.YAMLError as e:
+            mark = e.problem_mark
+            if mark is not None:
+                return [[mark.line, e.problem]]
+            return [False, e.problem]
+        return [True]
+
+    def write(self, data):
+        success = True
+
+        with self:  # Python <3
+            try:
+                fh = open(self.filename, "w")
+                fh.write(data)
+                fh.flush()
+                fh.close()
+            except Exception as e:
+                success = False
+            finally:
+                self.reload()
+        return success
 
     def keys(self):
         return self.data.keys()
@@ -193,6 +221,7 @@ class MemoryData(Data):
     """
 
     data = {}
+    format = formats.MEMORY
 
     mutex = Lock()
     _context_guarded = True
@@ -292,6 +321,7 @@ class JSONData(Data):
     editable = True
 
     data = {}
+    format = formats.JSON
 
     mutex = Lock()
     context_mutex = Lock()
@@ -351,6 +381,42 @@ class JSONData(Data):
         fh.write(data)
         fh.flush()
         fh.close()
+
+    def validate(self, data):
+        try:
+            json.loads(data)
+        except Exception as e:
+            # eg, "Expecting property name: line 1 column 2 (char 1)"
+            # We need to parse this manually.
+            msg = e.message
+
+            if ":" in msg:
+                split = msg.rsplit(":", 1)
+
+                line = split[1].split()
+                if "line" in line:
+                    index = line.index("line")
+                    line = line[index + 1]
+
+                    return [[line, split[0]]]
+                return [False, msg]
+            return [False, msg]
+        return [True]
+
+    def write(self, data):
+        success = True
+
+        with self:  # Python <3
+            try:
+                fh = open(self.filename, "w")
+                fh.write(data)
+                fh.flush()
+                fh.close()
+            except Exception as e:
+                success = False
+            finally:
+                self.reload()
+        return success
 
     def keys(self):
         return self.data.keys()
@@ -470,6 +536,8 @@ class DBAPIData(Data):
 
     More info: https://twistedmatrix.com/documents/12.0.0/core/howto/rdbms.html
     """
+
+    format = formats.DBAPI
 
     pool = None
     info = ""

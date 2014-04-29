@@ -18,7 +18,9 @@ warning = """
 * the data files registered by other plugins.  *
 *                                              *
 * The plugin details are as follows:           *
-* Instance: %s                                 *
+
+Instance: %s
+
 *                                              *
 * If you don't recognise this plugin or don't  *
 * know why it would need this kind of access,  *
