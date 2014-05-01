@@ -168,7 +168,7 @@ Core » URLs
 |                                                                                                                     |
 |     **Other permissions**                                                                                           |
 +-------------------+------------------+--------------------------+---------------------------------------------------+
-|                                      | urls.title               | Allows a user to have their links parsed by |br|  |
+| N/A                                  | urls.title               | Allows a user to have their links parsed by |br|  |
 |                                      |                          | the bot, and the title sent to the current  |br|  |
 |                                      |                          | channel.                                          |
 +-------------------+------------------+--------------------------+---------------------------------------------------+
@@ -314,7 +314,11 @@ UrbanDictionary » UrbanDictionary
 Web » Web
 ---------
 
-This plugin has **no commands**.
++----------+--------+------------+---------------------------------------------+
+| Commmand | Params | Permission | Description                                 |
++==========+========+============+=============================================+
+| N/A               | web.admin  | Gives a user access to the admin interface. |
++----------+--------+------------+---------------------------------------------+
 
 Wolfram » Wolfram
 -----------------
@@ -412,6 +416,9 @@ All permissions
 | urls.shorten               | .shorten            |                     |
 +----------------------------+---------------------+---------------------+
 | urls.title                 | **N/A**             |                     |
++----------------------------+---------------------+---------------------+
+| web.admin                  | For access to the admin area of the  |br| |
+|                            | Web interface                             |
 +----------------------------+---------------------+---------------------+
 | wolfram.wolfram            | .wolfram            |                     |
 +----------------------------+---------------------+---------------------+
