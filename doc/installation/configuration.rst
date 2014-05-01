@@ -78,7 +78,7 @@ then set this to **off** and it will never contact the server.
 * **off** - If the bot has already been assigned a UUID, it will contact the server once to clear its protocols, plugins and packages
   lists and to let it know that metrics will be disabled. After this is done, the bot won't contact the server again.
     * If the bot doesn't have a UUID, it won't contact the server.
-** **destroy** - If you want your UUID to be unassigned and all of the bot's information to be removed from the server, you can set
+* **destroy** - If you want your UUID to be unassigned and all of the bot's information to be removed from the server, you can set
   your metrics setting to **destroy**. This will tell the server to delete all its stored data on the current UUID, and will also
   delete the UUID that's stored locally.
     * If the bot doesn't have a UUID, it won't contact the server. Therefore, you don't need to change this to **off** when you've
