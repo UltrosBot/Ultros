@@ -590,6 +590,7 @@ class DBAPIData(Data):
     More info: https://twistedmatrix.com/documents/12.0.0/core/howto/rdbms.html
     """
 
+    representation = "json"
     format = formats.DBAPI
 
     pool = None
@@ -622,6 +623,16 @@ class DBAPIData(Data):
 
     def runQuery(self, *args, **kwargs):
         return self.pool.runQuery(*args, **kwargs)
+
+    def serialize(self, yielder):
+        # Only used when we don't have a conventional serialization, this
+        # should return some json/yaml that provides a /SAMPLE/ of the data.
+        # It shouldn't return a full set of data - database tables can be huge.
+        # Remember, use the yielder - and remember to .close() it! Seriously,
+        # use a try...finally block or the thread will loop forever. You have
+        # been warned.
+        yielder.close()
+        return None
 
     def __enter__(self):
         return self.pool
