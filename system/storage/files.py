@@ -37,8 +37,6 @@ class StorageFile(object):
     args = []
     kwargs = {}
 
-    representation = None  # Could also be "json" or "yaml", for admin stuff
-
     def __init__(self, type_, path, base_path, manager_class, *args, **kwargs):
         if type_ not in self.formats:
             raise TypeError("Type '%s' is unknown or not supported for %s "
@@ -91,29 +89,6 @@ class StorageFile(object):
             self._ready = False
         else:
             raise TypeError("Only the storage manager can release files.")
-
-    def validate(self, data):
-        # Override this for admin interfaces, where applicable.
-        # If there are errors on certain lines, you can return something like..
-        # [ [12, "Dick too big"], [15, "Not enough lube"] ]
-        # Otherwise, return [True] for a success, or [False, "reason"] for a
-        # failure.
-        return [True]
-
-    def write(self, data):
-        # Override this for admin interfaces, where applicable.
-        # Return True if successful, False if unsuccessful, or None if not
-        # applicable.
-        return None
-
-    def read(self):
-        # Override this for admin interfaces, where applicable.
-        # You should return a list such as the following...
-        # [True, "data"] - The first arg is whether the data is editable.
-        # Set the first arg to False if we can't edit the data, and the second
-        # arg to None if we can't represent the data. Otherwise, data should
-        # be returned as a string.
-        return [False, None]
 
 
 class DataFile(StorageFile):

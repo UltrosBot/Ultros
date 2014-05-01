@@ -21,6 +21,7 @@ __author__ = "Gareth Coles"
 
 import json
 import os
+import pprint
 import yaml
 
 from threading import Lock
@@ -34,7 +35,34 @@ class Data(object):
     """
     Base class for data storage objects, mostly for type-checking.
     """
+    # Whether the file is editable
     editable = False
+
+    # Could also be "json" or "yaml", for syntax highlighting purposes
+    representation = None
+
+    def validate(self, data):
+        # Override this for admin interfaces, where applicable.
+        # If there are errors on certain lines, you can return something like..
+        # [ [12, "Dick too big"], [15, "Not enough lube"] ]
+        # Otherwise, return [True] for a success, or [False, "reason"] for a
+        # failure.
+        return [True]
+
+    def write(self, data):
+        # Override this for admin interfaces, where applicable.
+        # Return True if successful, False if unsuccessful, or None if not
+        # applicable.
+        return None
+
+    def read(self):
+        # Override this for admin interfaces, where applicable.
+        # You should return a list such as the following...
+        # [True, "data"] - The first arg is whether the data is editable.
+        # Set the first arg to False if we can't edit the data, and the second
+        # arg to None if we can't represent the data. Otherwise, data should
+        # be returned as a string.
+        return [False, None]
 
 
 class YamlData(Data):
@@ -74,6 +102,7 @@ class YamlData(Data):
     """
 
     editable = True
+    representation = "yaml"
 
     data = {}
 
@@ -160,6 +189,14 @@ class YamlData(Data):
                 self.reload()
         return success
 
+    def read(self):
+        dumped = yaml.dump(self.data, default_flow_style=False)
+        return [
+            self.editable,
+            "# This is the data in memory, and may not actually be what's in "
+            "the file.\n\n%s" % dumped
+        ]
+
     def keys(self):
         return self.data.keys()
 
@@ -220,6 +257,9 @@ class MemoryData(Data):
     this.
     """
 
+    editable = False
+    representation = "json"
+
     data = {}
     format = formats.MEMORY
 
@@ -253,6 +293,11 @@ class MemoryData(Data):
                 return
         else:
             return
+
+    def read(self):
+        dumped = pprint.pformat(self.data)
+
+        return [self.editable, dumped]
 
     def keys(self):
         return self.data.keys()
@@ -319,6 +364,7 @@ class JSONData(Data):
     """
 
     editable = True
+    representation = "json"
 
     data = {}
     format = formats.JSON
@@ -376,7 +422,8 @@ class JSONData(Data):
             self._save()
 
     def _save(self):
-        data = json.dumps(self.data)
+        data = json.dumps(self.data, indent=4, sort_keys=True,
+                          separators=(",", ": "))
         fh = open(self.filename, "w")
         fh.write(data)
         fh.flush()
@@ -417,6 +464,12 @@ class JSONData(Data):
             finally:
                 self.reload()
         return success
+
+    def read(self):
+        dumped = json.dumps(self.data, indent=4, sort_keys=True,
+                            separators=(",", ": "))
+
+        return [self.editable, dumped]
 
     def keys(self):
         return self.data.keys()

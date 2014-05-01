@@ -23,6 +23,7 @@ __author__ = "Gareth Coles"
 
 import json
 import logging
+import pprint
 import os
 import yaml
 
@@ -33,6 +34,18 @@ from utils.log import getLogger
 
 class Config(object):
     editable = False
+
+    # Could also be "json" or "yaml", for syntax highlighting purposes
+    representation = None
+
+    def read(self):
+        # Override this for admin interfaces, where applicable.
+        # You should return a list such as the following...
+        # [True, "data"] - The first arg is whether the data is editable.
+        # Set the first arg to False if we can't edit the data, and the second
+        # arg to None if we can't represent the data. Otherwise, data should
+        # be returned as a string.
+        return [False, None]
 
 
 class YamlConfig(Config):
@@ -53,6 +66,8 @@ class YamlConfig(Config):
     For the sake of keeping things sane, all YAML files should end in .yml, but
         this isn't enforced.
     """
+
+    representation = "yaml"
 
     data = {}
     format = formats.YAML
@@ -82,6 +97,10 @@ class YamlConfig(Config):
         else:
             self.data = yaml.safe_load(self.fh)
             return True
+
+    def read(self):
+        dumped = open(self.filename, "r").read()
+        return [self.editable, dumped]
 
     def keys(self):
         return self.data.keys()
@@ -139,6 +158,8 @@ class JSONConfig(Config):
         enforced.
     """
 
+    representation = "json"
+
     data = {}
     format = formats.JSON
 
@@ -167,6 +188,10 @@ class JSONConfig(Config):
         else:
             self.data = json.load(self.fh)
             return True
+
+    def read(self):
+        dumped = open(self.filename, "r").read()
+        return [self.editable, dumped]
 
     def keys(self):
         return self.data.keys()
@@ -219,6 +244,8 @@ class MemoryConfig(Config):
         to supply one programmatically.
     """
 
+    representation = "json"
+
     data = {}
     format = formats.MEMORY
 
@@ -237,6 +264,11 @@ class MemoryConfig(Config):
         Does nothing.
         """
         return True
+
+    def read(self):
+        dumped = pprint.pformat(self.data)
+
+        return [self.editable, dumped]
 
     def keys(self):
         return self.data.keys()
