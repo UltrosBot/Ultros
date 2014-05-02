@@ -195,7 +195,7 @@ class Plugin(PluginObject):
                             to_unicode(results[0][2]),
                             to_unicode(results[0][3]),
                             to_unicode(results[0][4]),
-                            to_unicode(results[0][5] + "\n" + info)
+                            results[0][5] + u"\n" + to_unicode(info)
                         ))
             e = FactoidUpdatedEvent(self, factoid_key, factoid)
             self.events.run_callback("Factoids/Updated", e, from_thread=True)
