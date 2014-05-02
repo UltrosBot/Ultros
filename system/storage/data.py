@@ -613,7 +613,8 @@ class DBAPIData(Data):
 
         self.logger.debug("Parsed module: %s" % parsed_module)
 
-        self.pool = adbapi.ConnectionPool(parsed_module, *args, **kwargs)
+        self.pool = adbapi.ConnectionPool(parsed_module, *args,
+                                          cp_reconnect=True, **kwargs)
 
     def runInteraction(self, *args, **kwargs):
         return self.pool.runInteraction(*args, **kwargs)
