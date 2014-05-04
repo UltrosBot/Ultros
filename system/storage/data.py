@@ -610,10 +610,17 @@ class DBAPIData(Data):
 
         parsed_module = path.split(":", 1)[0]
         self.parsed_module = parsed_module
+        self.args = args
+        self.kwargs = kwargs
 
         self.logger.debug("Parsed module: %s" % parsed_module)
 
-        self.pool = adbapi.ConnectionPool(parsed_module, *args,
+        self.reconnect()
+
+    def reconnect(self):
+        args = self.args
+        kwargs = self.kwargs
+        self.pool = adbapi.ConnectionPool(self.parsed_module, *args,
                                           cp_reconnect=True, **kwargs)
 
     def runInteraction(self, *args, **kwargs):

@@ -3,6 +3,7 @@ __author__ = 'Gareth Coles'
 import datetime
 import os
 
+from socket import error as SocketError
 from system.protocols.generic.channel import Channel
 from system.storage.formats import DBAPI
 
@@ -21,6 +22,8 @@ class Catcher(object):
     ignored = []
 
     enabled = False
+
+    pipe_breakages = 0
 
     def __init__(self, plugin, config, storage, logger):
         if "catcher" not in config:
@@ -52,6 +55,16 @@ class Catcher(object):
             self.logger.info(message)
 
     def _log_callback_failure(self, failure, message, use_failure=False):
+        if isinstance(failure, SocketError):
+            if failure.errno == 32:
+                if self.pipe_breakages < 3:
+                    self.pipe_breakages += 1
+                    self.db.reload()
+                    return
+                else:
+                    self.logger.error("Broken pipe has occurred more than "
+                                      "three times in a row!")
+
         if use_failure:
             self.logger.error(message % failure)
         else:
@@ -111,6 +124,7 @@ class Catcher(object):
 
     def insert_interaction(self, txn, url, user, target, protocol):
         found = self.find_interaction(txn, url)
+        self.pipe_breakages = 0
 
         if not found:
             sql = self.sql["insert"].replace(
@@ -128,5 +142,8 @@ class Catcher(object):
             d = self.db.runInteraction(self.insert_interaction,
                                        url, user, target, protocol)
 
-            d.addErrback(self._log_callback_failure,
-                         errbackArgs=("Failed to insert URL: %s", True))
+            d.addErrback(
+                self._log_callback_failure,
+                "Failed to insert URL: %s",
+                True
+            )
