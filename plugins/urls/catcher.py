@@ -59,7 +59,7 @@ class Catcher(object):
             if failure.errno == 32:
                 if self.pipe_breakages < 3:
                     self.pipe_breakages += 1
-                    self.db.reload()
+                    self.db.reconnect()
                     return
                 else:
                     self.logger.error("Broken pipe has occurred more than "
