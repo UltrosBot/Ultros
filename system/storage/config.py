@@ -47,6 +47,12 @@ class Config(object):
         # be returned as a string.
         return [False, None]
 
+    def reload(self):
+        """
+        Reload the config, if applicable, such as for a file-based config.
+        """
+        pass
+
 
 class YamlConfig(Config):
     """

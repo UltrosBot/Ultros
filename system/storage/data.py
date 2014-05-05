@@ -64,6 +64,12 @@ class Data(object):
         # be returned as a string.
         return [False, None]
 
+    def reload(self):
+        """
+        Reload the data, if applicable, such as for a file-based data store.
+        """
+        pass
+
 
 class YamlData(Data):
     """
