@@ -48,6 +48,7 @@ if "--update" in sys.argv:
         print "Done!"
     except Exception as e:
         print "Error updating: %s" % e
+        raise e
 
     exit(0)
 

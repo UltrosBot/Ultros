@@ -7,7 +7,7 @@ pyyaml
 protobuf
 beautifulsoup4
 netaddr
-gitpython==0.1.7
+gitpython==0.3.2.RC1
 gitdb
 async
 pyopenssl
