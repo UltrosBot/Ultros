@@ -11,7 +11,9 @@ from system.events.general import MessageReceived, MessageSent, PreCommand, \
 from system.events.irc import UserJoinedEvent, UserKickedEvent, \
     UserPartedEvent, UserQuitEvent, CTCPQueryEvent
 from system.events.mumble import UserJoined, UserMoved, UserRemove
-from system.plugin import PluginObject
+
+import system.plugin as plugin
+
 from system.protocols.generic.channel import Channel
 from system.protocols.generic.user import User
 
@@ -19,7 +21,7 @@ from system.storage.formats import YAML
 from system.storage.manager import StorageManager
 
 
-class BridgePlugin(PluginObject):
+class BridgePlugin(plugin.PluginObject):
 
     config = None
     events = None

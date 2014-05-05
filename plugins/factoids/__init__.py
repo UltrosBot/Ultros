@@ -3,7 +3,9 @@ from twisted.internet import defer
 
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
-from system.plugin import PluginObject
+
+import system.plugin as plugin
+
 from system.plugin_manager import YamlPluginManagerSingleton
 from system.protocols.generic.channel import Channel
 from system.storage.formats import DBAPI
@@ -22,7 +24,7 @@ __author__ = 'Sean'
 # * Don't do vegetables
 
 
-class Plugin(PluginObject):
+class FactoidsPlugin(plugin.PluginObject):
 
     CHANNEL = "channel"
     PROTOCOL = "protocol"

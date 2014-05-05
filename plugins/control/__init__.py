@@ -2,11 +2,13 @@
 __author__ = "Gareth Coles"
 
 from system.command_manager import CommandManager
-from system.plugin import PluginObject
+
+import system.plugin as plugin
+
 from system.storage.manager import StorageManager
 
 
-class Plugin(PluginObject):
+class ControlPlugin(plugin.PluginObject):
 
     commands = None
     data = None

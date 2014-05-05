@@ -4,7 +4,9 @@ __author__ = "Gareth Coles"
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
 from system.events.general import MessageSent
-from system.plugin import PluginObject
+
+import system.plugin as plugin
+
 from system.protocols.generic.user import User
 from system.storage.formats import YAML
 from system.storage.manager import StorageManager
@@ -18,7 +20,7 @@ from reverse import Reverse
 from upper import Upper
 
 
-class Plugin(PluginObject):
+class DialectizerPlugin(plugin.PluginObject):
 
     commands = None
     data = None

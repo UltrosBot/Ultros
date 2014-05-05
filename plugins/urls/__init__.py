@@ -14,7 +14,9 @@ from system.command_manager import CommandManager
 from system.decorators import run_async_threadpool
 from system.event_manager import EventManager
 from system.events.general import MessageReceived
-from system.plugin import PluginObject
+
+import system.plugin as plugin
+
 from system.protocols.generic.channel import Channel
 from system.protocols.generic.user import User
 
@@ -24,7 +26,7 @@ from system.storage.manager import StorageManager
 from .catcher import Catcher
 
 
-class Plugin(PluginObject):
+class URLsPlugin(plugin.PluginObject):
 
     catcher = None
     channels = None
