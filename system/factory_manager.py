@@ -4,6 +4,7 @@ __author__ = "Gareth Coles"
 
 import logging
 import inspect
+import signal
 
 from twisted.internet import reactor
 
@@ -56,6 +57,9 @@ class Manager(object):
 
     def __init__(self):
         # Set up the logger
+
+        signal.signal(signal.SIGINT, self.signal_callback)
+
         self.logger = getLogger("Manager")
         self.storage = StorageManager()
         self.main_config = self.storage.get_file(self, "config", YAML,
@@ -91,6 +95,18 @@ class Manager(object):
                           "ReactorStarted", event)
 
         reactor.run()
+
+    def signal_callback(self, signum, frame):
+        try:
+            if reactor.running:
+                try:
+                    self.unload()
+                except:
+                    self.logger.exception("Error while unloading!")
+                finally:
+                    reactor.stop()
+        finally:
+            exit(0)
 
     # Load stuff
 
