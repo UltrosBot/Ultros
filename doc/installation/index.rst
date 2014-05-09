@@ -59,13 +59,46 @@ Please see below for OS-specific installation instructions. For configuration, p
 
 .. _installation-all:
 
-All systems
+Quick-start
 -----------
 
-On all systems, you should simply be able to open a terminal, cd to your copy of Ultros and run the package manager to install dependencies. ::
+If you're going to use one of the start scripts, you'll need to install both **pip** and **virtualenv**. Install python, and then run the following commands to set both of those up::
+
+    cd <path>/Ultros  # Replace <path> with the directory you stored Ultros in
+    python packages.py
+    pip install virtualenv
+
+On linux, you'll also want to run the following::
+
+    chmod a+x start.sh
+
+To start Ultros, run **start.bat** on Windows, and **start.sh** on everything else. Always use CTRL+C to kill Ultros gracefully.
+
+On linux, you may need to install libffi-dev for the installer to work. On Debian-based systems (such as Ubuntu), you can do something like this::
+
+    apt-get install libffi-dev
+
+.. _install-no-virtualenv:
+
+Without virtualenv
+------------------
+
+If you don't want to use a virtualenv (which you really should), you can set up and run Ultros in the following way.
+
+On all systems, you should simply be able to open a terminal, **cd** to your copy of Ultros and run the package manager to install dependencies. ::
 
     cd <path>/Ultros  # Replace <path> with the directory you stored Ultros in
     python packages.py setup
+
+The packages in this installer only support Python 2.7.
+
+On linux, you may need to install **libffi-dev** for the installer to work. On Debian-based systems (such as Ubuntu), you can do something like this::
+
+    apt-get install libffi-dev
+
+Presuming all is well, the following will start Ultros::
+
+    python run.py
 
 If this doesn't work for you, then you can try the OS-specific methods below.
 
