@@ -17,6 +17,7 @@ __author__ = 'Gareth Coles'
 
 import os
 import sys
+import tempfile
 import urllib
 
 if os.path.dirname(sys.argv[0]):
@@ -38,7 +39,7 @@ from utils.packages.packages import Packages
 from utils.misc import string_split_readable
 
 operations = ["install", "update", "uninstall", "list", "list-installed",
-              "info", "help"]
+              "info", "help", "setup"]
 
 
 def output_help():
@@ -54,6 +55,8 @@ def output_help():
     print "update <package>         Update a package"
     print "update all               Update all packages"
     print "uninstall <package>      Remove a package"
+    print ""
+    print "setup                    Sets up Ultros' dependencies"
     print ""
     print "=== Informational operations ==="
     print "list                     List all available packages"
@@ -132,6 +135,9 @@ def main(args):
     elif operation == "uninstall":
         packages = get_packages()
         uninstall(args, packages)
+
+    elif operation == "setup":
+        setup()
 
     elif operation == "update":
         packages = get_packages()
@@ -302,6 +308,74 @@ def info(args, packages):
     print ""
     print info["current_version"]["info"]
 
+
+def setup():
+    windows = os.name == "nt"
+
+    if not windows:
+        pip.main(["install", "-r", "requirements.txt"])
+
+        print ">> Presuming everything installed okay, you should now be " \
+              "ready to run Ultros!"
+    else:
+        reqs = open("requirements.txt", "r").read()
+        reqs = reqs.replace("\r", "")
+        reqs = reqs.split()
+
+        if "" in reqs:
+            reqs.remove("")
+
+        for x in ["pyopenssl", "twisted"]:
+            if x in reqs:
+                reqs.remove(x)
+
+        urls = {
+            "Twisted": [
+                ["https://pypi.python.org/packages/2.7/T/Twisted/Twisted-"
+                 "13.2.0.win32-py2.7.msi", "twisted.msi"]
+            ],
+            "OpenSSL and PyOpenSSL": [
+                ["http://slproweb.com/download/Win32OpenSSL-1_0_1g.exe",
+                 "openssl.exe"],
+                ["https://pypi.python.org/packages/2.7/p/pyOpenSSL/pyOpenSSL-0"
+                 ".13.1.win32-py2.7.exe", "pyopenssl.exe"]
+            ]
+        }
+
+        pip.main(["install"] + reqs)
+
+        print ""
+        print ">> There are some things pip can't install."
+        print ">> I will now attempt to download and install them manually."
+        print ">> Please be ready to click through dialogs!"
+        print ">> Please note, these files only work with Python 2.7!"
+        print ""
+
+        tempdir = tempfile.gettempdir()
+
+        print ">> Files will be downloaded to %s" % tempdir
+        print ""
+        print ">> OpenSSL will complain about a command prompt being open."
+        print ">> This is fine, just click \"OK\" to continue."
+        print ""
+
+        for k in urls.keys():
+            print ">> Downloading files for %s" % k
+
+            files = urls[k]
+
+            for x in files:
+                print " -> %s" % x[1]
+
+                try:
+                    urllib.urlretrieve(x[0], tempdir + "/ultros." + x[1])
+
+                    os.system(tempdir + "/ultros." + x[1])
+                finally:
+                    os.remove(tempdir + "/ultros." + x[1])
+
+        print ">> Presuming everything installed okay, you should now be " \
+              "ready to run Ultros!"
 
 if __name__ == "__main__":
     args = sys.argv[1:]
