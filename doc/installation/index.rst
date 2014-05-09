@@ -57,6 +57,18 @@ If you're thick-skulled, paranoid about wasting space or just don't like Git, yo
 
 Please see below for OS-specific installation instructions. For configuration, please see the :ref:`configuration` page.
 
+.. _installation-all:
+
+All systems
+-----------
+
+On all systems, you should simply be able to open a terminal, cd to your copy of Ultros and run the package manager to install dependencies. ::
+
+    cd <path>/Ultros  # Replace <path> with the directory you stored Ultros in
+    python packages.py setup
+
+If this doesn't work for you, then you can try the OS-specific methods below.
+
 .. _installation-windows:
 
 Windows
@@ -70,7 +82,7 @@ Windows
 * Install pip by downloading and running this script (Just copy it into a file ending in .py and run it): https://raw.github.com/pypa/pip/master/contrib/get-pip.py
 * Download and install Twisted: http://twistedmatrix.com/Releases/Twisted/13.2/Twisted-13.2.0.win32-py2.7.msi
 * If you require SSL support:
-    * Download and install OpenSSL for Windows: http://slproweb.com/download/Win32OpenSSL-1_0_1f.exe
+    * Download and install OpenSSL for Windows: http://slproweb.com/download/Win32OpenSSL-1_0_1g.exe
     * Download and install PyOpenSSL: https://pypi.python.org/packages/2.7/p/pyOpenSSL/pyOpenSSL-0.13.1.win32-py2.7.exe
     * You'll see some errors in the next step if you don't do this, but Ultros should still work just fine for things that don't need SSL.
 
