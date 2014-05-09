@@ -105,7 +105,7 @@ class Manager(object):
                     self.logger.exception("Error while unloading!")
                 finally:
                     reactor.stop()
-        finally:
+        except:
             exit(0)
 
     # Load stuff
