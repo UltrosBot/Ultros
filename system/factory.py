@@ -33,6 +33,9 @@ class Factory(protocol.ClientFactory):
     #: How many times we've tried to reconnect
     attempts = 0
 
+    #: Whether we're currently shutting down
+    shutting_down = False
+
     def __init__(self, protocol_name, config, manager):
         self.logger = getLogger("F: %s" % protocol_name)
         self.config = config
@@ -84,9 +87,7 @@ class Factory(protocol.ClientFactory):
                                 "protocol class!")
 
     def shutdown(self):
-        self.r_on_failure = False
-        self.r_on_drop = False
-        self.reconnecting = False
+        self.shutting_down = True
         try:
             self.protocol.shutdown()
         except:
@@ -106,6 +107,9 @@ class Factory(protocol.ClientFactory):
         reconnection purposes.
         """
 
+        if self.shutting_down:
+            return
+
         self.logger.warn("Lost connection: %s" % reason.__str__())
         if self.r_on_drop:
             if self.attempts >= self.r_attempts:
@@ -122,6 +126,9 @@ class Factory(protocol.ClientFactory):
         Called when the client fails to connect. Overridden here for
         reconnection purposes.
         """
+
+        if self.shutting_down:
+            return
 
         self.logger.warn("Connection failed: %s" % reason.__str__())
         if self.r_on_drop or self.reconnecting:
