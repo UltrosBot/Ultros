@@ -8,8 +8,11 @@ if [ ! -d "Ultros" ]; then
     echo "** Activating virtualenv.. **"
     source Ultros/bin/activate
 
-    echo "** Installing packages.. **"
+    echo "** Installing dependencies.. **"
     python packages.py setup
+
+    echo "** Renstalling packages.. **"
+    python packages.py update all
 else
     echo "** Activating virtualenv.. **"
     source Ultros/bin/activate

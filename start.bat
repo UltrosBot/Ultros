@@ -9,8 +9,11 @@ virtualenv Ultros
 echo "** Activating virtualenv.. **"
 Ultros/Scripts/activate
 
-echo "** Installing packages.. **"
+echo "** Installing dependencies.. **"
 python packages.py setup
+
+echo "** Reinstalling packages.. **"
+python packages.py update all
 
 GOTO :START
 
