@@ -420,8 +420,7 @@ class Manager(object):
             try:
                 proto.shutdown()
             except Exception:
-                self.logger.error("Error shutting down protocol %s" % name)
-                output_exception(self.logger, logging.ERROR)
+                self.logger.exception("Error shutting down protocol %s" % name)
             del self.factories[name]
             return True
         return False
@@ -433,8 +432,10 @@ class Manager(object):
 
         # Shut down!
         for name in self.factories.keys():
+            self.logger.info("Unloading protocol: %s" % name)
             self.unload_protocol(name)
         for name in self.loaded_plugins.keys():
+            self.logger.info("Unloading plugin: %s" % name)
             self.unload_plugin(name)
 
     # Grab stuff

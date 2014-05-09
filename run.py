@@ -85,7 +85,10 @@ if __name__ == "__main__":
     except Exception:
         logger.critical("Runtime error - process cannot continue!")
         output_exception(logger)
-
+    except SystemExit as e:
+        close_log("output.log")
+        decorators.pool.stop()
+        exit(e.code)
     finally:
         try:
             manager.unload()
