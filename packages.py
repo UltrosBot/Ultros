@@ -35,7 +35,11 @@ except ImportError:
     import pip  # flake8: noqa
     print ""
 
-from utils.packages.packages import Packages
+try:
+    from utils.packages.packages import Packages
+except ImportError:
+    Packages = None
+
 from utils.misc import string_split_readable
 
 operations = ["install", "update", "uninstall", "list", "list-installed",
@@ -98,6 +102,10 @@ def main(args):
     operation = operation.lower()
 
     def get_packages(get=True):
+
+        if Packages is None:
+            print ">> You need to run the setup steps first!"
+            return exit(1)
         if get:
             print ">> Downloading package list.."
 
