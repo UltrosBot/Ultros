@@ -83,6 +83,15 @@ class Factory(protocol.ClientFactory):
                 raise TypeError("Protocol does not subclass the generic "
                                 "protocol class!")
 
+    def shutdown(self):
+        self.r_on_failure = False
+        self.r_on_drop = False
+        self.reconnecting = False
+        try:
+            self.protocol.shutdown()
+        except:
+            self.logger.exception("Error shutting down")
+
     def buildProtocol(self, addr):
         """
         Another overridden standard Twisted function. We're just returning

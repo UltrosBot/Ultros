@@ -416,7 +416,7 @@ class Manager(object):
         """
 
         if name in self.factories:
-            proto = self.factories[name].protocol
+            proto = self.factories[name]
             try:
                 proto.shutdown()
             except Exception:
