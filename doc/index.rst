@@ -14,9 +14,12 @@ out very soon!
 
 .. toctree::
    :includehidden:
+   :maxdepth: 1
 
    installation/index
    installation/configuration
+
+   plugins/index
 
    usage/commands
 
