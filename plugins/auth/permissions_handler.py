@@ -282,8 +282,7 @@ class permissionsHandler(object):
             if group not in self.data["groups"]:
                 new_group = {
                     "permissions": [],
-                    "options": {},
-                    "inherit": None
+                    "options": {}
                 }
                 self.data["groups"][group] = new_group
                 return True
