@@ -1,0 +1,10 @@
+core:
+  name: Debug
+  module: debug
+  dependencies: []
+info:
+  description: Debugging plugin.
+  author: Gareth Coles
+  version: 0.0.1
+  website: https://github.com/McBlockitHelpbot/Ultros/tree/master/plugins/debug
+  copyright: See Ultros' license

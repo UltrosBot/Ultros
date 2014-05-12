@@ -12,6 +12,7 @@ As of right now, only the **auth** plugin has been documented.
    auth
    bridge
    control
+   debug
    dialectizer
    factoids
    urls
