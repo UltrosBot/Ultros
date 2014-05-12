@@ -116,16 +116,57 @@ class Protocol(ChannelsProtocol):
         event = general_events.PreConnectEvent(self, config)
         self.event_manager.run_callback("PreConnect", event)
 
+        context = self._get_client_context()
+        if context is None:
+            # Could not create a context (problem loading cert file)
+            self.factory.manager.remove_protocol(self.name)
+            return
+
         reactor.connectSSL(
             self.networking["address"],
             self.networking["port"],
             self.factory,
-            ssl.ClientContextFactory(),
+            context,
             120
         )
 
         event = general_events.PostConnectEvent(self, config)
         self.event_manager.run_callback("PostConnect", event)
+
+    def _get_client_context(self):
+        if ("certificate" in self.config["identity"] and
+                self.config["identity"]["certificate"]):
+            try:
+                self.log.debug("Attempting to load certificate file")
+                from OpenSSL import crypto, SSL
+                cert_file = self.config["identity"]["certificate"]
+                # TODO: Check if cert file exists, and if not, create it
+                with open(cert_file, "rb") as cert_file_handle:
+                    certificate = crypto.load_pkcs12(cert_file_handle.read())
+
+                class CtxFactory(ssl.ClientContextFactory):
+                    def getContext(self):
+                        self.method = SSL.SSLv23_METHOD
+                        ctx = ssl.ClientContextFactory.getContext(self)
+                        ctx.use_certificate(certificate.get_certificate())
+                        ctx.use_privatekey(certificate.get_privatekey())
+                        return ctx
+
+                self.log.info("Loaded specified certificate file")
+                return CtxFactory()
+            except ImportError:
+                self.log.error("Could not import OpenSSL - cannot connect "
+                               "with certificate file")
+            except IOError:
+                self.log.error("Could not load cert file")
+            except:
+                self.log.exception("Unknown error while loading certificate "
+                                   "file")
+            return None
+        else:
+            self.log.info("No certificate specified - connecting without "
+                          "certificate")
+            return ssl.ClientContextFactory()
 
     def shutdown(self):
         self.msg("Disconnecting: Protocol shutdown")

@@ -10,6 +10,7 @@ identity:  # Identity settings. Who am I?
   username: Ultros  # Username to connect with
   password:   # Server password. You probably don't need this.
   tokens: []  # Auth tokens for locked-down channels.
+  certificate:  # Path to certificate file, relative to the base directory
 
 channel: # Channel to join on connect, specified either by name or id
   name:

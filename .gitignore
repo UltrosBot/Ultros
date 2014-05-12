@@ -51,5 +51,8 @@ config/**/*.yml
 data/
 doc/_build
 
+# Certificates
+*.p12
+
 # Other
 *~
