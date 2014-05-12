@@ -1,4 +1,4 @@
-Core » Bridge
+Core » Debug
 *************
 
 .. role:: yaml(code)
