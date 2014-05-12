@@ -154,7 +154,7 @@ class Protocol(ChannelsProtocol):
                     cert.set_version(2)
                     cert.set_serial_number(1000)
                     cert.gmtime_adj_notBefore(0)
-                    cert.gmtime_adj_notAfter(60*60*24*365*20)
+                    cert.gmtime_adj_notAfter(60 * 60 * 24 * 365 * 20)
                     cert.set_pubkey(pkey)
                     cert.get_subject().CN = self.username
                     cert.set_issuer(cert.get_subject())
