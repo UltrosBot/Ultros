@@ -6,6 +6,7 @@ import system.plugin as plugin
 from system.command_manager import CommandManager
 
 from .interpreter import Interpreter
+from .monitors import UncollectableMonitor
 
 PyCF_DONT_IMPLY_DEDENT = 0x200
 
@@ -20,9 +21,13 @@ class DebugPlugin(plugin.PluginObject):
     protocol = None
     source = None
 
+    monitors = []
+
     def setup(self):
         self.commands = CommandManager()
         self.reload()
+
+        self.monitors.append(UncollectableMonitor(self.logger))
 
         self.commands.register_command("debug", self.debug_cmd,
                                        self, "debug.debug", aliases=["dbg"])
