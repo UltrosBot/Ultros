@@ -174,10 +174,13 @@ class YamlData(Data):
         try:
             yaml.load(data)
         except yaml.YAMLError as e:
+            problem = e.problem
+            problem = problem.replace("could not found", "could not find")
+
             mark = e.problem_mark
             if mark is not None:
-                return [[mark.line, e.problem]]
-            return [False, e.problem]
+                return [[mark.line, problem]]
+            return [False, problem]
         return [True]
 
     def write(self, data):
