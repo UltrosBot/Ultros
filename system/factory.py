@@ -107,6 +107,13 @@ class Factory(protocol.ClientFactory):
         reconnection purposes.
         """
 
+        if hasattr(self.protocol, "on_connection_lost"):
+            try:
+                self.protocol.on_connection_lost()
+            except:
+                self.logger.exception("Error calling \"connection lost\" "
+                                      "callback")
+
         if self.shutting_down:
             return
 
@@ -127,6 +134,13 @@ class Factory(protocol.ClientFactory):
         reconnection purposes.
         """
 
+        if hasattr(self.protocol, "on_connection_failed"):
+            try:
+                self.protocol.on_connection_failed()
+            except:
+                self.logger.exception("Error calling \"connection failed\" "
+                                      "callback")
+
         if self.shutting_down:
             return
 
@@ -142,5 +156,12 @@ class Factory(protocol.ClientFactory):
             reactor.callLater(self.r_delay, self.setup)
 
     def clientConnected(self):
+        if hasattr(self.protocol, "on_connected"):
+            try:
+                self.protocol.on_connected()
+            except:
+                self.logger.exception("Error calling \"connected\" "
+                                      "callback")
+
         if self.r_reset:
             self.attempts = 0
