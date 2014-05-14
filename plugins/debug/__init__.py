@@ -27,8 +27,6 @@ class DebugPlugin(plugin.PluginObject):
         self.commands = CommandManager()
         self.reload()
 
-        self.monitors.append(UncollectableMonitor(self.logger))
-
         self.commands.register_command("debug", self.debug_cmd,
                                        self, "debug.debug", aliases=["dbg"])
 
@@ -49,6 +47,9 @@ class DebugPlugin(plugin.PluginObject):
             source.respond("[DEBUG] %s" % line)
 
     def reload(self):
+        self.monitors = []
+        self.monitors.append(UncollectableMonitor(self.logger))
+
         output = self.output
 
         self.interpreter = Interpreter(locals())

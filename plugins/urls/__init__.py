@@ -74,10 +74,7 @@ class URLsPlugin(plugin.PluginObject):
         self.commands = CommandManager()
         self.events = EventManager()
 
-        self.shortened.runQuery("CREATE TABLE IF NOT EXISTS urls ("
-                                "url TEXT, "
-                                "shortener TEXT, "
-                                "result TEXT)")
+        self.reload()
 
         def message_event_filter(event=MessageReceived):
             target = event.target
@@ -87,8 +84,6 @@ class URLsPlugin(plugin.PluginObject):
                 or isinstance(target, Channel) \
                 or isinstance(target, User)
 
-        self.catcher = Catcher(self, self.config, self.storage, self.logger)
-
         self.add_shortener("tinyurl", self.tinyurl)
 
         self.events.add_callback("MessageReceived", self, self.message_handler,
@@ -97,6 +92,14 @@ class URLsPlugin(plugin.PluginObject):
                                        "urls.manage")
         self.commands.register_command("shorten", self.shorten_command, self,
                                        "urls.shorten")
+
+    def reload(self):
+        self.shortened.runQuery("CREATE TABLE IF NOT EXISTS urls ("
+                                "url TEXT, "
+                                "shortener TEXT, "
+                                "result TEXT)")
+
+        self.catcher = Catcher(self, self.config, self.storage, self.logger)
 
     @run_async_threadpool
     def message_handler(self, event=MessageReceived):

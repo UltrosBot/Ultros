@@ -5,19 +5,13 @@ from system.command_manager import CommandManager
 
 import system.plugin as plugin
 
-from system.storage.manager import StorageManager
-
 
 class ControlPlugin(plugin.PluginObject):
 
     commands = None
-    data = None
-    events = None
-    storage = None
 
     def setup(self):
         self.commands = CommandManager()
-        self.storage = StorageManager()
 
         self.commands.register_command("join", self.join_command,
                                        self, "control.join")

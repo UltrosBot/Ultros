@@ -11,7 +11,6 @@ from system.storage.formats import DBAPI
 class Catcher(object):
     where = ""
 
-    config = {}
     plugin = None
     storage = None
     logger = None
@@ -19,26 +18,34 @@ class Catcher(object):
     sql = None
     db = None
 
-    ignored = []
-
-    enabled = False
-
     pipe_breakages = 0
+
+    @property
+    def enabled(self):
+        if "catcher" not in self._config:
+            return False
+
+        return self._config["catcher"].get("use", False)
+
+    @property
+    def config(self):
+        return self._config["catcher"]
+
+    @property
+    def ignored(self):
+        return self.config.get("ignored", [])
 
     def __init__(self, plugin, config, storage, logger):
         if "catcher" not in config:
             logger.debug("No catcher section in config.")
-            self.enabled = False
             return
 
-        self.enabled = config["catcher"].get("use", False)
+        self._config = config
 
         if not self.enabled:
             logger.debug("Catcher disabled via config.")
             return
 
-        self.config = config["catcher"]
-        self.ignored = self.config.get("ignored", [])
         self.plugin = plugin
         self.storage = storage
         self.logger = logger

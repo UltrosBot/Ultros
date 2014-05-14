@@ -1,8 +1,6 @@
 # coding=utf-8
 __author__ = 'Gareth Coles'
 
-from threading import Lock
-
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
 from system.events.general import MessageReceived, MessageSent, PreCommand, \
@@ -30,7 +28,9 @@ class BridgePlugin(plugin.PluginObject):
 
     rules = {}
 
-    mutex = Lock()
+    @property
+    def rules(self):
+        return self.config["rules"]
 
     def setup(self):
         self.logger.debug("Entered setup method.")
@@ -52,8 +52,6 @@ class BridgePlugin(plugin.PluginObject):
 
         self.commands = CommandManager()
         self.events = EventManager()
-
-        self.rules = self.config["rules"]
 
         # General
 

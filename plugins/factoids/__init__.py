@@ -56,16 +56,9 @@ class FactoidsPlugin(plugin.PluginObject):
             "data/plugins/factoids.sqlite",
             check_same_thread=False
         )
-        with self.database as db:
-            db.runQuery("CREATE TABLE IF NOT EXISTS factoids ("
-                        "factoid_key TEXT, "
-                        "location TEXT, "
-                        "protocol TEXT, "
-                        "channel TEXT, "
-                        "factoid_name TEXT, "
-                        "info TEXT, "
-                        "UNIQUE(factoid_key, location, protocol, channel) "
-                        "ON CONFLICT REPLACE)")
+
+        self.database.add_callback(self.reload)
+        self.reload()
 
         ### Register commands
         # We have multiple possible permissions per command, so we have to do
@@ -98,6 +91,18 @@ class FactoidsPlugin(plugin.PluginObject):
                                  self,
                                  self.web_routes,
                                  1)
+
+    def reload(self):
+        with self.database as db:
+            db.runQuery("CREATE TABLE IF NOT EXISTS factoids ("
+                        "factoid_key TEXT, "
+                        "location TEXT, "
+                        "protocol TEXT, "
+                        "channel TEXT, "
+                        "factoid_name TEXT, "
+                        "info TEXT, "
+                        "UNIQUE(factoid_key, location, protocol, channel) "
+                        "ON CONFLICT REPLACE)")
 
     # region Util functions
 
