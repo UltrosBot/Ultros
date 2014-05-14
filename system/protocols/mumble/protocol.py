@@ -360,6 +360,7 @@ class Protocol(ChannelsProtocol):
         elif isinstance(message, Mumble_pb2.ServerSync):
             # session, max_bandwidth, welcome_text, permissions
             session = message.session
+            # TODO: Store these
             max_bandwidth = message.max_bandwidth
             permissions = message.permissions
             welcome_text = html_to_text(message.welcome_text, True)
@@ -374,15 +375,16 @@ class Protocol(ChannelsProtocol):
         elif isinstance(message, Mumble_pb2.ServerConfig):
             # max_bandwidth, welcome_text, allow_html, message_length,
             # image_message_length
+            # TODO: Store these
             max_bandwidth = message.max_bandwidth
             welcome_text = message.welcome_text
             self.allow_html = message.allow_html
-            message_lenth = message.message_length
+            message_length = message.message_length
             image_message_length = message.image_message_length
 
             event = mumble_events.ServerConfig(self, max_bandwidth,
                                                welcome_text, self.allow_html,
-                                               message_lenth,
+                                               message_length,
                                                image_message_length)
             self.event_manager.run_callback("Mumble/ServerConfig", event)
         elif isinstance(message, Mumble_pb2.Ping):
@@ -805,6 +807,7 @@ class Protocol(ChannelsProtocol):
     def kick(self, user, channel=None, reason=None):
         # Mumble protocol does not currently support cert authentication, so
         # we can't have ACLs, allowing us to kick, etc., so just return False.
+        # TODO: Ignore above, now we do. Implement this. We need ACLs first.
         return False
 
     def msg(self, message, target="channel", target_id=None):
