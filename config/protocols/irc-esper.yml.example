@@ -38,6 +38,11 @@ rate_limiting: # Limit the speed of sending messages
   enabled: yes
   line_delay: 0.1 # Delay (in seconds) between each line being sent
 
+ctcp_flood_protection: # Block CTCP floods
+  enabled: yes
+  ctcp_time: 30 # Time limit in which we will allow...
+  ctcp_count: 5 # ...this many CTCP messages
+
 # Set this to yes to automatically rejoin all channels when kicked
 # Set this to no to allow configuration of individual channels
 kick_rejoin: no

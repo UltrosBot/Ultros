@@ -63,6 +63,13 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
     _channels = {}  # key is lowercase "#channel" - use get/set/del_channel()
 
+    _ctcp_flood_enabled = True
+    _ctcp_flood_time = 30
+    _ctcp_flood_max_count = 5
+
+    _ctcp_flood_last = 0
+    _ctcp_flood_count = 0
+
     @property
     def num_channels(self):
         return len(self._channels)
@@ -105,6 +112,17 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         self.control_chars = config["control_chars"]
         if config["rate_limiting"]["enabled"]:
             self.lineRate = config["rate_limiting"]["line_delay"]
+
+        if "ctcp_flood_protection" in config:
+            self._ctcp_flood_enabled = config["ctcp_flood_protection"][
+                "enabled"]
+            self._ctcp_flood_time = config["ctcp_flood_protection"][
+                "ctcp_time"]
+            self._ctcp_flood_max_count = config["ctcp_flood_protection"][
+                "ctcp_count"]
+        else:
+            self.log.info("No ctcp_flood_protection block in config - "
+                          "using default values")
 
         try:
             if config["network"]["password"]:
@@ -434,6 +452,26 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         else:
             self.log.info("[%s] %s" % (user, messages))
 
+        should_block = False
+        if self._ctcp_flood_enabled and action != "ACTION":
+            if self._ctcp_flood_last + self._ctcp_flood_time < time.time():
+                self.log.debug(
+                    "First CTCP in over %s seconds - resetting counter" %
+                    self._ctcp_flood_time
+                )
+                # First CTCP in a while - reset counter
+                self._ctcp_flood_last = time.time()
+                self._ctcp_flood_count = 0
+
+            self._ctcp_flood_count += 1
+
+            if self._ctcp_flood_count > self._ctcp_flood_max_count:
+                self.log.info("Too many CTCPs received - blocking")
+                # Received too many messages - block
+                should_block = True
+                # Reset timer so we continue blocking until the rate slows down
+                self._ctcp_flood_last = time.time()
+
         try:
             user_obj = self._get_user_from_user_string(user)
         except:
@@ -448,6 +486,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
         event = irc_events.CTCPQueryEvent(self, user_obj, channel_obj,
                                           action, data)
+        if should_block:
+            event.cancelled = True
         self.event_manager.run_callback("IRC/CTCPQueryReceived", event)
 
         if not event.cancelled:
