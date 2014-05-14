@@ -127,7 +127,7 @@ class YamlConfig(Config):
             return False
         else:
             self.data = yaml.safe_load(self.fh)
-            super(self, YamlConfig).reload()
+            super(YamlConfig, self).reload()
             return True
 
     def read(self):
@@ -219,7 +219,7 @@ class JSONConfig(Config):
             return False
         else:
             self.data = json.load(self.fh)
-            super(self, JSONConfig).reload()
+            super(JSONConfig, self).reload()
             return True
 
     def read(self):
@@ -296,7 +296,7 @@ class MemoryConfig(Config):
         """
         Does nothing.
         """
-        super(self, MemoryConfig).reload()
+        super(MemoryConfig, self).reload()
         return True
 
     def read(self):

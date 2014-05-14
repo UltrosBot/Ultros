@@ -173,10 +173,10 @@ class YamlData(Data):
         if not self._context_guarded:
             with self.mutex:
                 self._load()
-                super(self, YamlData).reload()
+                super(YamlData, self).reload()
         else:
             self._load()
-            super(self, YamlData).reload()
+            super(YamlData, self).reload()
 
     reload = load
 
@@ -323,10 +323,10 @@ class MemoryData(Data):
         """
         if not self._context_guarded:
             with self.mutex:
-                super(self, MemoryData).reload()
+                super(MemoryData, self).reload()
                 return
         else:
-            super(self, MemoryData).reload()
+            super(MemoryData, self).reload()
             return
 
     reload = load
@@ -441,10 +441,10 @@ class JSONData(Data):
         if not self._context_guarded:
             with self.mutex:
                 self._load()
-                super(self, JSONData).reload()
+                super(JSONData, self).reload()
         else:
             self._load()
-            super(self, JSONData).reload()
+            super(JSONData, self).reload()
 
     reload = load
 
