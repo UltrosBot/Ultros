@@ -66,20 +66,20 @@ class Config(object):
         :param func: The callback to add
         :type func: function
         """
-        if func:
+        if callable(func):
             self.callbacks.append(func)
         else:
-            raise ValueError("Invalid callback function supplied!")
+            raise ValueError("Invalid callback supplied!")
 
-    def reload(self):
+    def reload(self, run_callbacks=True):
         """
         Reload the config file (re-parse it), if applicable.
 
         This should also call the registered callbacks.
         """
 
-        for callback in self.callbacks:
-            if callback:
+        if run_callbacks:
+            for callback in self.callbacks:
                 callback()
 
 
@@ -115,9 +115,9 @@ class YamlConfig(Config):
         # Some sanitizing here to make sure people can't escape the config dirs
         filename = filename.strip("..")
         self.filename = filename
-        self.exists = self.reload()
+        self.exists = self.reload(False)
 
-    def reload(self):
+    def reload(self, run_callbacks=True):
         """
         Reload configuration data from the filesystem.
         """
@@ -131,8 +131,10 @@ class YamlConfig(Config):
             return False
         else:
             self.data = yaml.safe_load(self.fh)
-            super(YamlConfig, self).reload()
+            super(YamlConfig, self).reload(run_callbacks)
             return True
+
+    load = reload
 
     def read(self):
         dumped = open(self.filename, "r").read()
@@ -207,9 +209,9 @@ class JSONConfig(Config):
         # Some sanitizing here to make sure people can't escape the config dirs
         filename = filename.strip("..")
         self.filename = filename
-        self.exists = self.reload()
+        self.exists = self.reload(False)
 
-    def reload(self):
+    def reload(self, run_callbacks=True):
         """
         Reload configuration data from the filesystem.
         """
@@ -223,8 +225,10 @@ class JSONConfig(Config):
             return False
         else:
             self.data = json.load(self.fh)
-            super(JSONConfig, self).reload()
+            super(JSONConfig, self).reload(run_callbacks)
             return True
+
+    load = reload
 
     def read(self):
         dumped = open(self.filename, "r").read()
@@ -296,11 +300,11 @@ class MemoryConfig(Config):
         self.exists = True
         self.data = data_dict
 
-    def reload(self):
+    def reload(self, run_callbacks=True):
         """
         Does nothing.
         """
-        super(MemoryConfig, self).reload()
+        super(MemoryConfig, self).reload(run_callbacks)
         return True
 
     def read(self):

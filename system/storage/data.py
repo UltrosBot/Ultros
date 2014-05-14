@@ -92,20 +92,20 @@ class Data(object):
         :param func: The callback to add
         :type func: function
         """
-        if func:
+        if callable(func):
             self.callbacks.append(func)
         else:
-            raise ValueError("Invalid callback function supplied!")
+            raise ValueError("Invalid callback supplied!")
 
-    def reload(self):
+    def reload(self, run_callbacks=True):
         """
         Reload the data file (re-parse it), if applicable.
 
         This should also call the registered callbacks.
         """
 
-        for callback in self.callbacks:
-            if callback:
+        if run_callbacks:
+            for callback in self.callbacks:
                 callback()
 
 
@@ -168,21 +168,21 @@ class YamlData(Data):
             os.makedirs(folders)
 
         self.filename = filename
-        self.load()
+        self.reload(False)
 
-    def load(self):
+    def reload(self, run_callbacks=True):
         """
         Load or reload data from the filesystem.
         """
         if not self._context_guarded:
             with self.mutex:
                 self._load()
-                super(YamlData, self).reload()
+                super(YamlData, self).reload(run_callbacks)
         else:
             self._load()
-            super(YamlData, self).reload()
+            super(YamlData, self).reload(run_callbacks)
 
-    reload = load
+    load = reload
 
     def _load(self):
         if not os.path.exists(self.filename):
@@ -232,7 +232,8 @@ class YamlData(Data):
                 fh.write(data)
                 fh.flush()
                 fh.close()
-            except Exception as e:
+            except Exception:
+                self.logger.exception("Error writing file")
                 success = False
             finally:
                 self.reload()
@@ -321,19 +322,19 @@ class MemoryData(Data):
         self.logger = getLogger("Data")
         self.data = data_dict
 
-    def load(self):
+    def reload(self, run_callbacks=True):
         """
         Does nothing.
         """
         if not self._context_guarded:
             with self.mutex:
-                super(MemoryData, self).reload()
+                super(MemoryData, self).reload(run_callbacks)
                 return
         else:
-            super(MemoryData, self).reload()
+            super(MemoryData, self).reload(run_callbacks)
             return
 
-    reload = load
+    load = reload
 
     def save(self):
         """
@@ -436,21 +437,21 @@ class JSONData(Data):
             os.makedirs(folders)
 
         self.filename = filename
-        self.load()
+        self.reload(False)
 
-    def load(self):
+    def reload(self, run_callbacks=True):
         """
         Load or reload data from the filesystem.
         """
         if not self._context_guarded:
             with self.mutex:
                 self._load()
-                super(JSONData, self).reload()
+                super(JSONData, self).reload(run_callbacks)
         else:
             self._load()
-            super(JSONData, self).reload()
+            super(JSONData, self).reload(run_callbacks)
 
-    reload = load
+    load = reload
 
     def _load(self):
         if not os.path.exists(self.filename):
@@ -512,7 +513,8 @@ class JSONData(Data):
                 fh.write(data)
                 fh.flush()
                 fh.close()
-            except Exception as e:
+            except Exception:
+                self.logger.exception("Error writing file")
                 success = False
             finally:
                 self.reload()
