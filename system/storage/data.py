@@ -92,7 +92,10 @@ class Data(object):
         :param func: The callback to add
         :type func: function
         """
-        self.callbacks.append(func)
+        if func:
+            self.callbacks.append(func)
+        else:
+            raise ValueError("Invalid callback function supplied!")
 
     def reload(self):
         """
@@ -102,7 +105,8 @@ class Data(object):
         """
 
         for callback in self.callbacks:
-            callback()
+            if callback:
+                callback()
 
 
 class YamlData(Data):
