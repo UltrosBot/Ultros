@@ -33,25 +33,50 @@ from utils.log import getLogger
 
 
 class Config(object):
+    """
+    Base class for configuration objects, mostly for type-checking.
+    """
+    #: Whether the file is editable
     editable = False
 
-    # Could also be "json" or "yaml", for syntax highlighting purposes
+    #: Could also be "json" or "yaml", for syntax highlighting purposes
+    #: Set this to None if the file can't be represented
     representation = None
 
+    #: List of callbacks to be called when the file is reloaded
+    callbacks = []
+
     def read(self):
-        # Override this for admin interfaces, where applicable.
-        # You should return a list such as the following...
-        # [True, "data"] - The first arg is whether the data is editable.
-        # Set the first arg to False if we can't edit the data, and the second
-        # arg to None if we can't represent the data. Otherwise, data should
-        # be returned as a string.
+        """
+        Override this for admin interfaces, where applicable.
+        You should return a list such as the following::
+
+            [True, "data"] # The first arg is whether the data is editable.
+
+        Set the first arg to False if we can't edit the data, and the second
+        arg to None if we can't represent the data. Otherwise, data should
+        be returned as a string.
+        """
         return [False, None]
+
+    def add_callback(self, func):
+        """
+        Add a callback to be called when the data file is reloaded.
+
+        :param func: The callback to add
+        :type func: function
+        """
+        self.callbacks.append(func)
 
     def reload(self):
         """
-        Reload the config, if applicable, such as for a file-based config.
+        Reload the config file (re-parse it), if applicable.
+
+        This should also call the registered callbacks.
         """
-        pass
+
+        for callback in self.callbacks:
+            callback()
 
 
 class YamlConfig(Config):
@@ -102,6 +127,7 @@ class YamlConfig(Config):
             return False
         else:
             self.data = yaml.safe_load(self.fh)
+            super(self, YamlConfig).reload()
             return True
 
     def read(self):
@@ -193,6 +219,7 @@ class JSONConfig(Config):
             return False
         else:
             self.data = json.load(self.fh)
+            super(self, JSONConfig).reload()
             return True
 
     def read(self):
@@ -269,6 +296,7 @@ class MemoryConfig(Config):
         """
         Does nothing.
         """
+        super(self, MemoryConfig).reload()
         return True
 
     def read(self):

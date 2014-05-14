@@ -35,40 +35,74 @@ class Data(object):
     """
     Base class for data storage objects, mostly for type-checking.
     """
-    # Whether the file is editable
+    #: Whether the file is editable
     editable = False
 
-    # Could also be "json" or "yaml", for syntax highlighting purposes
+    #: Could also be "json" or "yaml", for syntax highlighting purposes
+    #: Set this to None if the file can't be represented or edited
     representation = None
 
+    #: List of callbacks to be called when the file is reloaded
+    callbacks = []
+
     def validate(self, data):
-        # Override this for admin interfaces, where applicable.
-        # If there are errors on certain lines, you can return something like..
-        # [ [12, "Dick too big"], [15, "Not enough lube"] ]
-        # Otherwise, return [True] for a success, or [False, "reason"] for a
-        # failure.
+        """
+        Override this for admin interfaces, where applicable.
+
+        If there are errors on certain lines, you can return something like::
+            [ [12, "Dick too big"], [15, "Not enough lube"] ]
+
+        Otherwise, return [True] for a success, or [False, "reason"] for a
+        failure.
+
+        :param data: The data to validate
+        :type data: (usually) str
+        """
         return [True]
 
     def write(self, data):
-        # Override this for admin interfaces, where applicable.
-        # Return True if successful, False if unsuccessful, or None if not
-        # applicable.
+        """
+        Override this for admin interfaces, where applicable.
+
+        Return True if successful, False if unsuccessful, or None if not
+        applicable.
+
+        :param data: The data to try to save
+        :type data: (usually) str
+        """
         return None
 
     def read(self):
-        # Override this for admin interfaces, where applicable.
-        # You should return a list such as the following...
-        # [True, "data"] - The first arg is whether the data is editable.
-        # Set the first arg to False if we can't edit the data, and the second
-        # arg to None if we can't represent the data. Otherwise, data should
-        # be returned as a string.
+        """
+        Override this for admin interfaces, where applicable.
+        You should return a list such as the following::
+
+            [True, "data"] # The first arg is whether the data is editable.
+
+        Set the first arg to False if we can't edit the data, and the second
+        arg to None if we can't represent the data. Otherwise, data should
+        be returned as a string.
+        """
         return [False, None]
+
+    def add_callback(self, func):
+        """
+        Add a callback to be called when the data file is reloaded.
+
+        :param func: The callback to add
+        :type func: function
+        """
+        self.callbacks.append(func)
 
     def reload(self):
         """
-        Reload the data, if applicable, such as for a file-based data store.
+        Reload the data file (re-parse it), if applicable.
+
+        This should also call the registered callbacks.
         """
-        pass
+
+        for callback in self.callbacks:
+            callback()
 
 
 class YamlData(Data):
@@ -139,8 +173,10 @@ class YamlData(Data):
         if not self._context_guarded:
             with self.mutex:
                 self._load()
+                super(self, YamlData).reload()
         else:
             self._load()
+            super(self, YamlData).reload()
 
     reload = load
 
@@ -287,8 +323,10 @@ class MemoryData(Data):
         """
         if not self._context_guarded:
             with self.mutex:
+                super(self, MemoryData).reload()
                 return
         else:
+            super(self, MemoryData).reload()
             return
 
     reload = load
@@ -403,8 +441,10 @@ class JSONData(Data):
         if not self._context_guarded:
             with self.mutex:
                 self._load()
+                super(self, JSONData).reload()
         else:
             self._load()
+            super(self, JSONData).reload()
 
     reload = load
 
