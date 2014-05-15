@@ -40,11 +40,41 @@ class Config(object):
     editable = False
 
     #: Could also be "json" or "yaml", for syntax highlighting purposes
-    #: Set this to None if the file can't be represented
+    #: Set this to None if the file can't be represented or edited
     representation = None
 
     #: List of callbacks to be called when the file is reloaded
     callbacks = []
+
+    def validate(self, data):
+        """
+        Override this for admin interfaces, where applicable.
+
+        If there are errors on certain lines, you can return something like::
+            [ [12, "Dick too big"], [15, "Not enough lube"] ]
+
+        Otherwise, return [True] for a success, or [False, "reason"] for a
+        failure.
+
+        :param data: The data to validate
+        :type data: (usually) str
+        """
+        return [True]
+
+    def write(self, data):
+        """
+        Override this for admin interfaces, where applicable.
+
+        Return True if successful, False if unsuccessful, or None if not
+        applicable.
+
+        As this is a config file, don't do any parsing, just write directly
+        to file.
+
+        :param data: The data to try to save
+        :type data: (usually) str
+        """
+        return None
 
     def read(self):
         """
@@ -56,12 +86,15 @@ class Config(object):
         Set the first arg to False if we can't edit the data, and the second
         arg to None if we can't represent the data. Otherwise, data should
         be returned as a string.
+
+        As this is a config file, this should directly read the file and
+        return its data without any parsing.
         """
         return [False, None]
 
     def add_callback(self, func):
         """
-        Add a callback to be called when the data file is reloaded.
+        Add a callback to be called when the config file is reloaded.
 
         :param func: The callback to add
         :type func: function
@@ -73,7 +106,7 @@ class Config(object):
 
     def reload(self, run_callbacks=True):
         """
-        Reload the config file (re-parse it), if applicable.
+        Reload the data file (re-parse it), if applicable.
 
         This should also call the registered callbacks.
         """
@@ -103,6 +136,7 @@ class YamlConfig(Config):
     """
 
     representation = "yaml"
+    editable = True
 
     data = {}
     format = formats.YAML
@@ -139,6 +173,34 @@ class YamlConfig(Config):
     def read(self):
         dumped = open(self.filename, "r").read()
         return [self.editable, dumped]
+
+    def validate(self, data):
+        try:
+            yaml.load(data)
+        except yaml.YAMLError as e:
+            problem = e.problem
+            problem = problem.replace("could not found", "could not find")
+
+            mark = e.problem_mark
+            if mark is not None:
+                return [[mark.line, problem]]
+            return [False, problem]
+        return [True]
+
+    def write(self, data):
+        success = True
+
+        try:
+            fh = open(self.filename, "w")
+            fh.write(data)
+            fh.flush()
+            fh.close()
+        except Exception:
+            self.logger.exception("Error writing file")
+            success = False
+        finally:
+            self.reload()
+        return success
 
     def keys(self):
         return self.data.keys()
@@ -197,6 +259,7 @@ class JSONConfig(Config):
     """
 
     representation = "json"
+    editable = True
 
     data = {}
     format = formats.JSON
@@ -233,6 +296,42 @@ class JSONConfig(Config):
     def read(self):
         dumped = open(self.filename, "r").read()
         return [self.editable, dumped]
+
+    def validate(self, data):
+        try:
+            json.loads(data)
+        except Exception as e:
+            # eg, "Expecting property name: line 1 column 2 (char 1)"
+            # We need to parse this manually.
+            msg = e.message
+
+            if ":" in msg:
+                split = msg.rsplit(":", 1)
+
+                line = split[1].split()
+                if "line" in line:
+                    index = line.index("line")
+                    line = line[index + 1]
+
+                    return [[line, split[0]]]
+                return [False, msg]
+            return [False, msg]
+        return [True]
+
+    def write(self, data):
+        success = True
+
+        try:
+            fh = open(self.filename, "w")
+            fh.write(data)
+            fh.flush()
+            fh.close()
+        except Exception:
+            self.logger.exception("Error writing file")
+            success = False
+        finally:
+            self.reload()
+            return success
 
     def keys(self):
         return self.data.keys()
