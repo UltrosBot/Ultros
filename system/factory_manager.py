@@ -55,6 +55,9 @@ class Manager(object):
     #: Storage of every plugin that depends on another plugin.
     plugins_with_dependencies = {}
 
+    #: Whether the manager is already running or not
+    running = False
+
     def __init__(self):
         # Set up the logger
 
@@ -94,7 +97,12 @@ class Manager(object):
         reactor.callLater(0, self.event_manager.run_callback,
                           "ReactorStarted", event)
 
-        reactor.run()
+    def run(self):
+        if not self.running:
+            self.running = True
+            reactor.run()
+        else:
+            raise RuntimeError("Manager is already running!")
 
     def signal_callback(self, signum, frame):
         try:

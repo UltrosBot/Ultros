@@ -81,6 +81,7 @@ if __name__ == "__main__":
 
     try:
         manager = Manager()
+        manager.run()
 
     except Exception:
         logger.critical("Runtime error - process cannot continue!")
