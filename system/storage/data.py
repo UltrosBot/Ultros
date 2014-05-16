@@ -104,9 +104,7 @@ class Data(object):
         This should also call the registered callbacks.
         """
 
-        if run_callbacks:
-            for callback in self.callbacks:
-                callback()
+        pass
 
 
 class YamlData(Data):
@@ -177,10 +175,22 @@ class YamlData(Data):
         if not self._context_guarded:
             with self.mutex:
                 self._load()
-                super(YamlData, self).reload(run_callbacks)
+                if run_callbacks:
+                    for callback in self.callbacks:
+                        try:
+                            callback()
+                        except:
+                            self.logger.exception("Error running callback %s"
+                                                  % callback)
         else:
             self._load()
-            super(YamlData, self).reload(run_callbacks)
+            if run_callbacks:
+                for callback in self.callbacks:
+                    try:
+                        callback()
+                    except:
+                        self.logger.exception("Error running callback %s"
+                                              % callback)
 
     load = reload
 
@@ -328,11 +338,21 @@ class MemoryData(Data):
         """
         if not self._context_guarded:
             with self.mutex:
-                super(MemoryData, self).reload(run_callbacks)
-                return
+                if run_callbacks:
+                    for callback in self.callbacks:
+                        try:
+                            callback()
+                        except:
+                            self.logger.exception("Error running callback %s"
+                                                  % callback)
         else:
-            super(MemoryData, self).reload(run_callbacks)
-            return
+            if run_callbacks:
+                for callback in self.callbacks:
+                    try:
+                        callback()
+                    except:
+                        self.logger.exception("Error running callback %s"
+                                              % callback)
 
     load = reload
 
@@ -446,10 +466,22 @@ class JSONData(Data):
         if not self._context_guarded:
             with self.mutex:
                 self._load()
-                super(JSONData, self).reload(run_callbacks)
+                if run_callbacks:
+                    for callback in self.callbacks:
+                        try:
+                            callback()
+                        except:
+                            self.logger.exception("Error running callback %s"
+                                                  % callback)
         else:
             self._load()
-            super(JSONData, self).reload(run_callbacks)
+            if run_callbacks:
+                for callback in self.callbacks:
+                    try:
+                        callback()
+                    except:
+                        self.logger.exception("Error running callback %s"
+                                              % callback)
 
     load = reload
 

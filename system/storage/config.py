@@ -44,7 +44,7 @@ class Config(object):
     representation = None
 
     #: List of callbacks to be called when the file is reloaded
-    callbacks = []
+    callbacks = list()
 
     def validate(self, data):
         """
@@ -100,6 +100,9 @@ class Config(object):
         :type func: function
         """
         if callable(func):
+            self.logger.debug("%s | Adding callback: %s" %
+                              (self.filename, func)
+                              )
             self.callbacks.append(func)
         else:
             raise ValueError("Invalid callback supplied!")
@@ -111,9 +114,7 @@ class Config(object):
         This should also call the registered callbacks.
         """
 
-        if run_callbacks:
-            for callback in self.callbacks:
-                callback()
+        pass
 
 
 class YamlConfig(Config):
@@ -144,6 +145,8 @@ class YamlConfig(Config):
     exists = True
     fh = None
 
+    callbacks = list()
+
     def __init__(self, filename):
         self.logger = getLogger("YamlConfig")
         # Some sanitizing here to make sure people can't escape the config dirs
@@ -165,7 +168,13 @@ class YamlConfig(Config):
             return False
         else:
             self.data = yaml.safe_load(self.fh)
-            super(YamlConfig, self).reload(run_callbacks)
+            if run_callbacks:
+                for callback in self.callbacks:
+                    try:
+                        callback()
+                    except:
+                        self.logger.exception("Error running callback %s"
+                                              % callback)
             return True
 
     load = reload
@@ -288,7 +297,13 @@ class JSONConfig(Config):
             return False
         else:
             self.data = json.load(self.fh)
-            super(JSONConfig, self).reload(run_callbacks)
+            if run_callbacks:
+                for callback in self.callbacks:
+                    try:
+                        callback()
+                    except:
+                        self.logger.exception("Error running callback %s"
+                                              % callback)
             return True
 
     load = reload
@@ -403,7 +418,13 @@ class MemoryConfig(Config):
         """
         Does nothing.
         """
-        super(MemoryConfig, self).reload(run_callbacks)
+        if run_callbacks:
+            for callback in self.callbacks:
+                try:
+                    callback()
+                except:
+                    self.logger.exception("Error running callback %s"
+                                          % callback)
         return True
 
     def read(self):
