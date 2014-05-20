@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-###                  === BEGIN LICENSE BLOCK ===                  ###
-###                                                               ###
-### Ultros is distributed under the Artistic License 2.0.         ###
-### You should have received a copy of this license with Ultros,  ###
-### but if you didn't, you can find one at the following link:    ###
-###                                                               ###
-###          http://choosealicense.com/licenses/artistic/         ###
-###                                                               ###
-###                  ===  END LICENSE BLOCK  ===                  ###
+#                  === BEGIN LICENSE BLOCK ===                  #
+#                                                               #
+# Ultros is distributed under the Artistic License 2.0.         #
+# You should have received a copy of this license with Ultros,  #
+# but if you didn't, you can find one at the following link:    #
+#                                                               #
+#          http://choosealicense.com/licenses/artistic/         #
+#                                                               #
+#                  ===  END LICENSE BLOCK  ===                  #
 
 """
 Ultros - That squidoctopus bot thing.

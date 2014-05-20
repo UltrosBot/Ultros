@@ -31,7 +31,7 @@ class Channel(channel.Channel):
         try:
             self.users.remove(user)
         except KeyError:
-            #According to PEP8, this is easier to read on two lines <_<
+            # According to PEP8, this is easier to read on two lines <_<
             self.protocol.log.debug(
                 "Tried to remove non-existent user \"%s\" from channel \"%s\""
                 % (user, self))

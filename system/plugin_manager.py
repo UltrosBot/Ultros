@@ -63,7 +63,7 @@ class YamlPluginInfo(PluginInfo):
         return self.details["core"]["name"]
 
     def __setName(self, name):
-        if not "core" in self.details:
+        if "core" not in self.details:
             self.details["core"] = {}
         self.details["core"]["name"] = name
 
@@ -71,7 +71,7 @@ class YamlPluginInfo(PluginInfo):
         return self.details["core"]["dependencies"]
 
     def __setDependencies(self, dependencies):
-        if not "core" in self.details:
+        if "core" not in self.details:
             self.details["core"] = {}
         self.details["core"]["dependencies"] = dependencies
 
@@ -79,7 +79,7 @@ class YamlPluginInfo(PluginInfo):
         return self.details["core"]["module"]
 
     def __setPath(self,path):
-        if not "core" in self.details:
+        if "core" not in self.details:
             self.details["core"] = {}
         self.details["core"]["module"] = path
 
@@ -95,7 +95,7 @@ class YamlPluginInfo(PluginInfo):
         """
         if isinstance(vstring, StrictVersion):
             vstring = str(vstring)
-        if not "info" in self.details:
+        if "info" not in self.details:
             self.details["info"] = {}
         self.details["info"]["version"] = vstring
 
@@ -103,7 +103,7 @@ class YamlPluginInfo(PluginInfo):
         return self.details["info"]["author"]
 
     def __setAuthor(self, author):
-        if not "info" in self.details:
+        if "info" not in self.details:
             self.details["info"] = {}
         self.details["info"]["author"] = author
 
@@ -111,7 +111,7 @@ class YamlPluginInfo(PluginInfo):
         return self.details["info"]["copyright"]
 
     def __setCopyright(self, copyrightTxt):
-        if not "info" in self.details:
+        if "info" not in self.details:
             self.details["info"] = {}
         self.details["info"]["copyright"] = copyrightTxt
 
@@ -119,7 +119,7 @@ class YamlPluginInfo(PluginInfo):
         return self.details["info"]["website"]
 
     def __setWebsite(self, website):
-        if not "info" in self.details:
+        if "info" not in self.details:
             self.details["info"] = {}
         self.details["info"]["website"] = website
 
@@ -127,7 +127,7 @@ class YamlPluginInfo(PluginInfo):
         return self.details["info"]["description"]
 
     def __setDescription(self, description):
-        if not "info" in self.details:
+        if "info" not in self.details:
             self.details["info"] = {}
         self.details["info"]["description"] = description
 
@@ -170,15 +170,15 @@ class YamlPluginInfo(PluginInfo):
         """
         if "info" in self.details:
             info = self.details["info"]
-            if not "author" in info:
+            if "author" not in info:
                 self.author = "Unknown"
-            if not "version" in info:
+            if "version" not in info:
                 self.version = "?.?"
-            if not "website" in info:
+            if "website" not in info:
                 self.website = "None"
-            if not "copyright" in info:
+            if "copyright" not in info:
                 self.copyright = "Unknown"
-            if not "description" in info:
+            if "description" not in info:
                 self.description = ""
         else:
             self.author = "Unknown"
@@ -189,7 +189,7 @@ class YamlPluginInfo(PluginInfo):
 
         if "core" in self.details:
             core = self.details["core"]
-            if not "dependencies" in core:
+            if "dependencies" not in core:
                 self.dependencies = []
             else:
                 self.dependencies = core["dependencies"]
@@ -213,11 +213,11 @@ class PluginFileAnalyzerWithYamlInfoFile(PluginFileAnalyzerWithInfoFile):
                                % (candidate_infofile, e))
             return None, None, None
         # check if the basic info is available
-        if not "core" in data:
+        if "core" not in data:
             self. logging.debug("Plugin info file has no 'core' section (in "
                                 "'%s')" % candidate_infofile)
             return None, None, None
-        if not "name" in data["core"] or not "module" in data["core"]:
+        if "name" not in data["core"] or "module" not in data["core"]:
             self.logging.debug("Plugin info file has no 'name' or 'module' "
                                "section (in '%s')"
                           % candidate_infofile)

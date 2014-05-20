@@ -268,8 +268,8 @@ class Protocol(ChannelsProtocol):
 
             full_length = Protocol.PREFIX_LENGTH + length
 
-            #self.log.debug("Length: %d" % length)
-            #self.log.debug("Message type: %d" % msg_type)
+            # self.log.debug("Length: %d" % length)
+            # self.log.debug("Message type: %d" % msg_type)
 
             # Check if this this a valid message ID
             if msg_type not in Protocol.MESSAGE_ID.values():
@@ -292,7 +292,7 @@ class Protocol(ChannelsProtocol):
             # Handle the message
             try:
                 self.recvProtobuf(msg_type, msg)
-            except Exception as e:
+            except Exception:
                 self.log.error("Exception while handling data.")
                 output_exception(self.log, logging.ERROR)
 

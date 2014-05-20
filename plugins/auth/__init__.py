@@ -144,7 +144,6 @@ class AuthPlugin(plugin.PluginObject):
 
     def logout_command(self, protocol, caller, source, command, raw_args,
                        parsed_args):
-        args = raw_args.split()  # Quick fix for new command handler signature
         if self.auth_h.authorized(caller, source, protocol):
             self.auth_h.logout(caller, protocol)
             caller.respond("You have been logged out successfully.")

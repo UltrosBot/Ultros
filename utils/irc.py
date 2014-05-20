@@ -1,5 +1,5 @@
-#coding=utf-8
-#from system.protocols.irc import constants
+# -*- coding: utf-8 -*-
+# from system.protocols.irc import constants
 
 """
 IRC utilities and constants, for use with the IRC protocol and plugins

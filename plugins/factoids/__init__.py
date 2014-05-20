@@ -41,13 +41,13 @@ class FactoidsPlugin(plugin.PluginObject):
      RES_MISSING_FACTOID) = xrange(4)
 
     def setup(self):
-        ### Grab important shit
+        # ## Grab important shit
         self.commands = CommandManager()
         self.events = EventManager()
         self.storage = StorageManager()
         self.plugman = YamlPluginManagerSingleton()
 
-        ### Set up database
+        # ## Set up database
         self.database = self.storage.get_file(
             self,
             "data",
@@ -60,7 +60,7 @@ class FactoidsPlugin(plugin.PluginObject):
         self.database.add_callback(self.reload)
         self.reload()
 
-        ### Register commands
+        # ## Register commands
         # We have multiple possible permissions per command, so we have to do
         # permission handling ourselves
         self.commands.register_command("addfactoid",
@@ -81,7 +81,7 @@ class FactoidsPlugin(plugin.PluginObject):
                                        self,
                                        None)
 
-        ### Register events
+        # ## Register events
         self.events.add_callback("MessageReceived",
                                  self,
                                  self.message_handler,
@@ -136,7 +136,7 @@ class FactoidsPlugin(plugin.PluginObject):
         if pos2 < 0:
             raise ValueError("Invalid args")
         factoid = raw_args[pos + 1:pos2]
-        pos3 = raw_args.find(" ", pos2 + 1)
+        # pos3 = raw_args.find(" ", pos2 + 1)
         info = raw_args[pos2 + 1:]
         if info == "":
             raise ValueError("Invalid args")
@@ -315,7 +315,7 @@ class FactoidsPlugin(plugin.PluginObject):
         protocol_key = protocol.name.lower()
         channel_key = source.name.lower()
         try:
-            valid = location is None or self.valid_location(location, source)
+            location is None or self.valid_location(location, source)
         except Exception as ex:
             return defer.fail(ex)
         if not self.__check_perm(self.PERM_ADD % location,
@@ -339,7 +339,7 @@ class FactoidsPlugin(plugin.PluginObject):
         protocol_key = protocol.name.lower()
         channel_key = source.name.lower()
         try:
-            valid = location is None or self.valid_location(location, source)
+            location is None or self.valid_location(location, source)
         except Exception as ex:
             return defer.fail(ex)
         if not self.__check_perm(self.PERM_SET % location,
@@ -366,7 +366,7 @@ class FactoidsPlugin(plugin.PluginObject):
         protocol_key = protocol.name.lower()
         channel_key = source.name.lower()
         try:
-            valid = location is None or self.valid_location(location, source)
+            location is None or self.valid_location(location, source)
         except Exception as ex:
             return defer.fail(ex)
         if not self.__check_perm(self.PERM_DEL % location,
@@ -389,7 +389,7 @@ class FactoidsPlugin(plugin.PluginObject):
         protocol_key = protocol.name.lower()
         channel_key = source.name.lower()
         try:
-            valid = location is None or self.valid_location(location, source)
+            location is None or self.valid_location(location, source)
         except Exception as ex:
             return defer.fail(ex)
         if not self.__check_perm(self.PERM_GET % location,
@@ -431,7 +431,7 @@ class FactoidsPlugin(plugin.PluginObject):
             args = []
 
         for line in result[1]:
-            _tokens = tokens.find_tokens(line)
+            # _tokens = tokens.find_tokens(line)
             _numerical = tokens.find_numerical_tokens(line)
 
             for i, arg in enumerate(args):
@@ -460,7 +460,7 @@ class FactoidsPlugin(plugin.PluginObject):
                             parsed_args):
         try:
             location, factoid, info = self._parse_args(raw_args)
-        except Exception as ex:
+        except Exception:
             caller.respond("Usage: %s <location> <factoid> <info>" % command)
             return
         d = self.set_factoid(caller, source, protocol, location, factoid, info)
@@ -625,7 +625,7 @@ class FactoidsPlugin(plugin.PluginObject):
         if command in handlers:
             handlers[command](command, factoid, args, event, split)
 
-    ### Getting "commands"
+    # ## Getting "commands"
 
     def _message_handler_get(self, command, factoid, args, event, split):
         """
@@ -692,7 +692,7 @@ class FactoidsPlugin(plugin.PluginObject):
             lambda f: self._factoid_command_fail(event.source, f)
         )
 
-    ### Channel "commands"
+    # ## Channel "commands"
 
     def _message_handler_add(self, command, factoid, args, event, split):
         """
@@ -750,7 +750,7 @@ class FactoidsPlugin(plugin.PluginObject):
             lambda f: self._factoid_command_fail(event.source, f)
         )
 
-    ### Global "commands"
+    # ## Global "commands"
 
     def _message_handler_add_global(self, command, factoid, args, event,
                                     split):
@@ -811,7 +811,7 @@ class FactoidsPlugin(plugin.PluginObject):
             lambda f: self._factoid_command_fail(event.source, f)
         )
 
-    ### Protocol-specific "commands"
+    # ## Protocol-specific "commands"
 
     def _message_handler_add_protocol(self, command, factoid, args, event,
                                       split):

@@ -7,6 +7,9 @@ __author__ = 'Gareth Coles'
 
 import os
 import sys
+
+from utils.log import getLogger
+
 env = os.environ
 
 __all__ = ['getTerminalSize']
@@ -121,8 +124,11 @@ class _Getch:
 
 class _GetchUnix:
     def __init__(self):
-        import tty  # noqa
-        import sys  # noqa
+        self.log = getLogger("GetchUnix")
+        import tty
+        import sys
+
+        self.log.debug("Loaded: %s, %s" % (tty, sys))
 
     def __call__(self):
         import sys
@@ -140,7 +146,10 @@ class _GetchUnix:
 
 class _GetchWindows:
     def __init__(self):
-        import msvcrt  # noqa
+        self.log = getLogger("GetchWindows")
+        import msvcrt
+
+        self.log.debug("Loaded: %s" % msvcrt)
 
     def __call__(self):
         import msvcrt

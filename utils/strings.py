@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 __author__ = 'Gareth Coles'
 
 import string
@@ -19,7 +19,7 @@ class EmptyStringFormatter(string.Formatter):
 
     def get_value(self, key, args, kwargs):
         try:
-            #if hasattr(key, "__mod__"):
+            # if hasattr(key, "__mod__"):
             if isinstance(key, Number):
                 return args[key]
             else:
