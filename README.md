@@ -10,6 +10,7 @@
 <sub>(I've seen enough hentai...)</sub>
 
 Ultros is an IRC/Mumble/etc. bot, extensible to pretty much any protocol, with a full-featured plugin system.
+For more information, see the [site](http://ultros.io) and [documentation (beta)](http://docs.ultros.io).
 
 -------------------
 
