@@ -178,7 +178,7 @@ class AuthPlugin(plugin.PluginObject):
             return
 
         if self.auth_h.password_backlisted(password, username):
-            caller.respond(__("That password has been blacklisted."
+            caller.respond(__("That password has been blacklisted. "
                               "Try another!"))
             return
 
