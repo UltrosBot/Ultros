@@ -13,6 +13,9 @@ from system.decorators import run_async
 from utils.log import getLogger
 from utils.misc import output_exception
 
+from system.translations import Translations
+_ = Translations().get()
+
 
 class EventManager(object):
     """
@@ -108,8 +111,8 @@ class EventManager(object):
         if not self.has_callback(callback):
             self.callbacks[callback] = []
         if self.has_plugin_callback(callback, plugin.info.name):
-            raise ValueError("Plugin '%s' has already registered a handler for"
-                             " the '%s' callback" %
+            raise ValueError(_("Plugin '%s' has already registered a handler "
+                               "for the '%s' callback") %
                              (plugin.info.name, callback))
 
         current = self.callbacks[callback]
@@ -122,7 +125,7 @@ class EventManager(object):
                 "extra_args": extra_args,
                 "extra_kwargs": extra_kwargs}
 
-        self.logger.debug("Adding callback: %s" % data)
+        self.logger.debug(_("Adding callback: %s") % data)
 
         current.append(data)
 
@@ -282,31 +285,34 @@ class EventManager(object):
                         cb["function"](event, *cb["extra_args"],
                                        **cb["extra_kwargs"])
                 try:
-                    self.logger.debug("Running callback: %s" % cb)
+                    self.logger.debug(_("Running callback: %s") % cb)
                     if cb["filter"]:
                         if isinstance(cb["filter"], FunctionType):
                             if not cb["filter"](event):
-                                self.logger.debug("Not running, filter "
-                                                  "function returned false.")
+                                self.logger.debug(_("Not running, filter "
+                                                    "function returned "
+                                                    "False."))
                                 continue
                         else:
-                            self.logger.warn("Not running event, filter "
-                                             "is not actually a function. Bug "
-                                             "the developers of the %s plugin "
-                                             "about it!" % cb["name"])
-                            self.logger.warn("Value: %s" % cb["filter"])
+                            self.logger.warn(_("Not running event, filter "
+                                               "is not actually a function. "
+                                               "Bug the developers of the %s "
+                                               "plugin about it!") %
+                                             cb["name"])
+                            self.logger.warn(_("Value: %s") % cb["filter"])
                             continue
                     if event.cancelled:
                         if cb["cancelled"]:
                             go()
                         else:
-                            self.logger.debug("Not running, event is cancelled"
-                                              " and handler doesn't accept"
-                                              " cancelled events")
+                            self.logger.debug(_("Not running, event is "
+                                                "cancelled and handler "
+                                                "doesn't accept cancelled "
+                                                "events"))
                     else:
                         go()
                 except Exception as e:
-                    self.logger.warn("Error running callback '%s': %s" %
+                    self.logger.warn(_("Error running callback '%s': %s") %
                                      (callback, e))
                     output_exception(self.logger, logging.WARN)
         return event

@@ -23,6 +23,9 @@ from system.storage.manager import StorageManager
 from utils.log import getLogger
 from utils.misc import output_exception
 
+from system.translations import Translations
+_ = Translations().get()
+
 
 class Manager(object):
     """
@@ -83,14 +86,14 @@ class Manager(object):
         self.load_protocols()  # Load and set up the protocols
 
         if not len(self.factories):
-            self.logger.info("It seems like no protocols are loaded. Shutting "
-                             "down..")
+            self.logger.info(_("It seems like no protocols are loaded. "
+                               "Shutting down.."))
             return
 
         try:
             self.metrics = Metrics(self.main_config, self)
         except:
-            self.logger.exception("Error setting up metrics.")
+            self.logger.exception(_("Error setting up metrics."))
 
         event = ReactorStartedEvent(self)
 
@@ -102,7 +105,7 @@ class Manager(object):
             self.running = True
             reactor.run()
         else:
-            raise RuntimeError("Manager is already running!")
+            raise RuntimeError(_("Manager is already running!"))
 
     def signal_callback(self, signum, frame):
         try:
@@ -110,7 +113,7 @@ class Manager(object):
                 try:
                     self.unload()
                 except:
-                    self.logger.exception("Error while unloading!")
+                    self.logger.exception(_("Error while unloading!"))
                 finally:
                     reactor.stop()
         except:
@@ -127,20 +130,20 @@ class Manager(object):
         """
 
         try:
-            self.logger.info("Loading global configuration..")
+            self.logger.info(_("Loading global configuration.."))
             if not self.main_config.exists:
-                self.logger.error(
+                self.logger.error(_(
                     "Main configuration not found! Please correct this and try"
-                    " again.")
+                    " again."))
                 return False
         except IOError:
-            self.logger.error(
-                "Unable to load main configuration at config/settings.yml")
-            self.logger.error("Please check that this file exists.")
+            self.logger.error(_(
+                "Unable to load main configuration at config/settings.yml"))
+            self.logger.error(_("Please check that this file exists."))
             return False
         except Exception:
-            self.logger.error(
-                "Unable to load main configuration at config/settings.yml")
+            self.logger.error(_(
+                "Unable to load main configuration at config/settings.yml"))
             output_exception(self.logger, logging.ERROR)
             return False
         return True
@@ -150,12 +153,12 @@ class Manager(object):
         Attempt to load all of the plugins.
         """
 
-        self.logger.info("Loading plugins..")
+        self.logger.info(_("Loading plugins.."))
 
-        self.logger.debug("Configured plugins: %s"
+        self.logger.debug(_("Configured plugins: %s")
                           % ", ".join(self.main_config["plugins"]))
 
-        self.logger.debug("Collecting plugins..")
+        self.logger.debug(_("Collecting plugins.."))
 
         if self.main_config["plugins"]:
             todo = []
@@ -166,68 +169,70 @@ class Manager(object):
                 else:
                     todo.append(info)
 
-            self.logger.debug("Loading plugins that have no dependencies "
-                              "first.")
+            self.logger.debug(_("Loading plugins that have no dependencies "
+                                "first."))
 
             for info in todo:
                 name = info.name
-                self.logger.debug("Checking if plugin '%s' is configured to "
-                                  "load.." % name)
+                self.logger.debug(_("Checking if plugin '%s' is configured to "
+                                    "load..") % name)
                 if name in self.main_config["plugins"]:
-                    self.logger.info("Attempting to load plugin: %s" % name)
+                    self.logger.info(_("Attempting to load plugin: %s") % name)
                     result = self.load_plugin(name)
                     if result is not PLUGIN_LOADED:
                         if result is PLUGIN_LOAD_ERROR:
-                            self.logger.warn("Error detected while loading "
-                                             "plugin.")
+                            self.logger.warn(_("Error detected while loading "
+                                               "plugin."))
                         elif result is PLUGIN_ALREADY_LOADED:
-                            self.logger.warn("Plugin already loaded.")
+                            self.logger.warn(_("Plugin already loaded."))
                         elif result is PLUGIN_NOT_EXISTS:
-                            self.logger.warn("Plugin doesn't exist.")
+                            self.logger.warn(_("Plugin doesn't exist."))
                         elif result is PLUGIN_DEPENDENCY_MISSING:
                             # THIS SHOULD NEVER HAPPEN!
-                            self.logger.warn("Plugin dependency is missing.")
+                            self.logger.warn(_("Plugin dependency is "
+                                               "missing."))
 
-            self.logger.debug("Loading plugins that have dependencies.")
+            self.logger.debug(_("Loading plugins that have dependencies."))
 
             for name, info in self.plugins_with_dependencies.items():
-                self.logger.debug("Checking if plugin '%s' is configured to "
-                                  "load.." % name)
+                self.logger.debug(_("Checking if plugin '%s' is configured to "
+                                    "load..") % name)
                 if name in self.main_config["plugins"]:
-                    self.logger.info("Attempting to load plugin: %s" % name)
+                    self.logger.info(_("Attempting to load plugin: %s") % name)
                     try:
                         result = self.load_plugin(name)
                     except RuntimeError as e:
                         message = e.message
                         if message == "maximum recursion depth exceeded " \
                                       "while calling a Python object":
-                            self.logger.error("Dependency loop detected while "
-                                              "loading: %s" % name)
-                            self.logger.error("This plugin will not be "
-                                              "available.")
+                            self.logger.error(_("Dependency loop detected "
+                                                "while loading: %s") % name)
+                            self.logger.error(_("This plugin will not be "
+                                                "available."))
                         elif message == "maximum recursion depth exceeded":
-                            self.logger.error("Dependency loop detected while "
-                                              "loading: %s" % name)
-                            self.logger.error("This plugin will not be "
-                                              "available.")
+                            self.logger.error(_("Dependency loop detected "
+                                                "while loading: %s") % name)
+                            self.logger.error(_("This plugin will not be "
+                                                "available."))
                         else:
                             raise e
                     except Exception as e:
                         raise e
                     if result is not PLUGIN_LOADED:
                         if result is PLUGIN_LOAD_ERROR:
-                            self.logger.warn("Error detected while loading "
-                                             "plugin.")
+                            self.logger.warn(_("Error detected while loading "
+                                               "plugin."))
                         elif result is PLUGIN_ALREADY_LOADED:
-                            self.logger.warn("Plugin already loaded.")
+                            self.logger.warn(_("Plugin already loaded."))
                         elif result is PLUGIN_NOT_EXISTS:
-                            self.logger.warn("Plugin doesn't exist.")
+                            self.logger.warn(_("Plugin doesn't exist."))
                         elif result is PLUGIN_DEPENDENCY_MISSING:
-                            self.logger.warn("Plugin dependency is missing.")
+                            self.logger.warn(_("Plugin dependency is "
+                                               "missing."))
             event = PluginsLoadedEvent(self, self.loaded_plugins)
             self.event_manager.run_callback("PluginsLoaded", event)
         else:
-            self.logger.info("No plugins are configured to load.")
+            self.logger.info(_("No plugins are configured to load."))
 
     def load_plugin(self, name, unload=False):
         """
@@ -257,12 +262,13 @@ class Manager(object):
             info = self.plugman.getPluginByName(name)
             if info.dependencies:
                 depends = info.dependencies
-                self.logger.debug("Dependencies for %s: %s" % (name, depends))
+                self.logger.debug(_("Dependencies for %s: %s") % (name,
+                                                                  depends))
                 for d_name in depends:
                     if d_name not in self.all_plugins:
-                        self.logger.error("Error loading plugin %s: the plugin"
-                                          " relies on another plugin (%s), but"
-                                          " it is not present."
+                        self.logger.error(_("Error loading plugin %s: the"
+                                            " plugin relies on another plugin "
+                                            "(%s), but it is not present.")
                                           % (name, d_name))
                         return PLUGIN_DEPENDENCY_MISSING
                 for d_name in depends:
@@ -271,31 +277,31 @@ class Manager(object):
                         if result is PLUGIN_ALREADY_LOADED:
                             continue
 
-                        self.logger.warn("Unable to load dependency: %s"
+                        self.logger.warn(_("Unable to load dependency: %s")
                                          % d_name)
                         return result
 
             try:
                 self.plugman.activatePluginByName(info.name)
-                self.logger.debug("Loading plugin: %s"
+                self.logger.debug(_("Loading plugin: %s")
                                   % info.plugin_object)
-                self.logger.debug("Location: %s" % inspect.getfile
+                self.logger.debug(_("Location: %s") % inspect.getfile
                                   (info.plugin_object.__class__))
                 info.plugin_object.add_variables(info, self)
                 info.plugin_object.logger = getLogger(name)
-                self.logger.debug("Running setup method..")
+                self.logger.debug(_("Running setup method.."))
                 info.plugin_object.setup()
             except Exception:
-                self.logger.exception("Unable to load plugin: %s v%s"
+                self.logger.exception(_("Unable to load plugin: %s v%s")
                                       % (name, info.version))
                 self.plugman.deactivatePluginByName(name)
                 return PLUGIN_LOAD_ERROR
             else:
                 self.loaded_plugins[name] = info
-                self.logger.info("Loaded plugin: %s v%s"
+                self.logger.info(_("Loaded plugin: %s v%s")
                                  % (name, info.version))
                 if info.copyright:
-                    self.logger.info("Licensing: %s" % info.copyright)
+                    self.logger.info(_("Licensing: %s") % info.copyright)
                 return PLUGIN_LOADED
         return PLUGIN_NOT_EXISTS
 
@@ -317,24 +323,25 @@ class Manager(object):
         Load and set up all of the configured protocols.
         """
 
-        self.logger.info("Setting up protocols..")
+        self.logger.info(_("Setting up protocols.."))
 
         for protocol in self.main_config["protocols"]:
-            self.logger.info("Setting up protocol: %s" % protocol)
+            self.logger.info(_("Setting up protocol: %s") % protocol)
             conf_location = "protocols/%s.yml" % protocol
             result = self.load_protocol(protocol, conf_location)
 
             if result is not PROTOCOL_LOADED:
                 if result is PROTOCOL_ALREADY_LOADED:
-                    self.logger.warn("Protocol is already loaded.")
+                    self.logger.warn(_("Protocol is already loaded."))
                 elif result is PROTOCOL_CONFIG_NOT_EXISTS:
-                    self.logger.warn("Unable to find protocol configuration.")
+                    self.logger.warn(_("Unable to find protocol "
+                                       "configuration."))
                 elif result is PROTOCOL_LOAD_ERROR:
-                    self.logger.warn("Error detected while loading "
-                                     "protocol.")
+                    self.logger.warn(_("Error detected while loading "
+                                       "protocol."))
                 elif result is PROTOCOL_SETUP_ERROR:
-                    self.logger.warn("Error detected while setting up "
-                                     "protocol.")
+                    self.logger.warn(_("Error detected while setting up "
+                                       "protocol."))
 
     def load_protocol(self, name, conf_location):
         """
@@ -369,7 +376,7 @@ class Manager(object):
                     return PROTOCOL_CONFIG_NOT_EXISTS
             except Exception:
                 self.logger.error(
-                    "Unable to load configuration for the '%s' protocol."
+                    _("Unable to load configuration for the '%s' protocol.")
                     % name)
                 output_exception(self.logger, logging.ERROR)
                 return PROTOCOL_LOAD_ERROR
@@ -381,7 +388,7 @@ class Manager(object):
             if name in self.factories:
                 del self.factories[name]
             self.logger.error(
-                "Unable to create factory for the '%s' protocol!"
+                _("Unable to create factory for the '%s' protocol!")
                 % name)
             output_exception(self.logger, logging.ERROR)
             return PROTOCOL_SETUP_ERROR
@@ -404,7 +411,7 @@ class Manager(object):
             try:
                 self.plugman.deactivatePluginByName(name)
             except Exception:
-                self.logger.error("Error disabling plugin: %s" % name)
+                self.logger.error(_("Error disabling plugin: %s") % name)
                 output_exception(self.logger, logging.ERROR)
             self.commands.unregister_commands_for_owner(name)
             self.event_manager.remove_callbacks_for_plugin(name)
@@ -428,7 +435,8 @@ class Manager(object):
             try:
                 proto.shutdown()
             except Exception:
-                self.logger.exception("Error shutting down protocol %s" % name)
+                self.logger.exception(_("Error shutting down protocol %s")
+                                      % name)
             del self.factories[name]
             return True
         return False
@@ -440,10 +448,10 @@ class Manager(object):
 
         # Shut down!
         for name in self.factories.keys():
-            self.logger.info("Unloading protocol: %s" % name)
+            self.logger.info(_("Unloading protocol: %s") % name)
             self.unload_protocol(name)
         for name in self.loaded_plugins.keys():
-            self.logger.info("Unloading plugin: %s" % name)
+            self.logger.info(_("Unloading plugin: %s") % name)
             self.unload_plugin(name)
 
     # Grab stuff

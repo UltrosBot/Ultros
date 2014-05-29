@@ -3,6 +3,9 @@ __author__ = "Gareth Coles"
 
 from twisted.internet import protocol
 
+from system.translations import Translations
+_ = Translations().get()
+
 
 class Protocol(protocol.Protocol):
     """
@@ -108,14 +111,14 @@ class Protocol(protocol.Protocol):
         here.
         """
         self.transport.loseConnection()
-        raise NotImplementedError("This function needs to be implemented!")
+        raise NotImplementedError(_("This function needs to be implemented!"))
 
     def get_user(self, user):
         """
         Used to retrieve a user. Return None if we can't find it.
         :param user: string representing the user we need.
         """
-        raise NotImplementedError("This function needs to be implemented!")
+        raise NotImplementedError(_("This function needs to be implemented!"))
 
     def send_msg(self, target, message, target_type=None, use_event=True):
         """
@@ -127,7 +130,7 @@ class Protocol(protocol.Protocol):
         :param use_event: Whether to fire the MessageSent event or not.
         :return: Boolean describing whether the target was found and messaged.
         """
-        raise NotImplementedError("This function needs to be implemented.")
+        raise NotImplementedError(_("This function needs to be implemented."))
 
     def send_action(self, target, message, target_type=None, use_event=True):
         """
@@ -142,7 +145,7 @@ class Protocol(protocol.Protocol):
         :param use_event: Whether to fire the MessageSent event or not.
         :return: Boolean describing whether the target was found and messaged.
         """
-        raise NotImplementedError("This function needs to be implemented.")
+        raise NotImplementedError(_("This function needs to be implemented."))
 
 
 class ChannelsProtocol(Protocol):
@@ -155,7 +158,7 @@ class ChannelsProtocol(Protocol):
 
     @property
     def num_channels(self):
-        raise NotImplementedError("This function needs to be implemented!")
+        raise NotImplementedError(_("This function needs to be implemented!"))
 
     def get_channel(self, channel):
         """
@@ -163,7 +166,7 @@ class ChannelsProtocol(Protocol):
         You don't need to implement this if your protocol doesn't use channels.
         :param channel: string representing the channel we need.
         """
-        raise NotImplementedError("This function needs to be implemented!")
+        raise NotImplementedError(_("This function needs to be implemented!"))
 
     def join_channel(self, channel, password=None):
         """
@@ -177,7 +180,7 @@ class ChannelsProtocol(Protocol):
         :param password: Password for channel
         :return: Whether or not a join was attempted
         """
-        raise NotImplementedError("This function needs to be implemented!")
+        raise NotImplementedError(_("This function needs to be implemented!"))
 
     def leave_channel(self, channel, reason=None):
         """
@@ -191,7 +194,7 @@ class ChannelsProtocol(Protocol):
         :param reason: Reason for leaving
         :return: Whether or not a part was attempted
         """
-        raise NotImplementedError("This function needs to be implemented!")
+        raise NotImplementedError(_("This function needs to be implemented!"))
 
     def kick(self, user, channel=None, reason=None):
         """
@@ -208,7 +211,7 @@ class ChannelsProtocol(Protocol):
         :param reason: The reason for the kick
         :return: Whether or not a kick was attempted
         """
-        raise NotImplementedError("This function needs to be implemented!")
+        raise NotImplementedError(_("This function needs to be implemented!"))
 
 
 class NoChannelsProtocol(Protocol):

@@ -3,6 +3,9 @@ __author__ = "Gareth Coles"
 
 from yapsy.IPlugin import IPlugin
 
+from system.translations import Translations
+_ = Translations().get()
+
 
 class PluginObject(IPlugin):
     """
@@ -87,7 +90,7 @@ class PluginObject(IPlugin):
         Remember, **self.info** and **self.factory** are only available once
         this method is called.
         """
-        self.logger.warn("Setup method not defined!")
+        self.logger.warn(_("Setup method not defined!"))
 
     def _disable_self(self):
         self.factory_manager.plugman.deactivatePluginByName(self.info.name)

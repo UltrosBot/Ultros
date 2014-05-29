@@ -1,6 +1,9 @@
 # coding=utf-8
 __author__ = "Gareth Coles"
 
+from system.translations import Translations
+_ = Translations().get()
+
 
 class BaseSupport(object):
 
@@ -14,4 +17,4 @@ class BaseSupport(object):
         self.events = event_manager
 
     def setup(self):
-        raise NotImplementedError("Setup method needs to be implemented!")
+        raise NotImplementedError(_("Setup method needs to be implemented!"))

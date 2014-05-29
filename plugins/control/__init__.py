@@ -5,6 +5,10 @@ from system.command_manager import CommandManager
 
 import system.plugin as plugin
 
+from system.translations import Translations
+_ = Translations().get()
+__ = Translations().get_m()
+
 
 class ControlPlugin(plugin.PluginObject):
 
@@ -29,54 +33,55 @@ class ControlPlugin(plugin.PluginObject):
     def join_command(self, protocol, caller, source, command, raw_args,
                      args):
         if not len(args) > 0:
-            caller.respond("Usage: {CHARS}join <channel>")
+            caller.respond(__("Usage: {CHARS}join <channel>"))
             return
 
         if hasattr(protocol, "join_channel"):
             result = protocol.join_channel(args[0])
 
             if result:
-                caller.respond("Done!")
+                caller.respond(__("Done!"))
             else:
-                caller.respond("Unable to join channel. Does this protocol "
-                               "support joining channels?")
+                caller.respond(__("Unable to join channel. Does this "
+                                  "protocol support joining channels?"))
         else:
-            caller.respond("This protocol doesn't support channels.")
+            caller.respond(__("This protocol doesn't support channels."))
 
     def leave_command(self, protocol, caller, source, command, raw_args,
                       args):
         if not len(args) > 0:
-            caller.respond("Usage: {CHARS}leave <channel>")
+            caller.respond(__("Usage: {CHARS}leave <channel>"))
             return
 
         if hasattr(protocol, "leave_channel"):
             result = protocol.leave_channel(args[0])
 
             if result:
-                caller.respond("Done!")
+                caller.respond(__("Done!"))
             else:
-                caller.respond("Unable to leave channel. Does this protocol "
-                               "support leaving channels?")
+                caller.respond(__("Unable to leave channel. Does this "
+                                  "protocol support leaving channels?"))
         else:
-            caller.respond("This protocol doesn't support channels.")
+            caller.respond(__("This protocol doesn't support channels."))
 
     def raw_command(self, protocol, caller, source, command, raw_args,
                     args):
         if not len(args) > 0:
-            caller.respond("Usage: {CHARS}raw <data>")
+            caller.respond(__("Usage: {CHARS}raw <data>"))
             return
 
         if hasattr(protocol, "send_raw"):
             protocol.send_raw(raw_args)
 
-            caller.respond("Done!")
+            caller.respond(__("Done!"))
         else:
-            caller.respond("This protocol doesn't support sending raw data.")
+            caller.respond(__("This protocol doesn't support sending raw "
+                              "data."))
 
     def say_command(self, protocol, caller, source, command, raw_args,
                     args):
         if not len(args) > 1:
-            caller.respond("Usage: {CHARS}say <target> <message>")
+            caller.respond(__("Usage: {CHARS}say <target> <message>"))
             return
 
         channel = args[0]
@@ -85,14 +90,15 @@ class ControlPlugin(plugin.PluginObject):
         if hasattr(protocol, "send_msg"):
             protocol.send_msg(channel, message)
 
-            caller.respond("Done!")
+            caller.respond(__("Done!"))
         else:
-            caller.respond("This protocol doesn't support sending messages.")
+            caller.respond(__("This protocol doesn't support sending "
+                              "messages."))
 
     def action_command(self, protocol, caller, source, command, raw_args,
                        args):
         if not len(args) > 1:
-            caller.respond("Usage: {CHARS}action <target> <message>")
+            caller.respond(__("Usage: {CHARS}action <target> <message>"))
             return
 
         channel = args[0]
@@ -101,14 +107,15 @@ class ControlPlugin(plugin.PluginObject):
         if hasattr(protocol, "send_action"):
             protocol.send_action(channel, message)
 
-            caller.respond("Done!")
+            caller.respond(__("Done!"))
         else:
-            caller.respond("This protocol doesn't support sending actions.")
+            caller.respond(__("This protocol doesn't support sending "
+                              "actions."))
 
     def func_command(self, protocol, caller, source, command, raw_args,
                      args):
         if not len(args) > 1:
-            caller.respond("Usage: {CHARS}func <function> <data>")
+            caller.respond(__("Usage: {CHARS}func <function> <data>"))
             return
 
         func = args[0]
@@ -130,11 +137,11 @@ class ControlPlugin(plugin.PluginObject):
             x = getattr(protocol, func, None)
 
             if not x:
-                return caller.respond("No such function: %s" % func)
+                return caller.respond(__("No such function: %s") % func)
 
             r = x(*_args, **_kwargs)
         except Exception as e:
-            self.logger.exception("Error running 'func' command!")
-            caller.respond("Error: %s" % e)
+            self.logger.exception(_("Error running 'func' command!"))
+            caller.respond(__("Error: %s") % e)
         else:
-            caller.respond("Done! Call returned: %s" % r)
+            caller.respond(__("Done! Call returned: %s") % r)

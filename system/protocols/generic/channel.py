@@ -1,5 +1,8 @@
 __author__ = 'Sean'
 
+from system.translations import Translations
+_ = Translations().get()
+
 
 class Channel(object):
 
@@ -10,4 +13,4 @@ class Channel(object):
         self.protocol = protocol
 
     def respond(self, message):
-        raise NotImplementedError("This method must be overridden")
+        raise NotImplementedError(_("This method must be overridden"))

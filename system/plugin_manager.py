@@ -24,6 +24,9 @@ from yapsy.PluginFileLocator import PluginFileAnalyzerWithInfoFile, \
 from system.singleton import Singleton
 from utils.log import getLogger
 
+from system.translations import Translations
+_ = Translations().get()
+
 PLUGIN_NAME_FORBIDEN_STRING = ";;"  # Yapsy dev doesn't know how to spell
 
 
@@ -171,20 +174,20 @@ class YamlPluginInfo(PluginInfo):
         if "info" in self.details:
             info = self.details["info"]
             if "author" not in info:
-                self.author = "Unknown"
+                self.author = _("Unknown")
             if "version" not in info:
                 self.version = "?.?"
             if "website" not in info:
-                self.website = "None"
+                self.website = _("None")
             if "copyright" not in info:
-                self.copyright = "Unknown"
+                self.copyright = _("Unknown")
             if "description" not in info:
                 self.description = ""
         else:
-            self.author = "Unknown"
+            self.author = _("Unknown")
             self.version = "?.?"
-            self.website = "None"
-            self.copyright = "Unknown"
+            self.website = _("None")
+            self.copyright = _("Unknown")
             self.description = ""
 
         if "core" in self.details:
@@ -208,27 +211,28 @@ class PluginFileAnalyzerWithYamlInfoFile(PluginFileAnalyzerWithInfoFile):
         try:
             data = yaml.load(infoFileObject)
         except Exception, e:
-            self.logging.debug("Could not parse the plugin file '%s' "
-                               "(exception raised was '%s')"
+            self.logging.debug(_("Could not parse the plugin file '%s' "
+                               "(exception raised was '%s')")
                                % (candidate_infofile, e))
             return None, None, None
         # check if the basic info is available
         if "core" not in data:
-            self. logging.debug("Plugin info file has no 'core' section (in "
-                                "'%s')" % candidate_infofile)
+            self. logging.debug(_("Plugin info file has no 'core' section (in "
+                                "'%s')") % candidate_infofile)
             return None, None, None
         if "name" not in data["core"] or "module" not in data["core"]:
-            self.logging.debug("Plugin info file has no 'name' or 'module' "
-                               "section (in '%s')"
-                          % candidate_infofile)
+            self.logging.debug(_("Plugin info file has no 'name' or 'module' "
+                               "section (in '%s')")
+                               % candidate_infofile)
             return None, None, None
         # check that the given name is valid
         name = data["core"]["name"]
         name = name.strip()
         if PLUGIN_NAME_FORBIDEN_STRING in name:
-            self.logging.debug("Plugin name contains forbidden character: "
-                          "%s (in '%s')" % (PLUGIN_NAME_FORBIDEN_STRING,
-                                            candidate_infofile))
+            self.logging.debug(_("Plugin name contains forbidden character: "
+                                 "%s (in '%s')") %
+                               (PLUGIN_NAME_FORBIDEN_STRING,
+                                candidate_infofile))
             return None, None, None
         return name, data["core"]["module"], data
 
@@ -357,8 +361,8 @@ class YamlPluginManagerSingleton(PluginManager):
             elif specific_info_ext and specific_locator:
                 # both provided... issue a warning that tells "plugin_info_ext"
                 # will be ignored
-                msg = ("Two incompatible arguments (%s) provided:",
-                       "'plugin_info_ext' and 'plugin_locator'). Ignoring",
-                       "'plugin_info_ext'.")
+                msg = (_("Two incompatible arguments (%s) provided: "
+                         "'plugin_info_ext' and 'plugin_locator'). Ignoring "
+                         "'plugin_info_ext'."))
                 raise ValueError(" ".join(msg) % self.__class__.__name__)
             return res

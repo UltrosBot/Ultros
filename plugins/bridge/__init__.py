@@ -18,6 +18,10 @@ from system.protocols.generic.user import User
 from system.storage.formats import YAML
 from system.storage.manager import StorageManager
 
+from system.translations import Translations
+_ = Translations().get()
+__ = Translations().get_m()
+
 
 class BridgePlugin(plugin.PluginObject):
 
@@ -33,20 +37,20 @@ class BridgePlugin(plugin.PluginObject):
         return self.config["rules"]
 
     def setup(self):
-        self.logger.debug("Entered setup method.")
+        self.logger.debug(_("Entered setup method."))
         self.storage = StorageManager()
 
         try:
             self.config = self.storage.get_file(self, "config", YAML,
                                                 "plugins/bridge.yml")
         except Exception:
-            self.logger.exception("Error loading configuration!")
-            self.logger.error("Disabling..")
+            self.logger.exception(_("Error loading configuration!"))
+            self.logger.error(_("Disabling.."))
             self._disable_self()
             return
         if not self.config.exists:
-            self.logger.error("Unable to find config/plugins/bridge.yml")
-            self.logger.error("Disabling..")
+            self.logger.error(_("Unable to find config/plugins/bridge.yml"))
+            self.logger.error(_("Disabling.."))
             self._disable_self()
             return
 
@@ -186,43 +190,44 @@ class BridgePlugin(plugin.PluginObject):
             t_name = target.nickname
 
         for rule, data in self.rules.items():
-            self.logger.debug("Checking rule: %s - %s" % (rule, data))
+            self.logger.debug(_("Checking rule: %s - %s") % (rule, data))
             from_ = data["from"]
             to_ = data["to"]
 
             if c_name != from_["protocol"].lower():
-                self.logger.debug("Protocol doesn't match.")
+                self.logger.debug(_("Protocol doesn't match."))
                 continue
 
             if not self.factory_manager.get_protocol(to_["protocol"]):
-                self.logger.debug("Target protocol doesn't exist.")
+                self.logger.debug(_("Target protocol doesn't exist."))
                 continue
 
             if isinstance(target, User):
                 # We ignore the source name since there can only ever be one
                 #     user: us.
                 if not from_user:
-                    self.logger.debug("Function was called with relaying "
-                                      "from users disabled.")
+                    self.logger.debug(_("Function was called with relaying "
+                                        "from users disabled."))
                     continue
                 if from_["source-type"].lower() != "user":
-                    self.logger.debug("Target type isn't a user.")
+                    self.logger.debug(_("Target type isn't a user."))
                     continue
             elif isinstance(target, Channel):
                 if from_["source-type"].lower() != "channel":
-                    self.logger.debug("Target type isn't a Channel.")
+                    self.logger.debug(_("Target type isn't a Channel."))
                     continue
                 if from_["source"].lower() != "*" \
                    and from_["source"].lower() != t_name.lower():
-                    self.logger.debug("Target name doesn't match the source.")
+                    self.logger.debug(_("Target name doesn't match the "
+                                        "source."))
                     continue
             else:
-                self.logger.debug("Target isn't a known type.")
+                self.logger.debug(_("Target isn't a known type."))
                 continue
 
             if to_["target"] == "user" and not to_user:
-                self.logger.debug("Function was called with relaying to users "
-                                  "disabled.")
+                self.logger.debug(_("Function was called with relaying to "
+                                    "users disabled."))
                 continue
 
             # If we get this far, we've matched the incoming rule.
@@ -235,8 +240,8 @@ class BridgePlugin(plugin.PluginObject):
                     format_string = formatting[f_str[0]][f_str[1]]
 
             if not format_string:
-                self.logger.debug("Not relaying message as the format string "
-                                  "was empty or missing.")
+                self.logger.debug(_("Not relaying message as the format "
+                                    "string was empty or missing."))
                 continue
 
             else:

@@ -3,6 +3,9 @@ __author__ = 'Gareth Coles'
 import gc
 from twisted.internet import reactor
 
+from system.translations import Translations
+_ = Translations().get()
+
 
 class UncollectableMonitor(object):
 
@@ -13,13 +16,13 @@ class UncollectableMonitor(object):
         # set this if you want python to print out when uncollectable
         # objects are detected; will print out all objects in the cycle,
         # not just the one(s) that caused the cycle to be uncollectable
-        #
+
         gc.set_debug(
             gc.DEBUG_UNCOLLECTABLE | gc.DEBUG_INSTANCES | gc.DEBUG_OBJECTS
         )
 
         def sample():
-            self.logger.debug("Running collection..")
+            self.logger.debug(_("Running collection.."))
             gc.collect()
             for o in gc.garbage:
                 if o not in known:
@@ -27,16 +30,16 @@ class UncollectableMonitor(object):
                     self.uncollectable(o)
             reactor.callLater(period, sample)
 
-        self.logger.info("Starting uncollectable objects monitor.")
+        self.logger.info(_("Starting uncollectable objects monitor."))
         reactor.callLater(0, sample)
 
     def uncollectable(self, obj):
-        self.logger.warn("Uncollectable object cycle in gc.garbage!")
+        self.logger.warn(_("Uncollectable object cycle in gc.garbage!"))
 
-        self.logger.warn("Parents:")
+        self.logger.warn(_("Parents:"))
         self._printParents(obj, 2)
 
-        self.logger.warn("Children:")
+        self.logger.warn(_("Children:"))
         self._printKids(obj, 2)
 
     def _printParents(self, obj, level, indent=' '):
@@ -57,4 +60,4 @@ class UncollectableMonitor(object):
         else:
             keys = obj.keys()
             keys.sort()
-            return 'dict with keys %r @ 0x%x' % (keys, id(obj))
+            return _("dict with keys %r @ 0x%x") % (keys, id(obj))

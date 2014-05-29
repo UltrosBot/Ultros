@@ -9,7 +9,10 @@ that make direct use of it.
 import re
 from system.protocols.irc import constants
 
-__author__ = 'rakiru'
+from system.translations import Translations
+_ = Translations().get()
+
+__author__ = 'Sean'
 
 _ircformatting = {'BOLD': constants.BOLD,
                   'ITALIC': constants.ITALIC,
@@ -53,7 +56,7 @@ def split_hostmask(hostmask):
     posat = hostmask.find(u'@')
     if posex <= 0 or posat < 3 or posex + 1 == posat or posat + 1 == len(
             hostmask):  # All parts must be > 0 in length
-        raise ValueError("Hostmask must be in the form '*!*@*'")
+        raise ValueError(_("Hostmask must be in the form '*!*@*'"))
     return [hostmask[0:posex], hostmask[posex + 1: posat],
             hostmask[posat + 1:]]
 
@@ -65,7 +68,6 @@ def format_string(value, values=None):
     :param values: Dictionary of tokens to use for formatting
     :return: Formatted string
     """
-    mergedvalues = None
     if values is None:
         mergedvalues = _ircvalues
     else:
@@ -136,7 +138,7 @@ class IRCUtils(object):
             self._case_mapping = y[x]
             # self._case_mapping = self.CASE_MAPPINGS[val.lower()]
         except:
-            self.log.warning("Invalid case mapping: %s" % val)
+            self.log.warning(_("Invalid case mapping: %s") % val)
 
     def lowercase_nick_chan(self, nick):
         """

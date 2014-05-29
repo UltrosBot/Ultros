@@ -11,6 +11,9 @@ import logging
 import traceback
 import sys
 
+from system.translations import Translations
+_ = Translations().get()
+
 
 def _output_error(logger, error, level):
     if "\n" in error:
@@ -64,8 +67,8 @@ def string_split_readable(input, length):
             current = ""
 
         if len(word) > length:
-            raise ValueError("Word %s is longer than %s characters"
-                             % (word, length))
+            raise ValueError(_("Word %s is longer than %s characters") %
+                              (word, length))
         else:
             if len(current + word) > length:
                 done.append(current)

@@ -5,6 +5,10 @@ __author__ = 'Gareth Coles'
 import fnmatch
 from system.protocols.generic.user import User
 
+from system.translations import Translations
+_ = Translations().get()
+__ = Translations().get_m()
+
 
 class permissionsHandler(object):
 
@@ -62,19 +66,19 @@ class permissionsHandler(object):
         else:
             protocol = protocol.name.lower()
 
-        self.plugin.logger.debug("CHECK | Permis: %s" % permission)
-        self.plugin.logger.debug("CHECK | Caller: %s" % caller)
-        self.plugin.logger.debug("CHECK | Source: %s" % source)
-        self.plugin.logger.debug("CHECK | Protoc: %s" % protocol)
+        self.plugin.logger.debug(_("CHECK | Permis: %s") % permission)
+        self.plugin.logger.debug(_("CHECK | Caller: %s") % caller)
+        self.plugin.logger.debug(_("CHECK | Source: %s") % source)
+        self.plugin.logger.debug(_("CHECK | Protoc: %s") % protocol)
 
         # TODO: Remove this hack now that we have inheritance
         if caller is None:
-            self.plugin.logger.debug("CHECK | Caller is None.")
+            self.plugin.logger.debug(_("CHECK | Caller is None."))
             return self.group_has_permission("default", permission, protocol,
                                              source)
 
         if caller.authorized:
-            self.plugin.logger.debug("CHECK | Authorized: %s" %
+            self.plugin.logger.debug(_("CHECK | Authorized: %s") %
                                      caller.authorized)
             username = caller.auth_name
             superuser = self.plugin.config["use-superuser"]
@@ -82,7 +86,7 @@ class permissionsHandler(object):
                                             protocol, source,
                                             check_superadmin=superuser)
         else:
-            self.plugin.logger.debug("CHECK | Not authorized.")
+            self.plugin.logger.debug(_("CHECK | Not authorized."))
             return self.group_has_permission("default", permission, protocol,
                                              source)
 
@@ -104,7 +108,7 @@ class permissionsHandler(object):
 
                 self.data["users"][user] = newuser
 
-                self.plugin.logger.debug("User created: %s" % user)
+                self.plugin.logger.debug(_("User created: %s") % user)
 
                 return True
         return False
@@ -124,9 +128,8 @@ class permissionsHandler(object):
 
         with self.data:
             if user in self.data["users"]:
-                self.plugin.logger.debug("User exists!")
                 self.data["users"][user]["options"][option] = value
-                self.plugin.logger.debug("Option %s set to %s for user %s."
+                self.plugin.logger.debug(_("Option %s set to %s for user %s.")
                                          % (option, value, user))
 
                 return True
@@ -313,7 +316,7 @@ class permissionsHandler(object):
         if isinstance(inherit, str):
             inherit = inherit.lower()
         elif inherit is not None:
-            raise TypeError("Inheritance must either be a string or None")
+            raise TypeError(_("Inheritance must either be a string or None"))
 
         with self.data:
             if group in self.data["groups"]:
@@ -379,11 +382,11 @@ class permissionsHandler(object):
         groups = []
         all_perms = set()
 
-        self.plugin.logger.debug("Checking group perms...")
-        self.plugin.logger.debug("GROUP | %s" % group)
-        self.plugin.logger.debug("PERMI | %s" % permission)
-        self.plugin.logger.debug("SOURC | %s" % source)
-        self.plugin.logger.debug("PROTO | %s" % protocol)
+        self.plugin.logger.debug(_("Checking group perms..."))
+        self.plugin.logger.debug(_("GROUP | %s") % group)
+        self.plugin.logger.debug(_("PERMI | %s") % permission)
+        self.plugin.logger.debug(_("SOURC | %s") % source)
+        self.plugin.logger.debug(_("PROTO | %s") % protocol)
 
         def _recur(_group):
             if _group in self.data["groups"]:

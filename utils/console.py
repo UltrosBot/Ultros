@@ -10,6 +10,9 @@ import sys
 
 from utils.log import getLogger
 
+from system.translations import Translations
+_ = Translations().get()
+
 env = os.environ
 
 __all__ = ['getTerminalSize']
@@ -31,7 +34,7 @@ def getTerminalSize():
        or current_os.startswith('CYGWIN'):
         tuple_xy = _getTerminalSize_linux()
     if tuple_xy is None:
-        raise Exception("Unable to get the size of this terminal.")
+        raise Exception(_("Unable to get the size of this terminal."))
     return tuple_xy
 
 
@@ -128,7 +131,7 @@ class _GetchUnix:
         import tty
         import sys
 
-        self.log.debug("Loaded: %s, %s" % (tty, sys))
+        self.log.debug(_("Loaded: %s, %s") % (tty, sys))
 
     def __call__(self):
         import sys
@@ -149,7 +152,7 @@ class _GetchWindows:
         self.log = getLogger("GetchWindows")
         import msvcrt
 
-        self.log.debug("Loaded: %s" % msvcrt)
+        self.log.debug(_("Loaded: %s") % msvcrt)
 
     def __call__(self):
         import msvcrt

@@ -14,6 +14,8 @@ import logging.handlers
 import sys
 import os
 
+from system.translations import Translations
+
 
 logging.basicConfig(
     level=(logging.DEBUG if "--debug" in sys.argv else logging.INFO),
@@ -254,6 +256,8 @@ def open_log(path):
     :param path: Path to file.
     :return:
     """
+    _ = Translations().get()
+
     path = path.replace("..", "")
     path = "logs/" + path
     if not os.path.exists(os.path.dirname(path)):
@@ -271,7 +275,7 @@ def open_log(path):
     handler.setLevel(logging.DEBUG if "--debug" in sys.argv else logging.INFO)
     logger.addHandler(handler)
 
-    logger.info("*** LOGFILE OPENED: %s ***" % path)
+    logger.info(_("*** LOGFILE OPENED: %s ***") % path)
 
     logger.removeHandler(handler)
 
@@ -285,6 +289,8 @@ def close_log(path):
     :param path: Path to file.
     :return:
     """
+    _ = Translations().get()
+
     path = path.replace("..", "")
     path = "logs/" + path
     if not os.path.exists(os.path.dirname(path)):
@@ -302,7 +308,7 @@ def close_log(path):
     handler.setLevel(logging.DEBUG if "--debug" in sys.argv else logging.INFO)
     logger.addHandler(handler)
 
-    logger.info("*** LOGFILE CLOSED: %s ***\n\n" % path)
+    logger.info(_("*** LOGFILE CLOSED: %s ***\n\n") % path)
     logger.removeHandler(handler)
 
     del handler

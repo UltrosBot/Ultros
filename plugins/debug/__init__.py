@@ -8,6 +8,9 @@ from system.command_manager import CommandManager
 from .interpreter import Interpreter
 from .monitors import UncollectableMonitor
 
+from system.translations import Translations
+__ = Translations().get_m()
+
 PyCF_DONT_IMPLY_DEDENT = 0x200
 
 
@@ -44,7 +47,7 @@ class DebugPlugin(plugin.PluginObject):
             out = out[:len(out) - 1]
 
         for line in out:
-            source.respond("[DEBUG] %s" % line)
+            source.respond(__("[DEBUG] %s") % line)
 
     def reload(self):
         self.monitors = []
@@ -65,17 +68,17 @@ class DebugPlugin(plugin.PluginObject):
         try:
             c_obj = code.compile_command(raw_args)
         except SyntaxError as e:
-            self.output("Syntax error: %s" % e.text)
+            self.output(__("Syntax error: %s") % e.text)
             return
         except (OverflowError, ValueError) as e:
-            self.output("Invalid literal: %s" % e.msg)
+            self.output(__("Invalid literal: %s") % e.msg)
             return
         except Exception as e:
-            self.output("%s" % e)
+            self.output(__("%s") % e)
             return
 
         try:
             self.interpreter.runcode(c_obj)
         except Exception as e:
-            self.output("%s" % e)
+            self.output(__("%s") % e)
             return

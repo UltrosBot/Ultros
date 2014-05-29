@@ -7,6 +7,9 @@ import system.storage.formats as Formats
 
 from system.storage.exceptions import NotReadyError
 
+from system.translations import Translations
+_ = Translations().get()
+
 file_formats_map = {
     "config": {
         Formats.JSON: Config.JSONConfig,
@@ -39,8 +42,9 @@ class StorageFile(object):
 
     def __init__(self, type_, path, base_path, manager_class, *args, **kwargs):
         if type_ not in self.formats:
-            raise TypeError("Type '%s' is unknown or not supported for %s "
-                            "files." % (type_, self.file_type))
+            raise TypeError(_("Type '%s' is unknown or not supported for %s "
+                              "files.")
+                            % (type_, self.file_type))
 
         self.path = "%s/%s" % (base_path, path)
         self.type_ = type_
@@ -58,7 +62,7 @@ class StorageFile(object):
         if self._ready and self.obj:
             return self.obj
         else:
-            raise NotReadyError("This file is not ready for use.")
+            raise NotReadyError(_("This file is not ready for use."))
 
     def is_ready(self):
         return self._ready
@@ -67,13 +71,15 @@ class StorageFile(object):
         if isinstance(caller, self.manager_class):
             self._ready = True
         else:
-            raise TypeError("Only the storage manager can make a file ready.")
+            raise TypeError(_("Only the storage manager can make a file "
+                              "ready."))
 
     def set_owner(self, caller, owner):
         if isinstance(caller, self.manager_class):
             self._owner = owner
         else:
-            raise TypeError("Only the storage manager can set the file owner.")
+            raise TypeError(_("Only the storage manager can set the file "
+                              "owner."))
 
     def get_owner(self):
         return self._owner
@@ -88,7 +94,7 @@ class StorageFile(object):
             self._owner = None
             self._ready = False
         else:
-            raise TypeError("Only the storage manager can release files.")
+            raise TypeError(_("Only the storage manager can release files."))
 
 
 class DataFile(StorageFile):

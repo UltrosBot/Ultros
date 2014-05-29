@@ -5,6 +5,9 @@ from threading import Thread
 
 from twisted.python.threadpool import ThreadPool
 
+from system.translations import Translations
+_ = Translations().get()
+
 pool = ThreadPool(name="Decorators")
 
 
@@ -191,19 +194,20 @@ def accepts(*argstypes, **kwargstypes):
     def wrapper(func):
         def wrapped(*args, **kwargs):
             if len(args) > len(argstypes):
-                raise TypeError("%s() takes at most %s non-keyword arguments "
-                                "(%s given)" % (func.__name__, len(argstypes),
-                                                len(args)))
+                raise TypeError(_("%s() takes at most %s non-keyword"
+                                  " arguments (%s given)") %
+                                (func.__name__, len(argstypes), len(args)))
             argspairs = zip(args, argstypes)
             for k, v in kwargs.items():
                 if k not in kwargstypes:
-                    raise TypeError("Unexpected keyword argument '%s' for %s()"
-                                    % (k, func.__name__))
+                    raise TypeError(_("Unexpected keyword argument '%s' for "
+                                      "%s()") %
+                                    (k, func.__name__))
                 argspairs.append((v, kwargstypes[k]))
             for param, expected in argspairs:
                 if param is not None and not isinstance(param, expected):
-                    raise TypeError("Parameter '%s' is not %s"
-                                    % (param, expected.__name__))
+                    raise TypeError(_("Parameter '%s' is not %s") %
+                                    (param, expected.__name__))
             return func(*args, **kwargs)
         return wrapped
     return wrapper

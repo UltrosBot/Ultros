@@ -30,6 +30,9 @@ from twisted.enterprise import adbapi
 from system.storage import formats
 from utils.log import getLogger
 
+from system.translations import Translations
+_ = Translations().get()
+
 
 class Data(object):
     """
@@ -95,7 +98,7 @@ class Data(object):
         if callable(func):
             self.callbacks.append(func)
         else:
-            raise ValueError("Invalid callback supplied!")
+            raise ValueError(_("Invalid callback supplied!"))
 
     def reload(self, run_callbacks=True):
         """
@@ -180,7 +183,8 @@ class YamlData(Data):
                         try:
                             callback()
                         except:
-                            self.logger.exception("Error running callback %s"
+                            self.logger.exception(_("Error running callback "
+                                                    "%s")
                                                   % callback)
         else:
             self._load()
@@ -189,7 +193,7 @@ class YamlData(Data):
                     try:
                         callback()
                     except:
-                        self.logger.exception("Error running callback %s"
+                        self.logger.exception(_("Error running callback %s")
                                               % callback)
 
     load = reload
@@ -243,7 +247,7 @@ class YamlData(Data):
                 fh.flush()
                 fh.close()
             except Exception:
-                self.logger.exception("Error writing file")
+                self.logger.exception(_("Error writing file"))
                 success = False
             finally:
                 self.reload()
@@ -253,8 +257,8 @@ class YamlData(Data):
         dumped = yaml.dump(self.data, default_flow_style=False)
         return [
             self.editable,
-            "# This is the data in memory, and may not actually be what's in "
-            "the file.\n\n%s" % dumped
+            _("# This is the data in memory, and may not actually be what's "
+              "in the file.\n\n%s") % dumped
         ]
 
     def keys(self):
@@ -343,7 +347,8 @@ class MemoryData(Data):
                         try:
                             callback()
                         except:
-                            self.logger.exception("Error running callback %s"
+                            self.logger.exception(_("Error running callback "
+                                                    "%s")
                                                   % callback)
         else:
             if run_callbacks:
@@ -351,7 +356,7 @@ class MemoryData(Data):
                     try:
                         callback()
                     except:
-                        self.logger.exception("Error running callback %s"
+                        self.logger.exception(_("Error running callback %s")
                                               % callback)
 
     load = reload
@@ -471,7 +476,8 @@ class JSONData(Data):
                         try:
                             callback()
                         except:
-                            self.logger.exception("Error running callback %s"
+                            self.logger.exception(_("Error running callback "
+                                                    "%s")
                                                   % callback)
         else:
             self._load()
@@ -480,7 +486,7 @@ class JSONData(Data):
                     try:
                         callback()
                     except:
-                        self.logger.exception("Error running callback %s"
+                        self.logger.exception(_("Error running callback %s")
                                               % callback)
 
     load = reload
@@ -546,7 +552,7 @@ class JSONData(Data):
                 fh.flush()
                 fh.close()
             except Exception:
-                self.logger.exception("Error writing file")
+                self.logger.exception(_("Error writing file"))
                 success = False
             finally:
                 self.reload()
@@ -700,7 +706,7 @@ class DBAPIData(Data):
         self.args = args
         self.kwargs = kwargs
 
-        self.logger.debug("Parsed module: %s" % parsed_module)
+        self.logger.debug(_("Parsed module: %s") % parsed_module)
 
         self.reconnect()
 

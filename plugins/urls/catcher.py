@@ -7,6 +7,9 @@ from socket import error as SocketError
 from system.protocols.generic.channel import Channel
 from system.storage.formats import DBAPI
 
+from system.translations import Translations
+_ = Translations().get()
+
 
 class Catcher(object):
     where = ""
@@ -37,13 +40,13 @@ class Catcher(object):
 
     def __init__(self, plugin, config, storage, logger):
         if "catcher" not in config:
-            logger.debug("No catcher section in config.")
+            logger.debug(_("No catcher section in config."))
             return
 
         self._config = config
 
         if not self.enabled:
-            logger.debug("Catcher disabled via config.")
+            logger.debug(_("Catcher disabled via config."))
             return
 
         self.plugin = plugin
@@ -69,8 +72,8 @@ class Catcher(object):
                     self.db.reconnect()
                     return
                 else:
-                    self.logger.error("Broken pipe has occurred more than "
-                                      "three times in a row!")
+                    self.logger.error(_("Broken pipe has occurred more than "
+                                        "three times in a row!"))
 
         if use_failure:
             self.logger.error(message % failure)
@@ -99,18 +102,18 @@ class Catcher(object):
 
         d.addCallbacks(self._log_callback_success,
                        self._log_callback_failure,
-                       callbackArgs=("Created table.", False),
-                       errbackArgs=("Failed to create table: %s", True))
+                       callbackArgs=(_("Created table."), False),
+                       errbackArgs=(_("Failed to create table: %s"), True))
 
     def load_sql(self, dialect):
         base_path = "%s/sql/%s/" % (self.where, dialect)
-        self.logger.debug("Looking for SQL in %s" % base_path)
+        self.logger.debug(_("Looking for SQL in %s") % base_path)
         if os.path.exists(base_path):
             self.sql["create"] = open(base_path + "create.sql").read()
             self.sql["find"] = open(base_path + "find.sql").read()
             self.sql["insert"] = open(base_path + "insert.sql").read()
         else:
-            raise ValueError("No SQL found for dialect '%s'." % dialect)
+            raise ValueError(_("No SQL found for dialect '%s'.") % dialect)
 
     def create_interaction(self, txn):
         sql = self.sql["create"].replace(
@@ -151,6 +154,6 @@ class Catcher(object):
 
             d.addErrback(
                 self._log_callback_failure,
-                "Failed to insert URL: %s",
+                _("Failed to insert URL: %s"),
                 True
             )

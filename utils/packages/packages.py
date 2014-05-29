@@ -18,6 +18,9 @@ from system.singleton import Singleton
 from system.storage.formats import YAML
 from system.storage.manager import StorageManager
 
+from system.translations import Translations
+_ = Translations().get()
+
 
 class Packages(object):
 

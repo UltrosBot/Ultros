@@ -1,5 +1,8 @@
 __author__ = 'Sean'
 
+from system.translations import Translations
+_ = Translations().get()
+
 
 class User(object):
 
@@ -12,4 +15,4 @@ class User(object):
         self.is_tracked = is_tracked
 
     def respond(self, message):
-        raise NotImplementedError("This method must be overridden")
+        raise NotImplementedError(_("This method must be overridden"))

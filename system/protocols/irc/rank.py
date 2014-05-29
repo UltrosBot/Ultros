@@ -1,5 +1,8 @@
 __author__ = 'Sean'
 
+from system.translations import Translations
+_ = Translations().get()
+
 
 class Rank(object):
     """
@@ -47,8 +50,8 @@ class Ranks(object):
     def add_rank(self, rank_or_mode, symbol=None, order=None):
         if not isinstance(rank_or_mode, Rank):
             if symbol is None or order is None:
-                raise ValueError("First argument must be of type Rank or all "
-                                 "arguments must be given")
+                raise ValueError(_("First argument must be of type Rank or "
+                                   "all arguments must be given"))
             else:
                 rank_or_mode = Rank(rank_or_mode, symbol, order)
         self._ranks_by_mode[rank_or_mode.mode] = rank_or_mode

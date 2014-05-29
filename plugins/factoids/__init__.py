@@ -16,6 +16,10 @@ from utils import tokens
 # Hah, eat it, line length limit.
 from .events import FactoidAddedEvent, FactoidDeletedEvent, FactoidUpdatedEvent
 
+from system.translations import Translations
+_ = Translations().get()
+__ = Translations().get_m()
+
 __author__ = 'Sean'
 
 # Remember kids:
@@ -107,7 +111,7 @@ class FactoidsPlugin(plugin.PluginObject):
     # region Util functions
 
     def __check_perm(self, perm, caller, source, protocol):
-        self.logger.debug("Checking for perm: '%s'", perm)
+        self.logger.debug(_("Checking for permission: '%s'"), perm)
         # The second check is a hack to check default group, since there is not
         # currently inheritance
         # TODO: Remove this hack once inheritance has been added
@@ -117,11 +121,11 @@ class FactoidsPlugin(plugin.PluginObject):
                                                    caller,
                                                    source,
                                                    protocol)
-        if not allowed:
-            allowed = self.commands.perm_handler.check(perm,
-                                                       None,
-                                                       source,
-                                                       protocol)
+        # if not allowed:
+        #     allowed = self.commands.perm_handler.check(perm,
+        #                                                None,
+        #                                                source,
+        #                                                protocol)
         return allowed
 
     def _parse_args(self, raw_args):
@@ -130,16 +134,16 @@ class FactoidsPlugin(plugin.PluginObject):
         """
         pos = raw_args.find(" ")
         if pos < 0:
-            raise ValueError("Invalid args")
+            raise ValueError(_("Invalid args"))
         location = raw_args[:pos]
         pos2 = raw_args.find(" ", pos + 1)
         if pos2 < 0:
-            raise ValueError("Invalid args")
+            raise ValueError(_("Invalid args"))
         factoid = raw_args[pos + 1:pos2]
         # pos3 = raw_args.find(" ", pos2 + 1)
         info = raw_args[pos2 + 1:]
         if info == "":
-            raise ValueError("Invalid args")
+            raise ValueError(_("Invalid args"))
         return location, factoid, info
 
     def valid_location(self, location, source=None):
@@ -150,12 +154,12 @@ class FactoidsPlugin(plugin.PluginObject):
         location = location.lower()
         result = location in (self.CHANNEL, self.PROTOCOL, self.GLOBAL)
         if not result:
-            raise InvalidLocationError("'%s' is not a valid location" %
+            raise InvalidLocationError(_("'%s' is not a valid location") %
                                        location)
         if source is not None:
             if location == self.CHANNEL and not isinstance(source, Channel):
-                raise InvalidMethodError("'channel' location can only be used "
-                                         "inside a channel")
+                raise InvalidMethodError(_("'channel' location can only be "
+                                           "used inside a channel"))
         return True
 
     # endregion
@@ -235,7 +239,7 @@ class FactoidsPlugin(plugin.PluginObject):
                             to_unicode(protocol)
                         ))
         if txn.rowcount == 0:
-            raise MissingFactoidError("Factoid '%s' does not exist" %
+            raise MissingFactoidError(_("Factoid '%s' does not exist") %
                                       factoid_key)
 
         e = FactoidDeletedEvent(self, factoid_key)
@@ -247,15 +251,16 @@ class FactoidsPlugin(plugin.PluginObject):
         Gets a factoid if it exists, otherwise raises MissingFactoidError
         :return: (factoid_name, [entry, entry, ...])
         """
-        self.logger.debug("Getting factoid params: factoid_key = '%s', "
-                          "location = '%s', protocol = '%s', channel = '%s'",
+        self.logger.debug(_("Getting factoid params: factoid_key = '%s', "
+                            "location = '%s', protocol = '%s', "
+                            "channel = '%s'"),
                           factoid_key,
                           location,
                           protocol,
                           channel)
         if location is None:
-            self.logger.debug("Location is None - getting all factoids with "
-                              "key '%s'", factoid_key)
+            self.logger.debug(_("Location is None - getting all factoids with "
+                                "key '%s'"), factoid_key)
             txn.execute("SELECT location, protocol, channel, factoid_name, "
                         "info FROM factoids WHERE factoid_key = ?",
                         (
@@ -267,17 +272,17 @@ class FactoidsPlugin(plugin.PluginObject):
                 for row in results:
                     if ((row[0] == self.CHANNEL and row[1] == protocol and
                          row[2] == channel)):
-                        self.logger.debug("Match found (channel)!")
+                        self.logger.debug(_("Match found (channel)!"))
                         return (row[3], row[4].split("\n"))
                 # Check for protocol match
                 for row in results:
                     if row[0] == self.PROTOCOL and row[1] == protocol:
-                        self.logger.debug("Match found (protocol)!")
+                        self.logger.debug(_("Match found (protocol)!"))
                         return (row[3], row[4].split("\n"))
                 # Check for global match
                 for row in results:
                     if row[0] == self.GLOBAL:
-                        self.logger.debug("Match found (global)!")
+                        self.logger.debug(_("Match found (global)!"))
                         return (row[3], row[4].split("\n"))
         else:
             txn.execute("SELECT location, protocol, channel, factoid_name, "
@@ -292,7 +297,8 @@ class FactoidsPlugin(plugin.PluginObject):
             results = txn.fetchall()
             if len(results) > 0:
                 return (results[0][3], results[0][4].split("\n"))
-        raise MissingFactoidError("Factoid '%s' does not exist" % factoid_key)
+        raise MissingFactoidError(_("Factoid '%s' does not exist")
+                                  % factoid_key)
 
     def _get_all_factoids_interaction(self, txn):
         """
@@ -323,7 +329,8 @@ class FactoidsPlugin(plugin.PluginObject):
                                  source,
                                  protocol):
             return defer.fail(
-                NoPermissionError("User does not have required permission"))
+                NoPermissionError(_("User does not have required permission"))
+            )
         with self.database as db:
             return db.runInteraction(self._add_factoid_interaction,
                                      factoid_key,
@@ -347,7 +354,8 @@ class FactoidsPlugin(plugin.PluginObject):
                                  source,
                                  protocol):
             return defer.fail(
-                NoPermissionError("User does not have required permission"))
+                NoPermissionError(_("User does not have required permission"))
+            )
         with self.database as db:
             return db.runQuery(
                 "INSERT INTO factoids VALUES(?, ?, ?, ?, ?, ?)",
@@ -374,7 +382,8 @@ class FactoidsPlugin(plugin.PluginObject):
                                  source,
                                  protocol):
             return defer.fail(
-                NoPermissionError("User does not have required permission"))
+                NoPermissionError(_("User does not have required permission"))
+            )
         with self.database as db:
             return db.runInteraction(self._delete_factoid_interaction,
                                      factoid_key,
@@ -397,7 +406,8 @@ class FactoidsPlugin(plugin.PluginObject):
                                  source,
                                  protocol):
             return defer.fail(
-                NoPermissionError("User does not have required permission"))
+                NoPermissionError(_("User does not have required permission"))
+            )
         with self.database as db:
             return db.runInteraction(self._get_factoid_interaction,
                                      factoid_key,
@@ -414,14 +424,14 @@ class FactoidsPlugin(plugin.PluginObject):
         :type failure: twisted.python.failure.Failure
         """
         if failure.check(InvalidLocationError):
-            caller.respond("Invalid location given - possible locations are: "
-                           "channel, protocol, global")
+            caller.respond(__("Invalid location given - possible locations "
+                              "are: channel, protocol, global"))
         elif failure.check(InvalidMethodError):
-            caller.respond("You must do that in a channel")
+            caller.respond(__("You must do that in a channel"))
         elif failure.check(NoPermissionError):
-            caller.respond("You don't have permission to do that")
+            caller.respond(__("You don't have permission to do that"))
         elif failure.check(MissingFactoidError):
-            caller.respond("That factoid doesn't exist")
+            caller.respond(__("That factoid doesn't exist"))
         else:
             # TODO: We should probably handle this
             failure.raiseException()
@@ -448,11 +458,12 @@ class FactoidsPlugin(plugin.PluginObject):
         try:
             location, factoid, info = self._parse_args(raw_args)
         except:
-            caller.respond("Usage: %s <location> <factoid> <info>" % command)
+            caller.respond(__("Usage: %s <location> <factoid> <info>")
+                           % command)
             return
         d = self.add_factoid(caller, source, protocol, location, factoid, info)
         d.addCallbacks(
-            lambda r: caller.respond("Factoid added"),
+            lambda r: caller.respond(__("Factoid added")),
             lambda f: self._factoid_command_fail(caller, f)
         )
 
@@ -461,11 +472,12 @@ class FactoidsPlugin(plugin.PluginObject):
         try:
             location, factoid, info = self._parse_args(raw_args)
         except Exception:
-            caller.respond("Usage: %s <location> <factoid> <info>" % command)
+            caller.respond(__("Usage: %s <location> <factoid> <info>")
+                           % command)
             return
         d = self.set_factoid(caller, source, protocol, location, factoid, info)
         d.addCallbacks(
-            lambda r: caller.respond("Factoid set"),
+            lambda r: caller.respond(__("Factoid set")),
             lambda f: self._factoid_command_fail(caller, f)
         )
 
@@ -473,13 +485,14 @@ class FactoidsPlugin(plugin.PluginObject):
                                raw_args, parsed_args):
         args = raw_args.split()  # Quick fix for new command handler signature
         if len(args) != 2:
-            caller.respond("Usage: %s <location> <factoid>" % command)
+            caller.respond(__("Usage: %s <location> <factoid>")
+                           % command)
             return
         location = args[0]
         factoid = args[1]
         d = self.delete_factoid(caller, source, protocol, location, factoid)
         d.addCallbacks(
-            lambda r: caller.respond("Factoid deleted"),
+            lambda r: caller.respond(__("Factoid deleted")),
             lambda f: self._factoid_command_fail(caller, f)
         )
 
@@ -493,7 +506,8 @@ class FactoidsPlugin(plugin.PluginObject):
             location = args[0]
             factoid = args[1]
         else:
-            caller.respond("Usage: %s [location] <factoid>" % command)
+            caller.respond(__("Usage: %s [location] <factoid>")
+                           % command)
             return
 
         d = self.get_factoid(caller, source, protocol, location, factoid)
@@ -509,7 +523,7 @@ class FactoidsPlugin(plugin.PluginObject):
         pprint(result)
 
     def web_routes(self, event=None):
-        self.logger.info("Registering web routes..")
+        self.logger.info(_("Registering web routes.."))
 
         web = self.plugman.getPluginByName("Web").plugin_object
 
@@ -524,12 +538,12 @@ class FactoidsPlugin(plugin.PluginObject):
         fragment = "<table class=\"table table-striped table-bordered" \
                    " table-sortable\">"
         fragment += "<thead>" \
-                    "<tr>" \
-                    "<th>Location</th>" \
-                    "<th>Protocol</th>" \
-                    "<th>Channel</th>" \
-                    "<th>Name</th>" \
-                    "<th>Content</th>" \
+                    "<tr>" + \
+                    _("<th>Location</th>") + \
+                    _("<th>Protocol</th>") + \
+                    _("<th>Channel</th>") + \
+                    _("<th>Name</th>") + \
+                    _("<th>Content</th>") + \
                     "</tr></thead>" \
                     "<tbody>"
         for row in result:
@@ -543,13 +557,14 @@ class FactoidsPlugin(plugin.PluginObject):
         fragment += "</tbody>" \
                     "</table>"
 
-        y.data = web.wrap_template(fragment, "Factoids", "Factoids", r=objs)
+        y.data = web.wrap_template(fragment, _("Factoids"), _("Factoids"),
+                                   r=objs)
 
     def web_factoids_callback_fail(self, failure, y, objs):
         web = self.plugman.getPluginByName("Web").plugin_object
 
-        y.data = web.wrap_template("Error: %s" % failure, "Factoids",
-                                   "Factoids", r=objs)
+        y.data = web.wrap_template(_("Error: %s") % failure, _("Factoids"),
+                                   _("Factoids"), r=objs)
 
     def web_factoids(self):
         web = self.plugman.getPluginByName("Web").plugin_object
@@ -557,25 +572,26 @@ class FactoidsPlugin(plugin.PluginObject):
 
         r = web.check_permission(self.PERM_GET % "web", r=objs)
 
-        self.logger.debug("WEB | Checking permissions..")
+        self.logger.debug(_("WEB | Checking permissions.."))
 
         if not r:
-            self.logger.debug("WEB | User does not have permission. "
-                              "Are they logged in?")
+            self.logger.debug(_("WEB | User does not have permission. "
+                                "Are they logged in?"))
             r = web.require_login(r=objs)
 
             if not r[0]:
                 return r[1]
 
-            self.logger.debug("WEB | Yup. They must not have permission.")
-            self.logger.debug("WEB | Presenting error..")
+            self.logger.debug(_("WEB | Yup. They must not have permission."))
+            self.logger.debug(_("WEB | Presenting error.."))
 
             if not r:
-                return web.wrap_template("Error: You do not have permission "
-                                         "to list the factoids.", "Factoids",
-                                         "Factoids")
+                return web.wrap_template(_("Error: You do not have permission "
+                                           "to list the factoids."),
+                                         _("Factoids"),
+                                         _("Factoids"))
 
-        self.logger.debug("WEB | User has permission.")
+        self.logger.debug(_("WEB | User has permission."))
 
         d = self.get_all_factoids()
         y = web.get_yielder()
@@ -633,7 +649,7 @@ class FactoidsPlugin(plugin.PluginObject):
         :type event: MessageReceived
         """
         if not factoid:
-            event.source.respond("Usage: ?? <factoid>")
+            event.source.respond(__("Usage: ?? <factoid>"))
             return
         d = self.get_factoid(event.source,
                              event.target,
@@ -652,7 +668,7 @@ class FactoidsPlugin(plugin.PluginObject):
         :type event: MessageReceived
         """
         if not factoid:
-            event.source.respond("Usage: ?< <factoid>")
+            event.source.respond(__("Usage: ?< <factoid>"))
             return
         d = self.get_factoid(event.source,
                              event.target,
@@ -671,7 +687,7 @@ class FactoidsPlugin(plugin.PluginObject):
         :type event: MessageReceived
         """
         if not len(split) > 2:
-            event.source.respond("Usage: ?> <user> <factoid>")
+            event.source.respond(__("Usage: ?> <user> <factoid>"))
             return
 
         wanted = split[1]
@@ -679,7 +695,7 @@ class FactoidsPlugin(plugin.PluginObject):
         user = event.caller.get_user(wanted)
 
         if user is None:
-            event.source.respond("Unable to find that user.")
+            event.source.respond(__("Unable to find that user."))
             return
 
         d = self.get_factoid(event.source,
@@ -700,7 +716,7 @@ class FactoidsPlugin(plugin.PluginObject):
         :type event: MessageReceived
         """
         if not factoid or not args:
-            event.source.respond("Usage: ??+ <factoid> <info>")
+            event.source.respond(__("Usage: ??+ <factoid> <info>"))
             return
         d = self.add_factoid(event.source,
                              event.target,
@@ -709,7 +725,7 @@ class FactoidsPlugin(plugin.PluginObject):
                              factoid,
                              args)
         d.addCallbacks(
-            lambda r: event.source.respond("Factoid added"),
+            lambda r: event.source.respond(__("Factoid added")),
             lambda f: self._factoid_command_fail(event.source, f)
         )
 
@@ -719,7 +735,7 @@ class FactoidsPlugin(plugin.PluginObject):
         :type event: MessageReceived
         """
         if not factoid or not args:
-            event.source.respond("Usage: ??~ <factoid> <info>")
+            event.source.respond(__("Usage: ??~ <factoid> <info>"))
             return
         d = self.set_factoid(event.source,
                              event.target,
@@ -728,7 +744,7 @@ class FactoidsPlugin(plugin.PluginObject):
                              factoid,
                              args)
         d.addCallbacks(
-            lambda r: event.source.respond("Factoid set"),
+            lambda r: event.source.respond(__("Factoid set")),
             lambda f: self._factoid_command_fail(event.source, f)
         )
 
@@ -738,7 +754,7 @@ class FactoidsPlugin(plugin.PluginObject):
         :type event: MessageReceived
         """
         if factoid is None:
-            event.source.respond("Usage: ??- <factoid>")
+            event.source.respond(__("Usage: ??- <factoid>"))
             return
         d = self.delete_factoid(event.source,
                                 event.target,
@@ -746,7 +762,7 @@ class FactoidsPlugin(plugin.PluginObject):
                                 self.CHANNEL,
                                 factoid)
         d.addCallbacks(
-            lambda r: event.source.respond("Factoid deleted"),
+            lambda r: event.source.respond(__("Factoid deleted")),
             lambda f: self._factoid_command_fail(event.source, f)
         )
 
@@ -759,7 +775,7 @@ class FactoidsPlugin(plugin.PluginObject):
         :type event: MessageReceived
         """
         if not factoid or not args:
-            event.source.respond("Usage: !?+ <factoid> <info>")
+            event.source.respond(__("Usage: !?+ <factoid> <info>"))
             return
         d = self.add_factoid(event.source,
                              event.target,
@@ -768,7 +784,7 @@ class FactoidsPlugin(plugin.PluginObject):
                              factoid,
                              args)
         d.addCallbacks(
-            lambda r: event.source.respond("Factoid added"),
+            lambda r: event.source.respond(__("Factoid added")),
             lambda f: self._factoid_command_fail(event.source, f)
         )
 
@@ -779,7 +795,7 @@ class FactoidsPlugin(plugin.PluginObject):
         :type event: MessageReceived
         """
         if not factoid or not args:
-            event.source.respond("Usage: !?~ <factoid> <info>")
+            event.source.respond(__("Usage: !?~ <factoid> <info>"))
             return
         d = self.set_factoid(event.source,
                              event.target,
@@ -788,7 +804,7 @@ class FactoidsPlugin(plugin.PluginObject):
                              factoid,
                              args)
         d.addCallbacks(
-            lambda r: event.source.respond("Factoid set"),
+            lambda r: event.source.respond(__("Factoid set")),
             lambda f: self._factoid_command_fail(event.source, f)
         )
 
@@ -799,7 +815,7 @@ class FactoidsPlugin(plugin.PluginObject):
         :type event: MessageReceived
         """
         if factoid is None:
-            event.source.respond("Usage: !?- <factoid>")
+            event.source.respond(__("Usage: !?- <factoid>"))
             return
         d = self.delete_factoid(event.source,
                                 event.target,
@@ -807,7 +823,7 @@ class FactoidsPlugin(plugin.PluginObject):
                                 self.GLOBAL,
                                 factoid)
         d.addCallbacks(
-            lambda r: event.source.respond("Factoid deleted"),
+            lambda r: event.source.respond(__("Factoid deleted")),
             lambda f: self._factoid_command_fail(event.source, f)
         )
 
@@ -820,7 +836,7 @@ class FactoidsPlugin(plugin.PluginObject):
         :type event: MessageReceived
         """
         if not factoid or not args:
-            event.source.respond("Usage: @?+ <factoid> <info>")
+            event.source.respond(__("Usage: @?+ <factoid> <info>"))
             return
         d = self.add_factoid(event.source,
                              event.target,
@@ -829,7 +845,7 @@ class FactoidsPlugin(plugin.PluginObject):
                              factoid,
                              args)
         d.addCallbacks(
-            lambda r: event.source.respond("Factoid added"),
+            lambda r: event.source.respond(__("Factoid added")),
             lambda f: self._factoid_command_fail(event.source, f)
         )
 
@@ -840,7 +856,7 @@ class FactoidsPlugin(plugin.PluginObject):
         :type event: MessageReceived
         """
         if not factoid or not args:
-            event.source.respond("Usage: @?~ <factoid> <info>")
+            event.source.respond(__("Usage: @?~ <factoid> <info>"))
             return
         d = self.set_factoid(event.source,
                              event.target,
@@ -849,7 +865,7 @@ class FactoidsPlugin(plugin.PluginObject):
                              factoid,
                              args)
         d.addCallbacks(
-            lambda r: event.source.respond("Factoid set"),
+            lambda r: event.source.respond(__("Factoid set")),
             lambda f: self._factoid_command_fail(event.source, f)
         )
 
@@ -860,7 +876,7 @@ class FactoidsPlugin(plugin.PluginObject):
         :type event: MessageReceived
         """
         if factoid is None:
-            event.source.respond("Usage: @?- <factoid>")
+            event.source.respond(__("Usage: @?- <factoid>"))
             return
         d = self.delete_factoid(event.source,
                                 event.target,
@@ -868,7 +884,7 @@ class FactoidsPlugin(plugin.PluginObject):
                                 self.PROTOCOL,
                                 factoid)
         d.addCallbacks(
-            lambda r: event.source.respond("Factoid deleted"),
+            lambda r: event.source.respond(__("Factoid deleted")),
             lambda f: self._factoid_command_fail(event.source, f)
         )
 

@@ -1,0 +1,2093 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Ultros 1.0\n"
+"POT-Creation-Date: 2014-05-29 17:15+GMT Daylight Time\n"
+"PO-Revision-Date: 2014-05-29 17:17-0000\n"
+"Last-Translator: \n"
+"Language-Team: Ultros <ultros@ultros.io>\n"
+"Language: en_GB\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+"X-Generator: Poedit 1.6.5\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+
+#: packages.py:48
+msgid "Installing pip.."
+msgstr "Installing pip.."
+
+#: packages.py:66
+msgid ">> You need to run the setup steps first!"
+msgstr ">> You need to run the setup steps first!"
+
+#: packages.py:69
+msgid ">> Downloading package list.."
+msgstr ">> Downloading package list.."
+
+#: packages.py:74
+msgid ">> Error retrieving packages - %s"
+msgstr ">> Error retrieving packages - %s"
+
+#: packages.py:78
+msgid ">> Found %s package(s)."
+msgstr ">> Found %s package(s)."
+
+#: packages.py:126
+msgid ">> No packages are installed. Nothing to do."
+msgstr ">> No packages are installed. Nothing to do."
+
+#: packages.py:137
+msgid ">> Unknown operation: %s"
+msgstr ">> Unknown operation: %s"
+
+#: packages.py:144 packages.py:184
+msgid "Name"
+msgstr "Name"
+
+#: packages.py:144 packages.py:184
+msgid "Version"
+msgstr "Version"
+
+#: packages.py:145
+msgid "Description"
+msgstr "Description"
+
+#: packages.py:164
+msgid "Needed modules: %s"
+msgstr "Needed modules: %s"
+
+#: packages.py:172
+msgid "Needed packages: %s"
+msgstr "Needed packages: %s"
+
+#: packages.py:196
+msgid ">> Syntax: 'python packages.py install <package>'"
+msgstr ">> Syntax: 'python packages.py install <package>'"
+
+#: packages.py:197 packages.py:239 packages.py:261
+msgid ">> Try 'python packages.py -h' if you're stuck"
+msgstr ">> Try 'python packages.py -h' if you're stuck"
+
+#: packages.py:202
+msgid ">> Installing package '%s'."
+msgstr ">> Installing package '%s'."
+
+#: packages.py:205
+msgid ">> Package is already installed. Nothing to do."
+msgstr ">> Package is already installed. Nothing to do."
+
+#: packages.py:211
+msgid ">> Error installing package: %s"
+msgstr ">> Error installing package: %s"
+
+#: packages.py:218
+msgid ">> Version %s installed successfully."
+msgstr ">> Version %s installed successfully."
+
+#: packages.py:223
+msgid ">> The following conflicts were found."
+msgstr ">> The following conflicts were found."
+
+#: packages.py:225
+msgid "Directories"
+msgstr "Directories"
+
+#: packages.py:229
+msgid "Files"
+msgstr "Files"
+
+#: packages.py:232
+msgid ""
+">> These files were not modified but may be removed if you uninstall the "
+"package."
+msgstr ""
+">> These files were not modified but may be removed if you uninstall the "
+"package."
+
+#: packages.py:238
+msgid ">> Syntax: 'python packages.py uninstall <package>'"
+msgstr ">> Syntax: 'python packages.py uninstall <package>'"
+
+#: packages.py:244
+msgid ">> Uninstalling package '%s'."
+msgstr ">> Uninstalling package '%s'."
+
+#: packages.py:247
+msgid ">> Package is not installed. Nothing to do."
+msgstr ">> Package is not installed. Nothing to do."
+
+#: packages.py:253
+msgid ">> Error uninstalling package: %s"
+msgstr ">> Error uninstalling package: %s"
+
+#: packages.py:255
+msgid ">> Package uninstalled successfully."
+msgstr ">> Package uninstalled successfully."
+
+#: packages.py:260
+msgid ">> Syntax: 'python packages.py info <package>'"
+msgstr ">> Syntax: 'python packages.py info <package>'"
+
+#: packages.py:267
+msgid ">> Package not found: %s"
+msgstr ">> Package not found: %s"
+
+#: packages.py:270
+msgid ">> Downloading information.."
+msgstr ">> Downloading information.."
+
+#: packages.py:276
+msgid "=== Information ==="
+msgstr "=== Information ==="
+
+#: packages.py:277
+msgid "Name: %s"
+msgstr "Name: %s"
+
+#: packages.py:278
+msgid "Latest version: v%s"
+msgstr "Latest version: v%s"
+
+#: packages.py:280
+msgid "Installed: v%s"
+msgstr "Installed: v%s"
+
+#: packages.py:281
+msgid "Files: %s"
+msgstr "Files: %s"
+
+#: packages.py:282
+msgid "Documentation: %s"
+msgstr "Documentation: %s"
+
+#: packages.py:284
+msgid "=== Description ==="
+msgstr "=== Description ==="
+
+#: packages.py:286
+msgid "=== Latest version ==="
+msgstr "=== Latest version ==="
+
+#: packages.py:287
+msgid "Version: %s"
+msgstr "Version: %s"
+
+#: packages.py:288
+msgid "- %s other versions."
+msgstr "- %s other versions."
+
+#: packages.py:299 packages.py:358
+msgid ""
+">> Presuming everything installed okay, you should now be ready to run "
+"Ultros!"
+msgstr ""
+">> Presuming everything installed okay, you should now be ready to run "
+"Ultros!"
+
+#: packages.py:329
+msgid ">> There are some things pip can't install."
+msgstr ">> There are some things pip can't install."
+
+#: packages.py:330
+msgid ">> I will now attempt to download and install them manually."
+msgstr ">> I will now attempt to download and install them manually."
+
+#: packages.py:331
+msgid ">> Please be ready to click through dialogs!"
+msgstr ">> Please be ready to click through dialogs!"
+
+#: packages.py:332
+msgid ">> Please note, these files only work with Python 2.7!"
+msgstr ">> Please note, these files only work with Python 2.7!"
+
+#: packages.py:337
+msgid ">> Files will be downloaded to %s"
+msgstr ">> Files will be downloaded to %s"
+
+#: packages.py:339
+msgid ">> OpenSSL will complain about a command prompt being open."
+msgstr ">> OpenSSL will complain about a command prompt being open."
+
+#: packages.py:340
+msgid ">> This is fine, just click \"OK\" to continue."
+msgstr ">> This is fine, just click \"OK\" to continue."
+
+#: packages.py:344
+msgid ">> Downloading files for %s"
+msgstr ">> Downloading files for %s"
+
+#: plugins/auth/__init__.py:37 plugins/bridge/__init__.py:40
+#: plugins/urls/__init__.py:51
+msgid "Entered setup method."
+msgstr "Entered setup method."
+
+#: plugins/auth/__init__.py:44 plugins/bridge/__init__.py:47
+#: plugins/urls/__init__.py:57
+msgid "Error loading configuration!"
+msgstr "Error loading configuration!"
+
+#: plugins/auth/__init__.py:45 plugins/auth/__init__.py:50
+#: plugins/bridge/__init__.py:48 plugins/bridge/__init__.py:53
+msgid "Disabling.."
+msgstr "Disabling.."
+
+#: plugins/auth/__init__.py:49
+msgid "Unable to find config/plugins/auth.yml"
+msgstr "Unable to find config/plugins/auth.yml"
+
+#: plugins/auth/__init__.py:63
+msgid "Unable to load permissions. They will be unavailable!"
+msgstr "Unable to load permissions. They will be unavailable!"
+
+#: plugins/auth/__init__.py:70
+msgid "Unable to set permissions handler!"
+msgstr "Unable to set permissions handler!"
+
+#: plugins/auth/__init__.py:81
+msgid "Unable to load user accounts. They will be unavailable!"
+msgstr "Unable to load user accounts. They will be unavailable!"
+
+#: plugins/auth/__init__.py:88
+msgid "Unable to set auth handler!"
+msgstr "Unable to set auth handler!"
+
+#: plugins/auth/__init__.py:90
+msgid "Registering commands."
+msgstr "Registering commands."
+
+#: plugins/auth/__init__.py:103
+msgid "Command: %s"
+msgstr "Command: %s"
+
+#: plugins/auth/__init__.py:108 plugins/auth/__init__.py:119
+msgid "[REDACTED]"
+msgstr "[REDACTED]"
+
+#: plugins/auth/__init__.py:130
+msgid "Usage: {CHARS}login <username> <password>"
+msgstr "Usage: {CHARS}login <username> <password>"
+
+#: plugins/auth/__init__.py:133
+msgid "You're already logged in. Try logging out first!"
+msgstr "You're already logged in. Try logging out first!"
+
+#: plugins/auth/__init__.py:141
+msgid "%s failed to login as %s"
+msgstr "%s failed to login as %s"
+
+#: plugins/auth/__init__.py:143
+msgid "Invalid username or password!"
+msgstr "Invalid username or password!"
+
+#: plugins/auth/__init__.py:145
+msgid "%s logged in as %s"
+msgstr "%s logged in as %s"
+
+#: plugins/auth/__init__.py:147
+msgid "You are now logged in as %s."
+msgstr "You are now logged in as %s."
+
+#: plugins/auth/__init__.py:154
+msgid "You have been logged out successfully."
+msgstr "You have been logged out successfully."
+
+#: plugins/auth/__init__.py:156
+msgid "You're not logged in."
+msgstr "You're not logged in."
+
+#: plugins/auth/__init__.py:162
+msgid "Usage: {CHARS}register <username> <password>"
+msgstr "Usage: {CHARS}register <username> <password>"
+
+#: plugins/auth/__init__.py:168
+msgid "You can't create an account in a channel."
+msgstr "You can't create an account in a channel."
+
+#: plugins/auth/__init__.py:169
+msgid "Don't use this command in a channel!"
+msgstr "Don't use this command in a channel!"
+
+#: plugins/auth/__init__.py:170
+msgid "You should only use it in a private message."
+msgstr "You should only use it in a private message."
+
+#: plugins/auth/__init__.py:171
+msgid "For your security, the password you used has been blacklisted."
+msgstr "For your security, the password you used has been blacklisted."
+
+#: plugins/auth/__init__.py:177
+msgid "That username already exists!"
+msgstr "That username already exists!"
+
+#: plugins/auth/__init__.py:181
+msgid "That password has been blacklisted.Try another!"
+msgstr "That password has been blacklisted.Try another!"
+
+#: plugins/auth/__init__.py:186
+msgid ""
+"Your account has been created and you will now be logged in. Thanks for "
+"registering!"
+msgstr ""
+"Your account has been created and you will now be logged in. Thanks for "
+"registering!"
+
+#: plugins/auth/__init__.py:192
+msgid ""
+"Something went wrong when creating your account! You should ask the bot "
+"operators about this."
+msgstr ""
+"Something went wrong when creating your account! You should ask the bot "
+"operators about this."
+
+#: plugins/auth/__init__.py:200
+msgid "Usage: {CHARS}passwd <old password> <new password>"
+msgstr "Usage: {CHARS}passwd <old password> <new password>"
+
+#: plugins/auth/__init__.py:204
+msgid "You must be logged in to change your password."
+msgstr "You must be logged in to change your password."
+
+#: plugins/auth/__init__.py:214
+msgid "That password has been blacklisted. Try another!"
+msgstr "That password has been blacklisted. Try another!"
+
+#: plugins/auth/__init__.py:219
+msgid "Your password has been changed successfully."
+msgstr "Your password has been changed successfully."
+
+#: plugins/auth/__init__.py:221
+msgid "Old password incorrect - please try again!"
+msgstr "Old password incorrect - please try again!"
+
+#: plugins/auth/__init__.py:222
+msgid "User %s failed to change the password for %s"
+msgstr "User %s failed to change the password for %s"
+
+#: plugins/auth/auth_handler.py:33
+msgid "Created password blacklist with the 20 most popular passwords of 2013."
+msgstr "Created password blacklist with the 20 most popular passwords of 2013."
+
+#: plugins/auth/auth_handler.py:39 plugins/auth/auth_handler.py:55
+#: plugins/auth/auth_handler.py:65 plugins/auth/auth_handler.py:69
+#: plugins/auth/auth_handler.py:70
+msgid "superadmin"
+msgstr "superadmin"
+
+#: plugins/auth/auth_handler.py:40
+msgid "Superadmin account exists!"
+msgstr "Superadmin account exists!"
+
+#: plugins/auth/auth_handler.py:41
+msgid "You should remove this account as soon as possible!"
+msgstr "You should remove this account as soon as possible!"
+
+#: plugins/auth/auth_handler.py:44
+msgid "Generating a default auth account and password."
+msgstr "Generating a default auth account and password."
+
+#: plugins/auth/auth_handler.py:46
+msgid ""
+"You will need to either use this to add permissions to your user account, or "
+"just create an account and edit the permissions file."
+msgstr ""
+"You will need to either use this to add permissions to your user account, or "
+"just create an account and edit the permissions file."
+
+#: plugins/auth/auth_handler.py:50
+msgid ""
+"Remember to delete this account when you've created your own admin account!"
+msgstr ""
+"Remember to delete this account when you've created your own admin account!"
+
+#: plugins/auth/auth_handler.py:58
+msgid "Super admin username: superadmin"
+msgstr "Super admin username: superadmin"
+
+#: plugins/auth/auth_handler.py:59
+msgid "Super admin password: %s"
+msgstr "Super admin password: %s"
+
+#: plugins/auth/auth_handler.py:66
+msgid "Unable to create permissions section for the superadmin account!"
+msgstr "Unable to create permissions section for the superadmin account!"
+
+#: plugins/auth/auth_handler.py:72
+msgid "Unable to set 'superadmin' flag on the superadmin account!"
+msgstr "Unable to set 'superadmin' flag on the superadmin account!"
+
+#: plugins/auth/auth_handler.py:75
+msgid ""
+"Unable to set permissions for the superadmin account as the bundled "
+"permissions system isn't being used."
+msgstr ""
+"Unable to set permissions for the superadmin account as the bundled "
+"permissions system isn't being used."
+
+#: plugins/auth/auth_handler.py:78
+msgid "Please do this manually!"
+msgstr "Please do this manually!"
+
+#: plugins/auth/permissions_handler.py:69
+msgid "CHECK | Permis: %s"
+msgstr "CHECK | Permis: %s"
+
+#: plugins/auth/permissions_handler.py:70
+msgid "CHECK | Caller: %s"
+msgstr "CHECK | Caller: %s"
+
+#: plugins/auth/permissions_handler.py:71
+msgid "CHECK | Source: %s"
+msgstr "CHECK | Source: %s"
+
+#: plugins/auth/permissions_handler.py:72
+msgid "CHECK | Protoc: %s"
+msgstr "CHECK | Protoc: %s"
+
+#: plugins/auth/permissions_handler.py:76
+msgid "CHECK | Caller is None."
+msgstr "CHECK | Caller is None."
+
+#: plugins/auth/permissions_handler.py:81
+msgid "CHECK | Authorized: %s"
+msgstr "CHECK | Authorized: %s"
+
+#: plugins/auth/permissions_handler.py:89
+msgid "CHECK | Not authorized."
+msgstr "CHECK | Not authorized."
+
+#: plugins/auth/permissions_handler.py:111
+msgid "User created: %s"
+msgstr "User created: %s"
+
+#: plugins/auth/permissions_handler.py:132
+msgid "Option %s set to %s for user %s."
+msgstr "Option %s set to %s for user %s."
+
+#: plugins/auth/permissions_handler.py:319
+msgid "Inheritance must either be a string or None"
+msgstr "Inheritance must either be a string or None"
+
+#: plugins/auth/permissions_handler.py:385
+msgid "Checking group perms..."
+msgstr "Checking group perms..."
+
+#: plugins/auth/permissions_handler.py:386
+msgid "GROUP | %s"
+msgstr "GROUP | %s"
+
+#: plugins/auth/permissions_handler.py:387
+msgid "PERMI | %s"
+msgstr "PERMI | %s"
+
+#: plugins/auth/permissions_handler.py:388
+msgid "SOURC | %s"
+msgstr "SOURC | %s"
+
+#: plugins/auth/permissions_handler.py:389
+msgid "PROTO | %s"
+msgstr "PROTO | %s"
+
+#: plugins/bridge/__init__.py:52
+msgid "Unable to find config/plugins/bridge.yml"
+msgstr "Unable to find config/plugins/bridge.yml"
+
+#: plugins/bridge/__init__.py:193
+msgid "Checking rule: %s - %s"
+msgstr "Checking rule: %s - %s"
+
+#: plugins/bridge/__init__.py:198
+msgid "Protocol doesn't match."
+msgstr "Protocol doesn't match."
+
+#: plugins/bridge/__init__.py:202
+msgid "Target protocol doesn't exist."
+msgstr "Target protocol doesn't exist."
+
+#: plugins/bridge/__init__.py:209
+msgid "Function was called with relaying from users disabled."
+msgstr "Function was called with relaying from users disabled."
+
+#: plugins/bridge/__init__.py:213
+msgid "Target type isn't a user."
+msgstr "Target type isn't a user."
+
+#: plugins/bridge/__init__.py:217
+msgid "Target type isn't a Channel."
+msgstr "Target type isn't a Channel."
+
+#: plugins/bridge/__init__.py:221
+msgid "Target name doesn't match the source."
+msgstr "Target name doesn't match the source."
+
+#: plugins/bridge/__init__.py:225
+msgid "Target isn't a known type."
+msgstr "Target isn't a known type."
+
+#: plugins/bridge/__init__.py:229
+msgid "Function was called with relaying to users disabled."
+msgstr "Function was called with relaying to users disabled."
+
+#: plugins/bridge/__init__.py:243
+msgid "Not relaying message as the format string was empty or missing."
+msgstr "Not relaying message as the format string was empty or missing."
+
+#: plugins/bridge/generic.py:20
+msgid "Setup method needs to be implemented!"
+msgstr "Setup method needs to be implemented!"
+
+#: plugins/control/__init__.py:36
+msgid "Usage: {CHARS}join <channel>"
+msgstr "Usage: {CHARS}join <channel>"
+
+#: plugins/control/__init__.py:43 plugins/control/__init__.py:60
+#: plugins/control/__init__.py:76 plugins/control/__init__.py:93
+#: plugins/control/__init__.py:110 run.py:69
+msgid "Done!"
+msgstr "Done!"
+
+#: plugins/control/__init__.py:45
+msgid "Unable to join channel. Does this protocol support joining channels?"
+msgstr "Unable to join channel. Does this protocol support joining channels?"
+
+#: plugins/control/__init__.py:48 plugins/control/__init__.py:65
+msgid "This protocol doesn't support channels."
+msgstr "This protocol doesn't support channels."
+
+#: plugins/control/__init__.py:53
+msgid "Usage: {CHARS}leave <channel>"
+msgstr "Usage: {CHARS}leave <channel>"
+
+#: plugins/control/__init__.py:62
+msgid "Unable to leave channel. Does this protocol support leaving channels?"
+msgstr "Unable to leave channel. Does this protocol support leaving channels?"
+
+#: plugins/control/__init__.py:70
+msgid "Usage: {CHARS}raw <data>"
+msgstr "Usage: {CHARS}raw <data>"
+
+#: plugins/control/__init__.py:78
+msgid "This protocol doesn't support sending raw data."
+msgstr "This protocol doesn't support sending raw data."
+
+#: plugins/control/__init__.py:84
+msgid "Usage: {CHARS}say <target> <message>"
+msgstr "Usage: {CHARS}say <target> <message>"
+
+#: plugins/control/__init__.py:95
+msgid "This protocol doesn't support sending messages."
+msgstr "This protocol doesn't support sending messages."
+
+#: plugins/control/__init__.py:101
+msgid "Usage: {CHARS}action <target> <message>"
+msgstr "Usage: {CHARS}action <target> <message>"
+
+#: plugins/control/__init__.py:112
+msgid "This protocol doesn't support sending actions."
+msgstr "This protocol doesn't support sending actions."
+
+#: plugins/control/__init__.py:118
+msgid "Usage: {CHARS}func <function> <data>"
+msgstr "Usage: {CHARS}func <function> <data>"
+
+#: plugins/control/__init__.py:140
+msgid "No such function: %s"
+msgstr "No such function: %s"
+
+#: plugins/control/__init__.py:144
+msgid "Error running 'func' command!"
+msgstr "Error running 'func' command!"
+
+#: plugins/control/__init__.py:145 plugins/factoids/__init__.py:566
+#: plugins/urls/__init__.py:289 plugins/urls/__init__.py:321
+msgid "Error: %s"
+msgstr "Error: %s"
+
+#: plugins/control/__init__.py:147
+msgid "Done! Call returned: %s"
+msgstr "Done! Call returned: %s"
+
+#: plugins/debug/__init__.py:50
+msgid "[DEBUG] %s"
+msgstr "[DEBUG] %s"
+
+#: plugins/debug/__init__.py:71
+msgid "Syntax error: %s"
+msgstr "Syntax error: %s"
+
+#: plugins/debug/__init__.py:74
+msgid "Invalid literal: %s"
+msgstr "Invalid literal: %s"
+
+#: plugins/debug/__init__.py:77 plugins/debug/__init__.py:83
+msgid "%s"
+msgstr "%s"
+
+#: plugins/debug/monitors.py:25
+msgid "Running collection.."
+msgstr "Running collection.."
+
+#: plugins/debug/monitors.py:33
+msgid "Starting uncollectable objects monitor."
+msgstr "Starting uncollectable objects monitor."
+
+#: plugins/debug/monitors.py:37
+msgid "Uncollectable object cycle in gc.garbage!"
+msgstr "Uncollectable object cycle in gc.garbage!"
+
+#: plugins/debug/monitors.py:39
+msgid "Parents:"
+msgstr "Parents:"
+
+#: plugins/debug/monitors.py:42
+msgid "Children:"
+msgstr "Children:"
+
+#: plugins/debug/monitors.py:63
+msgid "dict with keys %r @ 0x%x"
+msgstr "dict with keys %r @ 0x%x"
+
+#: plugins/dialectizer/__init__.py:79
+msgid "This command only applies to channels."
+msgstr "This command only applies to channels."
+
+#: plugins/dialectizer/__init__.py:82
+msgid "Usage: {CHARS}dialectizer <dialectizer>"
+msgstr "Usage: {CHARS}dialectizer <dialectizer>"
+
+#: plugins/dialectizer/__init__.py:83
+msgid "Available dialectizers: %s"
+msgstr "Available dialectizers: %s"
+
+#: plugins/dialectizer/__init__.py:96
+msgid "Unknown dialectizer: %s"
+msgstr "Unknown dialectizer: %s"
+
+#: plugins/dialectizer/__init__.py:100
+msgid "Dialectizer set to '%s'"
+msgstr "Dialectizer set to '%s'"
+
+#: plugins/factoids/__init__.py:114
+msgid "Checking for permission: '%s'"
+msgstr "Checking for permission: '%s'"
+
+#: plugins/factoids/__init__.py:137 plugins/factoids/__init__.py:141
+#: plugins/factoids/__init__.py:146
+msgid "Invalid args"
+msgstr "Invalid args"
+
+#: plugins/factoids/__init__.py:157
+msgid "'%s' is not a valid location"
+msgstr "'%s' is not a valid location"
+
+#: plugins/factoids/__init__.py:161
+msgid "'channel' location can only be used inside a channel"
+msgstr "'channel' location can only be used inside a channel"
+
+#: plugins/factoids/__init__.py:242 plugins/factoids/__init__.py:300
+msgid "Factoid '%s' does not exist"
+msgstr "Factoid '%s' does not exist"
+
+#: plugins/factoids/__init__.py:254
+msgid ""
+"Getting factoid params: factoid_key = '%s', location = '%s', protocol = "
+"'%s', channel = '%s'"
+msgstr ""
+"Getting factoid params: factoid_key = '%s', location = '%s', protocol = "
+"'%s', channel = '%s'"
+
+#: plugins/factoids/__init__.py:262
+msgid "Location is None - getting all factoids with key '%s'"
+msgstr "Location is None - getting all factoids with key '%s'"
+
+#: plugins/factoids/__init__.py:275
+msgid "Match found (channel)!"
+msgstr "Match found (channel)!"
+
+#: plugins/factoids/__init__.py:280
+msgid "Match found (protocol)!"
+msgstr "Match found (protocol)!"
+
+#: plugins/factoids/__init__.py:285
+msgid "Match found (global)!"
+msgstr "Match found (global)!"
+
+#: plugins/factoids/__init__.py:332 plugins/factoids/__init__.py:357
+#: plugins/factoids/__init__.py:385 plugins/factoids/__init__.py:409
+msgid "User does not have required permission"
+msgstr "User does not have required permission"
+
+#: plugins/factoids/__init__.py:427
+msgid ""
+"Invalid location given - possible locations are: channel, protocol, global"
+msgstr ""
+"Invalid location given - possible locations are: channel, protocol, global"
+
+#: plugins/factoids/__init__.py:430
+msgid "You must do that in a channel"
+msgstr "You must do that in a channel"
+
+#: plugins/factoids/__init__.py:432
+msgid "You don't have permission to do that"
+msgstr "You don't have permission to do that"
+
+#: plugins/factoids/__init__.py:434
+msgid "That factoid doesn't exist"
+msgstr "That factoid doesn't exist"
+
+#: plugins/factoids/__init__.py:461 plugins/factoids/__init__.py:475
+msgid "Usage: %s <location> <factoid> <info>"
+msgstr "Usage: %s <location> <factoid> <info>"
+
+#: plugins/factoids/__init__.py:466 plugins/factoids/__init__.py:728
+#: plugins/factoids/__init__.py:787 plugins/factoids/__init__.py:848
+msgid "Factoid added"
+msgstr "Factoid added"
+
+#: plugins/factoids/__init__.py:480 plugins/factoids/__init__.py:747
+#: plugins/factoids/__init__.py:807 plugins/factoids/__init__.py:868
+msgid "Factoid set"
+msgstr "Factoid set"
+
+#: plugins/factoids/__init__.py:488
+msgid "Usage: %s <location> <factoid>"
+msgstr "Usage: %s <location> <factoid>"
+
+#: plugins/factoids/__init__.py:495 plugins/factoids/__init__.py:765
+#: plugins/factoids/__init__.py:826 plugins/factoids/__init__.py:887
+msgid "Factoid deleted"
+msgstr "Factoid deleted"
+
+#: plugins/factoids/__init__.py:509
+msgid "Usage: %s [location] <factoid>"
+msgstr "Usage: %s [location] <factoid>"
+
+#: plugins/factoids/__init__.py:526
+msgid "Registering web routes.."
+msgstr "Registering web routes.."
+
+#: plugins/factoids/__init__.py:542
+msgid "<th>Location</th>"
+msgstr "<th>Location</th>"
+
+#: plugins/factoids/__init__.py:543
+msgid "<th>Protocol</th>"
+msgstr "<th>Protocol</th>"
+
+#: plugins/factoids/__init__.py:544
+msgid "<th>Channel</th>"
+msgstr "<th>Channel</th>"
+
+#: plugins/factoids/__init__.py:545
+msgid "<th>Name</th>"
+msgstr "<th>Name</th>"
+
+#: plugins/factoids/__init__.py:546
+msgid "<th>Content</th>"
+msgstr "<th>Content</th>"
+
+#: plugins/factoids/__init__.py:560 plugins/factoids/__init__.py:566
+#: plugins/factoids/__init__.py:567 plugins/factoids/__init__.py:591
+#: plugins/factoids/__init__.py:592
+msgid "Factoids"
+msgstr "Factoids"
+
+#: plugins/factoids/__init__.py:575
+msgid "WEB | Checking permissions.."
+msgstr "WEB | Checking permissions.."
+
+#: plugins/factoids/__init__.py:578
+msgid "WEB | User does not have permission. Are they logged in?"
+msgstr "WEB | User does not have permission. Are they logged in?"
+
+#: plugins/factoids/__init__.py:585
+msgid "WEB | Yup. They must not have permission."
+msgstr "WEB | Yup. They must not have permission."
+
+#: plugins/factoids/__init__.py:586
+msgid "WEB | Presenting error.."
+msgstr "WEB | Presenting error.."
+
+#: plugins/factoids/__init__.py:589
+msgid "Error: You do not have permission to list the factoids."
+msgstr "Error: You do not have permission to list the factoids."
+
+#: plugins/factoids/__init__.py:594
+msgid "WEB | User has permission."
+msgstr "WEB | User has permission."
+
+#: plugins/factoids/__init__.py:652
+msgid "Usage: ?? <factoid>"
+msgstr "Usage: ?? <factoid>"
+
+#: plugins/factoids/__init__.py:671
+msgid "Usage: ?< <factoid>"
+msgstr "Usage: ?< <factoid>"
+
+#: plugins/factoids/__init__.py:690
+msgid "Usage: ?> <user> <factoid>"
+msgstr "Usage: ?> <user> <factoid>"
+
+#: plugins/factoids/__init__.py:698
+msgid "Unable to find that user."
+msgstr "Unable to find that user."
+
+#: plugins/factoids/__init__.py:719
+msgid "Usage: ??+ <factoid> <info>"
+msgstr "Usage: ??+ <factoid> <info>"
+
+#: plugins/factoids/__init__.py:738
+msgid "Usage: ??~ <factoid> <info>"
+msgstr "Usage: ??~ <factoid> <info>"
+
+#: plugins/factoids/__init__.py:757
+msgid "Usage: ??- <factoid>"
+msgstr "Usage: ??- <factoid>"
+
+#: plugins/factoids/__init__.py:778
+msgid "Usage: !?+ <factoid> <info>"
+msgstr "Usage: !?+ <factoid> <info>"
+
+#: plugins/factoids/__init__.py:798
+msgid "Usage: !?~ <factoid> <info>"
+msgstr "Usage: !?~ <factoid> <info>"
+
+#: plugins/factoids/__init__.py:818
+msgid "Usage: !?- <factoid>"
+msgstr "Usage: !?- <factoid>"
+
+#: plugins/factoids/__init__.py:839
+msgid "Usage: @?+ <factoid> <info>"
+msgstr "Usage: @?+ <factoid> <info>"
+
+#: plugins/factoids/__init__.py:859
+msgid "Usage: @?~ <factoid> <info>"
+msgstr "Usage: @?~ <factoid> <info>"
+
+#: plugins/factoids/__init__.py:879
+msgid "Usage: @?- <factoid>"
+msgstr "Usage: @?- <factoid>"
+
+#: plugins/urls/__init__.py:60
+msgid "Unable to find config/plugins/urls.yml"
+msgstr "Unable to find config/plugins/urls.yml"
+
+#: plugins/urls/__init__.py:65
+msgid "Spoofing: %s"
+msgstr "Spoofing: %s"
+
+#: plugins/urls/__init__.py:149
+msgid "Error catching URL"
+msgstr "Error catching URL"
+
+#: plugins/urls/__init__.py:153
+msgid "Title: %s"
+msgstr "Title: %s"
+
+#: plugins/urls/__init__.py:196
+msgid "Unknown target type: %s [%s]"
+msgstr "Unknown target type: %s [%s]"
+
+#: plugins/urls/__init__.py:203
+msgid "This command can only be used in a channel."
+msgstr "This command can only be used in a channel."
+
+#: plugins/urls/__init__.py:206
+msgid "Usage: {CHARS}urls <setting> <value>"
+msgstr "Usage: {CHARS}urls <setting> <value>"
+
+#: plugins/urls/__init__.py:207
+msgid ""
+"Operations: set <on/off> - Enable or disable title parsing for the current "
+"channel"
+msgstr ""
+"Operations: set <on/off> - Enable or disable title parsing for the current "
+"channel"
+
+#: plugins/urls/__init__.py:209
+msgid ""
+"shortener <name> - Set which URL shortener to use for the current channel"
+msgstr ""
+"shortener <name> - Set which URL shortener to use for the current channel"
+
+#: plugins/urls/__init__.py:212
+msgid "Shorteners: %s"
+msgstr "Shorteners: %s"
+
+#: plugins/urls/__init__.py:237 plugins/urls/__init__.py:241
+msgid "on"
+msgstr "on"
+
+#: plugins/urls/__init__.py:237 plugins/urls/__init__.py:243
+msgid "off"
+msgstr "off"
+
+#: plugins/urls/__init__.py:238
+msgid "Usage: {CHARS}urls set <on|off>"
+msgstr "Usage: {CHARS}urls set <on|off>"
+
+#: plugins/urls/__init__.py:246
+msgid "Title passing for %s turned %s."
+msgstr "Title passing for %s turned %s."
+
+#: plugins/urls/__init__.py:253
+msgid "URL shortener for %s set to %s."
+msgstr "URL shortener for %s set to %s."
+
+#: plugins/urls/__init__.py:256
+msgid "Unknown shortener: %s"
+msgstr "Unknown shortener: %s"
+
+#: plugins/urls/__init__.py:258
+msgid "Unknown operation: '%s'."
+msgstr "Unknown operation: '%s'."
+
+#: plugins/urls/__init__.py:263
+msgid "Unable to shorten using handler %s. Poke thebot owner!"
+msgstr "Unable to shorten using handler %s. Poke thebot owner!"
+
+#: plugins/urls/__init__.py:268
+msgid "Error shortening url with handler %s: %s"
+msgstr "Error shortening url with handler %s: %s"
+
+#: plugins/urls/__init__.py:276
+msgid "Usage: {CHARS}shorten [url]"
+msgstr "Usage: {CHARS}shorten [url]"
+
+#: plugins/urls/__init__.py:288 plugins/urls/__init__.py:320
+msgid "Error fetching short URL."
+msgstr "Error fetching short URL."
+
+#: plugins/urls/__init__.py:295
+msgid "Nobody's pasted a URL here yet!"
+msgstr "Nobody's pasted a URL here yet!"
+
+#: plugins/urls/__init__.py:304
+msgid "Shortener '%s' not found - please set a new one!"
+msgstr "Shortener '%s' not found - please set a new one!"
+
+#: plugins/urls/__init__.py:330
+msgid "Url: %s"
+msgstr "Url: %s"
+
+#: plugins/urls/__init__.py:342 plugins/urls/__init__.py:399
+msgid "Prevented a portscan: %s"
+msgstr "Prevented a portscan: %s"
+
+#: plugins/urls/__init__.py:354 plugins/urls/__init__.py:411
+msgid "Error running handler, parsing title normally."
+msgstr "Error running handler, parsing title normally."
+
+#: plugins/urls/__init__.py:357
+msgid "Parsed domain: %s"
+msgstr "Parsed domain: %s"
+
+#: plugins/urls/__init__.py:361
+msgid "Custom spoofing for this domain found."
+msgstr "Custom spoofing for this domain found."
+
+#: plugins/urls/__init__.py:364
+msgid "Spoofing user-agent: %s"
+msgstr "Spoofing user-agent: %s"
+
+#: plugins/urls/__init__.py:368
+msgid "Not spoofing user-agent."
+msgstr "Not spoofing user-agent."
+
+#: plugins/urls/__init__.py:370
+msgid "Spoofing Firefox as usual."
+msgstr "Spoofing Firefox as usual."
+
+#: plugins/urls/__init__.py:377
+msgid "Info: %s"
+msgstr "Info: %s"
+
+#: plugins/urls/__init__.py:388 plugins/urls/__init__.py:471
+msgid "URL: %s"
+msgstr "URL: %s"
+
+#: plugins/urls/__init__.py:389
+msgid "Domain: %s"
+msgstr "Domain: %s"
+
+#: plugins/urls/__init__.py:430
+msgid "Content-type: %s"
+msgstr "Content-type: %s"
+
+#: plugins/urls/__init__.py:433
+msgid "Content-type is not allowed."
+msgstr "Content-type is not allowed."
+
+#: plugins/urls/__init__.py:448
+msgid "Error parsing title."
+msgstr "Error parsing title."
+
+#: plugins/urls/__init__.py:457
+msgid "Result (SQL): %s"
+msgstr "Result (SQL): %s"
+
+#: plugins/urls/__init__.py:472
+msgid "Handler: %s"
+msgstr "Handler: %s"
+
+#: plugins/urls/__init__.py:478
+msgid "Domain should not start with 'www.'"
+msgstr "Domain should not start with 'www.'"
+
+#: plugins/urls/__init__.py:480
+msgid "Handler registered for '%s': %s"
+msgstr "Handler registered for '%s': %s"
+
+#: plugins/urls/__init__.py:488
+msgid "Shortener '%s' registered: %s"
+msgstr "Shortener '%s' registered: %s"
+
+#: plugins/urls/catcher.py:43
+msgid "No catcher section in config."
+msgstr "No catcher section in config."
+
+#: plugins/urls/catcher.py:49
+msgid "Catcher disabled via config."
+msgstr "Catcher disabled via config."
+
+#: plugins/urls/catcher.py:75
+msgid "Broken pipe has occurred more than three times in a row!"
+msgstr "Broken pipe has occurred more than three times in a row!"
+
+#: plugins/urls/catcher.py:105
+msgid "Created table."
+msgstr "Created table."
+
+#: plugins/urls/catcher.py:106
+msgid "Failed to create table: %s"
+msgstr "Failed to create table: %s"
+
+#: plugins/urls/catcher.py:110
+msgid "Looking for SQL in %s"
+msgstr "Looking for SQL in %s"
+
+#: plugins/urls/catcher.py:116
+msgid "No SQL found for dialect '%s'."
+msgstr "No SQL found for dialect '%s'."
+
+#: plugins/urls/catcher.py:157
+msgid "Failed to insert URL: %s"
+msgstr "Failed to insert URL: %s"
+
+#: run.py:56
+msgid "Attempting to update.."
+msgstr "Attempting to update.."
+
+#: run.py:71
+msgid "Error updating: %s"
+msgstr "Error updating: %s"
+
+#: run.py:100
+msgid "Starting up, version \"%s\""
+msgstr "Starting up, version \"%s\""
+
+#: run.py:109
+msgid "Runtime error - process cannot continue!"
+msgstr "Runtime error - process cannot continue!"
+
+#: run.py:122
+msgid "Press enter to exit."
+msgstr "Press enter to exit."
+
+#: system/command_manager.py:92
+msgid ""
+"Object '%s' tried to register command '%s' butit's already been registered "
+"by object '%s'."
+msgstr ""
+"Object '%s' tried to register command '%s' butit's already been registered "
+"by object '%s'."
+
+#: system/command_manager.py:100
+msgid "Registering command: %s (%s)"
+msgstr "Registering command: %s (%s)"
+
+#: system/command_manager.py:112
+msgid ""
+"Failed to register command alias '%s' as it already belongs to another "
+"command."
+msgstr ""
+"Failed to register command alias '%s' as it already belongs to another "
+"command."
+
+#: system/command_manager.py:117
+msgid "Registering alias: %s -> %s (%s)"
+msgstr "Registering alias: %s -> %s (%s)"
+
+#: system/command_manager.py:134
+msgid "Unregistered command: %s"
+msgstr "Unregistered command: %s"
+
+#: system/command_manager.py:236
+msgid "Auth handler %s is already registered."
+msgstr "Auth handler %s is already registered."
+
+#: system/command_manager.py:256
+msgid ""
+"Two plugins are trying to provide permissions handlers. Only the first will "
+"be used!"
+msgstr ""
+"Two plugins are trying to provide permissions handlers. Only the first will "
+"be used!"
+
+#: system/decorators.py:197
+msgid "%s() takes at most %s non-keyword arguments (%s given)"
+msgstr "%s() takes at most %s non-keyword arguments (%s given)"
+
+#: system/decorators.py:203
+msgid "Unexpected keyword argument '%s' for %s()"
+msgstr "Unexpected keyword argument '%s' for %s()"
+
+#: system/decorators.py:209
+msgid "Parameter '%s' is not %s"
+msgstr "Parameter '%s' is not %s"
+
+#: system/event_manager.py:114
+msgid "Plugin '%s' has already registered a handler for the '%s' callback"
+msgstr "Plugin '%s' has already registered a handler for the '%s' callback"
+
+#: system/event_manager.py:128
+msgid "Adding callback: %s"
+msgstr "Adding callback: %s"
+
+#: system/event_manager.py:288
+msgid "Running callback: %s"
+msgstr "Running callback: %s"
+
+#: system/event_manager.py:292
+msgid "Not running, filter function returned False."
+msgstr "Not running, filter function returned False."
+
+#: system/event_manager.py:297
+msgid ""
+"Not running event, filter is not actually a function. Bug the developers of "
+"the %s plugin about it!"
+msgstr ""
+"Not running event, filter is not actually a function. Bug the developers of "
+"the %s plugin about it!"
+
+#: system/event_manager.py:302
+msgid "Value: %s"
+msgstr "Value: %s"
+
+#: system/event_manager.py:308
+msgid ""
+"Not running, event is cancelled and handler doesn't accept cancelled events"
+msgstr ""
+"Not running, event is cancelled and handler doesn't accept cancelled events"
+
+#: system/event_manager.py:315
+msgid "Error running callback '%s': %s"
+msgstr "Error running callback '%s': %s"
+
+#: system/factory.py:67
+msgid "Entering setup method."
+msgstr "Entering setup method."
+
+#: system/factory.py:71
+msgid "First-time setup; not reloading."
+msgstr "First-time setup; not reloading."
+
+#: system/factory.py:75
+msgid "Reloading module."
+msgstr "Reloading module."
+
+#: system/factory.py:80
+msgid "Unable to import protocol %s for %s"
+msgstr "Unable to import protocol %s for %s"
+
+#: system/factory.py:89
+msgid "Protocol does not subclass the generic protocol class!"
+msgstr "Protocol does not subclass the generic protocol class!"
+
+#: system/factory.py:97
+msgid "Error shutting down"
+msgstr "Error shutting down"
+
+#: system/factory.py:117
+msgid "Error calling \"connection lost\" callback"
+msgstr "Error calling \"connection lost\" callback"
+
+#: system/factory.py:123
+msgid "Lost connection: %s"
+msgstr "Lost connection: %s"
+
+#: system/factory.py:126 system/factory.py:153
+msgid "Unable to connect after %s attempts, aborting."
+msgstr "Unable to connect after %s attempts, aborting."
+
+#: system/factory.py:130 system/factory.py:157
+msgid "Reconnecting after %s seconds (attempt %s/%s)"
+msgstr "Reconnecting after %s seconds (attempt %s/%s)"
+
+#: system/factory.py:144
+msgid "Error calling \"connection failed\" callback"
+msgstr "Error calling \"connection failed\" callback"
+
+#: system/factory.py:150
+msgid "Connection failed: %s"
+msgstr "Connection failed: %s"
+
+#: system/factory.py:166
+msgid "Error calling \"connected\" callback"
+msgstr "Error calling \"connected\" callback"
+
+#: system/factory_manager.py:89
+msgid "It seems like no protocols are loaded. Shutting down.."
+msgstr "It seems like no protocols are loaded. Shutting down.."
+
+#: system/factory_manager.py:96
+msgid "Error setting up metrics."
+msgstr "Error setting up metrics."
+
+#: system/factory_manager.py:108
+msgid "Manager is already running!"
+msgstr "Manager is already running!"
+
+#: system/factory_manager.py:116
+msgid "Error while unloading!"
+msgstr "Error while unloading!"
+
+#: system/factory_manager.py:133
+msgid "Loading global configuration.."
+msgstr "Loading global configuration.."
+
+#: system/factory_manager.py:135
+msgid "Main configuration not found! Please correct this and try again."
+msgstr "Main configuration not found! Please correct this and try again."
+
+#: system/factory_manager.py:140 system/factory_manager.py:145
+msgid "Unable to load main configuration at config/settings.yml"
+msgstr "Unable to load main configuration at config/settings.yml"
+
+#: system/factory_manager.py:142
+msgid "Please check that this file exists."
+msgstr "Please check that this file exists."
+
+#: system/factory_manager.py:156
+msgid "Loading plugins.."
+msgstr "Loading plugins.."
+
+#: system/factory_manager.py:158
+msgid "Configured plugins: %s"
+msgstr "Configured plugins: %s"
+
+#: system/factory_manager.py:161
+msgid "Collecting plugins.."
+msgstr "Collecting plugins.."
+
+#: system/factory_manager.py:172
+msgid "Loading plugins that have no dependencies first."
+msgstr "Loading plugins that have no dependencies first."
+
+#: system/factory_manager.py:177 system/factory_manager.py:198
+msgid "Checking if plugin '%s' is configured to load.."
+msgstr "Checking if plugin '%s' is configured to load.."
+
+#: system/factory_manager.py:180 system/factory_manager.py:201
+msgid "Attempting to load plugin: %s"
+msgstr "Attempting to load plugin: %s"
+
+#: system/factory_manager.py:184 system/factory_manager.py:223
+msgid "Error detected while loading plugin."
+msgstr "Error detected while loading plugin."
+
+#: system/factory_manager.py:187 system/factory_manager.py:226
+msgid "Plugin already loaded."
+msgstr "Plugin already loaded."
+
+#: system/factory_manager.py:189 system/factory_manager.py:228
+msgid "Plugin doesn't exist."
+msgstr "Plugin doesn't exist."
+
+#: system/factory_manager.py:192 system/factory_manager.py:230
+msgid "Plugin dependency is missing."
+msgstr "Plugin dependency is missing."
+
+#: system/factory_manager.py:195
+msgid "Loading plugins that have dependencies."
+msgstr "Loading plugins that have dependencies."
+
+#: system/factory_manager.py:208 system/factory_manager.py:213
+msgid "Dependency loop detected while loading: %s"
+msgstr "Dependency loop detected while loading: %s"
+
+#: system/factory_manager.py:210 system/factory_manager.py:215
+msgid "This plugin will not be available."
+msgstr "This plugin will not be available."
+
+#: system/factory_manager.py:235
+msgid "No plugins are configured to load."
+msgstr "No plugins are configured to load."
+
+#: system/factory_manager.py:265
+msgid "Dependencies for %s: %s"
+msgstr "Dependencies for %s: %s"
+
+#: system/factory_manager.py:269
+msgid ""
+"Error loading plugin %s: the plugin relies on another plugin (%s), but it is "
+"not present."
+msgstr ""
+"Error loading plugin %s: the plugin relies on another plugin (%s), but it is "
+"not present."
+
+#: system/factory_manager.py:280
+msgid "Unable to load dependency: %s"
+msgstr "Unable to load dependency: %s"
+
+#: system/factory_manager.py:286
+msgid "Loading plugin: %s"
+msgstr "Loading plugin: %s"
+
+#: system/factory_manager.py:288
+msgid "Location: %s"
+msgstr "Location: %s"
+
+#: system/factory_manager.py:292
+msgid "Running setup method.."
+msgstr "Running setup method.."
+
+#: system/factory_manager.py:295
+msgid "Unable to load plugin: %s v%s"
+msgstr "Unable to load plugin: %s v%s"
+
+#: system/factory_manager.py:301
+msgid "Loaded plugin: %s v%s"
+msgstr "Loaded plugin: %s v%s"
+
+#: system/factory_manager.py:304
+msgid "Licensing: %s"
+msgstr "Licensing: %s"
+
+#: system/factory_manager.py:326
+msgid "Setting up protocols.."
+msgstr "Setting up protocols.."
+
+#: system/factory_manager.py:329
+msgid "Setting up protocol: %s"
+msgstr "Setting up protocol: %s"
+
+#: system/factory_manager.py:335
+msgid "Protocol is already loaded."
+msgstr "Protocol is already loaded."
+
+#: system/factory_manager.py:337
+msgid "Unable to find protocol configuration."
+msgstr "Unable to find protocol configuration."
+
+#: system/factory_manager.py:340
+msgid "Error detected while loading protocol."
+msgstr "Error detected while loading protocol."
+
+#: system/factory_manager.py:343
+msgid "Error detected while setting up protocol."
+msgstr "Error detected while setting up protocol."
+
+#: system/factory_manager.py:379
+msgid "Unable to load configuration for the '%s' protocol."
+msgstr "Unable to load configuration for the '%s' protocol."
+
+#: system/factory_manager.py:391
+msgid "Unable to create factory for the '%s' protocol!"
+msgstr "Unable to create factory for the '%s' protocol!"
+
+#: system/factory_manager.py:414
+msgid "Error disabling plugin: %s"
+msgstr "Error disabling plugin: %s"
+
+#: system/factory_manager.py:438
+msgid "Error shutting down protocol %s"
+msgstr "Error shutting down protocol %s"
+
+#: system/factory_manager.py:451
+msgid "Unloading protocol: %s"
+msgstr "Unloading protocol: %s"
+
+#: system/factory_manager.py:454
+msgid "Unloading plugin: %s"
+msgstr "Unloading plugin: %s"
+
+#: system/metrics.py:107
+msgid "We couldn't find a \"metrics\" option in your settings.yml file!"
+msgstr "We couldn't find a \"metrics\" option in your settings.yml file!"
+
+#: system/metrics.py:111
+msgid ""
+"Metrics will default to being turned on. If this is not what you want, "
+"please create \"metrics\" option in your settings and set it to \"off\"."
+msgstr ""
+"Metrics will default to being turned on. If this is not what you want, "
+"please create \"metrics\" option in your settings and set it to \"off\"."
+
+#: system/metrics.py:116
+msgid "If you want to keep metrics enabled, set the option to \"on\"."
+msgstr "If you want to keep metrics enabled, set the option to \"on\"."
+
+#: system/metrics.py:120
+msgid ""
+"This warning will be shown on every startup until the option has been set."
+msgstr ""
+"This warning will be shown on every startup until the option has been set."
+
+#: system/metrics.py:132
+msgid "Error getting UUID"
+msgstr "Error getting UUID"
+
+#: system/metrics.py:141 system/metrics.py:145
+msgid "Metrics are disabled."
+msgstr "Metrics are disabled."
+
+#: system/metrics.py:152
+msgid "Firing task."
+msgstr "Firing task."
+
+#: system/metrics.py:155
+msgid "Submitting metrics."
+msgstr "Submitting metrics."
+
+#: system/metrics.py:168 system/metrics.py:182
+msgid "Submitted. Result: %s"
+msgstr "Submitted. Result: %s"
+
+#: system/metrics.py:171
+msgid "Error submitting metrics: %s"
+msgstr "Error submitting metrics: %s"
+
+#: system/metrics.py:174
+msgid "Error submitting metrics"
+msgstr "Error submitting metrics"
+
+#: system/metrics.py:176
+msgid "Submitting disable message."
+msgstr "Submitting disable message."
+
+#: system/metrics.py:185
+msgid "Error submitting disable message: %s"
+msgstr "Error submitting disable message: %s"
+
+#: system/metrics.py:188
+msgid "Error submitting disable message"
+msgstr "Error submitting disable message"
+
+#: system/metrics.py:195
+msgid "Submitting destruction message."
+msgstr "Submitting destruction message."
+
+#: system/metrics.py:203
+msgid "Metrics data has been removed from the server."
+msgstr "Metrics data has been removed from the server."
+
+#: system/metrics.py:206
+msgid "Unknown UUID, data was already removed from the server."
+msgstr "Unknown UUID, data was already removed from the server."
+
+#: system/metrics.py:209
+msgid "Error submitting destruction message"
+msgstr "Error submitting destruction message"
+
+#: system/metrics.py:217
+msgid "Unknown status: %s"
+msgstr "Unknown status: %s"
+
+#: system/plugin.py:93
+msgid "Setup method not defined!"
+msgstr "Setup method not defined!"
+
+#: system/plugin_manager.py:177 system/plugin_manager.py:183
+#: system/plugin_manager.py:187 system/plugin_manager.py:190
+msgid "Unknown"
+msgstr "Unknown"
+
+#: system/plugin_manager.py:181 system/plugin_manager.py:189
+msgid "None"
+msgstr "None"
+
+#: system/plugin_manager.py:214
+msgid "Could not parse the plugin file '%s' (exception raised was '%s')"
+msgstr "Could not parse the plugin file '%s' (exception raised was '%s')"
+
+#: system/plugin_manager.py:220
+msgid "Plugin info file has no 'core' section (in '%s')"
+msgstr "Plugin info file has no 'core' section (in '%s')"
+
+#: system/plugin_manager.py:224
+msgid "Plugin info file has no 'name' or 'module' section (in '%s')"
+msgstr "Plugin info file has no 'name' or 'module' section (in '%s')"
+
+#: system/plugin_manager.py:232
+msgid "Plugin name contains forbidden character: %s (in '%s')"
+msgstr "Plugin name contains forbidden character: %s (in '%s')"
+
+#: system/plugin_manager.py:364
+msgid ""
+"Two incompatible arguments (%s) provided: 'plugin_info_ext' and "
+"'plugin_locator'). Ignoring 'plugin_info_ext'."
+msgstr ""
+"Two incompatible arguments (%s) provided: 'plugin_info_ext' and "
+"'plugin_locator'). Ignoring 'plugin_info_ext'."
+
+#: system/protocols/generic/channel.py:16 system/protocols/generic/user.py:18
+msgid "This method must be overridden"
+msgstr "This method must be overridden"
+
+#: system/protocols/generic/protocol.py:114
+#: system/protocols/generic/protocol.py:121
+#: system/protocols/generic/protocol.py:161
+#: system/protocols/generic/protocol.py:169
+#: system/protocols/generic/protocol.py:183
+#: system/protocols/generic/protocol.py:197
+#: system/protocols/generic/protocol.py:214
+msgid "This function needs to be implemented!"
+msgstr "This function needs to be implemented!"
+
+#: system/protocols/generic/protocol.py:133
+#: system/protocols/generic/protocol.py:148
+msgid "This function needs to be implemented."
+msgstr "This function needs to be implemented."
+
+#: system/protocols/irc/channel.py:29 system/protocols/mumble/channel.py:39
+msgid "Tried to remove non-existent user \"%s\" from channel \"%s\""
+msgstr "Tried to remove non-existent user \"%s\" from channel \"%s\""
+
+#: system/protocols/irc/channel.py:44
+msgid "Tried to remove non-existent mode \"%s\" from channel \"%s\""
+msgstr "Tried to remove non-existent mode \"%s\" from channel \"%s\""
+
+#: system/protocols/irc/protocol.py:92
+msgid "Setting up.."
+msgstr "Setting up.."
+
+#: system/protocols/irc/protocol.py:100
+msgid "Unable to import the SSL library. SSL will not be available."
+msgstr "Unable to import the SSL library. SSL will not be available."
+
+#: system/protocols/irc/protocol.py:127
+msgid "No ctcp_flood_protection block in config - using default values"
+msgstr "No ctcp_flood_protection block in config - using default values"
+
+#: system/protocols/irc/protocol.py:134
+msgid "Config doesn't contain network/password entry"
+msgstr "Config doesn't contain network/password entry"
+
+#: system/protocols/irc/protocol.py:146
+msgid "Binding to address: %s"
+msgstr "Binding to address: %s"
+
+#: system/protocols/irc/protocol.py:153
+msgid "SSL is not available but was requested in the configuration."
+msgstr "SSL is not available but was requested in the configuration."
+
+#: system/protocols/irc/protocol.py:155
+msgid ""
+"IRC will be unavailable until SSL is fixed or is disabled in the "
+"configuration."
+msgstr ""
+"IRC will be unavailable until SSL is fixed or is disabled in the "
+"configuration."
+
+#: system/protocols/irc/protocol.py:164
+msgid "Connecting with SSL"
+msgstr "Connecting with SSL"
+
+#: system/protocols/irc/protocol.py:174
+msgid "Connecting without SSL"
+msgstr "Connecting without SSL"
+
+#: system/protocols/irc/protocol.py:187
+msgid "Protocol shutdown"
+msgstr "Protocol shutdown"
+
+#: system/protocols/irc/protocol.py:204
+msgid "SERVER -> %s"
+msgstr "SERVER -> %s"
+
+#: system/protocols/irc/protocol.py:264
+msgid "Scheduling Deferreds for signing on and joining channels"
+msgstr "Scheduling Deferreds for signing on and joining channels"
+
+#: system/protocols/irc/protocol.py:273
+msgid "Joined channel: %s"
+msgstr "Joined channel: %s"
+
+#: system/protocols/irc/protocol.py:283
+msgid "Parted channel: %s"
+msgstr "Parted channel: %s"
+
+#: system/protocols/irc/protocol.py:293
+msgid "Kicked from %s by %s: %s"
+msgstr "Kicked from %s by %s: %s"
+
+#: system/protocols/irc/protocol.py:310 system/protocols/irc/protocol.py:316
+msgid "Rejoining in %s seconds.."
+msgstr "Rejoining in %s seconds.."
+
+#: system/protocols/irc/protocol.py:324
+msgid "Nick changed to %s"
+msgstr "Nick changed to %s"
+
+#: system/protocols/irc/protocol.py:368
+#: system/protocols/mumble/protocol.py:699
+msgid "%s is not authorized to use the %s command"
+msgstr "%s is not authorized to use the %s command"
+
+#: system/protocols/irc/protocol.py:372
+#: system/protocols/mumble/protocol.py:703
+msgid "Command not found: %s"
+msgstr "Command not found: %s"
+
+#: system/protocols/irc/protocol.py:375
+#: system/protocols/mumble/protocol.py:706
+msgid "An error occured while running the %s command: %s"
+msgstr "An error occured while running the %s command: %s"
+
+#: system/protocols/irc/protocol.py:389
+msgid "Message from irregular user: %s"
+msgstr "Message from irregular user: %s"
+
+#: system/protocols/irc/protocol.py:423
+msgid "Notice from irregular user: %s"
+msgstr "Notice from irregular user: %s"
+
+#: system/protocols/irc/protocol.py:464
+msgid "First CTCP in over %s seconds - resetting counter"
+msgstr "First CTCP in over %s seconds - resetting counter"
+
+#: system/protocols/irc/protocol.py:474
+msgid "Too many CTCPs received - blocking"
+msgstr "Too many CTCPs received - blocking"
+
+#: system/protocols/irc/protocol.py:484
+msgid "CTCP from irregular user: %s"
+msgstr "CTCP from irregular user: %s"
+
+#: system/protocols/irc/protocol.py:512
+msgid "%s joined %s"
+msgstr "%s joined %s"
+
+#: system/protocols/irc/protocol.py:520
+msgid "%s parted %s"
+msgstr "%s parted %s"
+
+#: system/protocols/irc/protocol.py:531
+msgid "%s was kicked from %s by %s: %s"
+msgstr "%s was kicked from %s by %s: %s"
+
+#: system/protocols/irc/protocol.py:549
+msgid "%s has left IRC: %s"
+msgstr "%s has left IRC: %s"
+
+#: system/protocols/irc/protocol.py:580
+msgid "%s sets mode %s: %s%s %s"
+msgstr "%s sets mode %s: %s%s %s"
+
+#: system/protocols/irc/protocol.py:588
+msgid "Mode change from irregular user: %s"
+msgstr "Mode change from irregular user: %s"
+
+#: system/protocols/irc/protocol.py:614
+msgid "Rank mode %s set on invalid user %s in channel %s"
+msgstr "Rank mode %s set on invalid user %s in channel %s"
+
+#: system/protocols/irc/protocol.py:631
+msgid "Topic for %s: %s (set by %s)"
+msgstr "Topic for %s: %s (set by %s)"
+
+#: system/protocols/irc/protocol.py:705
+msgid "%s is now known as %s"
+msgstr "%s is now known as %s"
+
+#: system/protocols/irc/protocol.py:783
+msgid "RPL_ISUPPORT received: %s"
+msgstr "RPL_ISUPPORT received: %s"
+
+#: system/protocols/irc/protocol.py:802
+msgid " ===   MOTD   === "
+msgstr " ===   MOTD   === "
+
+#: system/protocols/irc/protocol.py:805
+msgid " === END MOTD ==="
+msgstr " === END MOTD ==="
+
+#: system/protocols/irc/protocol.py:856
+msgid "Unable to join %s - Channel is invite-only"
+msgstr "Unable to join %s - Channel is invite-only"
+
+#: system/protocols/irc/protocol.py:864
+msgid "Cannot do command '%s': %s"
+msgstr "Cannot do command '%s': %s"
+
+#: system/protocols/irc/protocol.py:874
+msgid "%s created by %s (%s)"
+msgstr "%s created by %s (%s)"
+
+#: system/protocols/irc/protocol.py:908
+msgid "VHOST set to %s by %s"
+msgstr "VHOST set to %s by %s"
+
+#: system/protocols/irc/protocol.py:924
+msgid "Invited to %s by %s."
+msgstr "Invited to %s by %s."
+
+#: system/protocols/irc/protocol.py:930
+msgid "Automatically joining %s.."
+msgstr "Automatically joining %s.."
+
+#: system/protocols/irc/protocol.py:1053
+msgid "Unexpected status in WHO response for user %s: %s"
+msgstr "Unexpected status in WHO response for user %s: %s"
+
+#: system/protocols/irc/protocol.py:1072
+msgid "Lost track of user: %s"
+msgstr "Lost track of user: %s"
+
+#: system/protocols/irc/rank.py:53
+msgid "First argument must be of type Rank or all arguments must be given"
+msgstr "First argument must be of type Rank or all arguments must be given"
+
+#: system/protocols/irc/user.py:37
+msgid "Tried to remove non-existent channel \"%s\" from user \"%s\""
+msgstr "Tried to remove non-existent channel \"%s\" from user \"%s\""
+
+#: system/protocols/mumble/protocol.py:146
+msgid "Attempting to load certificate file"
+msgstr "Attempting to load certificate file"
+
+#: system/protocols/mumble/protocol.py:151
+msgid "Certificate file does not exist - generating..."
+msgstr "Certificate file does not exist - generating..."
+
+#: system/protocols/mumble/protocol.py:197
+msgid "Loaded specified certificate file"
+msgstr "Loaded specified certificate file"
+
+#: system/protocols/mumble/protocol.py:200
+msgid "Could not import OpenSSL - cannot connect with certificate file"
+msgstr "Could not import OpenSSL - cannot connect with certificate file"
+
+#: system/protocols/mumble/protocol.py:203
+msgid "Could not load cert file"
+msgstr "Could not load cert file"
+
+#: system/protocols/mumble/protocol.py:205
+msgid "Unknown error while loading certificate file"
+msgstr "Unknown error while loading certificate file"
+
+#: system/protocols/mumble/protocol.py:210
+msgid "No certificate specified - connecting without certificate"
+msgstr "No certificate specified - connecting without certificate"
+
+#: system/protocols/mumble/protocol.py:215
+msgid "Disconnecting: Protocol shutdown"
+msgstr "Disconnecting: Protocol shutdown"
+
+#: system/protocols/mumble/protocol.py:219
+msgid "Connected to server."
+msgstr "Connected to server."
+
+#: system/protocols/mumble/protocol.py:279
+msgid "Message ID not available."
+msgstr "Message ID not available."
+
+#: system/protocols/mumble/protocol.py:286
+msgid "Need to fill data"
+msgstr "Need to fill data"
+
+#: system/protocols/mumble/protocol.py:299
+msgid "Exception while handling data."
+msgstr "Exception while handling data."
+
+#: system/protocols/mumble/protocol.py:320
+msgid "Connected to Murmur v%s"
+msgstr "Connected to Murmur v%s"
+
+#: system/protocols/mumble/protocol.py:325
+msgid "Could not connect to server: %s - %s"
+msgstr "Could not connect to server: %s - %s"
+
+#: system/protocols/mumble/protocol.py:370
+msgid "===   Welcome message   ==="
+msgstr "===   Welcome message   ==="
+
+#: system/protocols/mumble/protocol.py:373
+msgid "=== End welcome message ==="
+msgstr "=== End welcome message ==="
+
+#: system/protocols/mumble/protocol.py:423
+msgid "User left: %s"
+msgstr "User left: %s"
+
+#: system/protocols/mumble/protocol.py:442
+msgid "Unknown message type: %s"
+msgstr "Unknown message type: %s"
+
+#: system/protocols/mumble/protocol.py:443
+msgid ""
+"Received message '%s' (%d):\n"
+"%s"
+msgstr ""
+"Received message '%s' (%d):\n"
+"%s"
+
+#: system/protocols/mumble/protocol.py:473
+msgid "Channel link: %s to %s"
+msgstr "Channel link: %s to %s"
+
+#: system/protocols/mumble/protocol.py:482
+msgid "New channel: %s"
+msgstr "New channel: %s"
+
+#: system/protocols/mumble/protocol.py:486
+msgid "Channel link added: %s to %s"
+msgstr "Channel link added: %s to %s"
+
+#: system/protocols/mumble/protocol.py:499
+msgid "Channel link removed: %s from %s"
+msgstr "Channel link removed: %s from %s"
+
+#: system/protocols/mumble/protocol.py:526
+msgid "User joined: %s"
+msgstr "User joined: %s"
+
+#: system/protocols/mumble/protocol.py:543
+msgid "No channel with id '%s'"
+msgstr "No channel with id '%s'"
+
+#: system/protocols/mumble/protocol.py:550
+msgid "No channel with name '%s'"
+msgstr "No channel with name '%s'"
+
+#: system/protocols/mumble/protocol.py:553
+msgid "No channel found in config"
+msgstr "No channel found in config"
+
+#: system/protocols/mumble/protocol.py:555
+msgid "Config is missing 'channel' section"
+msgstr "Config is missing 'channel' section"
+
+#: system/protocols/mumble/protocol.py:565
+msgid "User moved channel: %s from %s to %s by %s"
+msgstr "User moved channel: %s from %s to %s by %s"
+
+#: system/protocols/mumble/protocol.py:580
+msgid "User was muted: %s by %s"
+msgstr "User was muted: %s by %s"
+
+#: system/protocols/mumble/protocol.py:583
+msgid "User was unmuted: %s by %s"
+msgstr "User was unmuted: %s by %s"
+
+#: system/protocols/mumble/protocol.py:593
+msgid "User was deafened: %s by %s"
+msgstr "User was deafened: %s by %s"
+
+#: system/protocols/mumble/protocol.py:596
+msgid "User was undeafened: %s by %s"
+msgstr "User was undeafened: %s by %s"
+
+#: system/protocols/mumble/protocol.py:605
+msgid "User was suppressed: %s"
+msgstr "User was suppressed: %s"
+
+#: system/protocols/mumble/protocol.py:607
+msgid "User was unsuppressed: %s"
+msgstr "User was unsuppressed: %s"
+
+#: system/protocols/mumble/protocol.py:616
+msgid "User muted themselves: %s"
+msgstr "User muted themselves: %s"
+
+#: system/protocols/mumble/protocol.py:618
+msgid "User unmuted themselves: %s"
+msgstr "User unmuted themselves: %s"
+
+#: system/protocols/mumble/protocol.py:627
+msgid "User deafened themselves: %s"
+msgstr "User deafened themselves: %s"
+
+#: system/protocols/mumble/protocol.py:629
+msgid "User undeafened themselves: %s"
+msgstr "User undeafened themselves: %s"
+
+#: system/protocols/mumble/protocol.py:639
+msgid "User was given priority speaker: %s by %s"
+msgstr "User was given priority speaker: %s by %s"
+
+#: system/protocols/mumble/protocol.py:643
+msgid "User was revoked priority speaker: %s by %s"
+msgstr "User was revoked priority speaker: %s by %s"
+
+#: system/protocols/mumble/protocol.py:654
+msgid "User started recording: %s"
+msgstr "User started recording: %s"
+
+#: system/protocols/mumble/protocol.py:656
+msgid "User stopped recording: %s"
+msgstr "User stopped recording: %s"
+
+#: system/protocols/mumble/protocol.py:824
+msgid "Sending text message: %s"
+msgstr "Sending text message: %s"
+
+#: system/protocols/mumble/protocol.py:917
+msgid "Channel: %s"
+msgstr "Channel: %s"
+
+#: system/protocols/mumble/protocol.py:918
+msgid "Mute: %s"
+msgstr "Mute: %s"
+
+#: system/protocols/mumble/protocol.py:919
+msgid "Deaf: %s"
+msgstr "Deaf: %s"
+
+#: system/protocols/mumble/protocol.py:920
+msgid "Suppressed: %s"
+msgstr "Suppressed: %s"
+
+#: system/protocols/mumble/protocol.py:921
+msgid "Self mute: %s"
+msgstr "Self mute: %s"
+
+#: system/protocols/mumble/protocol.py:922
+msgid "Self deaf: %s"
+msgstr "Self deaf: %s"
+
+#: system/protocols/mumble/protocol.py:923
+msgid "Priority speaker: %s"
+msgstr "Priority speaker: %s"
+
+#: system/protocols/mumble/protocol.py:924
+msgid "Recording: %s"
+msgstr "Recording: %s"
+
+#: system/protocols/mumble/protocol.py:940
+msgid "Users {"
+msgstr "Users {"
+
+#: system/storage/config.py:108 system/storage/data.py:101
+msgid "Invalid callback supplied!"
+msgstr "Invalid callback supplied!"
+
+#: system/storage/config.py:162 system/storage/config.py:291
+msgid "File not found: %s"
+msgstr "File not found: %s"
+
+#: system/storage/config.py:176 system/storage/config.py:305
+#: system/storage/config.py:426 system/storage/data.py:186
+#: system/storage/data.py:196 system/storage/data.py:350
+#: system/storage/data.py:359 system/storage/data.py:479
+#: system/storage/data.py:489
+msgid "Error running callback %s"
+msgstr "Error running callback %s"
+
+#: system/storage/config.py:208 system/storage/config.py:345
+#: system/storage/data.py:250 system/storage/data.py:555
+msgid "Error writing file"
+msgstr "Error writing file"
+
+#: system/storage/config.py:234 system/storage/config.py:237
+#: system/storage/config.py:371 system/storage/config.py:374
+#: system/storage/config.py:455 system/storage/config.py:458
+msgid "Configuration objects are read-only!"
+msgstr "Configuration objects are read-only!"
+
+#: system/storage/data.py:260
+msgid ""
+"# This is the data in memory, and may not actually be what's in the file.\n"
+"\n"
+"%s"
+msgstr ""
+"# This is the data in memory, and may not actually be what's in the file.\n"
+"\n"
+"%s"
+
+#: system/storage/data.py:709
+msgid "Parsed module: %s"
+msgstr "Parsed module: %s"
+
+#: system/storage/files.py:45
+msgid "Type '%s' is unknown or not supported for %s files."
+msgstr "Type '%s' is unknown or not supported for %s files."
+
+#: system/storage/files.py:65
+msgid "This file is not ready for use."
+msgstr "This file is not ready for use."
+
+#: system/storage/files.py:74
+msgid "Only the storage manager can make a file ready."
+msgstr "Only the storage manager can make a file ready."
+
+#: system/storage/files.py:81
+msgid "Only the storage manager can set the file owner."
+msgstr "Only the storage manager can set the file owner."
+
+#: system/storage/files.py:97
+msgid "Only the storage manager can release files."
+msgstr "Only the storage manager can release files."
+
+#: system/storage/manager.py:70 system/storage/manager.py:111
+#: system/storage/manager.py:121
+msgid "Data file %s is owned by another object."
+msgstr "Data file %s is owned by another object."
+
+#: system/storage/manager.py:87
+msgid "Config file %s is owned by another object."
+msgstr "Config file %s is owned by another object."
+
+#: system/storage/manager.py:101 system/storage/manager.py:129
+msgid "Unknown storage type: %s"
+msgstr "Unknown storage type: %s"
+
+#: utils/console.py:37
+msgid "Unable to get the size of this terminal."
+msgstr "Unable to get the size of this terminal."
+
+#: utils/console.py:134
+msgid "Loaded: %s, %s"
+msgstr "Loaded: %s, %s"
+
+#: utils/console.py:155
+msgid "Loaded: %s"
+msgstr "Loaded: %s"
+
+#: utils/irc.py:59
+msgid "Hostmask must be in the form '*!*@*'"
+msgstr "Hostmask must be in the form '*!*@*'"
+
+#: utils/irc.py:141
+msgid "Invalid case mapping: %s"
+msgstr "Invalid case mapping: %s"
+
+#: utils/log.py:203
+msgid "Logger name cannot be longer than 20 characters."
+msgstr "Logger name cannot be longer than 20 characters."
+
+#: utils/log.py:247
+msgid "Created logger."
+msgstr "Created logger."
+
+#: utils/log.py:277
+msgid "*** LOGFILE OPENED: %s ***"
+msgstr "*** LOGFILE OPENED: %s ***"
+
+#: utils/log.py:308
+msgid ""
+"*** LOGFILE CLOSED: %s ***\n"
+"\n"
+msgstr ""
+"*** LOGFILE CLOSED: %s ***\n"
+"\n"
+
+#: utils/misc.py:70
+msgid "Word %s is longer than %s characters"
+msgstr "Word %s is longer than %s characters"

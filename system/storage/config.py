@@ -31,6 +31,9 @@ from system.storage import formats
 from utils.misc import output_exception
 from utils.log import getLogger
 
+from system.translations import Translations
+_ = Translations().get()
+
 
 class Config(object):
     """
@@ -100,12 +103,9 @@ class Config(object):
         :type func: function
         """
         if callable(func):
-            self.logger.debug("%s | Adding callback: %s" %
-                              (self.filename, func)
-                              )
             self.callbacks.append(func)
         else:
-            raise ValueError("Invalid callback supplied!")
+            raise ValueError(_("Invalid callback supplied!"))
 
     def reload(self, run_callbacks=True):
         """
@@ -159,7 +159,7 @@ class YamlConfig(Config):
         Reload configuration data from the filesystem.
         """
         if not os.path.exists(self.filename):
-            self.logger.error("File not found: %s" % self.filename)
+            self.logger.error(_("File not found: %s") % self.filename)
             return False
         try:
             self.fh = open(self.filename, "r")
@@ -173,7 +173,7 @@ class YamlConfig(Config):
                     try:
                         callback()
                     except:
-                        self.logger.exception("Error running callback %s"
+                        self.logger.exception(_("Error running callback %s")
                                               % callback)
             return True
 
@@ -205,7 +205,7 @@ class YamlConfig(Config):
             fh.flush()
             fh.close()
         except Exception:
-            self.logger.exception("Error writing file")
+            self.logger.exception(_("Error writing file"))
             success = False
         finally:
             self.reload()
@@ -231,10 +231,10 @@ class YamlConfig(Config):
         return self.data.__getitem__(y)
 
     def __setitem__(self, key, value):
-        raise RuntimeError("Configuration objects are read-only!")
+        raise RuntimeError(_("Configuration objects are read-only!"))
 
     def __delitem__(self, key):
-        raise RuntimeError("Configuration objects are read-only!")
+        raise RuntimeError(_("Configuration objects are read-only!"))
 
     def __len__(self):
         return self.data.__len__()
@@ -288,7 +288,7 @@ class JSONConfig(Config):
         Reload configuration data from the filesystem.
         """
         if not os.path.exists(self.filename):
-            self.logger.error("File not found: %s" % self.filename)
+            self.logger.error(_("File not found: %s") % self.filename)
             return False
         try:
             self.fh = open(self.filename, "r")
@@ -302,7 +302,7 @@ class JSONConfig(Config):
                     try:
                         callback()
                     except:
-                        self.logger.exception("Error running callback %s"
+                        self.logger.exception(_("Error running callback %s")
                                               % callback)
             return True
 
@@ -342,7 +342,7 @@ class JSONConfig(Config):
             fh.flush()
             fh.close()
         except Exception:
-            self.logger.exception("Error writing file")
+            self.logger.exception(_("Error writing file"))
             success = False
         finally:
             self.reload()
@@ -368,10 +368,10 @@ class JSONConfig(Config):
         return self.data.__getitem__(y)
 
     def __setitem__(self, key, value):
-        raise RuntimeError("Configuration objects are read-only!")
+        raise RuntimeError(_("Configuration objects are read-only!"))
 
     def __delitem__(self, key):
-        raise RuntimeError("Configuration objects are read-only!")
+        raise RuntimeError(_("Configuration objects are read-only!"))
 
     def __len__(self):
         return self.data.__len__()
@@ -423,7 +423,7 @@ class MemoryConfig(Config):
                 try:
                     callback()
                 except:
-                    self.logger.exception("Error running callback %s"
+                    self.logger.exception(_("Error running callback %s")
                                           % callback)
         return True
 
@@ -452,10 +452,10 @@ class MemoryConfig(Config):
         return self.data.__getitem__(y)
 
     def __setitem__(self, key, value):
-        raise RuntimeError("Configuration objects are read-only!")
+        raise RuntimeError(_("Configuration objects are read-only!"))
 
     def __delitem__(self, key):
-        raise RuntimeError("Configuration objects are read-only!")
+        raise RuntimeError(_("Configuration objects are read-only!"))
 
     def __len__(self):
         return self.data.__len__()

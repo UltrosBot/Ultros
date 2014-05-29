@@ -25,6 +25,10 @@ from system.storage.manager import StorageManager
 
 from .catcher import Catcher
 
+from system.translations import Translations
+_ = Translations().get()
+__ = Translations().get_m()
+
 
 class URLsPlugin(plugin.PluginObject):
 
@@ -44,21 +48,21 @@ class URLsPlugin(plugin.PluginObject):
                      "text/x-server-parsed-html", "application/xhtml+xml"]
 
     def setup(self):
-        self.logger.debug("Entered setup method.")
+        self.logger.debug(_("Entered setup method."))
         self.storage = StorageManager()
         try:
             self.config = self.storage.get_file(self, "config", YAML,
                                                 "plugins/urls.yml")
         except Exception:
-            self.logger.exception("Error loading configuration!")
+            self.logger.exception(_("Error loading configuration!"))
         else:
             if not self.config.exists:
-                self.logger.warn("Unable to find config/plugins/urls.yml")
+                self.logger.warn(_("Unable to find config/plugins/urls.yml"))
             else:
                 self.content_types = self.config["content_types"]
                 self.spoofing = self.config["spoofing"]
 
-        self.logger.debug("Spoofing: %s" % self.spoofing)
+        self.logger.debug(_("Spoofing: %s") % self.spoofing)
 
         self.channels = self.storage.get_file(self, "data", YAML,
                                               "plugins/urls/channels.yml")
@@ -142,11 +146,11 @@ class URLsPlugin(plugin.PluginObject):
                         self.catcher.insert_url(url, source.nickname,
                                                 target.name, protocol.name)
                     except:
-                        self.logger.exception("Error catching URL")
+                        self.logger.exception(_("Error catching URL"))
 
                 title, domain = self.parse_title(url)
 
-                self.logger.debug("Title: %s" % title)
+                self.logger.debug(_("Title: %s") % title)
 
                 if isinstance(target, Channel):
                     if protocol.name not in self.channels:
@@ -189,22 +193,23 @@ class URLsPlugin(plugin.PluginObject):
                     else:
                         source.respond("\"%s\" at %s" % (title, domain))
                 else:
-                    self.logger.warn("Unknown target type: %s [%s]"
+                    self.logger.warn(_("Unknown target type: %s [%s]")
                                      % (target, target.__class__))
 
     def urls_command(self, protocol, caller, source, command, raw_args,
                      parsed_args):
         args = raw_args.split()  # Quick fix for new command handler signature
         if not isinstance(source, Channel):
-            caller.respond("This command can only be used in a channel.")
+            caller.respond(__("This command can only be used in a channel."))
             return
         if len(args) < 2:
-            caller.respond("Usage: {CHARS}urls <setting> <value>")
-            caller.respond("Operations: set <on/off> - Enable or disable title"
-                           " parsing for the current channel")
-            caller.respond("            shortener <name> - Set which URL "
-                           "shortener to use for the current channel")
-            caller.respond("            Shorteners: %s"
+            caller.respond(__("Usage: {CHARS}urls <setting> <value>"))
+            caller.respond(__("Operations: set <on/off> - Enable or disable "
+                              "title parsing for the current channel"))
+            caller.respond("            %s" % __("shortener <name> - Set "
+                                                 "which URL shortener to use "
+                                                 "for the current channel"))
+            caller.respond("            %s" % __("Shorteners: %s")
                            % ", ".join(self.shorteners.keys()))
             return
 
@@ -229,33 +234,38 @@ class URLsPlugin(plugin.PluginObject):
                 }
 
         if operation == "set":
-            if value not in ["on", "off"]:
-                caller.respond("Usage: {CHARS}urls set <on|off>")
+            if value not in [__("on"), __("off")]:
+                caller.respond(__("Usage: {CHARS}urls set <on|off>"))
             else:
                 with self.channels:
+                    if value == __("on"):
+                        value = "on"
+                    elif value == __("off"):
+                        value = "off"
                     self.channels[protocol.name][source.name]["status"] = value
-                caller.respond("Title passing for %s turned %s."
-                               % (source.name, value))
+                caller.respond(__("Title passing for %s turned %s.")
+                               % (source.name, __(value)))
         elif operation == "shortener":
             if value.lower() in self.shorteners:
                 with self.channels:
                     self.channels[protocol.name][source.name]["shortener"] \
                         = value.lower()
-                caller.respond("URL shortener for %s set to %s."
+                caller.respond(__("URL shortener for %s set to %s.")
                                % (source.name, value))
             else:
-                caller.respond("Unknown shortener: %s" % value)
+                caller.respond(__("Unknown shortener: %s") % value)
         else:
-            caller.respond("Unknown operation: '%s'." % operation)
+            caller.respond(__("Unknown operation: '%s'.") % operation)
 
     def _respond_shorten(self, result, source, handler):
         if result is not None:
             return source.respond(result)
-        return source.respond("Unable to shorten using handler %s. Poke the"
-                              "bot owner!" % handler)
+        return source.respond(__("Unable to shorten using handler %s. Poke the"
+                                 "bot owner!")
+                              % handler)
 
     def _respond_shorten_fail(self, failure, source, handler):
-        return source.respond("Error shortening url with handler %s: %s"
+        return source.respond(__("Error shortening url with handler %s: %s")
                               % (handler, failure))
 
     def shorten_command(self, protocol, caller, source, command, raw_args,
@@ -263,7 +273,7 @@ class URLsPlugin(plugin.PluginObject):
         args = parsed_args  # Quick fix for new command handler signature
         if not isinstance(source, Channel):
             if len(args) == 0:
-                caller.respond("Usage: {CHARS}shorten [url]")
+                caller.respond(__("Usage: {CHARS}shorten [url]"))
                 return
             else:
                 handler = "tinyurl"
@@ -275,14 +285,14 @@ class URLsPlugin(plugin.PluginObject):
                                    callbackArgs=(source, handler),
                                    errbackArgs=(source, handler))
                 except Exception as e:
-                    self.logger.exception("Error fetching short URL.")
-                    caller.respond("Error: %s" % e)
+                    self.logger.exception(_("Error fetching short URL."))
+                    caller.respond(__("Error: %s") % e)
                     return
         else:
             if protocol.name not in self.channels \
                or source.name not in self.channels[protocol.name] \
                or not len(self.channels[protocol.name][source.name]["last"]):
-                caller.respond("Nobody's pasted a URL here yet!")
+                caller.respond(__("Nobody's pasted a URL here yet!"))
                 return
             handler = self.channels[protocol.name][source.name]["shortener"]
             if len(handler) == 0:
@@ -291,8 +301,8 @@ class URLsPlugin(plugin.PluginObject):
                         = "tinyurl"
                 handler = "tinyurl"
             if handler not in self.shorteners:
-                caller.respond("Shortener '%s' not found - please set a new "
-                               "one!" % handler)
+                caller.respond(__("Shortener '%s' not found - please set a "
+                                  "new one!") % handler)
                 return
 
             url = self.channels[protocol.name][source.name]["last"]
@@ -307,8 +317,8 @@ class URLsPlugin(plugin.PluginObject):
                                callbackArgs=(source, handler),
                                errbackArgs=(source, handler))
             except Exception as e:
-                self.logger.exception("Error fetching short URL.")
-                caller.respond("Error: %s" % e)
+                self.logger.exception(_("Error fetching short URL."))
+                caller.respond(__("Error: %s") % e)
                 return
 
     def tinyurl(self, url):
@@ -317,7 +327,7 @@ class URLsPlugin(plugin.PluginObject):
 
     def parse_title(self, url, use_handler=True):
         domain = ""
-        self.logger.debug("Url: %s" % url)
+        self.logger.debug(_("Url: %s") % url)
         try:
             parsed = urlparse.urlparse(url)
             domain = parsed.hostname
@@ -329,7 +339,7 @@ class URLsPlugin(plugin.PluginObject):
                                               "192.168.0.0/16", "127.0.0.0/8"])
 
             if matches:
-                self.logger.warn("Prevented a portscan: %s" % url)
+                self.logger.warn(_("Prevented a portscan: %s") % url)
                 return None, None
 
             if domain.startswith("www."):
@@ -341,29 +351,30 @@ class URLsPlugin(plugin.PluginObject):
                     if result:
                         return to_unicode(result), None
                 except Exception:
-                    self.logger.exception("Error running handler, parsing "
-                                          "title normally.")
+                    self.logger.exception(_("Error running handler, parsing "
+                                            "title normally."))
 
-            self.logger.debug("Parsed domain: %s" % domain)
+            self.logger.debug(_("Parsed domain: %s") % domain)
 
             request = urllib2.Request(url)
             if domain in self.spoofing:
-                self.logger.debug("Custom spoofing for this domain found.")
+                self.logger.debug(_("Custom spoofing for this domain found."))
                 user_agent = self.spoofing[domain]
                 if user_agent:
-                    self.logger.debug("Spoofing user-agent: %s" % user_agent)
+                    self.logger.debug(_("Spoofing user-agent: %s")
+                                      % user_agent)
                     request.add_header("User-agent", user_agent)
                 else:
-                    self.logger.debug("Not spoofing user-agent.")
+                    self.logger.debug(_("Not spoofing user-agent."))
             else:
-                self.logger.debug("Spoofing Firefox as usual.")
+                self.logger.debug(_("Spoofing Firefox as usual."))
                 request.add_header('User-agent', 'Mozilla/5.0 (X11; U; Linux '
                                                  'i686; en-US; rv:1.9.0.1) '
                                                  'Gecko/2008071615 Fedora/3.0.'
                                                  '1-1.fc9-1.fc9 Firefox/3.0.1')
             response = urllib2.urlopen(request)
 
-            self.logger.debug("Info: %s" % response.info())
+            self.logger.debug(_("Info: %s") % response.info())
 
             headers = response.info().headers
             new_url = response.geturl()
@@ -374,8 +385,8 @@ class URLsPlugin(plugin.PluginObject):
             domain = parsed.hostname
 
             if _domain != domain:
-                self.logger.info("URL: %s" % new_url)
-                self.logger.info("Domain: %s" % domain)
+                self.logger.info(_("URL: %s") % new_url)
+                self.logger.info(_("Domain: %s") % domain)
 
                 ip = socket.gethostbyname(domain)
 
@@ -385,7 +396,7 @@ class URLsPlugin(plugin.PluginObject):
                                                   "127.0.0.0/8"])
 
                 if matches:
-                    self.logger.warn("Prevented a portscan: %s" % new_url)
+                    self.logger.warn(_("Prevented a portscan: %s") % new_url)
                     return None, None
 
                 if domain.startswith("www."):
@@ -397,8 +408,8 @@ class URLsPlugin(plugin.PluginObject):
                         if result:
                             return to_unicode(result), None
                     except Exception:
-                        self.logger.exception("Error running handler, parsing "
-                                              "title normally.")
+                        self.logger.exception(_("Error running handler,"
+                                                " parsing title normally."))
 
             headers_dict = {}
 
@@ -416,10 +427,10 @@ class URLsPlugin(plugin.PluginObject):
             if ";" in ct:
                 ct = ct.split(";")[0]
 
-            self.logger.debug("Content-type: %s" % repr(ct))
+            self.logger.debug(_("Content-type: %s") % repr(ct))
 
             if ct not in self.content_types:
-                self.logger.debug("Content-type is not allowed.")
+                self.logger.debug(_("Content-type is not allowed."))
                 return None, None
 
             page = response.read()
@@ -434,7 +445,7 @@ class URLsPlugin(plugin.PluginObject):
                 return None, None
         except Exception as e:
             if not str(e).lower() == "not viewing html":
-                self.logger.exception("Error parsing title.")
+                self.logger.exception(_("Error parsing title."))
                 return str(e), domain
             return None, None
 
@@ -443,7 +454,7 @@ class URLsPlugin(plugin.PluginObject):
                     (url, handler.lower()))
         r = txn.fetchone()
 
-        self.logger.debug("Result (SQL): %s" % repr(r))
+        self.logger.debug(_("Result (SQL): %s") % repr(r))
 
         if r is not None:
             return r[2]
@@ -457,16 +468,16 @@ class URLsPlugin(plugin.PluginObject):
         return None
 
     def shorten_url(self, url, handler):
-        self.logger.debug("URL: %s" % url)
-        self.logger.debug("Handler: %s" % handler)
+        self.logger.debug(_("URL: %s") % url)
+        self.logger.debug(_("Handler: %s") % handler)
 
         return self.shortened.runInteraction(self._shorten, url, handler)
 
     def add_handler(self, domain, handler):
         if domain.startswith("www."):
-            raise ValueError("Domain should not start with 'www.'")
+            raise ValueError(_("Domain should not start with 'www.'"))
         if domain not in self.handlers:
-            self.logger.debug("Handler registered for '%s': %s"
+            self.logger.debug(_("Handler registered for '%s': %s")
                               % (domain, handler))
             self.handlers[domain] = handler
             return True
@@ -474,7 +485,7 @@ class URLsPlugin(plugin.PluginObject):
 
     def add_shortener(self, name, handler):
         if name not in self.shorteners:
-            self.logger.debug("Shortener '%s' registered: %s"
+            self.logger.debug(_("Shortener '%s' registered: %s")
                               % (name, handler))
             self.shorteners[name] = handler
             return True

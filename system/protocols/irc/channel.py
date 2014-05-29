@@ -4,6 +4,9 @@ __author__ = 'Sean'
 
 from system.protocols.generic import channel
 
+from system.translations import Translations
+_ = Translations().get()
+
 
 class Channel(channel.Channel):
     def __init__(self, protocol, name):
@@ -23,7 +26,8 @@ class Channel(channel.Channel):
         except KeyError:
             # According to PEP8, this is easier to read on two lines <_<
             self.protocol.log.debug(
-                "Tried to remove non-existent user \"%s\" from channel \"%s\""
+                _("Tried to remove non-existent user \"%s\" from channel "
+                  "\"%s\"")
                 % (user, self))
 
     def set_mode(self, mode, arg=None):
@@ -37,7 +41,8 @@ class Channel(channel.Channel):
             del self._modes[mode]
         except KeyError:
             self.protocol.log.debug(
-                "Tried to remove non-existent mode \"%s\" from channel \"%s\""
+                _("Tried to remove non-existent mode \"%s\" from channel "
+                  "\"%s\"")
                 % (mode, self))
 
     def get_mode(self, mode):

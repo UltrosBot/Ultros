@@ -9,6 +9,9 @@ from system.singleton import Singleton
 from utils.log import getLogger
 from utils.misc import output_exception
 
+from system.translations import Translations
+_ = Translations().get()
+
 
 class CommandManager(object):
     """
@@ -86,15 +89,15 @@ class CommandManager(object):
             aliases = []
 
         if command in self.commands:
-            self.logger.warn("Object '%s' tried to register command '%s' but"
-                             "it's already been registered by object '%s'."
+            self.logger.warn(_("Object '%s' tried to register command '%s' but"
+                               "it's already been registered by object '%s'.")
                              % (owner,
                                 command,
                                 self.commands[command]["owner"])
                              )
             return False
 
-        self.logger.debug("Registering command: %s (%s)"
+        self.logger.debug(_("Registering command: %s (%s)")
                           % (command, owner))
         commandobj = {
             "f": handler,
@@ -106,11 +109,12 @@ class CommandManager(object):
 
         for alias in aliases:
             if alias in self.commands:
-                self.logger.warn("Failed to register command alias '%s' as it"
-                                 "already belongs to another command." % alias)
+                self.logger.warn(_("Failed to register command alias '%s' as "
+                                   "it already belongs to another command.")
+                                 % alias)
                 continue
 
-            self.logger.debug("Registering alias: %s -> %s (%s)"
+            self.logger.debug(_("Registering alias: %s -> %s (%s)")
                               % (alias, command, owner))
             self.commands[alias] = commandobj
         return True
@@ -127,7 +131,7 @@ class CommandManager(object):
         for key, value in current:
             if owner is value["owner"]:
                 del self.commands[key]
-                self.logger.debug("Unregistered command: %s" % key)
+                self.logger.debug(_("Unregistered command: %s") % key)
 
     def run_command(self, command, caller, source, protocol, args):
         """
@@ -229,7 +233,7 @@ class CommandManager(object):
         """
         for instance in self.auth_handlers:
             if isinstance(instance, handler.__class__):
-                self.logger.warn("Auth handler %s is already registered."
+                self.logger.warn(_("Auth handler %s is already registered.")
                                  % handler)
                 return False
 
@@ -249,8 +253,8 @@ class CommandManager(object):
         :rtype: Boolean
         """
         if self.perm_handler:
-            self.logger.warn("Two plugins are trying to provide permissions "
-                             "handlers. Only the first will be used!")
+            self.logger.warn(_("Two plugins are trying to provide permissions "
+                               "handlers. Only the first will be used!"))
             return False
         self.perm_handler = handler
         return True

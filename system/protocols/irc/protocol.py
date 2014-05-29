@@ -21,6 +21,9 @@ from utils.irc import IRCUtils
 from utils.log import getLogger
 from utils.misc import output_exception
 
+from system.translations import Translations
+_ = Translations().get()
+
 
 class Protocol(irc.IRCClient, ChannelsProtocol):
     """
@@ -86,7 +89,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         ChannelsProtocol.__init__(self, name, factory, config)
 
         self.log = getLogger(self.name)
-        self.log.info("Setting up..")
+        self.log.info(_("Setting up.."))
 
         try:
             from twisted.internet import ssl
@@ -94,8 +97,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         except ImportError:
             ssl = False
             self.ssl = False
-            self.log.warn("Unable to import the SSL library. "
-                          "SSL will not be available.")
+            self.log.warn(_("Unable to import the SSL library. "
+                            "SSL will not be available."))
             output_exception(self.log, logging.WARN)
 
         self.event_manager = EventManager()
@@ -121,14 +124,15 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             self._ctcp_flood_max_count = config["ctcp_flood_protection"][
                 "ctcp_count"]
         else:
-            self.log.info("No ctcp_flood_protection block in config - "
-                          "using default values")
+            self.log.info(_("No ctcp_flood_protection block in config - "
+                            "using default values"))
 
         try:
             if config["network"]["password"]:
                 self.password = config["network"]["password"]
         except KeyError:
-            self.log.warning("Config doesn't contain network/password entry")
+            self.log.warning(_("Config doesn't contain network/password "
+                               "entry"))
 
         self.nickname = self.identity["nick"]
 
@@ -139,17 +143,17 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         if binding is None:
             bindaddr = None
         else:
-            self.log.warn("Binding to address: %s" % binding)
+            self.log.warn(_("Binding to address: %s") % binding)
             bindaddr = (binding, 0)
 
         event = general_events.PreConnectEvent(self, config)
         self.event_manager.run_callback("PreConnect", event)
 
         if self.networking["ssl"] and not self.ssl:
-            self.log.error("SSL is not available but was requested in the "
-                           "configuration.")
-            self.log.error("IRC will be unavailable until SSL is fixed or is "
-                           "disabled in the configuration.")
+            self.log.error(_("SSL is not available but was requested in the "
+                             "configuration."))
+            self.log.error(_("IRC will be unavailable until SSL is fixed or "
+                             "is disabled in the configuration."))
 
             # Clean up so everything can be garbage-collected
             self.factory.manager.remove_protocol(self.name)
@@ -157,7 +161,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             return
 
         if self.networking["ssl"]:
-            self.log.debug("Connecting with SSL")
+            self.log.debug(_("Connecting with SSL"))
             reactor.connectSSL(
                 self.networking["address"],
                 self.networking["port"],
@@ -167,7 +171,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                 bindAddress=bindaddr  # ("192.168.1.2", 0)
             )
         else:
-            self.log.debug("Connecting without SSL")
+            self.log.debug(_("Connecting without SSL"))
             reactor.connectTCP(
                 self.networking["address"],
                 self.networking["port"],
@@ -180,7 +184,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         self.event_manager.run_callback("PostConnect", event)
 
     def shutdown(self):
-        self.sendLine("QUIT: Protocol shutdown")
+        self.sendLine("QUIT: %s" % _("Protocol shutdown"))
         self.transport.loseConnection()
 
     # endregion
@@ -197,7 +201,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         Overriding this because fuck Twisted unicode support.
         """
         if output:
-            self.log.info("SERVER -> %s" % line)
+            self.log.info(_("SERVER -> %s") % line)
 
         line = to_bytes(line)  # The magical line
 
@@ -257,7 +261,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             self.event_manager.run_callback("PostSetup", _event)
 
         self.log.debug(
-            "Scheduling Deferreds for signing on and joining channels")
+            _("Scheduling Deferreds for signing on and joining channels"))
 
         reactor.callLater(5, do_sign_on)
 
@@ -266,7 +270,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
     def joined(self, channel):
         """ Called when we join a channel. """
-        self.log.info("Joined channel: %s" % channel)
+        self.log.info(_("Joined channel: %s") % channel)
         chan_obj = Channel(self, channel)
         # Do user-tracking in irc_JOIN
 
@@ -276,7 +280,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
     def left(self, channel):
         """ Called when we part a channel.
         This could include opers using /sapart. """
-        self.log.info("Parted channel: %s" % channel)
+        self.log.info(_("Parted channel: %s") % channel)
         chan_obj = self.get_channel(channel)
         # User-tracking stuff:
         self.self_part_channel(chan_obj)
@@ -286,7 +290,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
     def kickedFrom(self, channel, kicker, message):
         """ Called when we get kicked from a channel. """
-        self.log.info("Kicked from %s by %s: %s" % (channel, kicker, message))
+        self.log.info(_("Kicked from %s by %s: %s")
+                      % (channel, kicker, message))
 
         user_obj = self.get_user(nickname=kicker)
         channel_obj = self.get_channel(channel)
@@ -302,13 +307,13 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             password = self.config["channels"][channel]["key"]
 
         if self.config["kick_rejoin"]:
-            self.log.info("Rejoining in %s seconds.." %
+            self.log.info(_("Rejoining in %s seconds..") %
                           self.config["rejoin_delay"])
             reactor.callLater(self.config["rejoin_delay"], self.join_channel,
                               channel, password)
         elif channel in self.config["channels"]:
             if self.config["channels"][channel].get("kick_rejoin", False):
-                self.log.info("Rejoining in %s seconds.." %
+                self.log.info(_("Rejoining in %s seconds..") %
                               self.config["rejoin_delay"])
                 reactor.callLater(self.config["rejoin_delay"],
                                   self.join_channel,
@@ -316,7 +321,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
     def nickChanged(self, nick):
         """ Called when our nick is forcibly changed. """
-        self.log.info("Nick changed to %s" % nick)
+        self.log.info(_("Nick changed to %s") % nick)
 
         event = general_events.NameChangedSelf(self, nick)
         self.event_manager.run_callback("NameChangedSelf", event)
@@ -360,15 +365,15 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                 pass  # Command ran successfully
             else:  # There's a problem
                 if b is True:  # Unable to authorize
-                    self.log.warn("%s is not authorized to use the %s "
-                                  "command"
+                    self.log.warn(_("%s is not authorized to use the %s "
+                                    "command")
                                   % (source.nickname, command))
                 elif b is None:  # Command not found
-                    self.log.debug("Command not found: %s" % command)
+                    self.log.debug(_("Command not found: %s") % command)
                     return False
                 else:  # Exception occured
-                    self.log.warn("An error occured while running the %s "
-                                  "command: %s" % (command, b))
+                    self.log.warn(_("An error occured while running the %s "
+                                    "command: %s") % (command, b))
             if event.printable:
                 self.log.info(event.printable)
             return True
@@ -381,7 +386,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             user_obj = self._get_user_from_user_string(user)
         except Exception:
             # Privmsg from the server itself and things (if that happens)
-            self.log.debug("Message from irregular user: %s" % user)
+            self.log.debug(_("Message from irregular user: %s") % user)
             user_obj = User(self, nickname=user, is_tracked=False)
 
         if self.utils.compare_nicknames(channel, self.nickname):
@@ -415,7 +420,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             user_obj = self._get_user_from_user_string(user)
         except:
             # Notices from the server itself and things
-            self.log.debug("Notice from irregular user: %s" % user)
+            self.log.debug(_("Notice from irregular user: %s") % user)
             user_obj = User(self, nickname=user, is_tracked=False)
 
         if self.utils.compare_nicknames(channel, self.nickname):
@@ -456,7 +461,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         if self._ctcp_flood_enabled and action != "ACTION":
             if self._ctcp_flood_last + self._ctcp_flood_time < time.time():
                 self.log.debug(
-                    "First CTCP in over %s seconds - resetting counter" %
+                    _("First CTCP in over %s seconds - resetting counter") %
                     self._ctcp_flood_time
                 )
                 # First CTCP in a while - reset counter
@@ -466,7 +471,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             self._ctcp_flood_count += 1
 
             if self._ctcp_flood_count > self._ctcp_flood_max_count:
-                self.log.info("Too many CTCPs received - blocking")
+                self.log.info(_("Too many CTCPs received - blocking"))
                 # Received too many messages - block
                 should_block = True
                 # Reset timer so we continue blocking until the rate slows down
@@ -476,7 +481,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             user_obj = self._get_user_from_user_string(user)
         except:
             # CTCP from the server itself and things (if that happens)
-            self.log.debug("CTCP from irregular user: %s" % user)
+            self.log.debug(_("CTCP from irregular user: %s") % user)
             user_obj = User(self, nickname=user, is_tracked=False)
 
         if self.utils.compare_nicknames(channel, self.nickname):
@@ -504,7 +509,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
     def userJoined(self, user, channel):
         """ Called when someone else joins a channel we're in. """
-        self.log.info("%s joined %s" % (user.nickname, channel))
+        self.log.info(_("%s joined %s") % (user.nickname, channel))
         # Note: User tracking is done in irc_JOIN rather than here
 
         event = irc_events.UserJoinedEvent(self, channel, user)
@@ -512,7 +517,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
     def userLeft(self, user, channel):
         """ Called when someone else leaves a channel we're in. """
-        self.log.info("%s parted %s" % (user, channel))
+        self.log.info(_("%s parted %s") % (user, channel))
         chan_obj = self.get_channel(channel)
         user_obj = self.get_user(nickname=user)
         # User-tracking stuff
@@ -523,7 +528,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
     def userKicked(self, kickee, channel, kicker, message):
         """ Called when someone else is kicked from a channel we're in. """
-        self.log.info("%s was kicked from %s by %s: %s" % (
+        self.log.info(_("%s was kicked from %s by %s: %s") % (
             kickee, channel, kicker, message))
         kickee_obj = self.get_user(nickname=kickee)
         kicker_obj = self.get_user(nickname=kicker)
@@ -541,7 +546,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
     def irc_QUIT(self, user, params):
         """ Called when someone else quits IRC. """
         quitmessage = params[0]
-        self.log.info("%s has left IRC: %s" % (user, quitmessage))
+        self.log.info(_("%s has left IRC: %s") % (user, quitmessage))
         # User-tracking stuff
         user_obj = self.get_user(fullname=user)
         temp_chans = set(user_obj.channels)
@@ -572,7 +577,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         method should be placed elsewhere and call user/channelModeChanged()
         instead.
         """
-        self.log.info("%s sets mode %s: %s%s %s" % (
+        self.log.info(_("%s sets mode %s: %s%s %s") % (
             user, channel, "+" if action else "-", modes, args))
 
         # Get user/channel objects
@@ -580,7 +585,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             user_obj = self._get_user_from_user_string(user)
         except:
             # Mode change from the server itself and things
-            self.log.debug("Mode change from irregular user: %s" % user)
+            self.log.debug(_("Mode change from irregular user: %s") % user)
             user_obj = User(self, nickname=user, is_tracked=False)
             # Note: Unlike in privmsg/notice/ctcpQuery, channel_obj = None when
         # the target is ourself, rather than a user object. Perhaps this should
@@ -606,7 +611,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                         user_obj.remove_rank_in_channel(channel, rank)
                 else:
                     self.log.warning(
-                        "Rank mode %s set on invalid user %s in channel %s"
+                        _("Rank mode %s set on invalid user %s in channel %s")
                         % (modes[x], args[x], channel))
             else:
                 # Other channel mode
@@ -623,7 +628,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         """ Called when the topic is updated in a channel -
         also called when we join a channel. """
         self.log.info(
-            "Topic for %s: %s (set by %s)" % (channel, newTopic, user))
+            _("Topic for %s: %s (set by %s)") % (channel, newTopic, user)
+        )
 
         user_obj = self.get_user(nickname=user) or User(self, nickname=user,
                                                         is_tracked=False)
@@ -696,7 +702,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             user_obj = User(self, newnick, is_tracked=False)
         user_obj.nickname = newnick
 
-        self.log.info("%s is now known as %s" % (oldnick, newnick))
+        self.log.info(_("%s is now known as %s") % (oldnick, newnick))
 
         event = general_events.NameChanged(self, user_obj, oldnick)
         self.event_manager.run_callback("NameChanged", event)
@@ -774,7 +780,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
     def irc_RPL_ISUPPORT(self, prefix, params):
         irc.IRCClient.irc_RPL_ISUPPORT(self, prefix, params)
         for param in params[1:-1]:
-            self.log.debug("RPL_ISUPPORT received: %s" % param)
+            self.log.debug(_("RPL_ISUPPORT received: %s") % param)
             prm = param.split("=")[0].strip("-")
             # prm is the param changed - don't bother parsing the value since
             # it can be grabbed from self.supported with this:
@@ -793,10 +799,10 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
     def receivedMOTD(self, motd):
         """ Called when we receive the MOTD. """
-        self.log.info(" ===   MOTD   === ")
+        self.log.info(_(" ===   MOTD   === "))
         for line in motd:
             self.log.info(line)
-        self.log.info(" === END MOTD ===")
+        self.log.info(_(" === END MOTD ==="))
 
         event = irc_events.MOTDReceivedEvent(self, motd)
         self.event_manager.run_callback("IRC/MOTDReceived", event, True)
@@ -847,7 +853,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         elif command == "ERR_INVITEONLYCHAN":
             channel = params[1]
             self.log.warn(
-                "Unable to join %s - Channel is invite-only" % channel)
+                _("Unable to join %s - Channel is invite-only") % channel)
 
             event = irc_events.InviteOnlyChannelErrorEvent(self,
                                                            Channel(self,
@@ -855,8 +861,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             self.event_manager.run_callback("IRC/InviteOnlyError", event)
 
         elif str(command) == "972" or str(command) == "ERR_UNKNOWNCOMMAND":
-            self.log.warn("Cannot do command '%s': %s" % (params[1],
-                                                          params[2]))
+            self.log.warn(_("Cannot do command '%s': %s") % (params[1],
+                                                             params[2]))
             # Called when some command we attempted can't be done.
 
             event = irc_events.CannotDoCommandErrorEvent(self, params[1],
@@ -865,7 +871,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
         elif str(command) == "333":  # Channel creation details
             _, channel, creator, when = params
-            self.log.info("%s created by %s (%s)" %
+            self.log.info(_("%s created by %s (%s)") %
                           (channel, creator,
                            time.strftime(
                                "%a, %d %b %Y %H:%M:%S",
@@ -884,7 +890,6 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
         elif str(command) in ["265", "266"]:  # RPL_LOCALUSERS, RPL_GLOBALUSERS
             # Usually printed, these are purely informational
-            self.log.debug("Params [265, 266]: %s" % params)
             if len(params) > 3:
                 data = params[3]
             else:
@@ -900,7 +905,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                 self.event_manager.run_callback("IRC/GLOBALUSERS", event)
 
         elif str(command) == "396":  # VHOST was set
-            self.log.info("VHOST set to %s by %s" % (params[1], prefix))
+            self.log.info(_("VHOST set to %s by %s") % (params[1], prefix))
 
             event = irc_events.VHOSTSetEvent(self, params[1], prefix)
             self.event_manager.run_callback("IRC/VHOSTSet", event)
@@ -916,13 +921,13 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                 user = User(self, *mask, is_tracked=False)
             channel = params[1]
 
-            self.log.info("Invited to %s by %s." % (channel, user.nickname))
+            self.log.info(_("Invited to %s by %s.") % (channel, user.nickname))
 
             event = irc_events.InvitedEvent(self, user, channel,
                                             self.invite_join)
             self.event_manager.run_callback("IRC/Invited", event)
             if self.invite_join:
-                self.log.info("Automatically joining %s.." % channel)
+                self.log.info(_("Automatically joining %s..") % channel)
                 self.join_channel(params[1])
 
         else:
@@ -1045,7 +1050,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                 # themselves if they really need, or we can add stuff if a
                 # proper use/specification is given.
                 self.log.debug(
-                    "Unexpected status in WHO response for user %s: %s" %
+                    _("Unexpected status in WHO response for user %s: %s") %
                     (user, s))
         user.realname = gecos.split(" ")[-1]
 
@@ -1064,7 +1069,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
     def user_check_lost_track(self, user):
         """User-tracking related"""
         if len(user.channels) == 0:
-            self.log.debug("Lost track of user: %s" % user)
+            self.log.debug(_("Lost track of user: %s") % user)
             self._users.remove(user)
             user.is_tracked = False
             # TODO: Throw event: lost track of user

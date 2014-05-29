@@ -1,9 +1,11 @@
 # coding=utf-8
-from system.protocols.irc.channel import Channel
-
 __author__ = 'Sean'
 
 from system.protocols.generic import user
+from system.protocols.irc.channel import Channel
+
+from system.translations import Translations
+_ = Translations().get()
 
 
 class User(user.User):
@@ -32,7 +34,8 @@ class User(user.User):
             self.channels.remove(channel)
         except KeyError:
             self.protocol.log.debug(
-                "Tried to remove non-existent channel \"%s\" from user \"%s\""
+                _("Tried to remove non-existent channel \"%s\" from user "
+                  "\"%s\"")
                 % (channel, self))
 
     def get_ranks_in_channel(self, channel):

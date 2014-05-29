@@ -5,6 +5,9 @@ __author__ = 'Gareth Coles'
 from utils.password import mkpasswd
 import hashlib
 
+from system.translations import Translations
+_ = Translations().get()
+
 
 class authHandler(object):
 
@@ -27,48 +30,52 @@ class authHandler(object):
             with self.blacklist:
                 self.blacklist["all"] = passwords
                 self.blacklist["users"] = {}
-                self.plugin.logger.info("Created password blacklist with the "
-                                        "20 most popular passwords of 2013.")
+                self.plugin.logger.info(_("Created password blacklist with "
+                                          "the 20 most popular passwords of "
+                                          "2013."))
 
     def create_superadmin_account(self):
         if len(self.data):
-            if "superadmin" in self.data:
-                self.plugin.logger.warn("Superadmin account exists!")
-                self.plugin.logger.warn("You should remove this account "
-                                        "as soon as possible!")
+            if _("superadmin") in self.data:
+                self.plugin.logger.warn(_("Superadmin account exists!"))
+                self.plugin.logger.warn(_("You should remove this account "
+                                          "as soon as possible!"))
             return
-        self.plugin.logger.info("Generating a default auth account and "
-                                "password.")
-        self.plugin.logger.info("You will need to either use this to add "
-                                "permissions to your user account, or just "
-                                "create an account and edit the permissions "
-                                "file.")
-        self.plugin.logger.info("Remember to delete this account when you've "
-                                "created your own admin account!")
+        self.plugin.logger.info(_("Generating a default auth account and "
+                                  "password."))
+        self.plugin.logger.info(_("You will need to either use this to add "
+                                  "permissions to your user account, or just "
+                                  "create an account and edit the permissions "
+                                  "file."))
+        self.plugin.logger.info(_("Remember to delete this account when "
+                                  "you've created your own admin account!"))
 
         password = mkpasswd(32, 11, 11, 10)
 
-        self.create_user("superadmin", password)
+        self.create_user(_("superadmin"), password)
 
         self.plugin.logger.info("============================================")
-        self.plugin.logger.info("Super admin username: superadmin")
-        self.plugin.logger.info("Super admin password: %s" % password)
+        self.plugin.logger.info(_("Super admin username: superadmin"))
+        self.plugin.logger.info(_("Super admin password: %s") % password)
         self.plugin.logger.info("============================================")
 
         p_handler = self.plugin.get_permissions_handler()
 
         if p_handler:
-            if not p_handler.create_user("superadmin"):
-                self.plugin.logger.warn("Unable to create permissions section "
-                                        "for the superadmin account!")
-            if not p_handler.set_user_option("superadmin", "superadmin", True):
-                self.plugin.logger.warn("Unable to set 'superadmin' flag on "
-                                        "the superadmin account!")
+            if not p_handler.create_user(_("superadmin")):
+                self.plugin.logger.warn(_("Unable to create permissions "
+                                          "section for the superadmin "
+                                          "account!"))
+            if not p_handler.set_user_option(_("superadmin"),
+                                             _("superadmin"),
+                                             True):
+                self.plugin.logger.warn(_("Unable to set 'superadmin' flag on "
+                                          "the superadmin account!"))
         else:
-            self.plugin.logger.warn("Unable to set permissions for the "
-                                    "superadmin account as the bundled "
-                                    "permissions system isn't being used.")
-            self.plugin.logger.warn("Please do this manually!")
+            self.plugin.logger.warn(_("Unable to set permissions for the "
+                                      "superadmin account as the bundled "
+                                      "permissions system isn't being used."))
+            self.plugin.logger.warn(_("Please do this manually!"))
 
     def hash(self, salt, password):
         return hashlib.sha512(salt + password).hexdigest()

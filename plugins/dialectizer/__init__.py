@@ -19,6 +19,9 @@ from olde import Olde
 from reverse import Reverse
 from upper import Upper
 
+from system.translations import Translations
+__ = Translations().get_m()
+
 
 class DialectizerPlugin(plugin.PluginObject):
 
@@ -73,11 +76,11 @@ class DialectizerPlugin(plugin.PluginObject):
                             parsed_args):
         args = raw_args.split()  # Quick fix for new command handler signature
         if isinstance(source, User):
-            caller.respond("This command only applies to channels.")
+            caller.respond(__("This command only applies to channels."))
             return
         if not len(args) > 0:
-            caller.respond("Usage: {CHARS}dialectizer <dialectizer>")
-            caller.respond("Available dialectizers: %s"
+            caller.respond(__("Usage: {CHARS}dialectizer <dialectizer>"))
+            caller.respond(__("Available dialectizers: %s")
                            % ", ".join(self.dialectizers.keys()))
             return
 
@@ -90,8 +93,8 @@ class DialectizerPlugin(plugin.PluginObject):
 
             setting = args[0].lower()
             if setting not in self.dialectizers:
-                caller.respond("Unknown dialectizer: %s" % setting)
+                caller.respond(__("Unknown dialectizer: %s") % setting)
                 return
 
             self.data[protocol.name][source.name] = setting
-            caller.respond("Dialectizer set to '%s'" % setting)
+            caller.respond(__("Dialectizer set to '%s'") % setting)

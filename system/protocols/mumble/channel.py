@@ -3,6 +3,9 @@ __author__ = 'Sean'
 
 from system.protocols.generic import channel
 
+from system.translations import Translations
+_ = Translations().get()
+
 
 class Channel(channel.Channel):
     def __init__(self, protocol, channel_id, name, parent, position, links):
@@ -33,9 +36,9 @@ class Channel(channel.Channel):
         except KeyError:
             # According to PEP8, this is easier to read on two lines <_<
             self.protocol.log.debug(
-                "Tried to remove non-existent user \"%s\" from channel \"%s\""
+                _("Tried to remove non-existent user \"%s\" from channel "
+                  "\"%s\"")
                 % (user, self))
 
     def respond(self, message):
-        self.protocol.log.debug("Respond!")
         self.protocol.send_msg(self, message, target_type="channel")

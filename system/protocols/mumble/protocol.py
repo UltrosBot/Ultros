@@ -30,6 +30,9 @@ from utils.html import html_to_text
 from utils.log import getLogger
 from utils.misc import output_exception
 
+from system.translations import Translations
+_ = Translations().get()
+
 log = logging.getLogger(__name__)
 
 
@@ -140,13 +143,13 @@ class Protocol(ChannelsProtocol):
                 self.config["identity"]["certificate"]):
             # Attempt to load it
             try:
-                self.log.debug("Attempting to load certificate file")
+                self.log.debug(_("Attempting to load certificate file"))
                 from OpenSSL import crypto, SSL
                 cert_file = self.config["identity"]["certificate"]
                 # Check if cert file exists, and if not, create it
                 if not os.path.exists(cert_file):
-                    self.log.info("Certificate file does not exist - "
-                                  "generating...")
+                    self.log.info(_("Certificate file does not exist - "
+                                    "generating..."))
                     # Creates a key similarly to the official mumble client
                     pkey = crypto.PKey()
                     pkey.generate_key(crypto.TYPE_RSA, 2048)
@@ -191,29 +194,29 @@ class Protocol(ChannelsProtocol):
                         ctx.use_privatekey(certificate.get_privatekey())
                         return ctx
 
-                self.log.info("Loaded specified certificate file")
+                self.log.info(_("Loaded specified certificate file"))
                 return CtxFactory()
             except ImportError:
-                self.log.error("Could not import OpenSSL - cannot connect "
-                               "with certificate file")
+                self.log.error(_("Could not import OpenSSL - cannot connect "
+                                 "with certificate file"))
             except IOError:
-                self.log.error("Could not load cert file")
+                self.log.error(_("Could not load cert file"))
             except:
-                self.log.exception("Unknown error while loading certificate "
-                                   "file")
+                self.log.exception(_("Unknown error while loading certificate "
+                                     "file"))
             return None
         else:
             # Default CtxFactory for no certificate
-            self.log.info("No certificate specified - connecting without "
-                          "certificate")
+            self.log.info(_("No certificate specified - connecting without "
+                            "certificate"))
             return ssl.ClientContextFactory()
 
     def shutdown(self):
-        self.msg("Disconnecting: Protocol shutdown")
+        self.msg(_("Disconnecting: Protocol shutdown"))
         self.transport.loseConnection()
 
     def connectionMade(self):
-        self.log.info("Connected to server.")
+        self.log.info(_("Connected to server."))
 
         # In the mumble protocol you must first send your current version
         # and immediately after that the authentication data.
@@ -273,14 +276,14 @@ class Protocol(ChannelsProtocol):
 
             # Check if this this a valid message ID
             if msg_type not in Protocol.MESSAGE_ID.values():
-                self.log.error('Message ID not available.')
+                self.log.error(_("Message ID not available."))
                 self.transport.loseConnection()
                 return
 
             # We need to check if we have enough bytes to fully read the
             # message
             if len(self.received) < full_length:
-                self.log.debug("Need to fill data")
+                self.log.debug(_("Need to fill data"))
                 return
 
             # Read the specific message
@@ -293,7 +296,7 @@ class Protocol(ChannelsProtocol):
             try:
                 self.recvProtobuf(msg_type, msg)
             except Exception:
-                self.log.error("Exception while handling data.")
+                self.log.error(_("Exception while handling data."))
                 output_exception(self.log, logging.ERROR)
 
             self.received = self.received[full_length:]
@@ -314,12 +317,12 @@ class Protocol(ChannelsProtocol):
     def recvProtobuf(self, msg_type, message):
         if isinstance(message, Mumble_pb2.Version):
             # version, release, os, os_version
-            self.log.info("Connected to Murmur v%s" % message.release)
+            self.log.info(_("Connected to Murmur v%s") % message.release)
             event = general_events.PostSetupEvent(self, self.config)
             self.event_manager.run_callback("PostSetup", event)
         elif isinstance(message, Mumble_pb2.Reject):
             # version, release, os, os_version
-            self.log.info("Could not connect to server: %s - %s" %
+            self.log.info(_("Could not connect to server: %s - %s") %
                           (message.type, message.reason))
 
             self.transport.loseConnection()
@@ -364,10 +367,10 @@ class Protocol(ChannelsProtocol):
             max_bandwidth = message.max_bandwidth
             permissions = message.permissions
             welcome_text = html_to_text(message.welcome_text, True)
-            self.log.info("===   Welcome message   ===")
+            self.log.info(_("===   Welcome message   ==="))
             for line in welcome_text.split("\n"):
                 self.log.info(line)
-            self.log.info("=== End welcome message ===")
+            self.log.info(_("=== End welcome message ==="))
 
             event = mumble_events.ServerSync(self, session, max_bandwidth,
                                              welcome_text, permissions)
@@ -417,7 +420,7 @@ class Protocol(ChannelsProtocol):
             if message.session in self.users:
                 user = self.users[message.session]
                 user.is_tracked = False
-                self.log.info("User left: %s" %
+                self.log.info(_("User left: %s") %
                               user)
                 user.channel.remove_user(user)
                 del self.users[message.session]
@@ -436,8 +439,8 @@ class Protocol(ChannelsProtocol):
             # actor, channel_id, message
             self.handle_msg_textmessage(message)
         else:
-            self.log.debug("Unknown message type: %s" % message.__class__)
-            self.log.debug("Received message '%s' (%d):\n%s"
+            self.log.debug(_("Unknown message type: %s") % message.__class__)
+            self.log.debug(_("Received message '%s' (%d):\n%s")
                            % (message.__class__, msg_type, str(message)))
 
             event = mumble_events.Unknown(self, type(message), message)
@@ -467,7 +470,7 @@ class Protocol(ChannelsProtocol):
             if message.links:
                 links = list(message.links)
                 for link in links:
-                    self.log.debug("Channel link: %s to %s" %
+                    self.log.debug(_("Channel link: %s to %s") %
                                    (self.channels[link],
                                     self.channels[message.channel_id]))
             self.channels[message.channel_id] = Channel(self,
@@ -476,11 +479,11 @@ class Protocol(ChannelsProtocol):
                                                         parent,
                                                         message.position,
                                                         links)
-            self.log.info("New channel: %s" % message.name)
+            self.log.info(_("New channel: %s") % message.name)
         if message.links_add:
             for link in message.links_add:
                 self.channels[message.channel_id].add_link(link)
-                self.log.info("Channel link added: %s to %s" %
+                self.log.info(_("Channel link added: %s to %s") %
                               (self.channels[link],
                                self.channels[message.channel_id]))
 
@@ -493,7 +496,7 @@ class Protocol(ChannelsProtocol):
         if message.links_remove:
             for link in message.links_remove:
                 self.channels[message.channel_id].remove_link(link)
-                self.log.info("Channel link removed: %s from %s" %
+                self.log.info(_("Channel link removed: %s from %s") %
                               (self.channels[link],
                                self.channels[message.channel_id]))
 
@@ -520,7 +523,7 @@ class Protocol(ChannelsProtocol):
                                                message.self_deaf,
                                                message.priority_speaker,
                                                message.recording)
-            self.log.info("User joined: %s" % message.name)
+            self.log.info(_("User joined: %s") % message.name)
             # We can't just flow into the next section to deal with this, as
             # that would count as a channel change, and it doesn't always work
             # as expected anyway.
@@ -537,19 +540,19 @@ class Protocol(ChannelsProtocol):
                         if conf["id"] in self.channels:
                             self.join_channel(self.channels[conf["id"]])
                         else:
-                            self.log.warning("No channel with id '%s'" %
+                            self.log.warning(_("No channel with id '%s'") %
                                              conf["id"])
                     elif "name" in conf and conf["name"]:
                         chan = self.get_channel(conf["name"])
                         if chan is not None:
                             self.join_channel(chan)
                         else:
-                            self.log.warning("No channel with name '%s'" %
+                            self.log.warning(_("No channel with name '%s'") %
                                              conf["name"])
                     else:
-                        self.log.warning("No channel found in config")
+                        self.log.warning(_("No channel found in config"))
                 except Exception:
-                    self.log.warning("Config is missing 'channel' section")
+                    self.log.warning(_("Config is missing 'channel' section"))
             else:
                 event = mumble_events.UserJoined(self,
                                                  self.users[message.session])
@@ -559,7 +562,7 @@ class Protocol(ChannelsProtocol):
             user = self.users[message.session]
             if message.HasField('channel_id'):
                 actor = self.users[message.actor]
-                self.log.info("User moved channel: %s from %s to %s by %s" %
+                self.log.info(_("User moved channel: %s from %s to %s by %s") %
                               (user,
                                user.channel,
                                self.channels[message.channel_id],
@@ -574,9 +577,11 @@ class Protocol(ChannelsProtocol):
             if message.HasField('mute'):
                 actor = self.users[message.actor]
                 if message.mute:
-                    self.log.info("User was muted: %s by %s" % (user, actor))
+                    self.log.info(_("User was muted: %s by %s")
+                                  % (user, actor))
                 else:
-                    self.log.info("User was unmuted: %s by %s" % (user, actor))
+                    self.log.info(_("User was unmuted: %s by %s")
+                                  % (user, actor))
                 user.mute = message.mute
 
                 event = mumble_events.UserMuteToggle(self, user, user.mute,
@@ -585,11 +590,11 @@ class Protocol(ChannelsProtocol):
             if message.HasField('deaf'):
                 actor = self.users[message.actor]
                 if message.deaf:
-                    self.log.info("User was deafened: %s by %s" % (user,
-                                                                   actor))
+                    self.log.info(_("User was deafened: %s by %s") % (user,
+                                                                      actor))
                 else:
-                    self.log.info("User was undeafened: %s by %s" % (user,
-                                                                     actor))
+                    self.log.info(_("User was undeafened: %s by %s") % (user,
+                                                                        actor))
                 user.deaf = message.deaf
 
                 event = mumble_events.UserDeafToggle(self, user, user.deaf,
@@ -597,9 +602,9 @@ class Protocol(ChannelsProtocol):
                 self.event_manager.run_callback("Mumble/UserDeafToggle", event)
             if message.HasField('suppress'):
                 if message.suppress:
-                    self.log.info("User was suppressed: %s" % user)
+                    self.log.info(_("User was suppressed: %s") % user)
                 else:
-                    self.log.info("User was unsuppressed: %s" % user)
+                    self.log.info(_("User was unsuppressed: %s") % user)
                 user.suppress = message.suppress
 
                 event = mumble_events.UserSuppressionToggle(self, user,
@@ -608,9 +613,9 @@ class Protocol(ChannelsProtocol):
                                                 event)
             if message.HasField('self_mute'):
                 if message.self_mute:
-                    self.log.info("User muted themselves: %s" % user)
+                    self.log.info(_("User muted themselves: %s") % user)
                 else:
-                    self.log.info("User unmuted themselves: %s" % user)
+                    self.log.info(_("User unmuted themselves: %s") % user)
                 user.self_mute = message.self_mute
 
                 event = mumble_events.UserSelfMuteToggle(self, user,
@@ -619,9 +624,9 @@ class Protocol(ChannelsProtocol):
                                                 event)
             if message.HasField('self_deaf'):
                 if message.self_deaf:
-                    self.log.info("User deafened themselves: %s" % user)
+                    self.log.info(_("User deafened themselves: %s") % user)
                 else:
-                    self.log.info("User undeafened themselves: %s" % user)
+                    self.log.info(_("User undeafened themselves: %s") % user)
                 user.self_deaf = message.self_deaf
 
                 event = mumble_events.UserSelfDeafToggle(self, user,
@@ -631,10 +636,12 @@ class Protocol(ChannelsProtocol):
             if message.HasField('priority_speaker'):
                 actor = self.users[message.actor]
                 if message.priority_speaker:
-                    self.log.info("User was given priority speaker: %s by %s"
+                    self.log.info(_("User was given priority speaker: %s by "
+                                    "%s")
                                   % (user, actor))
                 else:
-                    self.log.info("User was revoked priority speaker: %s by %s"
+                    self.log.info(_("User was revoked priority speaker: %s by "
+                                    "%s")
                                   % (user, actor))
                 state = user.priority_speaker = message.priority_speaker
 
@@ -644,9 +651,9 @@ class Protocol(ChannelsProtocol):
                                                 "Toggle", event)
             if message.HasField('recording'):
                 if message.recording:
-                    self.log.info("User started recording: %s" % user)
+                    self.log.info(_("User started recording: %s") % user)
                 else:
-                    self.log.info("User stopped recording: %s" % user)
+                    self.log.info(_("User stopped recording: %s") % user)
                 user.recording = message.recording
 
                 event = mumble_events.UserRecordingToggle(self, user,
@@ -689,15 +696,15 @@ class Protocol(ChannelsProtocol):
                 pass  # Command ran successfully
             else:  # There's a problem
                 if b is True:  # Unable to authorize
-                    self.log.warn("%s is not authorized to use the %s "
-                                  "command"
+                    self.log.warn(_("%s is not authorized to use the %s "
+                                    "command")
                                   % (source.nickname, command))
                 elif b is None:  # Command not found
-                    self.log.debug("Command not found: %s" % command)
+                    self.log.debug(_("Command not found: %s") % command)
                     return False
                 else:  # Exception occured
-                    self.log.warn("An error occured while running the %s "
-                                  "command: %s" % (command, b))
+                    self.log.warn(_("An error occured while running the %s "
+                                    "command: %s") % (command, b))
             if event.printable:
                 self.log.info(event.printable)
             return True
@@ -814,7 +821,7 @@ class Protocol(ChannelsProtocol):
         if target_id is None and target == "channel":
             target_id = self.ourselves.channel.channel_id
 
-        self.log.debug("Sending text message: %s" % message)
+        self.log.debug(_("Sending text message: %s") % message)
 
         message = cgi.escape(message)
 
@@ -907,14 +914,14 @@ class Protocol(ChannelsProtocol):
         for user in self.users.itervalues():
             print user
             cn = user.channel.__str__()
-            print_indented("Channel: %s" % cn.encode('ascii', 'replace'))
-            print_indented("Mute: %s" % user.mute)
-            print_indented("Deaf: %s" % user.deaf)
-            print_indented("Suppressed: %s" % user.suppress)
-            print_indented("Self mute: %s" % user.self_mute)
-            print_indented("Self deaf: %s" % user.self_deaf)
-            print_indented("Priority speaker: %s" % user.priority_speaker)
-            print_indented("Recording: %s" % user.recording)
+            print_indented(_("Channel: %s") % cn.encode('ascii', 'replace'))
+            print_indented(_("Mute: %s") % user.mute)
+            print_indented(_("Deaf: %s") % user.deaf)
+            print_indented(_("Suppressed: %s") % user.suppress)
+            print_indented(_("Self mute: %s") % user.self_mute)
+            print_indented(_("Self deaf: %s") % user.self_deaf)
+            print_indented(_("Priority speaker: %s") % user.priority_speaker)
+            print_indented(_("Recording: %s") % user.recording)
 
     def print_channels(self):
         # TODO: Remove this debug function once channel handling is complete
@@ -930,7 +937,7 @@ class Protocol(ChannelsProtocol):
                 self.channels[channel_id].__str__().encode('ascii', 'replace')
             # Print users, if any
             if len(self.channels[channel_id].users) > 0:
-                print "    " * (depth + 1), "Users {"
+                print "    " * (depth + 1), _("Users {")
                 for user in self.channels[channel_id].users:
                     print "    " * (depth + 2), user
                 print "    " * (depth + 1), "}"

@@ -17,22 +17,43 @@ Ultros - That squidoctopus bot thing.
 This is the main file - You run this! Importing it is a bad idea!
 Stuff like that!
 
-Don't forget to read the README, the wiki and the LICENSE before you even
+Don't forget to read the README, the docs and the LICENSE before you even
 consider modifying or distributing this software.
 
 If, however, you do fork yourself a copy and make some changes, submit a
 pull request or otherwise get in contact with us - we'd love your help!
 """
 
+import argparse
 import logging
 import os
 import sys
 
 from kitchen.text.converters import getwriter
 
-if "--update" in sys.argv:
+from system.translations import Translations
+
+
+DESC = "Ultros - that squidoctopus bot thing"
+
+p = argparse.ArgumentParser(description=DESC)
+p.add_argument("--debug", help="Enable debug output", action="store_true")
+p.add_argument("-l", "--language", help="Specify which language to use for "
+                                        "console and logging messages")
+p.add_argument("-ml", "--mlanguage", help="Specify which language to use for "
+                                          "chat messages")
+p.add_argument("-u", "--update", help="Run an update and quit",
+               action="store_true")
+
+args = p.parse_args()
+trans = Translations(args.language, args.mlanguage)
+
+_ = trans.get()
+
+
+def update():
     try:
-        print "Attempting to update.."
+        print _("Attempting to update..")
 
         import pip
 
@@ -45,14 +66,15 @@ if "--update" in sys.argv:
         g = Git(".")
         g.pull()
         pip.main(["install", "-r", "requirements.txt"])
-        print "Done!"
+        print _("Done!")
     except Exception as e:
-        print "Error updating: %s" % e
+        print _("Error updating: %s") % e
         raise e
 
     exit(0)
 
-if __name__ == "__main__":
+
+def main():
     if os.path.dirname(sys.argv[0]):
         os.chdir(os.path.dirname(sys.argv[0]))
 
@@ -75,7 +97,7 @@ if __name__ == "__main__":
     requests_log = logging.getLogger("requests")
     requests_log.setLevel(logging.WARNING)
 
-    logger.info("Starting up, version \"%s\"" % constants.__version__)
+    logger.info(_("Starting up, version \"%s\"") % constants.__version__)
 
     manager = None
 
@@ -84,7 +106,7 @@ if __name__ == "__main__":
         manager.run()
 
     except Exception:
-        logger.critical("Runtime error - process cannot continue!")
+        logger.critical(_("Runtime error - process cannot continue!"))
         output_exception(logger)
     except SystemExit as e:
         close_log("output.log")
@@ -97,6 +119,11 @@ if __name__ == "__main__":
             decorators.pool.stop()
 
             if "--no-catch" not in sys.argv:
-                raw_input("Press enter to exit.")
+                raw_input(_("Press enter to exit."))
         except:
             pass
+
+if args.update:
+    update()
+else:
+    main()

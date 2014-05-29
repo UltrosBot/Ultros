@@ -10,6 +10,9 @@ from system.protocols.generic.protocol import Protocol as GenericProtocol
 from utils.misc import output_exception
 from utils.log import getLogger
 
+from system.translations import Translations
+_ = Translations().get()
+
 
 class Factory(protocol.ClientFactory):
     """
@@ -61,20 +64,20 @@ class Factory(protocol.ClientFactory):
         we're doing some other Ultros-related stuff here too.
         """
 
-        self.logger.debug("Entering setup method.")
+        self.logger.debug(_("Entering setup method."))
 
         try:
             if self.protocol_class is None:
-                self.logger.debug("First-time setup; not reloading.")
+                self.logger.debug(_("First-time setup; not reloading."))
                 current_protocol = importlib.import_module(
                     "system.protocols.%s.protocol" % self.ptype)
             else:
-                self.logger.debug("Reloading module.")
+                self.logger.debug(_("Reloading module."))
                 current_protocol = reload(self.protocol_class)
             self.protocol_class = current_protocol
         except ImportError:
             self.logger.error(
-                "Unable to import protocol %s for %s" %
+                _("Unable to import protocol %s for %s") %
                 (self.ptype, self.name))
             output_exception(self.logger, logging.ERROR)
         else:
@@ -83,15 +86,15 @@ class Factory(protocol.ClientFactory):
                                                           self,
                                                           self.config)
             else:
-                raise TypeError("Protocol does not subclass the generic "
-                                "protocol class!")
+                raise TypeError(_("Protocol does not subclass the generic "
+                                  "protocol class!"))
 
     def shutdown(self):
         self.shutting_down = True
         try:
             self.protocol.shutdown()
         except:
-            self.logger.exception("Error shutting down")
+            self.logger.exception(_("Error shutting down"))
 
     def buildProtocol(self, addr):
         """
@@ -111,20 +114,20 @@ class Factory(protocol.ClientFactory):
             try:
                 self.protocol.on_connection_lost()
             except:
-                self.logger.exception("Error calling \"connection lost\" "
-                                      "callback")
+                self.logger.exception(_("Error calling \"connection lost\" "
+                                        "callback"))
 
         if self.shutting_down:
             return
 
-        self.logger.warn("Lost connection: %s" % reason.__str__())
+        self.logger.warn(_("Lost connection: %s") % reason.__str__())
         if self.r_on_drop:
             if self.attempts >= self.r_attempts:
-                self.logger.error("Unable to connect after %s attempts, "
-                                  "aborting." % self.attempts)
+                self.logger.error(_("Unable to connect after %s attempts, "
+                                    "aborting.") % self.attempts)
                 return
             self.attempts += 1
-            self.logger.info("Reconnecting after %s seconds (attempt %s/%s)"
+            self.logger.info(_("Reconnecting after %s seconds (attempt %s/%s)")
                              % (self.r_delay, self.attempts, self.r_attempts))
             reactor.callLater(self.r_delay, self.setup)
 
@@ -138,20 +141,20 @@ class Factory(protocol.ClientFactory):
             try:
                 self.protocol.on_connection_failed()
             except:
-                self.logger.exception("Error calling \"connection failed\" "
-                                      "callback")
+                self.logger.exception(_("Error calling \"connection failed\" "
+                                        "callback"))
 
         if self.shutting_down:
             return
 
-        self.logger.warn("Connection failed: %s" % reason.__str__())
+        self.logger.warn(_("Connection failed: %s") % reason.__str__())
         if self.r_on_drop or self.reconnecting:
             if self.attempts >= self.r_attempts:
-                self.logger.error("Unable to connect after %s attempts, "
-                                  "aborting." % self.attempts)
+                self.logger.error(_("Unable to connect after %s attempts, "
+                                    "aborting.") % self.attempts)
                 return
             self.attempts += 1
-            self.logger.info("Reconnecting after %s seconds (attempt %s/%s)"
+            self.logger.info(_("Reconnecting after %s seconds (attempt %s/%s)")
                              % (self.r_delay, self.attempts, self.r_attempts))
             reactor.callLater(self.r_delay, self.setup)
 
@@ -160,8 +163,8 @@ class Factory(protocol.ClientFactory):
             try:
                 self.protocol.on_connected()
             except:
-                self.logger.exception("Error calling \"connected\" "
-                                      "callback")
+                self.logger.exception(_("Error calling \"connected\" "
+                                        "callback"))
 
         if self.r_reset:
             self.attempts = 0

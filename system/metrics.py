@@ -15,6 +15,10 @@ from system.storage.manager import StorageManager
 from utils.log import getLogger
 from utils.packages.packages import Packages
 
+from system.translations import Translations
+_ = Translations().get()
+
+
 warning = """
                                  .i;;;;i.
                                iYcviii;vXY:
@@ -100,23 +104,23 @@ class Metrics(object):
                 self.status = False
         else:
             self.log.warn("\n%s\n" % warning)
-            self.log.warn(
+            self.log.warn(_(
                 "We couldn't find a \"metrics\" option in your settings.yml"
                 " file!"
-            )
-            self.log.warn(
+            ))
+            self.log.warn(_(
                 "Metrics will default to being turned on. If this is not what"
                 " you want, please create \"metrics\" option in your settings"
                 " and set it to \"off\"."
-            )
-            self.log.warn(
+            ))
+            self.log.warn(_(
                 "If you want to keep metrics enabled, set the option to"
                 " \"on\"."
-            )
-            self.log.warn(
+            ))
+            self.log.warn(_(
                 "This warning will be shown on every startup until the option"
                 " has been set."
-            )
+            ))
             self.status = True
 
         with self.data:
@@ -125,7 +129,7 @@ class Metrics(object):
                     try:
                         uuid = self.get(self.uuid_url)
                     except:
-                        self.log.exception("Error getting UUID")
+                        self.log.exception(_("Error getting UUID"))
                         return
                     self.data["uuid"] = uuid
                     self.data["status"] = "enabled"
@@ -134,21 +138,21 @@ class Metrics(object):
 
         if self.status is False:
             if self.data["status"] == "disabled":
-                self.log.info("Metrics are disabled.")
+                self.log.info(_("Metrics are disabled."))
                 return
         elif self.status is "destroy":
             if "uuid" not in self.data:
-                self.log.info("Metrics are disabled.")
+                self.log.info(_("Metrics are disabled."))
                 return
 
         self.task.start(self.interval)
 
     @run_async_threadpool
     def submit_metrics(self):
-        self.log.debug("Firing task.")
+        self.log.debug(_("Firing task."))
         compiled = {"plugins": [], "packages": [], "protocols": []}
         if self.status is True:
-            self.log.debug("Submitting metrics.")
+            self.log.debug(_("Submitting metrics."))
             compiled["plugins"] = self.manager.loaded_plugins.keys()
             compiled["packages"] = self.packages.get_installed_packages()
 
@@ -161,33 +165,34 @@ class Metrics(object):
                 r = self.post(self.submit_url % self.data["uuid"], compiled)
                 r = json.loads(r)
 
-                self.log.debug("Submitted. Result: %s" % r)
+                self.log.debug(_("Submitted. Result: %s") % r)
 
                 if r["result"] == "error":
-                    self.log.error("Error submitting metrics: %s" % r["error"])
+                    self.log.error(_("Error submitting metrics: %s")
+                                   % r["error"])
             except:
-                self.log.exception("Error submitting metrics")
+                self.log.exception(_("Error submitting metrics"))
         elif self.status is False:
-            self.log.debug("Submitting disable message.")
+            self.log.debug(_("Submitting disable message."))
             try:
                 compiled["enabled"] = False
                 r = self.post(self.submit_url % self.data["uuid"], compiled)
                 r = json.loads(r)
 
-                self.log.debug("Submitted. Result: %s" % r)
+                self.log.debug(_("Submitted. Result: %s") % r)
 
                 if r["result"] == "error":
-                    self.log.error("Error submitting disable message: %s"
+                    self.log.error(_("Error submitting disable message: %s")
                                    % r["error"])
             except:
-                self.log.exception("Error submitting disable message")
+                self.log.exception(_("Error submitting disable message"))
             else:
                 with self.data:
                     self.data["status"] = "disabled"
             finally:
                 self.task.stop()
         elif self.status == "destroy":
-            self.log.debug("Submitting destruction message.")
+            self.log.debug(_("Submitting destruction message."))
             try:
                 r = self.get(self.destroy_url % self.data["uuid"])
                 r = json.loads(r)
@@ -195,13 +200,13 @@ class Metrics(object):
                 self.log.debug("Submitted. Result: %s" % r)
 
                 if r["result"] == "success":
-                    self.log.info("Metrics data has been removed from the "
-                                  "server.")
+                    self.log.info(_("Metrics data has been removed from the "
+                                    "server."))
                 else:
-                    self.log.warn("Unknown UUID, data was already removed "
-                                  "from the server.")
+                    self.log.warn(_("Unknown UUID, data was already removed "
+                                    "from the server."))
             except:
-                self.log.exception("Error submitting destruction message")
+                self.log.exception(_("Error submitting destruction message"))
             else:
                 with self.data:
                     del self.data["uuid"]
@@ -209,7 +214,7 @@ class Metrics(object):
             finally:
                 self.task.stop()
         else:
-            self.log.warn("Unknown status: %s" % self.status)
+            self.log.warn(_("Unknown status: %s") % self.status)
             self.task.stop()
 
     def post(self, url, data):
