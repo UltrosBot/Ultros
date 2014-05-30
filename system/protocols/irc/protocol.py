@@ -813,7 +813,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
         if command == "RPL_BANLIST":
             # This is a single entry in a channel's ban list.
-            _, channel, mask, owner, btime = params
+            ___, channel, mask, owner, btime = params
             chan_obj = self.get_channel(channel)
 
             event = irc_events.BanListEvent(self, chan_obj, mask, owner, btime)
@@ -870,7 +870,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             self.event_manager.run_callback("IRC/CannotDoCommand", event)
 
         elif str(command) == "333":  # Channel creation details
-            _, channel, creator, when = params
+            ___, channel, creator, when = params
             self.log.info(_("%s created by %s (%s)") %
                           (channel, creator,
                            time.strftime(
