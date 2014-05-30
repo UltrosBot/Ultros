@@ -184,7 +184,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         self.event_manager.run_callback("PostConnect", event)
 
     def shutdown(self):
-        self.sendLine("QUIT: %s" % _("Protocol shutdown"))
+        self.sendLine("QUIT :%s" % _("Protocol shutdown"))
         self.transport.loseConnection()
 
     # endregion
