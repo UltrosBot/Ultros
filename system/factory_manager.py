@@ -454,6 +454,12 @@ class Manager(object):
             self.logger.info(_("Unloading plugin: %s") % name)
             self.unload_plugin(name)
 
+        if reactor.running:
+            try:
+                reactor.stop()
+            except:
+                self.logger.exception("Error stopping reactor")
+
     # Grab stuff
 
     def get_protocol(self, name):
