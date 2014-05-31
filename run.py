@@ -99,6 +99,14 @@ def main():
 
     logger.info(_("Starting up, version \"%s\"") % constants.__version__)
 
+    # Write PID to file
+    fh = open("ultros.pid", "w")
+    fh.write(str(os.getpid()))
+    fh.flush()
+    fh.close()
+
+    logger.info(_("PID: %s") % os.getpid())
+
     manager = None
 
     try:

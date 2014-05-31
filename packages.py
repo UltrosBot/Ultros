@@ -306,7 +306,7 @@ def setup():
         if "" in reqs:
             reqs.remove("")
 
-        for x in ["pyopenssl", "twisted"]:
+        for x in ["pyopenssl", "twisted", "psutil"]:
             if x in reqs:
                 reqs.remove(x)
 
@@ -320,6 +320,10 @@ def setup():
                  "openssl.exe"],
                 ["https://pypi.python.org/packages/2.7/p/pyOpenSSL/pyOpenSSL-0"
                  ".13.1.win32-py2.7.exe", "pyopenssl.exe"]
+            ],
+            "PSUtil": [
+                ["https://pypi.python.org/packages/2.7/p/psutil/"
+                 "psutil-2.1.1.win32-py2.7.exe", "psutil.exe"]
             ]
         }
 
@@ -353,7 +357,12 @@ def setup():
 
                     os.system(tempdir + "/ultros." + x[1])
                 finally:
-                    os.remove(tempdir + "/ultros." + x[1])
+                    try:
+                        os.remove(tempdir + "/ultros." + x[1])
+                    except Exception as e:
+                        print ">> Unable to remove file: %s" \
+                              % tempdir + "/ultros." + x[1]
+                        print ">> %s" % e
 
         print _(">> Presuming everything installed okay, you should now be "
                 "ready to run Ultros!")

@@ -11,3 +11,4 @@ gitpython==0.3.2.RC1
 gitdb
 async
 pyopenssl
+psutil
