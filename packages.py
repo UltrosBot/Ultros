@@ -121,12 +121,12 @@ def main():
 
     elif operation == "update":
         packages = get_packages()
-        if len(args) > 1 and args[1] == "all":
+        if len(_args) > 1 and _args[1] == "all":
             if not len(packages.config["installed"].keys()):
                 print _(">> No packages are installed. Nothing to do.")
                 exit(0)
             for package in packages.config["installed"].keys():
-                args[1] = package
+                _args[1] = package
 
                 uninstall(_args, packages)
                 install(_args, packages)
