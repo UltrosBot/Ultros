@@ -12,6 +12,7 @@ _ = Translations().get()
 
 
 class Catcher(object):
+    _config = {}
     where = ""
 
     plugin = None
@@ -39,11 +40,11 @@ class Catcher(object):
         return self.config.get("ignored", [])
 
     def __init__(self, plugin, config, storage, logger):
+        self._config = config
+
         if "catcher" not in config:
             logger.debug(_("No catcher section in config."))
             return
-
-        self._config = config
 
         if not self.enabled:
             logger.debug(_("Catcher disabled via config."))
