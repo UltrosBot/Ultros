@@ -364,8 +364,8 @@ class Manager(object):
         :type name: str
 
         :param conf_location: The location of the config file, relative
-            to the config/ directory
-        :type conf_location: str
+            to the config/ directory, or a Config object
+        :type conf_location: str, Config
         """
 
         if name in self.factories:

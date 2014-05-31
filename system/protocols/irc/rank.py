@@ -23,22 +23,34 @@ class Rank(object):
         return "%s%s%s" % (self.mode, self.symbol, self.order)
 
     def __lt__(self, other):
-        return self.order > other.order
+        if isinstance(other, Rank):
+            other = other.order
+        return self.order > other
 
     def __gt__(self, other):
-        return self.order < other.order
+        if isinstance(other, Rank):
+            other = other.order
+        return self.order < other
 
     def __le__(self, other):
-        return self.order >= other.order
+        if isinstance(other, Rank):
+            other = other.order
+        return self.order >= other
 
     def __ge__(self, other):
-        return self.order <= other.order
+        if isinstance(other, Rank):
+            other = other.order
+        return self.order <= other
 
     def __eq__(self, other):
-        return self.order == other.order
+        if isinstance(other, Rank):
+            other = other.order
+        return self.order == other
 
     def __ne__(self, other):
-        return self.order != other.order
+        if isinstance(other, Rank):
+            other = other.order
+        return self.order != other
 
 
 class Ranks(object):
@@ -71,13 +83,19 @@ class Ranks(object):
         return self._ranks_by_order.keys()
 
     def by_mode(self, mode):
-        return self._ranks_by_mode[mode]
+        if mode in self._ranks_by_mode:
+            return self._ranks_by_mode[mode]
+        return None
 
     def by_symbol(self, symbol):
-        return self._ranks_by_symbol[symbol]
+        if symbol in self._ranks_by_symbol:
+            return self._ranks_by_symbol[symbol]
+        return None
 
     def by_order(self, order):
-        return self._ranks_by_order[order]
+        if order in self._ranks_by_order:
+            return self._ranks_by_order[order]
+        return None
 
     def is_op(self, rank, or_above=True):
         op = self.by_mode("o")
@@ -85,6 +103,16 @@ class Ranks(object):
             return rank >= op
         else:
             return rank == op
+
+    def is_hop(self, rank, or_above=True):
+        hop = self.by_mode("h")
+        if hop is None:
+            # Half-op isn't necessarily on every IRCd, but op is in the RFC
+            self.by_mode("o")
+        if or_above:
+            return rank >= hop
+        else:
+            return rank == hop
 
     def is_voice(self, rank, or_above=True):
         voice = self.by_mode("v")

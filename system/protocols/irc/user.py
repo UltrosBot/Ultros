@@ -77,3 +77,25 @@ class User(user.User):
     def respond(self, message):
         message = message.replace("{CHARS}", self.protocol.control_chars)
         self.protocol.send_msg(self, message, target_type="user")
+
+    # region permissions
+    # Note: Not in a separate class, as in most cases it'd just end up as a
+    # tightly coupled mess, and there aren't a whole lot of things you can
+    # actually make generic between protocols anyway.
+
+    def can_kick(self, user, channel):
+        rank = self.get_highest_rank_in_channel(channel)
+        other_rank = None
+        if user is not None and not isinstance(user, User):
+            user = self.protocol.get_user(user)
+        if user is not None:
+            other_rank = user.get_highest_rank_in_channel(channel)
+        if other_rank is None:
+            other_rank = 0
+        return rank.is_hop() and rank >= other_rank
+
+    def can_ban(self, user, channel):
+        return self.can_kick(user, channel)
+
+    # endregion
+    pass  # Because otherwise the region doesn't end

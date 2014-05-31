@@ -1138,14 +1138,23 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         for line in messages:
             self.sendLine(line, True)
 
-    def kick(self, user, channel=None, reason=None):
+    def kick(self, user, channel=None, reason=None, force=False):
         # TODO: Event?
+        if not force:
+            if self.ourselves.can_kick(user, channel):
+                self.log.debug("Tried to kick, but don't have permission")
+                return False
         if channel is None:
             return False
         if reason is None:
             reason = ""
         self.sendLine(u"KICK %s %s :%s" % (channel, user, reason))
         return True
+
+    def ban(self, user, channel=None, reason=None, force=False):
+        # TODO: Event?
+        # TODO: Implement
+        return False
 
     def join_channel(self, channel, password=None):
         self.join(channel, password)

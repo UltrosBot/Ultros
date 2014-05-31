@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
+from system.protocols.mumble.acl import Perms
 
 __author__ = 'Gareth Coles'
 
@@ -89,6 +90,7 @@ class Protocol(ChannelsProtocol):
 
     channels = {}
     users = {}
+    _acls = {}
 
     @property
     def num_channels(self):
@@ -178,6 +180,10 @@ class Protocol(ChannelsProtocol):
                     p12 = crypto.PKCS12()
                     p12.set_privatekey(pkey)
                     p12.set_certificate(cert)
+                    cert_file_dir = os.path.dirname(cert_file)
+                    if not os.path.exists(cert_file_dir):
+                        self.log.debug("Creating directories for cert file")
+                        os.makedirs(cert_file_dir)
                     with open(cert_file, "wb") as cert_file_handle:
                         cert_file_handle.write(p12.export())
 
@@ -201,7 +207,8 @@ class Protocol(ChannelsProtocol):
                                  "with certificate file"))
             except IOError:
                 self.log.error(_("Could not load cert file"))
-            except Exception:
+                self.log.debug("Exception info:", exc_info=1)
+            except:
                 self.log.exception(_("Unknown error while loading certificate "
                                      "file"))
             return None
@@ -353,6 +360,12 @@ class Protocol(ChannelsProtocol):
             channel = self.channels[message.channel_id]
             permissions = message.permissions
             flush = message.flush
+            self.set_permissions(channel, permissions, flush)
+            self.log.debug("PermissionQuery received: channel: '%s', "
+                           "permissions: '%s', flush:'%s'" %
+                           (channel,
+                            Perms.get_permissions_names(permissions),
+                            flush))
             event = mumble_events.PermissionsQuery(self, channel, permissions,
                                                    flush)
             self.event_manager.run_callback("Mumble/PermissionsQuery", event)
@@ -363,11 +376,18 @@ class Protocol(ChannelsProtocol):
         elif isinstance(message, Mumble_pb2.ServerSync):
             # session, max_bandwidth, welcome_text, permissions
             session = message.session
-            # TODO: Store these
+            # TODO: Store this?
             max_bandwidth = message.max_bandwidth
             permissions = message.permissions
+            # TODO: Check this permissions relevancy - root chan? We don't know
+            # what channel we're in yet, so it must be
+            self.set_permissions(0, permissions)
             welcome_text = html_to_text(message.welcome_text, True)
             self.log.info(_("===   Welcome message   ==="))
+            self.log.debug("ServerSync received: max_bandwidth: '%s', "
+                           "permissions: '%s', welcome text: [below]" %
+                           (max_bandwidth,
+                            Perms.get_permissions_names(permissions)))
             for line in welcome_text.split("\n"):
                 self.log.info(line)
             self.log.info(_("=== End welcome message ==="))
@@ -811,11 +831,42 @@ class Protocol(ChannelsProtocol):
             return True
         return False
 
-    def kick(self, user, channel=None, reason=None):
-        # Mumble protocol does not currently support cert authentication, so
-        # we can't have ACLs, allowing us to kick, etc., so just return False.
-        # TODO: Ignore above, now we do. Implement this. We need ACLs first.
-        return False
+    def kick(self, user, channel=None, reason=None, force=False):
+        self.log.debug("Attempting to kick '%s' for '%s'" % (user, reason))
+        if not isinstance(user, User):
+            user = self.get_user(user)
+            if user is None:
+                return False
+        if not force:
+            if not self.ourselves.can_kick(user, channel):
+                self.log.debug("Tried to kick, but don't have permission")
+                return False
+        msg = Mumble_pb2.UserRemove()
+        msg.session = user.session
+        msg.actor = self.ourselves.session
+        if reason is not None:
+            msg.reason = reason
+
+        self.sendProtobuf(msg)
+
+    def ban(self, user, channel=None, reason=None, force=False):
+        self.log.debug("Attempting to ban '%s' for '%s'" % (user, reason))
+        if not isinstance(user, User):
+            user = self.get_user(user)
+            if user is None:
+                return False
+        if not force:
+            if not self.ourselves.can_ban(user, channel):
+                self.log.debug("Tried to ban, but don't have permission")
+                return False
+        msg = Mumble_pb2.UserRemove()
+        msg.session = user.session
+        msg.actor = self.ourselves.session
+        if reason is not None:
+            msg.reason = reason
+        msg.ban = True
+
+        self.sendProtobuf(msg)
 
     def msg(self, message, target="channel", target_id=None):
         if target_id is None and target == "channel":
@@ -906,6 +957,21 @@ class Protocol(ChannelsProtocol):
                 return self.users[name_or_session]
             except KeyError:
                 return None
+
+    # region Permissions
+
+    def set_permissions(self, channel, permissions, flush=False):
+        # TODO: Investigate flush properly
+        self._acls[channel] = permissions
+
+    def has_permission(self, channel, *perms):
+        if not isinstance(channel, Channel):
+            channel = self.get_channel(channel)
+        if channel is None or channel not in self._acls:
+            return False
+        return Perms.has_permission(self._acls[channel], *perms)
+
+    # endregion
 
     def print_users(self):
         # TODO: Remove this debug function once user handling is complete
