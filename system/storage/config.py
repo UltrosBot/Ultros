@@ -102,10 +102,7 @@ class Config(object):
         :param func: The callback to add
         :type func: function
         """
-        if callable(func):
-            self.callbacks.append(func)
-        else:
-            raise ValueError(_("Invalid callback supplied!"))
+        raise NotImplementedError(_("This function needs to be implemented."))
 
     def reload(self, run_callbacks=True):
         """
@@ -113,8 +110,7 @@ class Config(object):
 
         This should also call the registered callbacks.
         """
-
-        pass
+        raise NotImplementedError(_("This function needs to be implemented."))
 
 
 class YamlConfig(Config):
@@ -153,6 +149,18 @@ class YamlConfig(Config):
         filename = filename.strip("..")
         self.filename = filename
         self.exists = self.reload(False)
+
+    def add_callback(self, func):
+        """
+        Add a callback to be called when the data file is reloaded.
+
+        :param func: The callback to add
+        :type func: function
+        """
+        if callable(func):
+            self.callbacks.append(func)
+        else:
+            raise ValueError(_("Invalid callback supplied!"))
 
     def reload(self, run_callbacks=True):
         """
@@ -276,12 +284,26 @@ class JSONConfig(Config):
     exists = True
     fh = None
 
+    callbacks = list()
+
     def __init__(self, filename):
         self.logger = getLogger("YamlConfig")
         # Some sanitizing here to make sure people can't escape the config dirs
         filename = filename.strip("..")
         self.filename = filename
         self.exists = self.reload(False)
+
+    def add_callback(self, func):
+        """
+        Add a callback to be called when the data file is reloaded.
+
+        :param func: The callback to add
+        :type func: function
+        """
+        if callable(func):
+            self.callbacks.append(func)
+        else:
+            raise ValueError(_("Invalid callback supplied!"))
 
     def reload(self, run_callbacks=True):
         """
@@ -409,10 +431,24 @@ class MemoryConfig(Config):
 
     filename = ":memory:"
 
+    callbacks = list()
+
     def __init__(self, data_dict):
         self.logger = getLogger("MemoryConfig")
         self.exists = True
         self.data = data_dict
+
+    def add_callback(self, func):
+        """
+        Add a callback to be called when the data file is reloaded.
+
+        :param func: The callback to add
+        :type func: function
+        """
+        if callable(func):
+            self.callbacks.append(func)
+        else:
+            raise ValueError(_("Invalid callback supplied!"))
 
     def reload(self, run_callbacks=True):
         """

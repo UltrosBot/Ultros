@@ -46,7 +46,7 @@ class Data(object):
     representation = None
 
     #: List of callbacks to be called when the file is reloaded
-    callbacks = []
+    callbacks = list()
 
     def validate(self, data):
         """
@@ -95,10 +95,7 @@ class Data(object):
         :param func: The callback to add
         :type func: function
         """
-        if callable(func):
-            self.callbacks.append(func)
-        else:
-            raise ValueError(_("Invalid callback supplied!"))
+        raise NotImplementedError(_("This function needs to be implemented."))
 
     def reload(self, run_callbacks=True):
         """
@@ -106,8 +103,7 @@ class Data(object):
 
         This should also call the registered callbacks.
         """
-
-        pass
+        raise NotImplementedError(_("This function needs to be implemented."))
 
 
 class YamlData(Data):
@@ -146,6 +142,8 @@ class YamlData(Data):
     enforced.
     """
 
+    callbacks = list()
+
     editable = True
     representation = "yaml"
 
@@ -170,6 +168,18 @@ class YamlData(Data):
 
         self.filename = filename
         self.reload(False)
+
+    def add_callback(self, func):
+        """
+        Add a callback to be called when the data file is reloaded.
+
+        :param func: The callback to add
+        :type func: function
+        """
+        if callable(func):
+            self.callbacks.append(func)
+        else:
+            raise ValueError(_("Invalid callback supplied!"))
 
     def reload(self, run_callbacks=True):
         """
@@ -321,6 +331,8 @@ class MemoryData(Data):
     this.
     """
 
+    callbacks = list()
+
     editable = False
     representation = "json"
 
@@ -335,6 +347,18 @@ class MemoryData(Data):
     def __init__(self, data_dict):
         self.logger = getLogger("Data")
         self.data = data_dict
+
+    def add_callback(self, func):
+        """
+        Add a callback to be called when the data file is reloaded.
+
+        :param func: The callback to add
+        :type func: function
+        """
+        if callable(func):
+            self.callbacks.append(func)
+        else:
+            raise ValueError(_("Invalid callback supplied!"))
 
     def reload(self, run_callbacks=True):
         """
@@ -440,6 +464,8 @@ class JSONData(Data):
     enforced.
     """
 
+    callbacks = list()
+
     editable = True
     representation = "json"
 
@@ -463,6 +489,18 @@ class JSONData(Data):
 
         self.filename = filename
         self.reload(False)
+
+    def add_callback(self, func):
+        """
+        Add a callback to be called when the data file is reloaded.
+
+        :param func: The callback to add
+        :type func: function
+        """
+        if callable(func):
+            self.callbacks.append(func)
+        else:
+            raise ValueError(_("Invalid callback supplied!"))
 
     def reload(self, run_callbacks=True):
         """
@@ -683,6 +721,8 @@ class DBAPIData(Data):
     More info: https://twistedmatrix.com/documents/12.0.0/core/howto/rdbms.html
     """
 
+    callbacks = list()
+
     representation = "json"
     format = formats.DBAPI
 
@@ -709,6 +749,18 @@ class DBAPIData(Data):
         self.logger.debug(_("Parsed module: %s") % parsed_module)
 
         self.reconnect()
+
+    def add_callback(self, func):
+        """
+        Add a callback to be called when the data file is reloaded.
+
+        :param func: The callback to add
+        :type func: function
+        """
+        if callable(func):
+            self.callbacks.append(func)
+        else:
+            raise ValueError(_("Invalid callback supplied!"))
 
     def reconnect(self):
         args = self.args
