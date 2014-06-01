@@ -109,13 +109,17 @@ class Manager(object):
 
     def signal_callback(self, signum, frame):
         try:
-            if reactor.running:
+            try:
+                self.unload()
+            except:
+                self.logger.exception(_("Error while unloading!"))
                 try:
-                    self.unload()
-                except:
-                    self.logger.exception(_("Error while unloading!"))
-                finally:
                     reactor.stop()
+                except:
+                    try:
+                        reactor.crash()
+                    except:
+                        pass
         except:
             exit(0)
 

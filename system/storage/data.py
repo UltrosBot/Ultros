@@ -39,14 +39,16 @@ class Data(object):
     Base class for data storage objects, mostly for type-checking.
     """
     #: Whether the file is editable
-    editable = False
+    #: :type: bool
+    editable = None
 
     #: Could also be "json" or "yaml", for syntax highlighting purposes
     #: Set this to None if the file can't be represented or edited
     representation = None
 
     #: List of callbacks to be called when the file is reloaded
-    callbacks = []
+    #: :type: list
+    callbacks = None
 
     def validate(self, data):
         """
@@ -158,6 +160,8 @@ class YamlData(Data):
     format = formats.YAML
 
     def __init__(self, filename):
+        self.callbacks = []
+
         self.logger = getLogger("Data")
         filename = filename.strip("..")
 
@@ -333,6 +337,8 @@ class MemoryData(Data):
     filename = ":memory:"  # So plugins can check for this easier
 
     def __init__(self, data_dict):
+        self.callbacks = []
+
         self.logger = getLogger("Data")
         self.data = data_dict
 
@@ -451,6 +457,8 @@ class JSONData(Data):
     _context_guarded = False
 
     def __init__(self, filename):
+        self.callbacks = []
+
         self.logger = getLogger("Data")
         filename = filename.strip("..")
 
@@ -690,6 +698,8 @@ class DBAPIData(Data):
     info = ""
 
     def __init__(self, path, *args, **kwargs):
+        self.callbacks = []
+
         self.logger = getLogger("DBAPI")
 
         path = path.replace("//", "/")

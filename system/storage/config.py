@@ -40,14 +40,16 @@ class Config(object):
     Base class for configuration objects, mostly for type-checking.
     """
     #: Whether the file is editable
-    editable = False
+    #: :type: bool
+    editable = None
 
     #: Could also be "json" or "yaml", for syntax highlighting purposes
     #: Set this to None if the file can't be represented or edited
     representation = None
 
     #: List of callbacks to be called when the file is reloaded
-    callbacks = list()
+    #: :type: list
+    callbacks = None
 
     def validate(self, data):
         """
@@ -148,6 +150,8 @@ class YamlConfig(Config):
     callbacks = list()
 
     def __init__(self, filename):
+        self.callbacks = []
+
         self.logger = getLogger("YamlConfig")
         # Some sanitizing here to make sure people can't escape the config dirs
         filename = filename.strip("..")
@@ -277,6 +281,8 @@ class JSONConfig(Config):
     fh = None
 
     def __init__(self, filename):
+        self.callbacks = []
+
         self.logger = getLogger("YamlConfig")
         # Some sanitizing here to make sure people can't escape the config dirs
         filename = filename.strip("..")
@@ -410,6 +416,8 @@ class MemoryConfig(Config):
     filename = ":memory:"
 
     def __init__(self, data_dict):
+        self.callbacks = []
+
         self.logger = getLogger("MemoryConfig")
         self.exists = True
         self.data = data_dict

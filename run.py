@@ -44,6 +44,10 @@ p.add_argument("-ml", "--mlanguage", help="Specify which language to use for "
                                           "chat messages")
 p.add_argument("-u", "--update", help="Run an update and quit",
                action="store_true")
+p.add_argument("-n", "--no-catch",
+               help="Exit immediately instead of waiting for someone to press "
+                    "enter",
+               action="store_true")
 
 args = p.parse_args()
 trans = Translations(args.language, args.mlanguage)
@@ -119,14 +123,16 @@ def main():
     except SystemExit as e:
         close_log("output.log")
         decorators.pool.stop()
+        os.remove("ultros.pid")
         exit(e.code)
     finally:
         try:
             manager.unload()
             close_log("output.log")
             decorators.pool.stop()
+            os.remove("ultros.pid")
 
-            if "--no-catch" not in sys.argv:
+            if not args.no_catch:
                 raw_input(_("Press enter to exit."))
         except:
             pass
