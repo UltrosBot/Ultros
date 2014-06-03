@@ -46,7 +46,7 @@ class TestPlugin(PluginObject):
             os.makedirs(self.confdir)
             os.makedirs(self.datadir)
             self.logger.debug("Config and data dirs created.")
-        except:
+        except Exception:
             pass
 
         yaml.dump({"editor_warning": False},

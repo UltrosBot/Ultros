@@ -11,7 +11,7 @@ try:
     commit = master.commit
 
     __version__ = "Git: %s" % commit.id
-except:
+except Exception:
     pass
 
 # Constants related to (un)loading plugins

@@ -128,7 +128,7 @@ class Metrics(object):
                 if "uuid" not in self.data:
                     try:
                         uuid = self.get(self.uuid_url)
-                    except:
+                    except Exception:
                         self.log.exception(_("Error getting UUID"))
                         return
                     self.data["uuid"] = uuid
@@ -170,7 +170,7 @@ class Metrics(object):
                 if r["result"] == "error":
                     self.log.error(_("Error submitting metrics: %s")
                                    % r["error"])
-            except:
+            except Exception:
                 self.log.exception(_("Error submitting metrics"))
         elif self.status is False:
             self.log.debug(_("Submitting disable message."))
@@ -184,7 +184,7 @@ class Metrics(object):
                 if r["result"] == "error":
                     self.log.error(_("Error submitting disable message: %s")
                                    % r["error"])
-            except:
+            except Exception:
                 self.log.exception(_("Error submitting disable message"))
             else:
                 with self.data:
@@ -205,7 +205,7 @@ class Metrics(object):
                 else:
                     self.log.warn(_("Unknown UUID, data was already removed "
                                     "from the server."))
-            except:
+            except Exception:
                 self.log.exception(_("Error submitting destruction message"))
             else:
                 with self.data:

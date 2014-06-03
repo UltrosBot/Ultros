@@ -137,7 +137,7 @@ class IRCUtils(object):
             y = self.CASE_MAPPINGS
             self._case_mapping = y[x]
             # self._case_mapping = self.CASE_MAPPINGS[val.lower()]
-        except:
+        except Exception:
             self.log.warning(_("Invalid case mapping: %s") % val)
 
     def lowercase_nick_chan(self, nick):

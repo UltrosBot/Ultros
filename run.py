@@ -134,7 +134,7 @@ def main():
 
             if not args.no_catch:
                 raw_input(_("Press enter to exit."))
-        except:
+        except Exception:
             pass
 
 if args.update:

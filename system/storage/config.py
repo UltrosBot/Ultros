@@ -176,7 +176,7 @@ class YamlConfig(Config):
                 for callback in self.callbacks:
                     try:
                         callback()
-                    except:
+                    except Exception:
                         self.logger.exception(_("Error running callback %s")
                                               % callback)
             return True
@@ -307,7 +307,7 @@ class JSONConfig(Config):
                 for callback in self.callbacks:
                     try:
                         callback()
-                    except:
+                    except Exception:
                         self.logger.exception(_("Error running callback %s")
                                               % callback)
             return True
@@ -430,7 +430,7 @@ class MemoryConfig(Config):
             for callback in self.callbacks:
                 try:
                     callback()
-                except:
+                except Exception:
                     self.logger.exception(_("Error running callback %s")
                                           % callback)
         return True

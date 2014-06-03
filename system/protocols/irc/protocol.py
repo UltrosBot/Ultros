@@ -418,7 +418,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
         try:
             user_obj = self._get_user_from_user_string(user)
-        except:
+        except Exception:
             # Notices from the server itself and things
             self.log.debug(_("Notice from irregular user: %s") % user)
             user_obj = User(self, nickname=user, is_tracked=False)
@@ -479,7 +479,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
         try:
             user_obj = self._get_user_from_user_string(user)
-        except:
+        except Exception:
             # CTCP from the server itself and things (if that happens)
             self.log.debug(_("CTCP from irregular user: %s") % user)
             user_obj = User(self, nickname=user, is_tracked=False)
@@ -583,7 +583,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         # Get user/channel objects
         try:
             user_obj = self._get_user_from_user_string(user)
-        except:
+        except Exception:
             # Mode change from the server itself and things
             self.log.debug(_("Mode change from irregular user: %s") % user)
             user_obj = User(self, nickname=user, is_tracked=False)
@@ -966,7 +966,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         if fullname:
             try:
                 nickname, ident, host = self.utils.split_hostmask(fullname)
-            except:
+            except Exception:
                 return None
         if ident:
             ident = ident.lower()

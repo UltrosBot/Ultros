@@ -145,7 +145,7 @@ class URLsPlugin(plugin.PluginObject):
                     try:
                         self.catcher.insert_url(url, source.nickname,
                                                 target.name, protocol.name)
-                    except:
+                    except Exception:
                         self.logger.exception(_("Error catching URL"))
 
                 title, domain = self.parse_title(url)

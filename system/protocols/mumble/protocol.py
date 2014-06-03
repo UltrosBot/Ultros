@@ -201,7 +201,7 @@ class Protocol(ChannelsProtocol):
                                  "with certificate file"))
             except IOError:
                 self.log.error(_("Could not load cert file"))
-            except:
+            except Exception:
                 self.log.exception(_("Unknown error while loading certificate "
                                      "file"))
             return None

@@ -92,7 +92,7 @@ class Manager(object):
 
         try:
             self.metrics = Metrics(self.main_config, self)
-        except:
+        except Exception:
             self.logger.exception(_("Error setting up metrics."))
 
         event = ReactorStartedEvent(self)
@@ -111,16 +111,16 @@ class Manager(object):
         try:
             try:
                 self.unload()
-            except:
+            except Exception:
                 self.logger.exception(_("Error while unloading!"))
                 try:
                     reactor.stop()
-                except:
+                except Exception:
                     try:
                         reactor.crash()
-                    except:
+                    except Exception:
                         pass
-        except:
+        except Exception:
             exit(0)
 
     # Load stuff
@@ -461,7 +461,7 @@ class Manager(object):
         if reactor.running:
             try:
                 reactor.stop()
-            except:
+            except Exception:
                 self.logger.exception("Error stopping reactor")
 
     # Grab stuff

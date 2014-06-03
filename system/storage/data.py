@@ -186,7 +186,7 @@ class YamlData(Data):
                     for callback in self.callbacks:
                         try:
                             callback()
-                        except:
+                        except Exception:
                             self.logger.exception(_("Error running callback "
                                                     "%s")
                                                   % callback)
@@ -196,7 +196,7 @@ class YamlData(Data):
                 for callback in self.callbacks:
                     try:
                         callback()
-                    except:
+                    except Exception:
                         self.logger.exception(_("Error running callback %s")
                                               % callback)
 
@@ -352,7 +352,7 @@ class MemoryData(Data):
                     for callback in self.callbacks:
                         try:
                             callback()
-                        except:
+                        except Exception:
                             self.logger.exception(_("Error running callback "
                                                     "%s")
                                                   % callback)
@@ -361,7 +361,7 @@ class MemoryData(Data):
                 for callback in self.callbacks:
                     try:
                         callback()
-                    except:
+                    except Exception:
                         self.logger.exception(_("Error running callback %s")
                                               % callback)
 
@@ -483,7 +483,7 @@ class JSONData(Data):
                     for callback in self.callbacks:
                         try:
                             callback()
-                        except:
+                        except Exception:
                             self.logger.exception(_("Error running callback "
                                                     "%s")
                                                   % callback)
@@ -493,7 +493,7 @@ class JSONData(Data):
                 for callback in self.callbacks:
                     try:
                         callback()
-                    except:
+                    except Exception:
                         self.logger.exception(_("Error running callback %s")
                                               % callback)
 

@@ -457,7 +457,7 @@ class FactoidsPlugin(plugin.PluginObject):
                             parsed_args):
         try:
             location, factoid, info = self._parse_args(raw_args)
-        except:
+        except Exception:
             caller.respond(__("Usage: %s <location> <factoid> <info>")
                            % command)
             return

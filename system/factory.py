@@ -93,7 +93,7 @@ class Factory(protocol.ClientFactory):
         self.shutting_down = True
         try:
             self.protocol.shutdown()
-        except:
+        except Exception:
             self.logger.exception(_("Error shutting down"))
 
     def buildProtocol(self, addr):
@@ -113,7 +113,7 @@ class Factory(protocol.ClientFactory):
         if hasattr(self.protocol, "on_connection_lost"):
             try:
                 self.protocol.on_connection_lost()
-            except:
+            except Exception:
                 self.logger.exception(_("Error calling \"connection lost\" "
                                         "callback"))
 
@@ -140,7 +140,7 @@ class Factory(protocol.ClientFactory):
         if hasattr(self.protocol, "on_connection_failed"):
             try:
                 self.protocol.on_connection_failed()
-            except:
+            except Exception:
                 self.logger.exception(_("Error calling \"connection failed\" "
                                         "callback"))
 
@@ -162,7 +162,7 @@ class Factory(protocol.ClientFactory):
         if hasattr(self.protocol, "on_connected"):
             try:
                 self.protocol.on_connected()
-            except:
+            except Exception:
                 self.logger.exception(_("Error calling \"connected\" "
                                         "callback"))
 
