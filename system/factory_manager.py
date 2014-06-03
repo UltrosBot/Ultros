@@ -420,6 +420,7 @@ class Manager(object):
                 self.logger.error(_("Error disabling plugin: %s") % name)
                 output_exception(self.logger, logging.ERROR)
             self.event_manager.remove_callbacks_for_plugin(name)
+            self.storage.release_files(plug)
             del self.loaded_plugins[name]
             return PLUGIN_UNLOADED
         return PLUGIN_NOT_EXISTS
@@ -442,6 +443,12 @@ class Manager(object):
             except Exception:
                 self.logger.exception(_("Error shutting down protocol %s")
                                       % name)
+            finally:
+                try:
+                    self.storage.release_files(proto)
+                except Exception:
+                    self.logger.exception("Error releasing files for protocol "
+                                          "%s" % name)
             del self.factories[name]
             return True
         return False

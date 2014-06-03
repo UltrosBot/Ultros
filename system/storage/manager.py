@@ -136,3 +136,22 @@ class StorageManager(object):
             self.editors.append(instance)
             return True
         return False
+
+    def release_files(self, instance):
+        """
+        Release all loaded files for an instance.
+        :param instance: Instance to release files from
+        :return:
+        """
+
+        for key in self.config_files.keys():
+            f = self.config_files[key]
+            if f.is_owner(instance):
+                f.release()
+                del self.config_files[key]
+
+        for key in self.data_files.keys():
+            f = self.data_files[key]
+            if f.is_owner(instance):
+                f.release()
+                del self.data_files[key]
