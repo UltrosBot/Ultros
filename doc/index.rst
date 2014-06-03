@@ -25,7 +25,7 @@ out very soon!
 
    api/index
 
-   development/index
+.. development/index
 
 Indexes
 =======
