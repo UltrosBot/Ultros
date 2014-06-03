@@ -17,6 +17,6 @@ script:
 notifications:
   irc:
     channels:
-      - "irc.esper.net#Ultros"
+      - "irc.esper.net#Ultros-travis"
     template:
       - "%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}"
