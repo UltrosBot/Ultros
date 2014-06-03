@@ -110,7 +110,7 @@ class StorageManager(object):
                 if not self.data_files[path].is_owner(obj):
                     raise OtherOwnershipError(_("Data file %s is owned by "
                                                 "another object.") % path)
-                self.data_files[path].release()
+                self.data_files[path].release(self)
                 del self.data_files[path]
                 return True
             return False
@@ -120,7 +120,7 @@ class StorageManager(object):
                 if not self.config_files[path].is_owner(obj):
                     raise OtherOwnershipError(_("Data file %s is owned by "
                                                 "another object.") % path)
-                self.config_files[path].release()
+                self.config_files[path].release(self)
                 del self.config_files[path]
                 return True
             return False
@@ -149,7 +149,7 @@ class StorageManager(object):
             f = self.config_files[key]
             if f.is_owner(instance):
                 self.log.debug(_("Obj %s owns this file.") % instance)
-                f.release()
+                f.release(self)
                 del self.config_files[key]
 
         for key in self.data_files.keys():
@@ -157,5 +157,5 @@ class StorageManager(object):
             f = self.data_files[key]
             if f.is_owner(instance):
                 self.log.debug(_("Obj %s owns this file.") % instance)
-                f.release()
+                f.release(self)
                 del self.data_files[key]
