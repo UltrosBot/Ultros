@@ -445,7 +445,10 @@ class Manager(object):
                                       % name)
             finally:
                 try:
+                    self.storage.release_file(self, "config",
+                                              "protocols/%s.yml" % name)
                     self.storage.release_files(proto)
+                    self.storage.release_files(proto.protocol)
                 except Exception:
                     self.logger.exception("Error releasing files for protocol "
                                           "%s" % name)
