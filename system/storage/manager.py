@@ -145,13 +145,17 @@ class StorageManager(object):
         """
 
         for key in self.config_files.keys():
+            self.log.debug(_("Checking config file: %s") % key)
             f = self.config_files[key]
             if f.is_owner(instance):
+                self.log.debug(_("Obj %s owns this file.") % instance)
                 f.release()
                 del self.config_files[key]
 
         for key in self.data_files.keys():
+            self.log.debug(_("Checking data file: %s") % key)
             f = self.data_files[key]
             if f.is_owner(instance):
+                self.log.debug(_("Obj %s owns this file.") % instance)
                 f.release()
                 del self.data_files[key]
