@@ -412,12 +412,13 @@ class Manager(object):
         """
 
         if name in self.loaded_plugins:
+            plug = self.plugman.getPluginByName(name)
+            self.commands.unregister_commands_for_owner(plug)
             try:
                 self.plugman.deactivatePluginByName(name)
             except Exception:
                 self.logger.error(_("Error disabling plugin: %s") % name)
                 output_exception(self.logger, logging.ERROR)
-            self.commands.unregister_commands_for_owner(name)
             self.event_manager.remove_callbacks_for_plugin(name)
             del self.loaded_plugins[name]
             return PLUGIN_UNLOADED
