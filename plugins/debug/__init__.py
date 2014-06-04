@@ -2,6 +2,8 @@ __author__ = 'Gareth Coles'
 
 import code
 
+from kitchen.text.converters import to_bytes
+
 import system.plugin as plugin
 from system.command_manager import CommandManager
 
@@ -35,7 +37,7 @@ class DebugPlugin(plugin.PluginObject):
 
     def output(self, message):
         source = self.source
-        message = str(message)
+        message = to_bytes(message)
         message = message.replace("\r", "")
 
         if "\n" not in message:
