@@ -10,7 +10,7 @@ __ = Translations().get_m()
 
 
 class PagesPlugin(plugin.PluginObject):
-    lines_per_page = 3
+    lines_per_page = 5
     stored_pages = {}
 
     commands = None
@@ -30,13 +30,13 @@ class PagesPlugin(plugin.PluginObject):
             return
 
         index = pagenum - 1
-        numpages = len(self.stored_pages[pagenum])
+        numpages = len(self.stored_pages[pageset]) - 1
         if index > numpages:
             target.respond(__("Page %s not found - there are %s pages.") %
                            (pagenum, numpages + 1))
             return
 
-        page = self.stored_pages[pagenum][index]
+        page = self.stored_pages[pageset][index]
 
         target.respond(__("== Page %s/%s ==") % (pagenum, numpages + 1))
         for line in page:
@@ -68,10 +68,16 @@ class PagesPlugin(plugin.PluginObject):
             args = raw_args.split()
 
         if len(args) < 1:
-            caller.respond(__("Usage: {CHARS}page <page number>"))
+            caller.respond(__("Usage: {CHARS}%s <page number>" % command))
             return
 
         pagenum = args[0]
-        page = self.get_pageset(protocol.name, source.name)
+        try:
+            pagenum = int(pagenum)
+        except Exception:
+            source.respond("'%s' is not a number." % pagenum)
+            return
+
+        page = self.get_pageset(protocol, source)
 
         self.send_page(page, pagenum, source)
