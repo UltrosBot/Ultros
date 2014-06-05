@@ -505,6 +505,20 @@ class Manager(object):
             return self.factories[name]
         return None
 
+    def get_plugin(self, name):
+        """
+        Get the insatnce of a plugin, by name.
+        :param name: The name of the plugin
+        :type name: str
+
+        :return: The plugin, or None if it isn't loaded.
+        """
+
+        plug = self.plugman.getPluginByName(name)
+        if plug:
+            return plug.plugin_object
+        return plug
+
     def remove_protocol(self, protocol):  # Removes without shutdown
         """
         Remove a protocol without shutting it down. You shouldn't use this.

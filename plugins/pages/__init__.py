@@ -59,6 +59,9 @@ class PagesPlugin(plugin.PluginObject):
 
         self.stored_pages[pageset] = pages
 
+    def get_pageset(self, protocol, target):
+        return "%s:%s" % (protocol.name, target.name)
+
     def page_command(self, protocol, caller, source, command, raw_args,
                      args):
         if args is None:
@@ -69,6 +72,6 @@ class PagesPlugin(plugin.PluginObject):
             return
 
         pagenum = args[0]
-        page = "%s:%s" % (protocol.name, source.name)
+        page = self.get_pageset(protocol.name, source.name)
 
         self.send_page(page, pagenum, source)
