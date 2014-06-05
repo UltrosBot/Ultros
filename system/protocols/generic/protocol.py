@@ -89,6 +89,7 @@ class Protocol(protocol.Protocol):
 
     nickname = ""
     ourselves = None
+    can_flood = False
 
     def __init__(self, name, factory, config):
         # You don't necessarily need to call the super-class here,

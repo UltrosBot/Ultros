@@ -1,7 +1,7 @@
 core:
   name: URLs
   module: urls
-  dependencies: []
+  dependencies: [Auth]
 info:
   description: URL handler for working with URLs and page titles
   author: Gareth Coles

@@ -1,7 +1,7 @@
 core:
   name: Debug
   module: debug
-  dependencies: []
+  dependencies: [Auth]
 info:
   description: Debugging plugin.
   author: Gareth Coles

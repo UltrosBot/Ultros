@@ -1,7 +1,7 @@
 core:
   name: Dialectizer
   module: dialectizer
-  dependencies: []
+  dependencies: [Auth]
 info:
   description: Bork bork bork, uh-hah-hah-hah.
   author: Gareth Coles

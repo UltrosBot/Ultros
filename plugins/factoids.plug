@@ -1,7 +1,7 @@
 core:
   name: Factoids
   module: factoids
-  dependencies: []
+  dependencies: [Auth]
 info:
   description: "Allows factoids to be added to the bot, then recalled at any point in the future."
   author: Sean Gordon

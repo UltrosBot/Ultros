@@ -14,5 +14,9 @@ class User(object):
         self.protocol = protocol
         self.is_tracked = is_tracked
 
+    @property
+    def name(self):
+        return self.nickname
+
     def respond(self, message):
         raise NotImplementedError(_("This method must be overridden"))
