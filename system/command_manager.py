@@ -192,7 +192,7 @@ class CommandManager(object):
                                                             raw_args,
                                                             parsed_args)
                             except Exception as e:
-                                output_exception(self.logger, logging.DEBUG)
+                                self.logger.exception("")
                                 return False, e
                         else:
                             return False, True
@@ -206,7 +206,7 @@ class CommandManager(object):
                                                             raw_args,
                                                             parsed_args)
                             except Exception as e:
-                                output_exception(self.logger, logging.DEBUG)
+                                self.logger.exception("")
                                 return False, e
                         else:
                             return False, True
@@ -214,7 +214,7 @@ class CommandManager(object):
                 self.commands[command]["f"](protocol, caller, source, command,
                                             raw_args, parsed_args)
         except Exception as e:
-            output_exception(self.logger, logging.ERROR)
+            self.logger.exception("")
             return False, e
         else:
             return True, None
