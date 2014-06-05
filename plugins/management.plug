@@ -1,0 +1,10 @@
+core:
+  name: Management
+  module: management
+  dependencies: [Auth, Pages]
+info:
+  description: A plugin designed to allow bot managmenet via commands on chat networks
+  author: Gareth Coles
+  version: 0.0.1
+  website: https://github.com/McBlockitHelpbot/Ultros/tree/master/plugins/management
+  copyright: See Ultros' license
