@@ -3,11 +3,8 @@ import shlex
 
 __author__ = "Gareth Coles"
 
-import logging
-
 from system.singleton import Singleton
 from utils.log import getLogger
-from utils.misc import output_exception
 
 from system.translations import Translations
 _ = Translations().get()
