@@ -160,12 +160,12 @@ class YamlPluginInfo(PluginInfo):
     author = property(fget=__getAuthor, fset=__setAuthor)
     copyright = property(fget=__getCopyright, fset=__setCopyright)
     website = property(fget=__getWebsite, fset=__setWebsite)
-    description = property(fget=__getDescription ,fset=__setDescription)
-    dependencies = property(fget=__getDependencies ,fset=__setDependencies)
+    description = property(fget=__getDescription, fset=__setDescription)
+    dependencies = property(fget=__getDependencies, fset=__setDependencies)
     details = property(fget=__getDetails, fset=__setDetails)
-    # deprecated (>1.9): plugins are not longer assocaited to a
+    # deprecated (>1.9): plugins are not longer associated to a
     # single category !
-    category = property(fget=__getCategory,fset=__setCategory)
+    category = property(fget=__getCategory, fset=__setCategory)
 
     def _ensureDetailsDefaultsAreBackwardCompatible(self):
         """
@@ -212,17 +212,17 @@ class PluginFileAnalyzerWithYamlInfoFile(PluginFileAnalyzerWithInfoFile):
             data = yaml.load(infoFileObject)
         except Exception, e:
             self.logging.debug(_("Could not parse the plugin file '%s' "
-                               "(exception raised was '%s')")
+                                 "(exception raised was '%s')")
                                % (candidate_infofile, e))
             return None, None, None
         # check if the basic info is available
         if "core" not in data:
             self. logging.debug(_("Plugin info file has no 'core' section (in "
-                                "'%s')") % candidate_infofile)
+                                  "'%s')") % candidate_infofile)
             return None, None, None
         if "name" not in data["core"] or "module" not in data["core"]:
             self.logging.debug(_("Plugin info file has no 'name' or 'module' "
-                               "section (in '%s')")
+                                 "section (in '%s')")
                                % candidate_infofile)
             return None, None, None
         # check that the given name is valid

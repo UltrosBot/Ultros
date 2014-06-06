@@ -47,6 +47,7 @@ config/**/*.yml
 !config/**/*.yml.example
 data/
 doc/_build
+ultros.pid
 
 # Certificates
 *.p12

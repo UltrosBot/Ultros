@@ -259,7 +259,9 @@ class Manager(object):
         if name in self.all_plugins:
             if name in self.loaded_plugins:
                 if unload:
-                    self.unload_plugin(name)
+                    res = self.unload_plugin(name)
+                    if res != PLUGIN_UNLOADED:
+                        return res
                 else:
                     return PLUGIN_ALREADY_LOADED
 
@@ -412,7 +414,7 @@ class Manager(object):
         """
 
         if name in self.loaded_plugins:
-            plug = self.plugman.getPluginByName(name)
+            plug = self.plugman.getPluginByName(name).plugin_object
             self.commands.unregister_commands_for_owner(plug)
             try:
                 self.plugman.deactivatePluginByName(name)

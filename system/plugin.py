@@ -19,15 +19,19 @@ class PluginObject(IPlugin):
     """
 
     #: Storage for the PluginInfo object
+    #: :type: YamlPluginInfo
     info = None
 
     #: Name of the plugin module, populated automatically
+    #: :type: str
     module = ""
 
     #: Assigned instance of the standard Python logger
+    #: :type: logger
     logger = None
 
     #: Stored instance of the factory manager, for convenience
+    #: :type: FactoryManager
     factory_manager = None
 
     def __init__(self):
