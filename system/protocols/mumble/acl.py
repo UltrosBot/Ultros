@@ -54,7 +54,7 @@ class Perms(object):
         "ALL": ALL
     }
 
-    PERM_TO_NAME = {v: k for k, v in NAME_TO_PERM.iteritems()}
+    PERM_TO_NAME = dict((v, k) for (k, v) in NAME_TO_PERM.iteritems())
 
     @staticmethod
     def has_permission(user_perms, *perms):
@@ -118,4 +118,6 @@ if __name__ == "__main__":
 
     print "\n=== get_permissions_int() ==="
     print Perms.get_permissions_int(*Perms.get_permissions(user_perms))
-    print "Result is correct?", user_perms == Perms.get_permissions_int(*Perms.get_permissions(user_perms))
+    print "Result is correct?", user_perms == Perms.get_permissions_int(
+        *Perms.get_permissions(user_perms)
+    )

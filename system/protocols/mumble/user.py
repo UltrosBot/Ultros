@@ -1,5 +1,4 @@
 # coding=utf-8
-from system.protocols.generic.channel import Channel
 from system.protocols.mumble.acl import Perms
 
 __author__ = 'Sean'
