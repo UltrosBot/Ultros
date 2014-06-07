@@ -111,6 +111,8 @@ class URLsPlugin(plugin.PluginObject):
     def check_blacklist(self, url):
         for element in self.blacklist:
             try:
+                self.logger.debug(_("Checking pattern '%s' against URL '%s'")
+                                  % (element, url))
                 if fnmatch.fnmatch(url, element):
                     return True
             except Exception as e:
@@ -409,6 +411,10 @@ class URLsPlugin(plugin.PluginObject):
             if _domain != domain:
                 self.logger.info(_("URL: %s") % new_url)
                 self.logger.info(_("Domain: %s") % domain)
+
+                if self.check_blacklist(new_url):
+                    self.logger.debug(_("Not parsing, URL is blacklisted."))
+                    return
 
                 ip = socket.gethostbyname(domain)
 
