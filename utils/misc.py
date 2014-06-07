@@ -25,6 +25,13 @@ def _output_error(logger, error, level):
         logger.log(level, error)
 
 
+def dict_swap(d):
+    """
+    :type d: dict
+    """
+    return {v: k for k, v in d.items()}
+
+
 def output_exception(logger, level=logging.ERROR):
     """
     Utility function for outputting exceptions.
