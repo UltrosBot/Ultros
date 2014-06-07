@@ -1,7 +1,7 @@
 from __builtin__ import staticmethod
-from utils.misc import AttrDict
 
 __author__ = 'Sean'
+
 
 class Perms(object):
     """
