@@ -1,5 +1,6 @@
 __author__ = 'Gareth Coles'
 
+import fnmatch
 import re
 import socket
 import urlparse
@@ -40,6 +41,7 @@ class URLsPlugin(plugin.PluginObject):
     shortened = None
     storage = None
 
+    blacklist = []
     handlers = {}
     shorteners = {}
     spoofing = {}
@@ -104,6 +106,13 @@ class URLsPlugin(plugin.PluginObject):
                                 "result TEXT)")
 
         self.catcher = Catcher(self, self.config, self.storage, self.logger)
+        self.blacklist = self.config.get("blacklist", [])
+
+    def check_blacklist(self, url):
+        for element in self.blacklist:
+            if fnmatch.fnmatch(url, element):
+                return True
+        return False
 
     @run_async_threadpool
     def message_handler(self, event=MessageReceived):
@@ -140,6 +149,10 @@ class URLsPlugin(plugin.PluginObject):
                     url = word[pos:end]
                 else:
                     url = word[pos:]
+
+                if self.check_blacklist(url):
+                    self.logger.debug(_("Not parsing, URL is blacklisted."))
+                    return
 
                 if isinstance(target, Channel):
                     try:
