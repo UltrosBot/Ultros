@@ -154,6 +154,11 @@ class URLsPlugin(plugin.PluginObject):
                 else:
                     url = word[pos:]
 
+                if url in ["http://", "https://"]:
+                    self.logger.debug(_("URL is not actually a URL, just %s"
+                                        % url))
+                    return
+
                 if self.check_blacklist(url):
                     self.logger.debug(_("Not parsing, URL is blacklisted."))
                     return
