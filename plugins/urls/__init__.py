@@ -110,8 +110,12 @@ class URLsPlugin(plugin.PluginObject):
 
     def check_blacklist(self, url):
         for element in self.blacklist:
-            if fnmatch.fnmatch(url, element):
-                return True
+            try:
+                if fnmatch.fnmatch(url, element):
+                    return True
+            except Exception as e:
+                self.logger.debug(_("Error in pattern matching: %s") % e)
+                return False
         return False
 
     @run_async_threadpool
