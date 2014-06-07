@@ -29,7 +29,11 @@ def dict_swap(d):
     """
     :type d: dict
     """
-    return {v: k for k, v in d.items()}
+    done = {}
+    for k, v in d.items():
+        done[v] = k
+
+    return done
 
 
 def output_exception(logger, level=logging.ERROR):
