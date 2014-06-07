@@ -8,6 +8,7 @@ content_types:  # Content-types to parse the title from. Be careful when modifyi
   - application/xhtml+xml
 
 blacklist: []  # List of patterns to match against URLs; if matched then the URL will be ignored.
+# Supports *, ?, [seq] and [!seq]
 # - yahoo.com/*
 # - youtube.com/watch?*
 # - vimeo.com/*/staffpicks/*
