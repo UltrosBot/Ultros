@@ -965,6 +965,8 @@ class Protocol(ChannelsProtocol):
         self._acls[channel] = permissions
 
     def has_permission(self, channel, *perms):
+        # TODO: Figure out how perms actually work, and how to store them, etc.
+        # Note: Do not use these yet.
         if not isinstance(channel, Channel):
             channel = self.get_channel(channel)
         if channel is None or channel not in self._acls:
