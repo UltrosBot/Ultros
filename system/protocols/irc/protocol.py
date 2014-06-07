@@ -1141,7 +1141,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
     def kick(self, user, channel=None, reason=None, force=False):
         # TODO: Event?
         if not force:
-            if self.ourselves.can_kick(user, channel):
+            if not self.ourselves.can_kick(user, channel):
                 self.log.debug("Tried to kick, but don't have permission")
                 return False
         if channel is None:
