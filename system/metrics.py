@@ -75,7 +75,7 @@ class Metrics(object):
 
     interval = 300  # Every 5 minutes
 
-    domain = "http://ultros.io"
+    domain = "https://ultros.io"
 
     submit_url = domain + "/api/metrics/post/%s"
     uuid_url = domain + "/api/metrics/get/uuid"
