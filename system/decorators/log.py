@@ -82,7 +82,7 @@ def deprecated(hint_message=None, logger=None):
         msg = "Function usage deprecated: %s" % func.__name__
         if hint_message is not None:
             msg += " - " + hint_message
-        
+
         def wrapper(*args, **kwargs):
             logger.warning(msg)
             return func(*args, **kwargs)
