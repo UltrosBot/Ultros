@@ -19,7 +19,7 @@ from system.translations import Translations
 
 logging.basicConfig(
     level=(logging.DEBUG if "--debug" in sys.argv else logging.INFO),
-    format="%(asctime)s | %(name)20s | %(levelname)8s | %(message)s",
+    format="%(asctime)s | %(name)25s | %(levelname)8s | %(message)s",
     datefmt="%d %b %Y - %H:%M:%S")
 
 loggers = {}
@@ -228,7 +228,7 @@ def getLogger(name, path=None,
 
     chandler = ColorizingStreamHandler()
     formatter = logging.Formatter(
-        "%(asctime)s | %(name)20s | %(levelname)8s | %(message)s")
+        "%(asctime)s | %(name)25s | %(levelname)8s | %(message)s")
     formatter.datefmt = datefmt
     chandler.setFormatter(formatter)
     chandler.setLevel(logging.DEBUG if "--debug" in sys.argv else logging.INFO)
@@ -251,7 +251,7 @@ def getLogger(name, path=None,
 
     handler = logging.FileHandler("logs/output.log")
     formatter = logging.Formatter(
-        "%(asctime)s | %(name)20s | %(levelname)8s | %(message)s")
+        "%(asctime)s | %(name)25s | %(levelname)8s | %(message)s")
     formatter.datefmt = datefmt
     handler.setFormatter(formatter)
     handler.setLevel(logging.DEBUG if "--debug" in sys.argv else logging.INFO)
@@ -286,7 +286,7 @@ def open_log(path):
 
     handler = logging.FileHandler(path)
     formatter = logging.Formatter(
-        "%(asctime)s | %(name)20s | %(levelname)8s | %(message)s")
+        "%(asctime)s | %(name)25s | %(levelname)8s | %(message)s")
     formatter.datefmt = "%d %b %Y - %H:%M:%S"
     handler.setFormatter(formatter)
     handler.setLevel(logging.DEBUG if "--debug" in sys.argv else logging.INFO)
@@ -319,7 +319,7 @@ def close_log(path):
 
     handler = logging.FileHandler(path)
     formatter = logging.Formatter(
-        "%(asctime)s | %(name)20s | %(levelname)8s | %(message)s")
+        "%(asctime)s | %(name)25s | %(levelname)8s | %(message)s")
     formatter.datefmt = "%d %b %Y - %H:%M:%S"
     handler.setFormatter(formatter)
     handler.setLevel(logging.DEBUG if "--debug" in sys.argv else logging.INFO)
