@@ -18,8 +18,14 @@ else
     source Ultros/bin/activate
 fi
 
-echo "**Starting Ultros.. **"
-python run.py
+while [ 1 ]
+do
+    echo "** Starting Ultros.. **"
+    python run.py $@
 
-echo "**Deactivating virtualenv.. **"
+    echo "** Updating.. **"
+    python run.py --update
+done
+
+echo "** Deactivating virtualenv.. **"
 deactivate

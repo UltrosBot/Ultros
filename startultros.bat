@@ -26,8 +26,13 @@ GOTO :INSTALLED
 
 :START
 
-echo "**Starting Ultros.. **"
-python run.py
+echo "** Starting Ultros.. **"
+python run.py %*
 
-echo "**Deactivating virtualenv.. **"
+echo "** Updating.. **"
+python run.py --update
+
+GOTO :START
+
+echo "** Deactivating virtualenv.. **"
 deactivate
