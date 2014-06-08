@@ -25,6 +25,9 @@ do
 
     echo "** Updating.. **"
     python run.py --update
+
+    echo "** Updating plugins.. **"
+    python packages.py update all
 done
 
 echo "** Deactivating virtualenv.. **"
