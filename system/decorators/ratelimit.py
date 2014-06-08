@@ -57,9 +57,9 @@ class RateLimiter(object):
             task = self._queue.get_nowait()
             try:
                 result = task[0](*task[1], **task[2])
-                # This feels wrong and dirty, but it works.
+                # This feels less wrong and but still dirty, but it works.
                 if isinstance(result, Deferred):
-                    result.addCallback(lambda s: task[3].callback(s))
+                    result.chainDeferred(task[3])
                 else:
                     task[3].callback(result)
             except:
