@@ -186,7 +186,7 @@ class ColorizingStreamHandler(logging.StreamHandler):
 
 
 def getLogger(name, path=None,
-              fmt="%(asctime)s | %(name)20s | %(levelname)8s | %(message)s",
+              fmt="%(asctime)s | %(name)25s | %(levelname)8s | %(message)s",
               datefmt="%d %b %Y - %H:%M:%S", displayname=None):
     """
     Works similarly to logging.getLogger(), get yourself a logger isntance.
@@ -198,8 +198,25 @@ def getLogger(name, path=None,
     :return: Logger
     """
 
-    if len(name) > 20:
-        raise ValueError("Logger name cannot be longer than 20 characters.")
+    if len(name) > 25:
+        if "." in name:
+            parts = name.split(".")
+            last = parts.pop()
+
+            done = ""
+
+            for x in parts:
+                done += x[0]
+                done += "."
+
+            done += last
+
+            if len(done) > 25:
+                done = done[:24] + "~"
+
+            name = done
+        else:
+            name = name[:24] + "~"
 
     if displayname is None:
         displayname = name
