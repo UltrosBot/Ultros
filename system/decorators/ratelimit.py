@@ -57,7 +57,11 @@ class RateLimiter(object):
             task = self._queue.get_nowait()
             try:
                 result = task[0](*task[1], **task[2])
-                task[3].callback(result)
+                # This feels wrong and dirty, but it works.
+                if isinstance(result, Deferred):
+                    result.addCallback(lambda s: task[3].callback(s))
+                else:
+                    task[3].callback(result)
             except:
                 _log.debug("Inner exception while updating queue",
                            exc_info=True)
