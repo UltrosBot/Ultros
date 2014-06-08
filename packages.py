@@ -290,14 +290,15 @@ def info(args, packages):
     print info["current_version"]["info"]
 
 
-def setup():
+def setup(auto=False):
     windows = os.name == "nt"
 
     if not windows:
         pip.main(["install", "-r", "requirements.txt"])
 
-        print _(">> Presuming everything installed okay, you should now be "
-                "ready to run Ultros!")
+        if not auto:
+            print _(">> Presuming everything installed okay, you should now "
+                    "be ready to run Ultros!")
     else:
         reqs = open("requirements.txt", "r").read()
         reqs = reqs.replace("\r", "")
@@ -328,6 +329,18 @@ def setup():
         }
 
         pip.main(["install"] + reqs)
+
+        if auto:
+            print ">> This was an automatic installation."
+            print ">> The following dependencies need to be installed " \
+                  "manually:"
+
+            for x in urls.keys():
+                print "- %s" % x
+
+                for u in urls[x]:
+                    print "  - %s" % u
+            return
 
         print ""
         print _(">> There are some things pip can't install.")

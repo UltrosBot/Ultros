@@ -48,10 +48,6 @@ p.add_argument("-n", "--no-catch",
                help="Exit immediately instead of waiting for someone to press "
                     "enter",
                action="store_true")
-p.add_argument("--loop",
-               help="Loop infinitely, updating automatically and restarting "
-                    "whenever the bot is shutdown.",
-               action="store_true")
 
 args = p.parse_args()
 trans = Translations(args.language, args.mlanguage)
@@ -75,8 +71,8 @@ def update():
         g.pull()
 
         import packages
+        packages.setup(True)
 
-        packages.setup()
         print _("Done!")
     except Exception as e:
         print _("Error updating: %s") % e
@@ -147,8 +143,4 @@ def main():
 if args.update:
     update()
 else:
-    if args.loop:
-        while True:
-            main()
-    else:
-        main()
+    main()
