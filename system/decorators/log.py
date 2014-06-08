@@ -20,6 +20,7 @@ def log_message(message, level=None, logger=None, before=True):
         level = logging.INFO
     if logger is None:
         logger = _log
+
     def wrap_func(func):
         if before:
             def wrapper(*args, **kwargs):
@@ -33,12 +34,14 @@ def log_message(message, level=None, logger=None, before=True):
         return wrapper
     return wrap_func
 
+
 def debug(message, *args, **kwargs):
     """
     Convenience function for `log_message` with debug level.
     Args are as for `log_message`, except `level`.
     """
     return log_message(message, logging.DEBUG, *args, **kwargs)
+
 
 def warn(message, *args, **kwargs):
     """
@@ -47,6 +50,7 @@ def warn(message, *args, **kwargs):
     """
     return log_message(message, logging.WARN, *args, **kwargs)
 
+
 def error(message, *args, **kwargs):
     """
     Convenience function for `log_message` with error level.
@@ -54,12 +58,14 @@ def error(message, *args, **kwargs):
     """
     return log_message(message, logging.ERROR, *args, **kwargs)
 
+
 def critical(message, *args, **kwargs):
     """
     Convenience function for `log_message` with critical level.
     Args are as for `log_message`, except `level`.
     """
     return log_message(message, logging.CRITICAL, *args, **kwargs)
+
 
 def deprecated(hint_message=None, logger=None):
     """
@@ -71,10 +77,12 @@ def deprecated(hint_message=None, logger=None):
     """
     if logger is None:
         logger = _log
+
     def wrap_func(func):
         msg = "Function usage deprecated: %s" % func.__name__
         if hint_message is not None:
             msg += " - " + hint_message
+        
         def wrapper(*args, **kwargs):
             logger.warning(msg)
             return func(*args, **kwargs)
