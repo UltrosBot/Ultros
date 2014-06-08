@@ -66,6 +66,9 @@ class ManagementPlugin(plugin.PluginObject):
         self.commands.register_command("users", self.users_command, self,
                                        "management.users",
                                        ["us", "user"])
+        self.commands.register_command("shutdown", self.shutdown_command, self,
+                                       "management.shutdown",
+                                       ["us", "user"])
 
     def storage_command(self, protocol, caller, source, command, raw_args,
                         args):
@@ -298,3 +301,7 @@ class ManagementPlugin(plugin.PluginObject):
 
         operation = args[0]
         caller.respond("Unknown operation: %s" % operation)
+
+    def shutdown_command(self, protocol, caller, source, command, raw_args,
+                         args):
+        self.factory_manager.unload()
