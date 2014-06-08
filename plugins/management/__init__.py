@@ -67,8 +67,7 @@ class ManagementPlugin(plugin.PluginObject):
                                        "management.users",
                                        ["us", "user"])
         self.commands.register_command("shutdown", self.shutdown_command, self,
-                                       "management.shutdown",
-                                       ["us", "user"])
+                                       "management.shutdown")
 
     def storage_command(self, protocol, caller, source, command, raw_args,
                         args):
