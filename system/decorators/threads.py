@@ -5,12 +5,14 @@ from threading import Thread
 
 from twisted.python.threadpool import ThreadPool
 
+from system.decorators.log import deprecated
 from system.translations import Translations
 _ = Translations().get()
 
 pool = ThreadPool(name="Decorators")
 
 
+@deprecated("Use run_async_threadpool instead.")
 def run_async(func):
     """
     A function decorator intended to cause the function to run in another
@@ -44,6 +46,7 @@ def run_async(func):
     return async_func
 
 
+@deprecated("Use run_async_threadpool instead.")
 def run_async_daemon(func):
     """
     A function decorator intended to cause the function to run in another
