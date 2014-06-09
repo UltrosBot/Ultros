@@ -88,7 +88,7 @@ def main():
     from utils.misc import output_exception
     from system.factory_manager import Manager
     from system import constants
-    from system import decorators
+    from system.decorators import threads
 
     sys.stdout = getwriter('utf-8')(sys.stdout)
     sys.stderr = getwriter('utf-8')(sys.stderr)
@@ -116,6 +116,7 @@ def main():
     manager = None
 
     try:
+        logger.debug("Starting..")
         manager = Manager()
         manager.run()
 
@@ -123,15 +124,26 @@ def main():
         logger.critical(_("Runtime error - process cannot continue!"))
         output_exception(logger)
     except SystemExit as e:
+        logger.debug("SystemExit caught!")
         close_log("output.log")
-        decorators.pool.stop()
+
+        logger.debug("Stopping threadpool..")
+        threads.pool.stop()
+
+        logger.debug("Removing pidfile..")
         os.remove("ultros.pid")
         exit(e.code)
     finally:
         try:
-            decorators.pool.stop()
+            logger.debug("Unloading manager..")
             manager.unload()
+
+            logger.debug("Stopping threadpool..")
+            threads.pool.stop()
+
             close_log("output.log")
+
+            logger.debug("Removing pidfile..")
             os.remove("ultros.pid")
 
             if args.catch:
