@@ -109,11 +109,11 @@ class URLsPlugin(plugin.PluginObject):
         self.blacklist = self.config.get("blacklist", [])
 
     def check_blacklist(self, url):
-        for element in self.blacklist:
+        for pattern in self.blacklist:
             try:
                 self.logger.debug(_("Checking pattern '%s' against URL '%s'")
-                                  % (element, url))
-                if fnmatch.fnmatch(url, element):
+                                  % (pattern, url))
+                if fnmatch.fnmatch(url, pattern):
                     return True
             except Exception as e:
                 self.logger.debug(_("Error in pattern matching: %s") % e)
@@ -369,14 +369,16 @@ class URLsPlugin(plugin.PluginObject):
             if domain.startswith("www."):
                 domain = domain[4:]
 
-            if domain in self.handlers and use_handler:
-                try:
-                    result = self.handlers[domain](url)
-                    if result:
-                        return to_unicode(result), None
-                except Exception:
-                    self.logger.exception(_("Error running handler, parsing "
-                                            "title normally."))
+            if use_handler:
+                for pattern in self.handlers:
+                    if fnmatch.fnmatch(domain, pattern):
+                        try:
+                            result = self.handlers[domain](url)
+                            if result:
+                                return to_unicode(result), None
+                        except Exception:
+                            self.logger.exception(_("Error running handler, "
+                                                    "parsing title normally."))
 
             self.logger.debug(_("Parsed domain: %s") % domain)
 
