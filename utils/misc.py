@@ -11,6 +11,7 @@ import logging
 import traceback
 import sys
 
+from system.decorators.log import deprecated
 from system.translations import Translations
 _ = Translations().get()
 
@@ -36,6 +37,7 @@ def dict_swap(d):
     return done
 
 
+@deprecated("Use logger.exception() instead.")
 def output_exception(logger, level=logging.ERROR):
     """
     Utility function for outputting exceptions.

@@ -3,6 +3,7 @@ import shlex
 
 __author__ = "Gareth Coles"
 
+from system.decorators.ratelimit import RateLimitExceededError
 from system.singleton import Singleton
 from utils.log import getLogger
 
@@ -210,6 +211,10 @@ class CommandManager(object):
             else:
                 self.commands[command]["f"](protocol, caller, source, command,
                                             raw_args, parsed_args)
+        except RateLimitExceededError:
+            caller.respond("Rate limit for '%s' exceeded - try again later."
+                           % command)
+            return False, True
         except Exception as e:
             self.logger.exception("")
             return False, e
