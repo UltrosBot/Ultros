@@ -87,7 +87,7 @@ class ManagementPlugin(plugin.PluginObject):
         caller.respond(__("Unknown operation: %s") % operation)
 
     def protocols_command(self, protocol, caller, source, command, raw_args,
-                        args):
+                          args):
         if args is None:
             args = raw_args.split()
 
@@ -201,8 +201,8 @@ class ManagementPlugin(plugin.PluginObject):
                 result = self.factory_manager.load_plugin(name)
 
                 if result == PLUGIN_ALREADY_LOADED:
-                    source.respond(__("Unable to load plugin %s: The plugin is "
-                                      "already loaded.") % name)
+                    source.respond(__("Unable to load plugin %s: The plugin "
+                                      "is already loaded.") % name)
                 elif result == PLUGIN_NOT_EXISTS:
                     source.respond(__("Unknown plugin: %s") % name)
                 elif result == PLUGIN_LOAD_ERROR:
