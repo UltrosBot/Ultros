@@ -129,9 +129,9 @@ def main():
         exit(e.code)
     finally:
         try:
+            decorators.pool.stop()
             manager.unload()
             close_log("output.log")
-            decorators.pool.stop()
             os.remove("ultros.pid")
 
             if args.catch:

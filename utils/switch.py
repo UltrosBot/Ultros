@@ -11,7 +11,7 @@ class Switch(object):
         """
         Return the match method once, then stop
         """
-        yield self.match, True
+        yield self.match, True  # for case, default in switch(x):
         raise StopIteration
 
     def match(self, *args):
