@@ -112,20 +112,10 @@ class FactoidsPlugin(plugin.PluginObject):
 
     def __check_perm(self, perm, caller, source, protocol):
         self.logger.debug(_("Checking for permission: '%s'"), perm)
-        # The second check is a hack to check default group, since there is not
-        # currently inheritance
-        # TODO: Remove this hack once inheritance has been added
-        # Once this hack is not needed, this method can be removed and every
-        # call can use the permission handler directly
         allowed = self.commands.perm_handler.check(perm,
                                                    caller,
                                                    source,
                                                    protocol)
-        # if not allowed:
-        #     allowed = self.commands.perm_handler.check(perm,
-        #                                                None,
-        #                                                source,
-        #                                                protocol)
         return allowed
 
     def _parse_args(self, raw_args):

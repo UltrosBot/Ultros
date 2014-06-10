@@ -129,11 +129,6 @@ class URLsPlugin(plugin.PluginObject):
 
         allowed = self.commands.perm_handler.check("urls.title", source,
                                                    target, protocol)
-        # This second check is a hack to check default group, since there is
-        # not currently inheritance
-        if not allowed:
-            allowed = self.commands.perm_handler.check("urls.title", None,
-                                                       target, protocol)
 
         if not allowed:
             return

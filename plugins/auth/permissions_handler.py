@@ -71,12 +71,6 @@ class permissionsHandler(object):
         self.plugin.logger.debug(_("CHECK | Source: %s") % source)
         self.plugin.logger.debug(_("CHECK | Protoc: %s") % protocol)
 
-        # TODO: Remove this hack now that we have inheritance
-        if caller is None:
-            self.plugin.logger.debug(_("CHECK | Caller is None."))
-            return self.group_has_permission("default", permission, protocol,
-                                             source)
-
         if caller.authorized:
             self.plugin.logger.debug(_("CHECK | Authorized: %s") %
                                      caller.authorized)

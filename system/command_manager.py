@@ -180,34 +180,23 @@ class CommandManager(object):
                             authorized = True
                             break
 
-                    if authorized:
-                        if self.perm_handler.check(self.commands
-                                                   [command]["permission"],
-                                                   caller, source, protocol):
-                            try:
-                                self.commands[command]["f"](protocol, caller,
-                                                            source, command,
-                                                            raw_args,
-                                                            parsed_args)
-                            except Exception as e:
-                                self.logger.exception("")
-                                return False, e
-                        else:
+                    if self.perm_handler.check(self.commands
+                                               [command]["permission"],
+                                               caller, source, protocol):
+                        try:
+                            self.commands[command]["f"](protocol, caller,
+                                                        source, command,
+                                                        raw_args,
+                                                        parsed_args)
+                        except RateLimitExceededError:
+                            caller.respond("Rate limit for '%s' exceeded - "
+                                           "try again later." % command)
                             return False, True
+                        except Exception as e:
+                            self.logger.exception("")
+                            return False, e
                     else:
-                        if self.perm_handler.check(self.commands
-                                                   [command]["permission"],
-                                                   None, source, protocol):
-                            try:
-                                self.commands[command]["f"](protocol, caller,
-                                                            source, command,
-                                                            raw_args,
-                                                            parsed_args)
-                            except Exception as e:
-                                self.logger.exception("")
-                                return False, e
-                        else:
-                            return False, True
+                        return False, True
             else:
                 self.commands[command]["f"](protocol, caller, source, command,
                                             raw_args, parsed_args)
