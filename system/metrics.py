@@ -4,11 +4,13 @@ __author__ = 'Gareth Coles'
 
 import json
 import urllib2
+import traceback
 
 from twisted.internet.task import LoopingCall
 
 from system.decorators import run_async_threadpool
 from system.event_manager import EventManager
+from system.singleton import Singleton
 from system.storage.formats import JSON
 from system.storage.manager import StorageManager
 
@@ -64,6 +66,8 @@ class Metrics(object):
     when configured.
     """
 
+    __metaclass__ = Singleton
+
     storage = None
     events = None
     packages = None
@@ -78,12 +82,16 @@ class Metrics(object):
     domain = "https://ultros.io"
 
     submit_url = domain + "/api/metrics/post/%s"
+    exception_url = domain + "/api/metrics/post/exception/%s"
     uuid_url = domain + "/api/metrics/get/uuid"
     destroy_url = domain + "/api/metrics/destroy/%s"
 
     uuid = ""
 
-    def __init__(self, config, manager):
+    def __init__(self, config=None, manager=None):
+        if config is None or manager is None:
+            raise ValueError("Config and manager must not be None!")
+
         self.config = config
         self.manager = manager
         self.log = getLogger("Metrics")
@@ -216,6 +224,25 @@ class Metrics(object):
         else:
             self.log.warn(_("Unknown status: %s") % self.status)
             self.task.stop()
+
+    def submit_exception(self, exc_info):
+        t = None
+
+        if self.status is True:
+            try:
+                t = traceback.format_exception(*exc_info)
+
+                self.post(
+                    self.exception_url % self.data["uuid"],
+                    {
+                        "traceback": "\n".join(t),
+                        "type": str(exc_info[0]),
+                        "value": str(exc_info[1])
+                    }
+                )
+            finally:
+                # To prevent nasty reference loops
+                del exc_info, t
 
     def post(self, url, data):
         data = urllib.urlencode({"data": json.dumps(data)})

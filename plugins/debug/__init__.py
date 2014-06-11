@@ -71,16 +71,20 @@ class DebugPlugin(plugin.PluginObject):
             c_obj = code.compile_command(raw_args)
         except SyntaxError as e:
             self.output(__("Syntax error: %s") % e.text)
+            self.logger.exception("Error!")
             return
         except (OverflowError, ValueError) as e:
             self.output(__("Invalid literal: %s") % e.msg)
+            self.logger.exception("Error!")
             return
         except Exception as e:
-            self.output(__("%s") % e)
+            self.logger.exception("Error!")
+            self.output("%s" % e)
             return
 
         try:
             self.interpreter.runcode(c_obj)
         except Exception as e:
-            self.output(__("%s") % e)
+            self.logger.exception("Error!")
+            self.output("%s" % e)
             return

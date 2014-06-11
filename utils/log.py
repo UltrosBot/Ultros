@@ -11,8 +11,9 @@ __author__ = "Gareth Coles"
 import ctypes
 import logging
 import logging.handlers
-import sys
 import os
+import sys
+import traceback
 
 from system.translations import Translations
 
@@ -80,12 +81,23 @@ class ColorizingStreamHandler(logging.StreamHandler):
         try:
             message = self.format(record)
             stream = self.stream
+
             if not self.is_tty:
                 stream.write(message)
             else:
                 self.output_colorized(message)
             stream.write(getattr(self, 'terminator', '\n'))
             self.flush()
+
+            if record.exc_info is not None:
+                from system.metrics import Metrics
+
+                m = Metrics()
+                e = record.exc_info
+
+                m.submit_exception(e)
+                del e
+
         except (KeyboardInterrupt, SystemExit):
             raise
         except Exception:
@@ -177,7 +189,7 @@ class ColorizingStreamHandler(logging.StreamHandler):
         """
         Format logging message
         :param record: Message to format
-        :return:
+        :return: message
         """
         message = logging.StreamHandler.format(self, record)
         if self.is_tty:
