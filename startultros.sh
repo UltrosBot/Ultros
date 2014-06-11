@@ -1,6 +1,7 @@
 #!/bin/sh
 
-if [ ! -d "Ultros" ]; then
+if [ ! -d "Ultros" ]
+then
     echo "** Creating virtualenv.. **"
     pip install virtualenv
     virtualenv Ultros
@@ -21,7 +22,13 @@ fi
 while [ 1 ]
 do
     echo "** Starting Ultros.. **"
-    python run.py $@
+
+    if [ ! -n "$1" ]
+    then
+        python run.py
+    else
+        python run.py $@
+    fi
 
     echo "** Updating.. **"
     python run.py --update
