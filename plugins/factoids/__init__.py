@@ -601,7 +601,9 @@ class FactoidsPlugin(plugin.PluginObject):
         handlers = {
             "??": self._message_handler_get,
             "?<": self._message_handler_get_self,
+            "??<": self._message_handler_get_self,
             "?>": self._message_handler_get_other,
+            "??>": self._message_handler_get_other,
             "??+": self._message_handler_add,
             "??~": self._message_handler_set,
             "??-": self._message_handler_delete,
