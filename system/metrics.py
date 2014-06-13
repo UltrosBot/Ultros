@@ -8,7 +8,7 @@ import traceback
 
 from twisted.internet.task import LoopingCall
 
-from system.decorators import run_async_threadpool
+from system.decorators.threads import run_async_threadpool
 from system.event_manager import EventManager
 from system.singleton import Singleton
 from system.storage.formats import JSON

@@ -12,7 +12,7 @@ from kitchen.text.converters import to_unicode
 from netaddr import all_matching_cidrs
 
 from system.command_manager import CommandManager
-from system.decorators import run_async_threadpool
+from system.decorators.threads import run_async_threadpool
 from system.event_manager import EventManager
 from system.events.general import MessageReceived
 
