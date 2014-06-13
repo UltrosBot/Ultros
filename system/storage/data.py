@@ -707,9 +707,9 @@ class DBAPIData(Data):
 
         self.path = path
 
-        self.logger.debug("Path: %s" % path)
-        self.logger.debug("Args: %s" % (args or "[]"))
-        self.logger.debug("KWArgs: %s" % (kwargs or "{}"))
+        self.logger.trace("Path: %s" % path)
+        self.logger.trace("Args: %s" % (args or "[]"))
+        self.logger.trace("KWArgs: %s" % (kwargs or "{}"))
 
         parsed_module = path.split(":", 1)[0]
         self.parsed_module = parsed_module

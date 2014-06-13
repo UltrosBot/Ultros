@@ -22,7 +22,7 @@ class UncollectableMonitor(object):
         )
 
         def sample():
-            self.logger.debug(_("Running collection.."))
+            self.logger.trace(_("Running collection.."))
             gc.collect()
             for o in gc.garbage:
                 if o not in known:

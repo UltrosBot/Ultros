@@ -85,7 +85,7 @@ class RateLimiter(object):
                 result = original_function(*args, **kwargs)
                 self.allowance -= 1
             else:
-                _log.debug("Soft limit exceeded")
+                _log.trace("Soft limit exceeded")
                 try:
                     deferred = Deferred()
                     self._queue.put_nowait((original_function,
@@ -98,7 +98,7 @@ class RateLimiter(object):
                     result = deferred
                 except Queue.Full:
                     # Rate exceeded
-                    _log.debug("Hard limit exceeded")
+                    _log.trace("Hard limit exceeded")
                     if callable(self.on_limit):
                         result = self.on_limit()
             return result

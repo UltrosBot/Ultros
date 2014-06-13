@@ -111,7 +111,7 @@ class FactoidsPlugin(plugin.PluginObject):
     # region Util functions
 
     def __check_perm(self, perm, caller, source, protocol):
-        self.logger.debug(_("Checking for permission: '%s'"), perm)
+        self.logger.trace(_("Checking for permission: '%s'"), perm)
         allowed = self.commands.perm_handler.check(perm,
                                                    caller,
                                                    source,
@@ -208,7 +208,7 @@ class FactoidsPlugin(plugin.PluginObject):
         Deletes a factoid if it exists, otherwise raises MissingFactoidError
         """
 
-        self.logger.debug("DELETE | Key: %s | Loc: %s | Pro: %s | Cha: %s"
+        self.logger.trace("DELETE | Key: %s | Loc: %s | Pro: %s | Cha: %s"
                           % (factoid_key, location, protocol, channel))
 
         if location == self.CHANNEL:
@@ -241,7 +241,7 @@ class FactoidsPlugin(plugin.PluginObject):
         Gets a factoid if it exists, otherwise raises MissingFactoidError
         :return: (factoid_name, [entry, entry, ...])
         """
-        self.logger.debug(_("Getting factoid params: factoid_key = '%s', "
+        self.logger.trace(_("Getting factoid params: factoid_key = '%s', "
                             "location = '%s', protocol = '%s', "
                             "channel = '%s'"),
                           factoid_key,
@@ -249,7 +249,7 @@ class FactoidsPlugin(plugin.PluginObject):
                           protocol,
                           channel)
         if location is None:
-            self.logger.debug(_("Location is None - getting all factoids with "
+            self.logger.trace(_("Location is None - getting all factoids with "
                                 "key '%s'"), factoid_key)
             txn.execute("SELECT location, protocol, channel, factoid_name, "
                         "info FROM factoids WHERE factoid_key = ?",
@@ -262,17 +262,17 @@ class FactoidsPlugin(plugin.PluginObject):
                 for row in results:
                     if ((row[0] == self.CHANNEL and row[1] == protocol and
                          row[2] == channel)):
-                        self.logger.debug(_("Match found (channel)!"))
+                        self.logger.trace(_("Match found (channel)!"))
                         return (row[3], row[4].split("\n"))
                 # Check for protocol match
                 for row in results:
                     if row[0] == self.PROTOCOL and row[1] == protocol:
-                        self.logger.debug(_("Match found (protocol)!"))
+                        self.logger.trace(_("Match found (protocol)!"))
                         return (row[3], row[4].split("\n"))
                 # Check for global match
                 for row in results:
                     if row[0] == self.GLOBAL:
-                        self.logger.debug(_("Match found (global)!"))
+                        self.logger.trace(_("Match found (global)!"))
                         return (row[3], row[4].split("\n"))
         else:
             txn.execute("SELECT location, protocol, channel, factoid_name, "
@@ -295,7 +295,7 @@ class FactoidsPlugin(plugin.PluginObject):
         Gets all factoids
         :return: (factoid_name, [entry, entry, ...])
         """
-        self.logger.debug("Getting all factoids.")
+        self.logger.trace("Getting all factoids.")
         txn.execute("SELECT location, protocol, channel, factoid_name, "
                     "info FROM factoids")
         results = txn.fetchall()
@@ -562,18 +562,18 @@ class FactoidsPlugin(plugin.PluginObject):
 
         r = web.check_permission(self.PERM_GET % "web", r=objs)
 
-        self.logger.debug(_("WEB | Checking permissions.."))
+        self.logger.trace(_("WEB | Checking permissions.."))
 
         if not r:
-            self.logger.debug(_("WEB | User does not have permission. "
+            self.logger.trace(_("WEB | User does not have permission. "
                                 "Are they logged in?"))
             r = web.require_login(r=objs)
 
             if not r[0]:
                 return r[1]
 
-            self.logger.debug(_("WEB | Yup. They must not have permission."))
-            self.logger.debug(_("WEB | Presenting error.."))
+            self.logger.trace(_("WEB | Yup. They must not have permission."))
+            self.logger.trace(_("WEB | Presenting error.."))
 
             if not r:
                 return web.wrap_template(_("Error: You do not have permission "
@@ -581,7 +581,7 @@ class FactoidsPlugin(plugin.PluginObject):
                                          _("Factoids"),
                                          _("Factoids"))
 
-        self.logger.debug(_("WEB | User has permission."))
+        self.logger.trace(_("WEB | User has permission."))
 
         d = self.get_all_factoids()
         y = web.get_yielder()

@@ -159,7 +159,7 @@ class Manager(object):
 
         self.logger.info(_("Loading plugins.."))
 
-        self.logger.debug(_("Configured plugins: %s")
+        self.logger.trace(_("Configured plugins: %s")
                           % ", ".join(self.main_config["plugins"]))
 
         self.logger.debug(_("Collecting plugins.."))
@@ -173,12 +173,12 @@ class Manager(object):
                 else:
                     todo.append(info)
 
-            self.logger.debug(_("Loading plugins that have no dependencies "
+            self.logger.trace(_("Loading plugins that have no dependencies "
                                 "first."))
 
             for info in todo:
                 name = info.name
-                self.logger.debug(_("Checking if plugin '%s' is configured to "
+                self.logger.trace(_("Checking if plugin '%s' is configured to "
                                     "load..") % name)
                 if name in self.main_config["plugins"]:
                     self.logger.info(_("Attempting to load plugin: %s") % name)
@@ -196,10 +196,10 @@ class Manager(object):
                             self.logger.warn(_("Plugin dependency is "
                                                "missing."))
 
-            self.logger.debug(_("Loading plugins that have dependencies."))
+            self.logger.trace(_("Loading plugins that have dependencies."))
 
             for name, info in self.plugins_with_dependencies.items():
-                self.logger.debug(_("Checking if plugin '%s' is configured to "
+                self.logger.trace(_("Checking if plugin '%s' is configured to "
                                     "load..") % name)
                 if name in self.main_config["plugins"]:
                     self.logger.info(_("Attempting to load plugin: %s") % name)
@@ -268,7 +268,7 @@ class Manager(object):
             info = self.plugman.getPluginByName(name)
             if info.dependencies:
                 depends = info.dependencies
-                self.logger.debug(_("Dependencies for %s: %s") % (name,
+                self.logger.trace(_("Dependencies for %s: %s") % (name,
                                                                   depends))
                 for d_name in depends:
                     if d_name not in self.all_plugins:
@@ -291,11 +291,11 @@ class Manager(object):
                 self.plugman.activatePluginByName(info.name)
                 self.logger.debug(_("Loading plugin: %s")
                                   % info.plugin_object)
-                self.logger.debug(_("Location: %s") % inspect.getfile
+                self.logger.trace(_("Location: %s") % inspect.getfile
                                   (info.plugin_object.__class__))
                 info.plugin_object.add_variables(info, self)
                 info.plugin_object.logger = getLogger(name)
-                self.logger.debug(_("Running setup method.."))
+                self.logger.trace(_("Running setup method.."))
                 info.plugin_object.setup()
             except Exception:
                 self.logger.exception(_("Unable to load plugin: %s v%s")

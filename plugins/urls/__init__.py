@@ -50,7 +50,7 @@ class URLsPlugin(plugin.PluginObject):
                      "text/x-server-parsed-html", "application/xhtml+xml"]
 
     def setup(self):
-        self.logger.debug(_("Entered setup method."))
+        self.logger.trace(_("Entered setup method."))
         self.storage = StorageManager()
         try:
             self.config = self.storage.get_file(self, "config", YAML,
@@ -152,7 +152,7 @@ class URLsPlugin(plugin.PluginObject):
                     url = word[pos:]
 
                 if url in ["http://", "https://"]:
-                    self.logger.debug(_("URL is not actually a URL, just %s"
+                    self.logger.trace(_("URL is not actually a URL, just %s"
                                         % url))
                     return
 
@@ -169,7 +169,7 @@ class URLsPlugin(plugin.PluginObject):
 
                 title, domain = self.parse_title(url)
 
-                self.logger.debug(_("Title: %s") % title)
+                self.logger.trace(_("Title: %s") % title)
 
                 if isinstance(target, Channel):
                     if protocol.name not in self.channels:
@@ -346,7 +346,7 @@ class URLsPlugin(plugin.PluginObject):
 
     def parse_title(self, url, use_handler=True):
         domain = ""
-        self.logger.debug(_("Url: %s") % url)
+        self.logger.trace(_("Url: %s") % url)
         try:
             parsed = urlparse.urlparse(url)
             domain = parsed.hostname
@@ -375,7 +375,7 @@ class URLsPlugin(plugin.PluginObject):
                             self.logger.exception(_("Error running handler, "
                                                     "parsing title normally."))
 
-            self.logger.debug(_("Parsed domain: %s") % domain)
+            self.logger.trace(_("Parsed domain: %s") % domain)
 
             request = urllib2.Request(url)
             if domain in self.spoofing:
@@ -395,7 +395,7 @@ class URLsPlugin(plugin.PluginObject):
                                                  '1-1.fc9-1.fc9 Firefox/3.0.1')
             response = urllib2.urlopen(request)
 
-            self.logger.debug(_("Info: %s") % response.info())
+            self.logger.trace(_("Info: %s") % response.info())
 
             headers = response.info().headers
             new_url = response.geturl()
@@ -452,7 +452,7 @@ class URLsPlugin(plugin.PluginObject):
             if ";" in ct:
                 ct = ct.split(";")[0]
 
-            self.logger.debug(_("Content-type: %s") % repr(ct))
+            self.logger.trace(_("Content-type: %s") % repr(ct))
 
             if ct not in self.content_types:
                 self.logger.debug(_("Content-type is not allowed."))
@@ -479,7 +479,7 @@ class URLsPlugin(plugin.PluginObject):
                     (url, handler.lower()))
         r = txn.fetchone()
 
-        self.logger.debug(_("Result (SQL): %s") % repr(r))
+        self.logger.trace(_("Result (SQL): %s") % repr(r))
 
         if r is not None:
             return r[2]
@@ -493,8 +493,8 @@ class URLsPlugin(plugin.PluginObject):
         return None
 
     def shorten_url(self, url, handler):
-        self.logger.debug(_("URL: %s") % url)
-        self.logger.debug(_("Handler: %s") % handler)
+        self.logger.trace(_("URL: %s") % url)
+        self.logger.trace(_("Handler: %s") % handler)
 
         return self.shortened.runInteraction(self._shorten, url, handler)
 
@@ -502,7 +502,7 @@ class URLsPlugin(plugin.PluginObject):
         if domain.startswith("www."):
             raise ValueError(_("Domain should not start with 'www.'"))
         if domain not in self.handlers:
-            self.logger.debug(_("Handler registered for '%s': %s")
+            self.logger.trace(_("Handler registered for '%s': %s")
                               % (domain, handler))
             self.handlers[domain] = handler
             return True
@@ -510,7 +510,7 @@ class URLsPlugin(plugin.PluginObject):
 
     def add_shortener(self, name, handler):
         if name not in self.shorteners:
-            self.logger.debug(_("Shortener '%s' registered: %s")
+            self.logger.trace(_("Shortener '%s' registered: %s")
                               % (name, handler))
             self.shorteners[name] = handler
             return True

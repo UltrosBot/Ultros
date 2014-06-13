@@ -161,7 +161,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             return
 
         if self.networking["ssl"]:
-            self.log.debug(_("Connecting with SSL"))
+            self.log.trace(_("Connecting with SSL"))
             reactor.connectSSL(
                 self.networking["address"],
                 self.networking["port"],
@@ -171,7 +171,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                 bindAddress=bindaddr  # ("192.168.1.2", 0)
             )
         else:
-            self.log.debug(_("Connecting without SSL"))
+            self.log.trace(_("Connecting without SSL"))
             reactor.connectTCP(
                 self.networking["address"],
                 self.networking["port"],
@@ -369,7 +369,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                                     "command")
                                   % (source.nickname, command))
                 elif b is None:  # Command not found
-                    self.log.debug(_("Command not found: %s") % command)
+                    self.log.trace(_("Command not found: %s") % command)
                     return False
                 else:  # Exception occured
                     self.log.warn(_("An error occured while running the %s "
@@ -386,7 +386,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             user_obj = self._get_user_from_user_string(user)
         except Exception:
             # Privmsg from the server itself and things (if that happens)
-            self.log.debug(_("Message from irregular user: %s") % user)
+            self.log.trace(_("Message from irregular user: %s") % user)
             user_obj = User(self, nickname=user, is_tracked=False)
 
         if self.utils.compare_nicknames(channel, self.nickname):
@@ -420,7 +420,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             user_obj = self._get_user_from_user_string(user)
         except Exception:
             # Notices from the server itself and things
-            self.log.debug(_("Notice from irregular user: %s") % user)
+            self.log.trace(_("Notice from irregular user: %s") % user)
             user_obj = User(self, nickname=user, is_tracked=False)
 
         if self.utils.compare_nicknames(channel, self.nickname):
@@ -481,7 +481,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             user_obj = self._get_user_from_user_string(user)
         except Exception:
             # CTCP from the server itself and things (if that happens)
-            self.log.debug(_("CTCP from irregular user: %s") % user)
+            self.log.trace(_("CTCP from irregular user: %s") % user)
             user_obj = User(self, nickname=user, is_tracked=False)
 
         if self.utils.compare_nicknames(channel, self.nickname):
@@ -585,7 +585,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             user_obj = self._get_user_from_user_string(user)
         except Exception:
             # Mode change from the server itself and things
-            self.log.debug(_("Mode change from irregular user: %s") % user)
+            self.log.trace(_("Mode change from irregular user: %s") % user)
             user_obj = User(self, nickname=user, is_tracked=False)
             # Note: Unlike in privmsg/notice/ctcpQuery, channel_obj = None when
         # the target is ourself, rather than a user object. Perhaps this should
@@ -780,7 +780,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
     def irc_RPL_ISUPPORT(self, prefix, params):
         irc.IRCClient.irc_RPL_ISUPPORT(self, prefix, params)
         for param in params[1:-1]:
-            self.log.debug(_("RPL_ISUPPORT received: %s") % param)
+            self.log.trace(_("RPL_ISUPPORT received: %s") % param)
             prm = param.split("=")[0].strip("-")
             # prm is the param changed - don't bother parsing the value since
             # it can be grabbed from self.supported with this:
@@ -1069,7 +1069,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
     def user_check_lost_track(self, user):
         """User-tracking related"""
         if len(user.channels) == 0:
-            self.log.debug(_("Lost track of user: %s") % user)
+            self.log.trace(_("Lost track of user: %s") % user)
             self._users.remove(user)
             user.is_tracked = False
             # TODO: Throw event: lost track of user
@@ -1142,7 +1142,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         # TODO: Event?
         if not force:
             if not self.ourselves.can_kick(user, channel):
-                self.log.debug("Tried to kick, but don't have permission")
+                self.log.trace("Tried to kick, but don't have permission")
                 return False
         if channel is None:
             return False

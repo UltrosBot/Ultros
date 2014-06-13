@@ -131,7 +131,7 @@ class _GetchUnix:
         import tty
         import sys
 
-        self.log.debug(_("Loaded: %s, %s") % (tty, sys))
+        self.log.trace(_("Loaded: %s, %s") % (tty, sys))
 
     def __call__(self):
         import sys
@@ -152,7 +152,7 @@ class _GetchWindows:
         self.log = getLogger("GetchWindows")
         import msvcrt
 
-        self.log.debug(_("Loaded: %s") % msvcrt)
+        self.log.trace(_("Loaded: %s") % msvcrt)
 
     def __call__(self):
         import msvcrt

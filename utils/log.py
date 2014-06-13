@@ -296,7 +296,7 @@ def getLogger(name, path=None,
 
     del handler
 
-    logger.debug("Created logger.")
+    logger.trace("Created logger.")
 
     loggers[name] = logger
 

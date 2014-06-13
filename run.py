@@ -134,7 +134,7 @@ def main():
         logger.critical(_("Runtime error - process cannot continue!"))
         output_exception(logger)
     except SystemExit as e:
-        logger.debug("SystemExit caught!")
+        logger.trace("SystemExit caught!")
         close_log("output.log")
 
         logger.debug("Stopping threadpool..")

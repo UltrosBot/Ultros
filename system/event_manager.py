@@ -270,7 +270,7 @@ class EventManager(object):
         if self.has_callback(callback):
             event.threaded = threaded  # So devs can detect it easily.
 
-            self.logger.debug("Event: %s" % event)
+            self.logger.trace("Event: %s" % event)
 
             for cb in self.get_callbacks(callback):
                 if threaded:
@@ -289,7 +289,7 @@ class EventManager(object):
                     if cb["filter"]:
                         if isinstance(cb["filter"], FunctionType):
                             if not cb["filter"](event):
-                                self.logger.debug(_("Not running, filter "
+                                self.logger.trace(_("Not running, filter "
                                                     "function returned "
                                                     "False."))
                                 continue
@@ -305,7 +305,7 @@ class EventManager(object):
                         if cb["cancelled"]:
                             go()
                         else:
-                            self.logger.debug(_("Not running, event is "
+                            self.logger.trace(_("Not running, event is "
                                                 "cancelled and handler "
                                                 "doesn't accept cancelled "
                                                 "events"))

@@ -37,7 +37,7 @@ class BridgePlugin(plugin.PluginObject):
         return self.config["rules"]
 
     def setup(self):
-        self.logger.debug(_("Entered setup method."))
+        self.logger.trace(_("Entered setup method."))
         self.storage = StorageManager()
 
         try:
@@ -195,38 +195,38 @@ class BridgePlugin(plugin.PluginObject):
             to_ = data["to"]
 
             if c_name != from_["protocol"].lower():
-                self.logger.debug(_("Protocol doesn't match."))
+                self.logger.trace(_("Protocol doesn't match."))
                 continue
 
             if not self.factory_manager.get_protocol(to_["protocol"]):
-                self.logger.debug(_("Target protocol doesn't exist."))
+                self.logger.trace(_("Target protocol doesn't exist."))
                 continue
 
             if isinstance(target, User):
                 # We ignore the source name since there can only ever be one
                 #     user: us.
                 if not from_user:
-                    self.logger.debug(_("Function was called with relaying "
+                    self.logger.trace(_("Function was called with relaying "
                                         "from users disabled."))
                     continue
                 if from_["source-type"].lower() != "user":
-                    self.logger.debug(_("Target type isn't a user."))
+                    self.logger.trace(_("Target type isn't a user."))
                     continue
             elif isinstance(target, Channel):
                 if from_["source-type"].lower() != "channel":
-                    self.logger.debug(_("Target type isn't a Channel."))
+                    self.logger.trace(_("Target type isn't a Channel."))
                     continue
                 if from_["source"].lower() != "*" \
                    and from_["source"].lower() != t_name.lower():
-                    self.logger.debug(_("Target name doesn't match the "
+                    self.logger.trace(_("Target name doesn't match the "
                                         "source."))
                     continue
             else:
-                self.logger.debug(_("Target isn't a known type."))
+                self.logger.trace(_("Target isn't a known type."))
                 continue
 
             if to_["target"] == "user" and not to_user:
-                self.logger.debug(_("Function was called with relaying to "
+                self.logger.trace(_("Function was called with relaying to "
                                     "users disabled."))
                 continue
 
@@ -240,7 +240,7 @@ class BridgePlugin(plugin.PluginObject):
                     format_string = formatting[f_str[0]][f_str[1]]
 
             if not format_string:
-                self.logger.debug(_("Not relaying message as the format "
+                self.logger.trace(_("Not relaying message as the format "
                                     "string was empty or missing."))
                 continue
 

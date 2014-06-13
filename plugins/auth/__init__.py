@@ -34,7 +34,7 @@ class AuthPlugin(plugin.PluginObject):
     perms_h = None
 
     def setup(self):
-        self.logger.debug(_("Entered setup method."))
+        self.logger.trace(_("Entered setup method."))
 
         self.storage = StorageManager()
         try:
@@ -100,7 +100,7 @@ class AuthPlugin(plugin.PluginObject):
         self.events.add_callback("PreCommand", self, self.pre_command, 10000)
 
     def pre_command(self, event=PreCommand):
-        self.logger.debug(_("Command: %s") % event.command)
+        self.logger.trace(_("Command: %s") % event.command)
         if event.command.lower() in ["login", "register"]:
             if len(event.args) >= 2:
                 split_ = event.printable.split("%s " % event.command)

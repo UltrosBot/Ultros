@@ -181,7 +181,7 @@ class Metrics(object):
 
     @run_async_threadpool
     def submit_metrics(self):
-        self.log.debug(_("Firing task."))
+        self.log.trace(_("Firing task."))
         compiled = {"plugins": [], "packages": [], "protocols": []}
         if self.status is True:
             self.log.debug(_("Submitting metrics."))
@@ -197,7 +197,7 @@ class Metrics(object):
                 r = self.post(self.submit_url % self.data["uuid"], compiled)
                 r = json.loads(r)
 
-                self.log.debug(_("Submitted. Result: %s") % r)
+                self.log.trace(_("Submitted. Result: %s") % r)
 
                 if r["result"] == "error":
                     self.log.error(_("Error submitting metrics: %s")
@@ -211,7 +211,7 @@ class Metrics(object):
                 r = self.post(self.submit_url % self.data["uuid"], compiled)
                 r = json.loads(r)
 
-                self.log.debug(_("Submitted. Result: %s") % r)
+                self.log.trace(_("Submitted. Result: %s") % r)
 
                 if r["result"] == "error":
                     self.log.error(_("Error submitting disable message: %s")
@@ -229,7 +229,7 @@ class Metrics(object):
                 r = self.get(self.destroy_url % self.data["uuid"])
                 r = json.loads(r)
 
-                self.log.debug("Submitted. Result: %s" % r)
+                self.log.trace("Submitted. Result: %s" % r)
 
                 if r["result"] == "success":
                     self.log.info(_("Metrics data has been removed from the "

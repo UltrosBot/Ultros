@@ -278,8 +278,8 @@ class Protocol(ChannelsProtocol):
 
             full_length = Protocol.PREFIX_LENGTH + length
 
-            # self.log.debug("Length: %d" % length)
-            # self.log.debug("Message type: %d" % msg_type)
+            self.log.trace("Length: %d" % length)
+            self.log.trace("Message type: %d" % msg_type)
 
             # Check if this this a valid message ID
             if msg_type not in Protocol.MESSAGE_ID.values():
@@ -290,7 +290,7 @@ class Protocol(ChannelsProtocol):
             # We need to check if we have enough bytes to fully read the
             # message
             if len(self.received) < full_length:
-                self.log.debug(_("Need to fill data"))
+                self.log.trace(_("Need to fill data"))
                 return
 
             # Read the specific message
@@ -361,7 +361,7 @@ class Protocol(ChannelsProtocol):
             permissions = message.permissions
             flush = message.flush
             self.set_permissions(channel, permissions, flush)
-            self.log.debug("PermissionQuery received: channel: '%s', "
+            self.log.trace("PermissionQuery received: channel: '%s', "
                            "permissions: '%s', flush:'%s'" %
                            (channel,
                             Perms.get_permissions_names(permissions),
@@ -384,7 +384,7 @@ class Protocol(ChannelsProtocol):
             self.set_permissions(0, permissions)
             welcome_text = html_to_text(message.welcome_text, True)
             self.log.info(_("===   Welcome message   ==="))
-            self.log.debug("ServerSync received: max_bandwidth: '%s', "
+            self.log.trace("ServerSync received: max_bandwidth: '%s', "
                            "permissions: '%s', welcome text: [below]" %
                            (max_bandwidth,
                             Perms.get_permissions_names(permissions)))
@@ -459,8 +459,8 @@ class Protocol(ChannelsProtocol):
             # actor, channel_id, message
             self.handle_msg_textmessage(message)
         else:
-            self.log.debug(_("Unknown message type: %s") % message.__class__)
-            self.log.debug(_("Received message '%s' (%d):\n%s")
+            self.log.trace(_("Unknown message type: %s") % message.__class__)
+            self.log.trace(_("Received message '%s' (%d):\n%s")
                            % (message.__class__, msg_type, str(message)))
 
             event = mumble_events.Unknown(self, type(message), message)
@@ -473,7 +473,7 @@ class Protocol(ChannelsProtocol):
     def ping_handler(self):
         if not self.pinging:
             return
-        # self.log.debug("Sending ping")
+        self.log.trace("Sending ping")
 
         # Ping has only optional data, no required
         ping = Mumble_pb2.Ping()
@@ -720,7 +720,7 @@ class Protocol(ChannelsProtocol):
                                     "command")
                                   % (source.nickname, command))
                 elif b is None:  # Command not found
-                    self.log.debug(_("Command not found: %s") % command)
+                    self.log.trace(_("Command not found: %s") % command)
                     return False
                 else:  # Exception occured
                     self.log.warn(_("An error occured while running the %s "
@@ -839,7 +839,7 @@ class Protocol(ChannelsProtocol):
                 return False
         if not force:
             if not self.ourselves.can_kick(user, channel):
-                self.log.debug("Tried to kick, but don't have permission")
+                self.log.trace("Tried to kick, but don't have permission")
                 return False
         msg = Mumble_pb2.UserRemove()
         msg.session = user.session
@@ -857,7 +857,7 @@ class Protocol(ChannelsProtocol):
                 return False
         if not force:
             if not self.ourselves.can_ban(user, channel):
-                self.log.debug("Tried to ban, but don't have permission")
+                self.log.trace("Tried to ban, but don't have permission")
                 return False
         msg = Mumble_pb2.UserRemove()
         msg.session = user.session
@@ -872,7 +872,7 @@ class Protocol(ChannelsProtocol):
         if target_id is None and target == "channel":
             target_id = self.ourselves.channel.channel_id
 
-        self.log.debug(_("Sending text message: %s") % message)
+        self.log.trace(_("Sending text message: %s") % message)
 
         message = cgi.escape(message)
 
