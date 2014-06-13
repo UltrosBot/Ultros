@@ -15,7 +15,7 @@ class Channel(channel.Channel):
         self._modes = {}
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
     def add_user(self, user):
         self.users.add(user)

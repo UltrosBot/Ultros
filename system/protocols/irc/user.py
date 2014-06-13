@@ -24,7 +24,7 @@ class User(user.User):
         return "%s!%s@%s" % (self.nickname, self.ident, self.host)
 
     def __str__(self):
-        return self.nickname
+        return str(self.nickname)
 
     def add_channel(self, channel):
         self.channels.add(channel)
