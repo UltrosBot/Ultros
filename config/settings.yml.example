@@ -47,3 +47,7 @@ reconnections: # Settings for reconnecting on connection failures.
 #     If you have no UUID, this will prevent the bot from connecting to the server. You don't have
 #     to change this to "off" when the UUID is destroyed, for that reason.
 metrics: on
+
+# This allows you to disable the sending of exceptions to the Ultros metrics server, without disabling
+# metrics entirely. Simply set it to "no" to do that.
+send-exceptions: yes

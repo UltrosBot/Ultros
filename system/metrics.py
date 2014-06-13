@@ -72,6 +72,9 @@ class Metrics(object):
     events = None
     packages = None
 
+    status = True
+    send_exceptions = True
+
     config = {}
     log = None
     task = None
@@ -118,8 +121,8 @@ class Metrics(object):
             ))
             self.log.warn(_(
                 "Metrics will default to being turned on. If this is not what"
-                " you want, please create \"metrics\" option in your settings"
-                " and set it to \"off\"."
+                " you want, please create a \"metrics\" option in your "
+                "settings and set it to \"off\"."
             ))
             self.log.warn(_(
                 "If you want to keep metrics enabled, set the option to"
@@ -130,6 +133,27 @@ class Metrics(object):
                 " has been set."
             ))
             self.status = True
+
+        if "send-exceptions" not in config:
+            self.log.warn(_(
+                "We couldn't find a \"send-exceptions\" option in your "
+                "settings.yml file!"
+            ))
+            self.log.warn(_(
+                "Exception sending will default to being turned on. If this "
+                "is not what you want, please create a \"send-exceptions\" "
+                "option in your settings and set it to \"off\"."
+            ))
+            self.log.warn(_(
+                "If you want to keep exception sending enabled, set the "
+                "option to \"on\"."
+            ))
+            self.log.warn(_(
+                "This warning will be shown on every startup until the option"
+                " has been set."
+            ))
+
+        self.send_exceptions = config.get("send-exceptions", True)
 
         with self.data:
             if self.status is True:
@@ -228,7 +252,7 @@ class Metrics(object):
     def submit_exception(self, exc_info):
         t = None
 
-        if self.status is True:
+        if self.status is True and self.send_exceptions:
             try:
                 t = traceback.format_exception(*exc_info)
 
