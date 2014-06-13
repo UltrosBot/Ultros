@@ -67,6 +67,11 @@ class Manager(object):
         signal.signal(signal.SIGINT, self.signal_callback)
 
         self.logger = getLogger("Manager")
+        self.yapsy_logger = getLogger("yapsy")
+
+        self.yapsy_logger.debug_ = self.yapsy_logger.debug
+        self.yapsy_logger.debug = self.yapsy_logger.trace
+
         self.storage = StorageManager()
         self.main_config = self.storage.get_file(self, "config", YAML,
                                                  "settings.yml")
