@@ -32,12 +32,15 @@ import sys
 from kitchen.text.converters import getwriter
 
 from system.translations import Translations
+from utils import log
 
 
 DESC = "Ultros - that squidoctopus bot thing"
 
 p = argparse.ArgumentParser(description=DESC)
 p.add_argument("--debug", help="Enable debug output", action="store_true")
+p.add_argument("--trace", help="Enable debug and trace output",
+               action="store_true")
 p.add_argument("-l", "--language", help="Specify which language to use for "
                                         "console and logging messages")
 p.add_argument("-ml", "--mlanguage", help="Specify which language to use for "
@@ -52,6 +55,13 @@ args = p.parse_args()
 trans = Translations(args.language, args.mlanguage)
 
 _ = trans.get()
+
+if args.debug:
+    log.set_debug()
+elif args.trace:
+    log.set_trace()
+
+log.set_level()
 
 
 def update():

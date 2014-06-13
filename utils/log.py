@@ -12,17 +12,40 @@ import ctypes
 import logging
 import logging.handlers
 import os
-import sys
 
 from system.translations import Translations
 
-
-logging.basicConfig(
-    level=(logging.DEBUG if "--debug" in sys.argv else logging.INFO),
-    format="%(asctime)s | %(name)25s | %(levelname)8s | %(message)s",
-    datefmt="%d %b %Y - %H:%M:%S")
+_globals = {"level": logging.INFO}
 
 loggers = {}
+
+setattr(logging, "TRACE", 9)
+
+logging.addLevelName(logging.TRACE, "TRACE")
+
+
+def _trace(self, message, *args, **kws):
+    # Yes, logger takes its '*args' as 'args'.
+    if self.isEnabledFor(logging.TRACE):
+        self._log(logging.TRACE, message, args, **kws)
+
+logging.Logger.trace = _trace
+
+
+def set_level():
+    logging.basicConfig(
+        level=_globals["level"],
+        format="%(asctime)s | %(name)25s | %(levelname)8s | %(message)s",
+        datefmt="%d %b %Y - %H:%M:%S"
+    )
+
+
+def set_debug():
+    _globals["level"] = logging.DEBUG
+
+
+def set_trace():
+    _globals["level"] = logging.TRACE
 
 
 class ColorizingStreamHandler(logging.StreamHandler):
@@ -45,6 +68,7 @@ class ColorizingStreamHandler(logging.StreamHandler):
     # levels to (background, foreground, bold/intense)
     if os.name == 'nt':
         level_map = {
+            logging.TRACE: ('black', 'magenta', True),
             logging.DEBUG: ('black', 'blue', True),
             logging.INFO: ('black', 'white', False),
             logging.WARNING: ('black', 'yellow', True),
@@ -53,6 +77,7 @@ class ColorizingStreamHandler(logging.StreamHandler):
         }
     else:
         level_map = {
+            logging.TRACE: ('magenta', 'magenta', False),
             logging.DEBUG: ('black', 'blue', False),
             logging.INFO: ('black', 'white', False),
             logging.WARNING: ('black', 'yellow', False),
@@ -242,7 +267,7 @@ def getLogger(name, path=None,
         "%(asctime)s | %(name)25s | %(levelname)8s | %(message)s")
     formatter.datefmt = datefmt
     chandler.setFormatter(formatter)
-    chandler.setLevel(logging.DEBUG if "--debug" in sys.argv else logging.INFO)
+    chandler.setLevel(_globals["level"])
 
     logger.addHandler(chandler)
     del formatter
@@ -265,7 +290,7 @@ def getLogger(name, path=None,
         "%(asctime)s | %(name)25s | %(levelname)8s | %(message)s")
     formatter.datefmt = datefmt
     handler.setFormatter(formatter)
-    handler.setLevel(logging.DEBUG if "--debug" in sys.argv else logging.INFO)
+    handler.setLevel(_globals["level"])
 
     logger.addHandler(handler)
 
@@ -300,7 +325,7 @@ def open_log(path):
         "%(asctime)s | %(name)25s | %(levelname)8s | %(message)s")
     formatter.datefmt = "%d %b %Y - %H:%M:%S"
     handler.setFormatter(formatter)
-    handler.setLevel(logging.DEBUG if "--debug" in sys.argv else logging.INFO)
+    handler.setLevel(_globals["level"])
     logger.addHandler(handler)
 
     logger.info(_("*** LOGFILE OPENED: %s ***") % path)
@@ -333,7 +358,7 @@ def close_log(path):
         "%(asctime)s | %(name)25s | %(levelname)8s | %(message)s")
     formatter.datefmt = "%d %b %Y - %H:%M:%S"
     handler.setFormatter(formatter)
-    handler.setLevel(logging.DEBUG if "--debug" in sys.argv else logging.INFO)
+    handler.setLevel(_globals["level"])
     logger.addHandler(handler)
 
     logger.info(_("*** LOGFILE CLOSED: %s ***\n\n") % path)
