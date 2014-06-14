@@ -14,6 +14,7 @@ of the available packages. Sub-folders in the repo contain the actual
 packages, including their information and version history files.
 """
 import argparse
+import sys
 import traceback
 
 from system.translations import Translations
@@ -49,7 +50,11 @@ except ImportError:
     print ""
     r = urllib.urlopen(url)
     d = r.read()
+
+    _args = sys.argv
+    sys.argv = []
     exec d
+    sys.argv = _args
     import pip  # flake8: noqa
     print ""
 
