@@ -14,8 +14,12 @@ of the available packages. Sub-folders in the repo contain the actual
 packages, including their information and version history files.
 """
 import argparse
+import os
 import sys
 import traceback
+
+if os.path.dirname(sys.argv[0]):
+    os.chdir(os.path.dirname(sys.argv[0]))
 
 from system.translations import Translations
 
@@ -34,13 +38,8 @@ trans = Translations(args.language, log=False)
 
 _ = trans.get()
 
-import os
-import sys
 import tempfile
 import urllib
-
-if os.path.dirname(sys.argv[0]):
-    os.chdir(os.path.dirname(sys.argv[0]))
 
 try:
     import pip
