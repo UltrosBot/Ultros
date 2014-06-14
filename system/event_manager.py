@@ -1,8 +1,6 @@
 # coding=utf-8
 __author__ = "Gareth Coles"
 
-import logging
-
 from operator import itemgetter
 from types import FunctionType
 
@@ -11,7 +9,6 @@ from twisted.internet import reactor
 from system.singleton import Singleton
 from system.decorators import run_async
 from utils.log import getLogger
-from utils.misc import output_exception
 
 from system.translations import Translations
 _ = Translations().get()
@@ -312,7 +309,7 @@ class EventManager(object):
                     else:
                         go()
                 except Exception as e:
-                    self.logger.warn(_("Error running callback '%s': %s") %
-                                     (callback, e))
-                    output_exception(self.logger, logging.WARN)
+                    self.logger.exception(_(
+                        "Error running callback '%s': %s"
+                    ) % (callback, e))
         return event

@@ -7,11 +7,6 @@ These are used both by the main bot, and the package manager.
 
 __author__ = "Gareth Coles"
 
-import logging
-import traceback
-import sys
-
-from system.decorators.log import deprecated
 from system.translations import Translations
 _ = Translations().get()
 
@@ -35,18 +30,6 @@ def dict_swap(d):
         done[v] = k
 
     return done
-
-
-@deprecated("Use logger.exception() instead.")
-def output_exception(logger, level=logging.ERROR):
-    """
-    Utility function for outputting exceptions.
-    :param level:  logging level to use for error message.
-    :param logger: logging.Logger to use for output
-    """
-    exc_type, exc_value, exc_traceback = sys.exc_info()
-    data = traceback.format_exception(exc_type, exc_value, exc_traceback)
-    _output_error(logger, "".join(data), level)  # "\n".join(data), level)
 
 
 def chunker(iterable, chunksize):

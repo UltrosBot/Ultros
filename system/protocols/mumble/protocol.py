@@ -29,7 +29,6 @@ from system.protocols.mumble.channel import Channel
 
 from utils.html import html_to_text
 from utils.log import getLogger
-from utils.misc import output_exception
 
 from system.translations import Translations
 _ = Translations().get()
@@ -303,8 +302,7 @@ class Protocol(ChannelsProtocol):
             try:
                 self.recvProtobuf(msg_type, msg)
             except Exception:
-                self.log.error(_("Exception while handling data."))
-                output_exception(self.log, logging.ERROR)
+                self.log.exception(_("Exception while handling data."))
 
             self.received = self.received[full_length:]
 

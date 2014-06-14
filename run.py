@@ -95,7 +95,6 @@ def main():
         os.chdir(os.path.dirname(sys.argv[0]))
 
     from utils.log import getLogger, open_log, close_log
-    from utils.misc import output_exception
     from system.factory_manager import Manager
     from system import constants
     from system.decorators import threads
@@ -132,7 +131,7 @@ def main():
 
     except Exception:
         logger.critical(_("Runtime error - process cannot continue!"))
-        output_exception(logger)
+        logger.exception("")
     except SystemExit as e:
         logger.trace("SystemExit caught!")
         close_log("output.log")

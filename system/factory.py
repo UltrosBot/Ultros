@@ -2,12 +2,10 @@
 __author__ = "Gareth Coles"
 
 import importlib
-import logging
 
 from twisted.internet import protocol, reactor  # , reactor, ssl
 
 from system.protocols.generic.protocol import Protocol as GenericProtocol
-from utils.misc import output_exception
 from utils.log import getLogger
 
 from system.translations import Translations
@@ -76,10 +74,9 @@ class Factory(protocol.ClientFactory):
                 current_protocol = reload(self.protocol_class)
             self.protocol_class = current_protocol
         except ImportError:
-            self.logger.error(
+            self.logger.exception(
                 _("Unable to import protocol %s for %s") %
                 (self.ptype, self.name))
-            output_exception(self.logger, logging.ERROR)
         else:
             if issubclass(current_protocol.Protocol, GenericProtocol):
                 self.protocol = current_protocol.Protocol(self.name,

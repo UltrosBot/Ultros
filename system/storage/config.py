@@ -22,13 +22,11 @@ dict-like objects.
 __author__ = "Gareth Coles"
 
 import json
-import logging
 import pprint
 import os
 import yaml
 
 from system.storage import formats
-from utils.misc import output_exception
 from utils.log import getLogger
 
 from system.translations import Translations
@@ -168,7 +166,7 @@ class YamlConfig(Config):
         try:
             self.fh = open(self.filename, "r")
         except Exception:
-            output_exception(self.logger, logging.ERROR)
+            self.logger.exception("")
             return False
         else:
             self.data = yaml.safe_load(self.fh)
@@ -299,7 +297,7 @@ class JSONConfig(Config):
         try:
             self.fh = open(self.filename, "r")
         except Exception:
-            output_exception(self.logger, logging.ERROR)
+            self.logger.exception("")
             return False
         else:
             self.data = json.load(self.fh)

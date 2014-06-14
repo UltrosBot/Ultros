@@ -1,7 +1,6 @@
 # coding=utf-8
 
 import time
-import logging
 
 from kitchen.text.converters import to_bytes, to_unicode
 from twisted.internet import reactor
@@ -19,7 +18,6 @@ from system.protocols.irc.user import User
 
 from utils.irc import IRCUtils
 from utils.log import getLogger
-from utils.misc import output_exception
 
 from system.translations import Translations
 _ = Translations().get()
@@ -97,9 +95,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         except ImportError:
             ssl = False
             self.ssl = False
-            self.log.warn(_("Unable to import the SSL library. "
-                            "SSL will not be available."))
-            output_exception(self.log, logging.WARN)
+            self.log.exception(_("Unable to import the SSL library. "
+                                 "SSL will not be available."))
 
         self.event_manager = EventManager()
         self.command_manager = CommandManager()

@@ -2,7 +2,6 @@
 
 __author__ = "Gareth Coles"
 
-import logging
 import inspect
 import signal
 
@@ -21,7 +20,6 @@ from system.storage.config import Config
 from system.storage.manager import StorageManager
 
 from utils.log import getLogger
-from utils.misc import output_exception
 
 from system.translations import Translations
 _ = Translations().get()
@@ -151,9 +149,8 @@ class Manager(object):
             self.logger.error(_("Please check that this file exists."))
             return False
         except Exception:
-            self.logger.error(_(
+            self.logger.exception(_(
                 "Unable to load main configuration at config/settings.yml"))
-            output_exception(self.logger, logging.ERROR)
             return False
         return True
 
@@ -386,10 +383,9 @@ class Manager(object):
                 if not config.exists:
                     return PROTOCOL_CONFIG_NOT_EXISTS
             except Exception:
-                self.logger.error(
+                self.logger.exception(
                     _("Unable to load configuration for the '%s' protocol.")
                     % name)
-                output_exception(self.logger, logging.ERROR)
                 return PROTOCOL_LOAD_ERROR
         try:
             self.factories[name] = Factory(name, config, self)
@@ -398,10 +394,9 @@ class Manager(object):
         except Exception:
             if name in self.factories:
                 del self.factories[name]
-            self.logger.error(
+            self.logger.exception(
                 _("Unable to create factory for the '%s' protocol!")
                 % name)
-            output_exception(self.logger, logging.ERROR)
             return PROTOCOL_SETUP_ERROR
 
     # Unload stuff
@@ -424,8 +419,7 @@ class Manager(object):
             try:
                 self.plugman.deactivatePluginByName(name)
             except Exception:
-                self.logger.error(_("Error disabling plugin: %s") % name)
-                output_exception(self.logger, logging.ERROR)
+                self.logger.exception(_("Error disabling plugin: %s") % name)
             self.event_manager.remove_callbacks_for_plugin(name)
             self.storage.release_files(plug)
             del self.loaded_plugins[name]
