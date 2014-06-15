@@ -403,12 +403,14 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                 self.log.info("<%s:%s> %s" % (user_obj.nickname, channel,
                                               event.message))
 
-            second_event = general_events.MessageReceived(self,
-                                                          user_obj,
-                                                          channel_obj,
-                                                          event.message,
-                                                          "message")
-            self.event_manager.run_callback("MessageReceived", second_event)
+            if not event.cancelled:
+
+                second_event = general_events.MessageReceived(
+                    self, user_obj, channel_obj, event.message, "message"
+                )
+                self.event_manager.run_callback(
+                    "MessageReceived", second_event
+                )
 
     def noticed(self, user, channel, message):
         """ Called when we receive a notice - channel or private. """

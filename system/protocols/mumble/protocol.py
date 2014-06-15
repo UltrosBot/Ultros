@@ -754,13 +754,14 @@ class Protocol(ChannelsProtocol):
                     for line in msg.split("\n"):
                         self.log.info("<%s> %s" % (user_obj, line))
 
-                second_event = general_events.MessageReceived(self,
-                                                              user_obj,
-                                                              channel_obj,
-                                                              event.message,
-                                                              "message")
-                self.event_manager.run_callback("MessageReceived",
-                                                second_event)
+                if not event.cancelled:
+                    second_event = general_events.MessageReceived(
+                        self, user_obj, channel_obj, event.message, "message"
+                    )
+
+                    self.event_manager.run_callback(
+                        "MessageReceived", second_event
+                    )
 
             # TODO: Remove this before proper release. An admin plugin with the
             # - same functionality should be created.
