@@ -116,11 +116,57 @@ class ColorizingStreamHandler(logging.StreamHandler):
             if record.exc_info is not None:
                 from system.metrics import Metrics
 
-                m = Metrics()
-                e = record.exc_info
+                try:
+                    m = Metrics()
+                    e = record.exc_info
 
-                m.submit_exception(e)
-                del e
+                    m.submit_exception(e)
+                    del e
+                except Exception:
+                    pass
+
+                if _globals["level"] == logging.TRACE:
+                    tb = record.exc_info[2]
+
+                    while 1:
+                        if not tb.tb_next:
+                            break
+                        tb = tb.tb_next
+
+                    stack = []
+                    f = tb.tb_frame
+
+                    while f:
+                        stack.append(f)
+                        f = f.f_back
+
+                    stack.reverse()
+
+                    log = getLogger("Locals")
+                    log.trace("== Locals by frame ==")
+
+                    for frame in stack:
+                        log.trace("")
+                        log.trace("Frame %s in %s at line %s"
+                                  % (frame.f_code.co_name,
+                                     frame.f_code.co_filename,
+                                     frame.f_lineno)
+                                  )
+
+                        for key, value in sorted(frame.f_locals.items()):
+                            if key == "__doc__":
+                                out = "\t%20s = <Redacted>" % key
+                            else:
+                                try:
+                                    out = "\t%20s = %s" % (key, value)
+                                except Exception:
+                                    try:
+                                        out = "\t%20s = %r" % (key, value)
+                                    except Exception:
+                                        out = "\t%20s = <Unable to print>" \
+                                              % key
+
+                            log.trace(out)
 
         except (KeyboardInterrupt, SystemExit):
             raise
