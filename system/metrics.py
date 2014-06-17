@@ -82,7 +82,8 @@ class Metrics(object):
 
     interval = 300  # Every 5 minutes
 
-    domain = "https://ultros.io"
+    # domain = "https://ultros.io"
+    domain = "http://localhost:8080"
 
     submit_url = domain + "/api/metrics/post/%s"
     exception_url = domain + "/api/metrics/post/exception/%s"
@@ -255,25 +256,55 @@ class Metrics(object):
         if self.status is True and self.send_exceptions:
             try:
                 t = traceback.format_exception(*exc_info)
+                tb = exc_info[2]
+
+                while 1:
+                    if not tb.tb_next:
+                        break
+
+                    tb = tb.tb_next
+
+                f = tb.tb_frame
+
+                scope = {}
+
+                for key, value in sorted(f.f_locals.items()):
+                    if key == "__doc__":
+                        v = "[DOCSTRING]"
+                    else:
+                        try:
+                            v = str(value)
+                        except Exception:
+                            try:
+                                v = repr(value)
+                            except Exception:
+                                v = "[UNKNOWN]"
+                    scope[key] = v
 
                 self.post(
                     self.exception_url % self.data["uuid"],
                     {
                         "traceback": "\n".join(t),
                         "type": str(exc_info[0]),
-                        "value": str(exc_info[1])
+                        "value": str(exc_info[1]),
+                        "scope": scope
                     }
                 )
             finally:
-                # To prevent nasty reference loops
                 del exc_info, t
 
     def post(self, url, data):
-        data = urllib.urlencode({"data": json.dumps(data)})
+        data = json.dumps(data)
+        self.log.debug("Posting data: %s" % data)
+
+        data = urllib.urlencode({"data": data})
         req = urllib2.Request(
             url, data, {'Content-Type': 'application/json'}
         )
-        return urllib2.urlopen(req).read()
+
+        result = urllib2.urlopen(req).read()
+        self.log.debug("Result: %s" % result)
+        return result
 
     def get(self, url):
         return urllib2.urlopen(url).read()

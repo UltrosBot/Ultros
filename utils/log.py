@@ -117,15 +117,17 @@ class ColorizingStreamHandler(logging.StreamHandler):
                 from system.metrics import Metrics
 
                 try:
-                    m = Metrics()
+                    from system.factory_manager import Manager
+                    fm = Manager()
+                    m = fm.metrics
                     e = record.exc_info
 
                     m.submit_exception(e)
                     del e
-                except Exception:
-                    pass
+                except Exception as e:
+                    print "Error: %s" % e
 
-                if _globals["level"] == logging.TRACE:
+                if _globals["level"] == logging.TRACE and False:
                     tb = record.exc_info[2]
 
                     while 1:

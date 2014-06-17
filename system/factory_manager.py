@@ -84,6 +84,12 @@ class Manager(object):
         self.plugman.setPluginInfoExtension("plug")
 
         self.load_config()  # Load the configuration
+
+        try:
+            self.metrics = Metrics(self.main_config, self)
+        except Exception:
+            self.logger.exception(_("Error setting up metrics."))
+
         self.collect_plugins()  # Collect the plugins
         self.load_plugins()  # Load the configured plugins
         self.load_protocols()  # Load and set up the protocols
@@ -93,18 +99,13 @@ class Manager(object):
                                "Shutting down.."))
             return
 
-        try:
-            self.metrics = Metrics(self.main_config, self)
-        except Exception:
-            self.logger.exception(_("Error setting up metrics."))
-
-        event = ReactorStartedEvent(self)
-
-        reactor.callLater(0, self.event_manager.run_callback,
-                          "ReactorStarted", event)
-
     def run(self):
         if not self.running:
+            event = ReactorStartedEvent(self)
+
+            reactor.callLater(0, self.event_manager.run_callback,
+                              "ReactorStarted", event)
+
             self.running = True
             reactor.run()
         else:
