@@ -114,10 +114,9 @@ class ColorizingStreamHandler(logging.StreamHandler):
             self.flush()
 
             if record.exc_info is not None:
-                from system.metrics import Metrics
+                from system.factory_manager import Manager
 
                 try:
-                    from system.factory_manager import Manager
                     fm = Manager()
                     m = fm.metrics
                     e = record.exc_info
