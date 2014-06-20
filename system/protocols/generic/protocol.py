@@ -91,6 +91,8 @@ class Protocol(protocol.Protocol):
     ourselves = None
     can_flood = False
 
+    control_chars = "."
+
     def __init__(self, name, factory, config):
         # You don't necessarily need to call the super-class here,
         #   however we do recommend at least copy-pasting the below code

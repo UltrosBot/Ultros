@@ -60,6 +60,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
     nickname = ""
     name = "irc"
 
+    control_chars = "."
+
     invite_join = False
 
     _channels = {}  # key is lowercase "#channel" - use get/set/del_channel()
@@ -327,55 +329,6 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
     # region Message events
 
-    def handle_command(self, source, target, message):
-        """
-        Handles checking a message for a command.
-        """
-
-        cc = self.control_chars.replace("{NICK}", self.nickname).lower()
-
-        if message.lower().startswith(cc):  # It's a command!
-            # Remove the command char(s) from the start
-            replaced = message[len(cc):]
-
-            split = replaced.split(None, 1)
-            if not split:
-                return False
-            command = split[0]
-            args = ""
-            if len(split) > 1:
-                args = split[1]
-
-            printable = "<%s:%s> %s" % (source, target, message)
-
-            event = general_events.PreCommand(self, command, args, source,
-                                              target, printable, message)
-            self.event_manager.run_callback("PreCommand", event)
-
-            result = self.command_manager.run_command(event.command,
-                                                      event.source,
-                                                      event.target, self,
-                                                      event.args)
-
-            a, b = result
-            if a:
-                pass  # Command ran successfully
-            else:  # There's a problem
-                if b is True:  # Unable to authorize
-                    self.log.warn(_("%s is not authorized to use the %s "
-                                    "command")
-                                  % (source.nickname, command))
-                elif b is None:  # Command not found
-                    self.log.trace(_("Command not found: %s") % command)
-                    return False
-                else:  # Exception occured
-                    self.log.warn(_("An error occured while running the %s "
-                                    "command: %s") % (command, b))
-            if event.printable:
-                self.log.info(event.printable)
-            return True
-        return False
-
     def privmsg(self, user, channel, message):
         """ Called when we receive a message - channel or private. """
 
@@ -391,7 +344,10 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         else:
             channel_obj = self.get_channel(channel)
 
-        if not self.handle_command(user_obj, channel_obj, message):
+        if not self.command_manager.process_input(
+                message, user_obj, channel_obj, self,
+                self.control_chars, self.nickname
+        ):
             event = general_events.PreMessageReceived(self,
                                                       user_obj,
                                                       channel_obj,

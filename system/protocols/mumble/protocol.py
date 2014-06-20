@@ -95,6 +95,8 @@ class Protocol(ChannelsProtocol):
     def num_channels(self):
         return len(self.channels)
 
+    control_chars = "."
+
     pinging = True
 
     ourselves = None
@@ -679,55 +681,6 @@ class Protocol(ChannelsProtocol):
                 self.event_manager.run_callback("Mumble/UserRecordingToggle",
                                                 event)
 
-    def handle_command(self, source, target, message):
-        """
-        Handles checking a message for a command.
-        """
-
-        cc = self.control_chars.replace("{NICK}", self.username).lower()
-
-        if message.lower().startswith(cc):  # It's a command!
-            # Remove the command char(s) from the start
-            replaced = message[len(cc):]
-
-            split = replaced.split(None, 1)
-            if not split:
-                return False
-            command = split[0]
-            args = ""
-            if len(split) > 1:
-                args = split[1]
-
-            printable = "<%s:%s> %s" % (source, target, message)
-
-            event = general_events.PreCommand(self, command, args, source,
-                                              target, printable, message)
-            self.event_manager.run_callback("PreCommand", event)
-
-            result = self.command_manager.run_command(event.command,
-                                                      event.source,
-                                                      event.target, self,
-                                                      event.args)
-
-            a, b = result
-            if a:
-                pass  # Command ran successfully
-            else:  # There's a problem
-                if b is True:  # Unable to authorize
-                    self.log.warn(_("%s is not authorized to use the %s "
-                                    "command")
-                                  % (source.nickname, command))
-                elif b is None:  # Command not found
-                    self.log.trace(_("Command not found: %s") % command)
-                    return False
-                else:  # Exception occured
-                    self.log.warn(_("An error occured while running the %s "
-                                    "command: %s") % (command, b))
-            if event.printable:
-                self.log.info(event.printable)
-            return True
-        return False
-
     def handle_msg_textmessage(self, message):
         if message.actor in self.users:
             user_obj = self.users[message.actor]
@@ -742,7 +695,10 @@ class Protocol(ChannelsProtocol):
                 # None).
                 channel_obj = user_obj
 
-            if not self.handle_command(user_obj, channel_obj, msg):
+            if not self.command_manager.process_input(
+                    msg, user_obj, channel_obj, self,
+                    self.control_chars, self.nickname
+            ):
                 event = general_events.PreMessageReceived(self,
                                                           user_obj,
                                                           channel_obj,

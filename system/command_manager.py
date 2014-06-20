@@ -4,6 +4,8 @@ import shlex
 __author__ = "Gareth Coles"
 
 from system.decorators.ratelimit import RateLimitExceededError
+from system.events import general as events
+from system.event_manager import EventManager
 from system.singleton import Singleton
 from utils.log import getLogger
 
@@ -50,6 +52,7 @@ class CommandManager(object):
 
     def __init__(self):
         self.logger = getLogger("Commands")
+        self.event_manager = EventManager()
 
     def set_factory_manager(self, factory_manager):
         """
@@ -130,6 +133,83 @@ class CommandManager(object):
             if owner is value["owner"]:
                 del self.commands[key]
                 self.logger.debug(_("Unregistered command: %s") % key)
+
+    def process_input(self, in_str, caller, source, protocol,
+                      control_char=None, our_name=None, success=True,
+                      failure=False):
+
+        if control_char is None:
+            if hasattr(protocol, "control_chars"):
+                control_char = protocol.control_chars
+            else:
+                self.logger.debug("Protocol %s doesn't have a control "
+                                  "character sequence!" % protocol.name)
+                return failure
+
+        if our_name is None:
+            if hasattr(protocol, "nickname"):
+                our_name = protocol.nickname
+
+        if our_name is not None:
+            control_char = control_char.replace("{NAME}", our_name)
+            control_char = control_char.replace("{NICK}", our_name)
+
+        if len(in_str) < len(control_char):
+            self.logger.trace("Control character sequence is longer than the "
+                              "input string, so this cannot be a command.")
+            return failure
+
+        if in_str.lower().startswith(control_char.lower()):  # It's a command!
+            # Remove the command char(s) from the start
+            replaced = in_str[len(control_char):]
+
+            split = replaced.split(None, 1)
+            if not split:
+                return False
+            command = split[0]
+            args = ""
+            if len(split) > 1:
+                args = split[1]
+
+            if command not in self.commands:
+                return failure
+
+            printable = "<%s:%s> %s" % (caller, source, in_str)
+
+            event = events.PreCommand(protocol, command, args, caller,
+                                      source, printable, in_str)
+            self.event_manager.run_callback("PreCommand", event)
+
+            if event.printable:
+                if hasattr(protocol, "log"):
+                    protocol.log.info(event.printable)
+                elif hasattr(protocol, "logger"):
+                    protocol.logger.info(event.printable)
+                else:
+                    self.logger.info("%s | %s" % (protocol.name,
+                                                  event.printable))
+
+            result = self.run_command(event.command, event.source,
+                                      event.target, protocol, event.args)
+
+            if result[0]:
+                self.logger.trace("Command ran successfully.")
+                return success
+
+            if result[1] is True:
+                self.logger.debug("User doesn't have permission for this "
+                                  "command.")
+                return success
+
+            if result[1] is None:
+                self.logger.debug("Command not found.")
+                return failure
+
+            self.logger.debug("An error occured.")
+            return success
+
+        self.logger.debug("Command not found.")
+        return failure
 
     def run_command(self, command, caller, source, protocol, args):
         """
