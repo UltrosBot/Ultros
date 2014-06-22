@@ -525,8 +525,8 @@ class Manager(object):
         """
         Remove a protocol without shutting it down. You shouldn't use this.
 
-        :param name: The name of the protocol
-        :type name: str
+        :param protocol: The name of the protocol
+        :type protocol: str
 
         :return: Whether the protocol was removed.
         :rtype: bool
