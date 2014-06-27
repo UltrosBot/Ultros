@@ -383,6 +383,9 @@ class permissionsHandler(object):
         self.plugin.logger.debug(_("PROTO | %s") % protocol)
 
         def _recur(_group):
+            if _group is None:
+                self.plugin.logger.debug(_("Group is None."))
+                return
             if _group in self.data["groups"]:
                 if _group not in groups:
                     groups.append(_group)
@@ -391,12 +394,20 @@ class permissionsHandler(object):
 
                     _protos = self.data["groups"][_group].get("protocols", {})
 
+                    if _protos is None:
+                        self.plugin.logger.debug(_("Protocols are None."))
+                        return
+
                     if protocol:
                         _proto = _protos.get(protocol, {})
 
                         all_perms.update(set(_proto.get("permissions", [])))
 
                         _sources = _proto.get("sources", {})
+
+                        if _sources is None:
+                            self.plugin.logger.debug(_("Sources are None."))
+                            return
 
                         if source:
                             all_perms.update(set(_sources.get(source, [])))
