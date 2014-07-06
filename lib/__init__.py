@@ -15,13 +15,15 @@ tests["socks.py"] = {
     "module": "socks",
     "url": "http://socksipy-branch.googlecode.com/svn/branches/1.00/"
            "socks.py",
-    "name": "SocksiPy"
+    "name": "SocksiPy",
+    "attrib": "[New BSD license] Dan Haim and the branch maintainers"
 }
 tests["socksipyhandler.py"] = {
     "module": "socksipyhandler",
     "url": "https://gist.githubusercontent.com/e000/869791/raw/"
            "7d579998d384ba72711f2ce0caf78e8566da5864/socksipyhandler.py",
-    "name": "SocksiPyHandler"
+    "name": "SocksiPyHandler",
+    "attrib": "[Gist, no license header] e000 <e@tr0ll.in>"
 }
 
 print "Checking for libraries to download.."
@@ -35,6 +37,7 @@ for key in tests.keys():
         tried += 1
 
         print ">> Downloading library: %s" % tests[key]["name"]
+        print " > Attribution: %s" % tests[key]["attrib"]
         try:
             rq = urllib2.urlopen(tests[key]["url"])
         except Exception as e:
