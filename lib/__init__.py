@@ -3,80 +3,110 @@ Some library files we need to download but shouldn't really
 be distributing.
 """
 
-from collections import OrderedDict
-
+import json
 import importlib
 import os
 import urllib2
 
-tests = OrderedDict()
 
-tests["socks.py"] = {
-    "module": "socks",
-    "url": "http://socksipy-branch.googlecode.com/svn/branches/1.00/"
-           "socks.py",
-    "name": "SocksiPy",
-    "attrib": "[New BSD license] Dan Haim and the branch maintainers"
-}
-tests["socksipyhandler.py"] = {
-    "module": "socksipyhandler",
-    "url": "https://gist.githubusercontent.com/e000/869791/raw/"
-           "7d579998d384ba72711f2ce0caf78e8566da5864/socksipyhandler.py",
-    "name": "SocksiPyHandler",
-    "attrib": "[Gist, no license header] e000 <e@tr0ll.in>"
-}
+def get_libs():
+    print ">> Checking for libraries to download.."
 
-print "Checking for libraries to download.."
+    definitions = os.listdir("lib/definitions")
 
-tried = 0
-downloaded = 0
-failed = 0
+    tried = 0
+    downloaded = 0
+    failed = 0
+    exists = 0
 
-for key in tests.keys():
-    if not os.path.exists("lib/%s" % key):
-        tried += 1
+    for filename in definitions:
+        if not filename.endswith(".json"):
+            print "Unknown definition file type: %s" % filename
 
-        print ">> Downloading library: %s" % tests[key]["name"]
-        print " > Attribution: %s" % tests[key]["attrib"]
         try:
-            rq = urllib2.urlopen(tests[key]["url"])
+            fh = open("lib/definitions/%s" % filename, "r")
+            tests = json.load(fh)
+            packs = tests["packages"]
         except Exception as e:
-            print "[ERROR] %s" % e
-            print "[ERROR] Please report this to the developers. Attempted " \
-                  "URL: %s" % tests[key]["url"]
-            print ""
-            failed += 1
+            print "[ERROR] Unable to load definitions file %s - %s" % e
         else:
-            try:
-                fh = open("lib/%s" % key, "w")
-                fh.write(rq.read())
-                fh.flush()
-                fh.close()
-            except Exception as e:
-                print "[ERROR] Unable to write file: %s" % e
-                print "[ERROR] Do you have write access to this file?"
-                print ""
-                failed += 1
-            else:
-                try:
-                    module = __import__("lib.%s" % tests[key]["module"])
-                except Exception as e:
-                    print "[ERROR] Unable to import module: %s" % e
-                    print "[ERROR] Please report this to the developers."
-                    print ""
-                    failed += 1
+            for pack in packs:
+                if not os.path.exists("lib/%s" % pack["filename"]):
+                    tried += 1
+
+                    print ">> Downloading library: %s" % pack["name"]
+                    print " > Attribution: %s" % pack["attrib"]
+
+                    if "." in pack["module"]:
+                        folders = pack["module"].split(".")
+                        folders.pop()
+
+                        path = "lib/%s" % "/".join(folders)
+
+                        try:
+                            if not os.path.exists(path):
+                                os.makedirs(path)
+
+                                current_path = "lib/"
+
+                                for folder in folders:
+                                    current_path += (folder + "/")
+                                    open("%s/__init__.py" % current_path, "w")
+
+                        except Exception as e:
+                            print "[ERROR] Unable to create path %s - %s" \
+                                  % (path, e)
+                            continue
+
+                    try:
+                        rq = urllib2.urlopen(pack["url"])
+                    except Exception as e:
+                        print "[ERROR] %s" % e
+                        print "[ERROR] Please report this to the developers." \
+                              " Attempted URL: %s" % pack["url"]
+                        print ""
+                        failed += 1
+                    else:
+                        try:
+                            fh = open("lib/%s" % pack["filename"], "w")
+
+                            data = rq.read()
+                            data = data.replace("\r\n", "\n")
+
+                            fh.write(data)
+                            fh.flush()
+                            fh.close()
+                        except Exception as e:
+                            print "[ERROR] Unable to write file: %s" % e
+                            print "[ERROR] Do you have write access to this " \
+                                  "file?"
+                            print ""
+                            failed += 1
+                        else:
+                            try:
+                                importlib.import_module(
+                                    "lib.%s" % pack["module"]
+                                )
+                            except Exception as e:
+                                print "[ERROR] Unable to import module: %s" % e
+                                print "[ERROR] Please report this to the " \
+                                      "developers."
+                                print ""
+                                failed += 1
+                            else:
+                                downloaded += 1
                 else:
-                    downloaded += 1
+                    exists += 1
 
-if not tried:
-    print ">> All libraries are present. Nothing to do."
-else:
+    if not tried:
+        print ">> All libraries are present. Nothing to do."
+    else:
+        print ""
+        print ">> Done - %s failed / %s succeeded" % (failed, downloaded)
+
     print ""
-    print ">> Done - %s failed / %s succeeded" % (failed, downloaded)
 
-socks = importlib.import_module("lib.socks")
-SocksiPyHandler = importlib.import_module(
-    "lib.socksipyhandler"
-).SocksiPyHandler
+    return {"tried": tried, "downloaded": downloaded,
+            "failed": failed, "exists": exists}
 
-print ""
+get_libs()

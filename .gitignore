@@ -54,4 +54,5 @@ ultros.pid
 *~
 
 lib/*.py
+lib/**/*.py
 !lib/__init__.py

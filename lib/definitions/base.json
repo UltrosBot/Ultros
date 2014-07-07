@@ -1,0 +1,26 @@
+{
+    "   ": "You need a 'packages' element in your JSON with a similar structure to here.",
+    "  #": "We're using JSON as the YAML lib might not yet be loaded when we parse these.",
+    " # ": "Please do attribute properly, as we've done below.",
+    " ##": "Also, please don't comment your JSON files, even if you do it in the same vein as us here.",
+    "#  ": "If your module name has any dots '.' in it, folders will be created.",
+    "# #": "Remember to include these folders in your filename!",
+    "## ": "Remember to put your packages in requirements-based order, too.",
+    "###": "Finally, check that none of the packages you're downloading prohibit this kind of distribution.",
+    "packages": [
+        {
+            "name": "SocksiPy",
+            "filename": "proxy/socks.py",
+            "module": "proxy.socks",
+            "url": "http://socksipy-branch.googlecode.com/svn/branches/1.00/socks.py",
+            "attrib": "[New BSD license] Dan Haim and the branch maintainers"
+        },
+        {
+            "name": "SocksiPyHandler",
+            "filename": "proxy/socksipyhandler.py",
+            "module": "proxy.socksipyhandler",
+            "url": "https://gist.githubusercontent.com/e000/869791/raw/7d579998d384ba72711f2ce0caf78e8566da5864/socksipyhandler.py",
+            "attrib": "[Gist, no license header] e000 <e@tr0ll.in>"
+        }
+    ]
+}
