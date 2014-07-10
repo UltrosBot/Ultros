@@ -321,7 +321,7 @@ def setup(auto=False):
                  "13.2.0.win32-py2.7.msi", "twisted.msi"]
             ],
             "OpenSSL and PyOpenSSL": [
-                ["http://slproweb.com/download/Win32OpenSSL-1_0_1g.exe",
+                ["http://slproweb.com/download/Win32OpenSSL-1_0_1h.exe",
                  "openssl.exe"],
                 ["https://pypi.python.org/packages/2.7/p/pyOpenSSL/pyOpenSSL-0"
                  ".13.1.win32-py2.7.exe", "pyopenssl.exe"]
