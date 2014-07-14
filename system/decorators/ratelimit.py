@@ -62,14 +62,14 @@ class RateLimiter(object):
                     result.chainDeferred(task[3])
                 else:
                     task[3].callback(result)
-            except:
+            except Exception:
                 _log.debug("Inner exception while updating queue",
                            exc_info=True)
                 task[3].errback(Failure())
         except Queue.Empty:
             _log.debug("Queue empty, but looping call still running",
                        exc_info=True)
-        except:
+        except Exception:
             _log.debug("Exception while updating queue", exc_info=True)
         if self._queue.empty():
             self._looping_call.stop()
