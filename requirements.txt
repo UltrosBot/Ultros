@@ -12,3 +12,4 @@ gitdb
 async
 pyopenssl
 psutil
+clojure-py
