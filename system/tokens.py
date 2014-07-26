@@ -45,21 +45,6 @@ class Tokens(object):
     def get_tokens(self, string):
         return re.findall(self.token_regex, string)
 
-    def manual_replace(self, string, name, replace):
-        self.logger.info("String: %s" % string)
-        self.logger.info("Name: %s" % name)
-        self.logger.info("Replace: %s" % replace)
-
-        name = name.upper()
-        tokens = self.get_tokens(string)
-
-        for token in tokens:
-            parsed = self.parse_token(token)
-            if parsed["name"] == name:
-                string = string.replace(token, replace)
-
-        return string
-
     def add_handler(self, name, func):
         if name not in self.tokens:
             self.tokens[name.upper()] = func
@@ -96,6 +81,29 @@ class Tokens(object):
                 string = string.replace(token, result)
 
         string = re.sub(self.escape_regex, ":", string)
+        return string
+
+    def manual_replace(self, string, name, replace):
+        self.logger.info("String: %s" % string)
+        self.logger.info("Name: %s" % name)
+        self.logger.info("Replace: %s" % replace)
+
+        name = name.upper()
+        tokens = self.get_tokens(string)
+
+        for token in tokens:
+            parsed = self.parse_token(token)
+            if parsed["name"] == name:
+                string = string.replace(token, replace)
+
+        return string
+
+    def remove_all(self, string):
+        tokens = self.get_tokens(string)
+
+        for token in tokens:
+            string = string.replace(token, "")
+
         return string
 
 if __name__ == "__main__":
