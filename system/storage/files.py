@@ -20,7 +20,8 @@ file_formats_map = {
         Formats.JSON: Data.JSONData,
         Formats.MEMORY: Data.MemoryData,
         Formats.YAML: Data.YamlData,
-        Formats.DBAPI: Data.DBAPIData
+        Formats.DBAPI: Data.DBAPIData,
+        Formats.MONGO: Data.MongoDBData
     }
 }
 

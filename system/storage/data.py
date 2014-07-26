@@ -22,6 +22,7 @@ __author__ = "Gareth Coles"
 import json
 import os
 import pprint
+import pymongo
 import yaml
 
 from threading import Lock
@@ -624,7 +625,7 @@ class DBAPIData(Data):
     """
     Data object that uses Twisted's async DBAPI adapters.
 
-    Tere is no dictionary access here. Instead, you can
+    There is no dictionary access here. Instead, you can
     call the three usual functions directly on the class instance, and
     they'll be passed through to the underlying DBAPI implementation.
 
@@ -726,15 +727,6 @@ class DBAPIData(Data):
         self.pool = adbapi.ConnectionPool(self.parsed_module, *args,
                                           cp_reconnect=True, **kwargs)
 
-    def runInteraction(self, *args, **kwargs):
-        return self.pool.runInteraction(*args, **kwargs)
-
-    def runOperation(self, *args, **kwargs):
-        return self.pool.runOperation(*args, **kwargs)
-
-    def runQuery(self, *args, **kwargs):
-        return self.pool.runQuery(*args, **kwargs)
-
     def serialize(self, yielder):
         # Only used when we don't have a conventional serialization, this
         # should return some json/yaml that provides a /SAMPLE/ of the data.
@@ -758,3 +750,83 @@ class DBAPIData(Data):
 
     def __nonzero__(self):
         return True
+
+    def __getattribute__(self, item):
+        try:
+            # Check whether we defined our own methods
+            return object.__getattribute__(self, item)
+        except AttributeError:
+            # If not, check if they exist on the collection
+            return self.pool.__getattribute__(item)
+
+
+class MongoDBData(Data):
+    """
+    Data object that uses MongoDB for storage.
+
+    There is no dictionary access here.
+    """
+
+    representation = "json"
+    format = formats.MONGO
+
+    client = None
+    info = ""
+
+    def __init__(self, path, *args, **kwargs):
+        self.callbacks = []
+
+        self.logger = getLogger("MongoDB")
+
+        if path is not None:
+            if not path.lower().startswith("mongodb://"):
+                path = "mongodb://%s" % path
+
+        self.path = path
+        self.url = kwargs.get("url", None)
+
+        self.logger.trace("Path: %s" % path)
+        self.logger.trace("Args: %s" % (args or "[]"))
+        self.logger.trace("KWArgs: %s" % (kwargs or "{}"))
+
+        self.args = args
+        self.kwargs = kwargs
+
+        self.reconnect()
+
+    def reconnect(self):
+        args = self.args
+        kwargs = self.kwargs
+        self.client = pymongo.MongoClient(self.url, *args, **kwargs)
+
+    def serialize(self, yielder):
+        # Only used when we don't have a conventional serialization, this
+        # should return some json/yaml that provides a /SAMPLE/ of the data.
+        # It shouldn't return a full set of data - database tables can be huge.
+        # Remember, use the yielder - and remember to .close() it! Seriously,
+        # use a try...finally block or the thread will loop forever. You have
+        # been warned.
+        yielder.close()
+        return None
+
+    def __enter__(self):
+        return self.client
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is None:
+            return True
+        return False
+
+    def __str__(self):
+        return "<Ultros MongoDB data handler: %s>" % self.path
+
+    def __nonzero__(self):
+        return True
+
+    def __getattribute__(self, item):
+        try:
+            # Check whether we defined our own method/field
+            return object.__getattribute__(self, item)
+        except AttributeError:
+            # If not, check if they exist on the client
+            return self.client.__getattr__(item)
