@@ -3,6 +3,7 @@ __author__ = 'Gareth Coles'
 import re
 
 from system.singleton import Singleton
+from utils.log import getLogger
 
 
 class Tokens(object):
@@ -39,8 +40,34 @@ class Tokens(object):
         self.parse_regex = re.compile(r"(?<!\\):")
         self.escape_regex = re.compile(r"\\:")
 
+        self.logger = getLogger("Tokens")
+
     def get_tokens(self, string):
         return re.findall(self.token_regex, string)
+
+    def manual_replace(self, string, name, replace):
+        self.logger.info("String: %s" % string)
+        self.logger.info("Name: %s" % name)
+        self.logger.info("Replace: %s" % replace)
+
+        name = name.upper()
+        tokens = self.get_tokens(string)
+
+        for token in tokens:
+            parsed = self.parse_token(token)
+            if parsed["name"] == name:
+                string = string.replace(token, replace)
+
+        return string
+
+    def add_handler(self, name, func):
+        if name not in self.tokens:
+            self.tokens[name.upper()] = func
+
+    def remove_handler(self, name):
+        name = name.upper()
+        if name in self.tokens:
+            del self.tokens[name]
 
     def parse_token(self, string):
         # If string is {STUFF}..
@@ -64,7 +91,8 @@ class Tokens(object):
             func = self.tokens.get(parsed["name"], None)
 
             if func is not None:
-                result = str(func(parsed["args"]))
+                args = parsed["args"]
+                result = str(func(*args))
                 string = string.replace(token, result)
 
         string = re.sub(self.escape_regex, ":", string)
