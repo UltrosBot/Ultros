@@ -23,6 +23,7 @@ import json
 import os
 import pprint
 import pymongo
+import redis
 import yaml
 
 from threading import Lock
@@ -756,8 +757,8 @@ class DBAPIData(Data):
             # Check whether we defined our own methods
             return object.__getattribute__(self, item)
         except AttributeError:
-            # If not, check if they exist on the collection
-            return self.pool.__getattribute__(item)
+            # If not, check if they exist on the pool
+            return getattr(self.pool, item)
 
 
 class MongoDBData(Data):
@@ -777,10 +778,6 @@ class MongoDBData(Data):
         self.callbacks = []
 
         self.logger = getLogger("MongoDB")
-
-        if path is not None:
-            if not path.lower().startswith("mongodb://"):
-                path = "mongodb://%s" % path
 
         self.path = path
         self.url = kwargs.get("url", None)
@@ -829,4 +826,76 @@ class MongoDBData(Data):
             return object.__getattribute__(self, item)
         except AttributeError:
             # If not, check if they exist on the client
-            return self.client.__getattr__(item)
+            return getattr(self.client, item)
+
+
+class RedisData(Data):
+    """
+    Data object that uses Redis for storage.
+    """
+
+    representation = "json"
+    format = formats.REDIS
+
+    client = None
+    info = ""
+
+    def __init__(self, path, *args, **kwargs):
+        self.callbacks = []
+
+        self.logger = getLogger("Redis")
+
+        self.path = path
+        self.url = kwargs.get("url", None)
+
+        self.logger.trace("Path: %s" % path)
+        self.logger.trace("Args: %s" % (args or "[]"))
+        self.logger.trace("KWArgs: %s" % (kwargs or "{}"))
+
+        self.args = args
+        self.kwargs = kwargs
+
+        self.reconnect()
+
+    def reconnect(self):
+        args = self.args
+        kwargs = self.kwargs
+        self.client = redis.StrictRedis(*args, **kwargs)
+
+    def serialize(self, yielder):
+        # Only used when we don't have a conventional serialization, this
+        # should return some json/yaml that provides a /SAMPLE/ of the data.
+        # It shouldn't return a full set of data - database tables can be huge.
+        # Remember, use the yielder - and remember to .close() it! Seriously,
+        # use a try...finally block or the thread will loop forever. You have
+        # been warned.
+        yielder.close()
+        return None
+
+    def __enter__(self):
+        return self.client
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is None:
+            return True
+        return False
+
+    def __str__(self):
+        return "<Ultros Redis data handler: %s>" % self.path
+
+    def __nonzero__(self):
+        return True
+
+    def __getattribute__(self, item):
+        try:
+            # Check whether we defined our own method/field
+            return object.__getattribute__(self, item)
+        except AttributeError:
+            # If not, check if they exist on the client
+            return getattr(self.client, item)
+
+    def __getitem__(self, item):
+        return self.client.get(item)
+
+    def __setitem__(self, key, value):
+        return self.client.set(key, value)

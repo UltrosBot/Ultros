@@ -21,7 +21,8 @@ file_formats_map = {
         Formats.MEMORY: Data.MemoryData,
         Formats.YAML: Data.YamlData,
         Formats.DBAPI: Data.DBAPIData,
-        Formats.MONGO: Data.MongoDBData
+        Formats.MONGO: Data.MongoDBData,
+        Formats.REDIS: Data.RedisData
     }
 }
 
