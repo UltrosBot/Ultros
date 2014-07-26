@@ -763,9 +763,39 @@ class DBAPIData(Data):
 
 class MongoDBData(Data):
     """
-    Data object that uses MongoDB for storage.
+    Data object that uses MongoDB for storage. ::
 
-    There is no dictionary access here.
+        x = storage.get_file(
+            self, "data", Formats.MONGO, "localhost/database",
+            # URL is optional, it'll default to localhost with no auth
+            "mongodb://username:password@localhost/database?options"
+        )
+
+    This pretty much just wraps the official Mongo driver, which is pretty
+    small and ridiculously pythonic. There are two ways to get access to a
+    database::
+
+        # First method
+
+        db = x.dbname
+
+        # Second method - use this if your DB is named `representation`,
+        # `format`, `client`, `info`, `reconnect`, `serialize`, or anything
+        # else defined in this class. If you're not sure, use the second
+        # method.
+
+        with x as client:
+            db = client.dbname
+
+    Getting a collection and working with it thereafter is pretty simple::
+
+        coll = db.collectionname
+        results = db.find({"key": "value"})
+
+        for r in result:
+            pass  # Do stuff with each document
+
+    More info: http://api.mongodb.org/python/2.7rc0/
     """
 
     representation = "json"
@@ -831,7 +861,24 @@ class MongoDBData(Data):
 
 class RedisData(Data):
     """
-    Data object that uses Redis for storage.
+    Data object that uses Redis for storage. ::
+
+        x = storage.get_file(
+            self, "data", Formats.REDIS, "something unique",
+            host="localhost", port=6397, fb=0
+        )
+
+
+    Redis is a key-value store in essence, so we've provided dict-like access
+    for it here. ::
+
+        x["key"] = value
+        self.logger.info(x["key"])
+
+    You can access the standard redis class's fields and methods directly on
+    this class as well.
+
+    More info: https://github.com/andymccurdy/redis-py/blob/master/README.rst
     """
 
     representation = "json"
@@ -899,3 +946,6 @@ class RedisData(Data):
 
     def __setitem__(self, key, value):
         return self.client.set(key, value)
+
+    def __delitem__(self, key):
+        return self.client.delete(key)
