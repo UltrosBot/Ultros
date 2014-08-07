@@ -520,13 +520,12 @@ class FactoidsPlugin(plugin.PluginObject):
         web.add_route("/factoids", ["GET", "POST"], self.web_factoids)
         web.add_route("/factoids/", ["GET", "POST"], self.web_factoids)
 
-        web.add_navbar_entry("Factoids", "/factoids/")
+        web.add_navbar_entry("Factoids", "/factoids/", "text file outline")
 
     def web_factoids_callback_success(self, result, y, objs):
         web = self.plugman.getPluginByName("Web").plugin_object
 
-        fragment = "<table class=\"table table-striped table-bordered" \
-                   " table-sortable\">"
+        fragment = "<table class=\"ui celled table segment table-sortable\">"
         fragment += "<thead>" \
                     "<tr>" + \
                     _("<th>Location</th>") + \
