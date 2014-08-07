@@ -693,7 +693,7 @@ class DBAPIData(Data):
     More info: https://twistedmatrix.com/documents/12.0.0/core/howto/rdbms.html
     """
 
-    representation = "json"
+    representation = None
     format = formats.DBAPI
 
     pool = None
@@ -798,7 +798,7 @@ class MongoDBData(Data):
     More info: http://api.mongodb.org/python/2.7rc0/
     """
 
-    representation = "json"
+    representation = None
     format = formats.MONGO
 
     client = None
@@ -881,7 +881,7 @@ class RedisData(Data):
     More info: https://github.com/andymccurdy/redis-py/blob/master/README.rst
     """
 
-    representation = "json"
+    representation = None
     format = formats.REDIS
 
     client = None
