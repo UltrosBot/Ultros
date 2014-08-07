@@ -37,7 +37,6 @@ nosetests.xml
 topics.css
 topics.html
 topics.txt
-output.log
 *.log
 config/*.yml
 config/**/*.yml
@@ -52,7 +51,7 @@ ultros.pid
 
 # Other
 *~
+*.bak
 
 lib/*.py
-lib/**/*.py
 !lib/__init__.py
