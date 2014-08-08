@@ -166,7 +166,7 @@ class test_utils:
     def test_misc_string_split_exception(self):
         """
         UTILS | Test that the readable string splitter throws the right \
-        exception
+exception
         """
 
         misc.string_split_readable("word", 3)
