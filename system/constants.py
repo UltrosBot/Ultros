@@ -14,7 +14,7 @@ try:
     commit = master.commit
 
     __version__ = "Git: %s" % commit
-    __version_info__ = "Commit by %s (%s) - %s" % \
+    __version_info__ = "Last commit by %s (%s) - %s" % \
                        (commit.author,
                         datetime.datetime.fromtimestamp(
                             commit.committed_date
