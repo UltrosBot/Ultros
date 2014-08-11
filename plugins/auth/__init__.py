@@ -89,13 +89,13 @@ class AuthPlugin(plugin.PluginObject):
 
         self.logger.debug(_("Registering commands."))
         self.commands.register_command("login", self.login_command,
-                                       self, "auth.login")
+                                       self, "auth.login", default=True)
         self.commands.register_command("logout", self.logout_command,
-                                       self, "auth.login")
+                                       self, "auth.login", default=True)
         self.commands.register_command("register", self.register_command,
-                                       self, "auth.register")
+                                       self, "auth.register", default=True)
         self.commands.register_command("passwd", self.passwd_command, self,
-                                       "auth.passwd")
+                                       "auth.passwd", default=True)
 
         self.events.add_callback("PreCommand", self, self.pre_command, 10000)
 

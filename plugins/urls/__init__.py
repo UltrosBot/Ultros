@@ -97,7 +97,7 @@ class URLsPlugin(plugin.PluginObject):
         self.commands.register_command("urls", self.urls_command, self,
                                        "urls.manage")
         self.commands.register_command("shorten", self.shorten_command, self,
-                                       "urls.shorten")
+                                       "urls.shorten", default=True)
 
     def reload(self):
         self.shortened.runQuery("CREATE TABLE IF NOT EXISTS urls ("

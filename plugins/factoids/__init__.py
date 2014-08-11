@@ -83,7 +83,7 @@ class FactoidsPlugin(plugin.PluginObject):
         self.commands.register_command("getfactoid",
                                        self.factoid_get_command,
                                        self,
-                                       None)
+                                       None, default=True)
 
         # ## Register events
         self.events.add_callback("MessageReceived",

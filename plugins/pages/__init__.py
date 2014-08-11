@@ -17,7 +17,8 @@ class PagesPlugin(plugin.PluginObject):
 
     def setup(self):
         self.commands = CommandManager()
-        self.commands.register_command("page", self.page_command, self)
+        self.commands.register_command("page", self.page_command, self,
+                                       default=True)
 
     def send_page(self, pageset, pagenum, target):
         if pageset not in self.stored_pages:
