@@ -2,6 +2,9 @@ __author__ = 'Gareth Coles'
 
 #: The current version. This gets replaced if you're using git.
 __version__ = "1.0.0"
+__version_info__ = "Not being run from a Git repo."
+
+import datetime
 
 try:
     from git import repo
@@ -10,8 +13,14 @@ try:
     master = heads[0]
     commit = master.commit
 
-    __version__ = "Git: %s" % commit.id
-except Exception:
+    __version__ = "Git: %s" % commit
+    __version_info__ = "Commit by %s (%s) - %s" % \
+                       (commit.author,
+                        datetime.datetime.fromtimestamp(
+                            commit.committed_date
+                        ).strftime("%d %b, %Y - %H:%M:%S"),
+                        commit.summary)
+except Exception as e:
     pass
 
 # Constants related to (un)loading plugins

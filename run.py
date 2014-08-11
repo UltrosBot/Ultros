@@ -113,6 +113,7 @@ def main():
     requests_log.setLevel(logging.WARNING)
 
     logger.info(_("Starting up, version \"%s\"") % constants.__version__)
+    logger.info(constants.__version_info__)
 
     # Write PID to file
     fh = open("ultros.pid", "w")
