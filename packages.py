@@ -30,8 +30,10 @@ operations = ["install", "update", "uninstall", "list", "list-installed",
 
 p = argparse.ArgumentParser(description=DESC)
 p.add_argument("-l", "--language", help="Specify which language to use")
-p.add_argument("operation", help="Specify what to do.", choices=operations)
-p.add_argument("target", nargs="?", default=None)
+
+if __name__ == "__main__":
+    p.add_argument("operation", help="Specify what to do.", choices=operations)
+    p.add_argument("target", nargs="?", default=None)
 
 args = p.parse_args()
 trans = Translations(args.language, log=False)
@@ -52,7 +54,11 @@ except ImportError:
 
     _args = sys.argv
     sys.argv = []
-    exec d
+    try:
+        exec d
+    except SystemExit:
+        pass
+
     sys.argv = _args
     import pip  # flake8: noqa
     print ""
