@@ -33,6 +33,13 @@ class CommandManager(object):
     #:     }
     commands = {}
 
+    #: Storage for command aliases.
+    #:
+    #:     aliases = {
+    #:         "alias": "command"
+    #:     }
+    aliases = {}
+
     #: Storage for all the registered auth handlers.
     #:
     #: Auth handlers are in charge of asserting whether users are logged in
@@ -109,7 +116,7 @@ class CommandManager(object):
         self.commands[command] = commandobj
 
         for alias in aliases:
-            if alias in self.commands:
+            if alias in self.aliases:
                 self.logger.warn(_("Failed to register command alias '%s' as "
                                    "it already belongs to another command.")
                                  % alias)
@@ -117,15 +124,14 @@ class CommandManager(object):
 
             self.logger.debug(_("Registering alias: %s -> %s (%s)")
                               % (alias, command, owner))
-            self.commands[alias] = commandobj
+            self.aliases[alias] = command
         return True
 
     def unregister_commands_for_owner(self, owner):
-        """
-        Unregister all commands that have been registered by a certain object.
+        """Unregister all commands that have been registered by a certain
+        object. This method checks instances, not types!
 
         :param owner: The owner to check for
-
         :type owner: object
         """
         current = self.commands.items()
@@ -137,6 +143,31 @@ class CommandManager(object):
     def process_input(self, in_str, caller, source, protocol,
                       control_char=None, our_name=None, success=True,
                       failure=False):
+        """Process a set of inputs, to check if there's a command there and
+        action it. This is designed to be used from a protocol.
+
+        :param in_str: The entire message to parse
+        :param caller: The User that sent the message
+        :param source: The User or Channel that the message was sent to
+        :param protocol: The Protocol object the User belongs to
+        :param control_char: The control characters (prefix)
+        :param our_name: The name of the bot on Protocol
+        :param success: What to return on a success
+        :param failure: What to return on a failure
+
+        :type in_str: str
+        :type caller: User
+        :type source: User, Channel
+        :type protocol: Protocol
+        :type control_char: str
+        :type our_name: str
+        :type success: object
+        :type failure: object
+
+        :return: Success or Failure object depending on whether the command
+            exists
+        :rtype: object
+        """
 
         if control_char is None:
             if hasattr(protocol, "control_chars"):
@@ -230,7 +261,7 @@ class CommandManager(object):
         :param args: A list of arguments for the command
 
         :type command: str
-        :type caller: PluginObject
+        :type caller: User
         :type source: User
         :type protocol: Protocol
         :type args: list
@@ -238,7 +269,9 @@ class CommandManager(object):
         :rtype: Tuple of (Boolean, [None, Exception or Boolean))
         """
         if command not in self.commands:
-            return False, None
+            if command not in self.aliases:  # Get alias, if it exists
+                return False, None
+            command = self.aliases[command]
         # Parse args
         raw_args = args
         try:
@@ -295,11 +328,9 @@ class CommandManager(object):
         Add an auth handler, provided it hasn't already been added.
 
         :param handler: The handler to add
-
         :type handler: object
 
         :returns: Whether the handler was added or not
-
         :rtype: Boolean
         """
         for instance in self.auth_handlers:
@@ -316,11 +347,9 @@ class CommandManager(object):
         Set the permissions handler, provided one hasn't already been set.
 
         :param handler: The handler to set
-
         :type handler: object
 
         :returns: Whether the handler was set or not
-
         :rtype: Boolean
         """
         if self.perm_handler:
