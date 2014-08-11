@@ -19,7 +19,7 @@ try:
                         datetime.datetime.fromtimestamp(
                             commit.committed_date
                         ).strftime("%d %b, %Y - %H:%M:%S"),
-                        commit.summary)
+                        commit.summary.replace("\n", " / "))
 except Exception as e:
     pass
 
