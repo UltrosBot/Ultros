@@ -72,7 +72,7 @@ class CommandManager(object):
         self.factory_manager = factory_manager
 
     def register_command(self, command, handler, owner, permission=None,
-                         aliases=None):
+                         aliases=None, default=False):
         """
         Register a command, provided it hasn't been registered already.
         The params should go like this..
@@ -82,12 +82,15 @@ class CommandManager(object):
         :param owner: The plugin or object registering the command
         :param permission: The permission needed to run the command
         :param aliases: A list of aliases for the command being registered.
+        :param default: Whether the command should be run when there is no
+        permissions manager installed.
 
         :type command: str
         :type handler: function
         :type owner: PluginObject
         :type permission: str, None
         :type aliases: list, None
+        :type default: bool
 
         :returns: Whether the command was registered or not
         :rtype: Boolean
@@ -110,7 +113,8 @@ class CommandManager(object):
         commandobj = {
             "f": handler,
             "permission": permission,
-            "owner": owner
+            "owner": owner,
+            "default": default
         }
 
         self.commands[command] = commandobj
@@ -202,7 +206,7 @@ class CommandManager(object):
             if len(split) > 1:
                 args = split[1]
 
-            if command not in self.commands:
+            if command not in self.commands and command not in self.aliases:
                 return failure
 
             printable = "<%s:%s> %s" % (caller, source, in_str)
@@ -284,8 +288,9 @@ class CommandManager(object):
             parsed_args = None
         try:
             if self.commands[command]["permission"]:
-                if not self.perm_handler or not self.auth_handlers:
-                    return False, True
+                if not self.commands[command]["default"]:
+                    if not self.perm_handler or not self.auth_handlers:
+                        return False, True
                 else:
                     authorized = False
                     for handler in self.auth_handlers:
@@ -293,23 +298,40 @@ class CommandManager(object):
                             authorized = True
                             break
 
-                    if self.perm_handler.check(self.commands
-                                               [command]["permission"],
-                                               caller, source, protocol):
-                        try:
-                            self.commands[command]["f"](protocol, caller,
-                                                        source, command,
-                                                        raw_args,
-                                                        parsed_args)
-                        except RateLimitExceededError:
-                            caller.respond("Rate limit for '%s' exceeded - "
-                                           "try again later." % command)
+                    if self.perm_handler is not None:
+                        if self.perm_handler.check(self.commands
+                                                   [command]["permission"],
+                                                   caller, source, protocol):
+                            try:
+                                self.commands[command]["f"](protocol, caller,
+                                                            source, command,
+                                                            raw_args,
+                                                            parsed_args)
+                            except RateLimitExceededError:
+                                caller.respond("Rate limit for '%s' exceeded"
+                                               " - try again later." % command)
+                                return False, True
+                            except Exception as e:
+                                self.logger.exception("Error running "
+                                                      "command %s" % command)
+                                return False, e
+                        else:
                             return False, True
-                        except Exception as e:
-                            self.logger.exception("")
-                            return False, e
                     else:
-                        return False, True
+                        if self.commands[command]["default"]:
+                            try:
+                                self.commands[command]["f"](protocol, caller,
+                                                            source, command,
+                                                            raw_args,
+                                                            parsed_args)
+                            except RateLimitExceededError:
+                                caller.respond("Rate limit for '%s' exceeded"
+                                               " - try again later." % command)
+                                return False, True
+                            except Exception as e:
+                                self.logger.exception("Error running "
+                                                      "command %s" % command)
+                                return False, e
             else:
                 self.commands[command]["f"](protocol, caller, source, command,
                                             raw_args, parsed_args)
