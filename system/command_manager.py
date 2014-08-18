@@ -129,6 +129,7 @@ class CommandManager(object):
             self.logger.debug(_("Registering alias: %s -> %s (%s)")
                               % (alias, command, owner))
             self.aliases[alias] = command
+
         return True
 
     def unregister_commands_for_owner(self, owner):
@@ -289,7 +290,7 @@ class CommandManager(object):
             parsed_args = None
         try:
             if self.commands[command]["permission"]:
-                if not self.perm_handler or not self.auth_handlers:
+                if not self.perm_handler:
                     if not self.commands[command]["default"]:
                         return False, True
 
@@ -307,46 +308,24 @@ class CommandManager(object):
                                               "command %s" % command)
                         return False, e
                 else:
-                    authorized = False
-                    for handler in self.auth_handlers:
-                        if handler.authorized(caller, source, protocol):
-                            authorized = True
-                            break
-
-                    if self.perm_handler is not None:
-                        if self.perm_handler.check(self.commands
-                                                   [command]["permission"],
-                                                   caller, source, protocol):
-                            try:
-                                self.commands[command]["f"](protocol, caller,
-                                                            source, command,
-                                                            raw_args,
-                                                            parsed_args)
-                            except RateLimitExceededError:
-                                caller.respond("Rate limit for '%s' exceeded"
-                                               " - try again later." % command)
-                                return False, True
-                            except Exception as e:
-                                self.logger.exception("Error running "
-                                                      "command %s" % command)
-                                return False, e
-                        else:
+                    if self.perm_handler.check(self.commands
+                                               [command]["permission"],
+                                               caller, source, protocol):
+                        try:
+                            self.commands[command]["f"](protocol, caller,
+                                                        source, command,
+                                                        raw_args,
+                                                        parsed_args)
+                        except RateLimitExceededError:
+                            caller.respond("Rate limit for '%s' exceeded"
+                                           " - try again later." % command)
                             return False, True
+                        except Exception as e:
+                            self.logger.exception("Error running "
+                                                  "command %s" % command)
+                            return False, e
                     else:
-                        if self.commands[command]["default"]:
-                            try:
-                                self.commands[command]["f"](protocol, caller,
-                                                            source, command,
-                                                            raw_args,
-                                                            parsed_args)
-                            except RateLimitExceededError:
-                                caller.respond("Rate limit for '%s' exceeded"
-                                               " - try again later." % command)
-                                return False, True
-                            except Exception as e:
-                                self.logger.exception("Error running "
-                                                      "command %s" % command)
-                                return False, e
+                        return False, True
             else:
                 self.commands[command]["f"](protocol, caller, source, command,
                                             raw_args, parsed_args)
