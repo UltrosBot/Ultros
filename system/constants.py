@@ -5,6 +5,7 @@ __version__ = "1.0.0"
 __version_info__ = "Not being run from a Git repo."
 
 import datetime
+from enum import Enum
 
 try:
     from git import repo
@@ -22,6 +23,27 @@ try:
                         commit.summary.replace("\n", " / "))
 except Exception as e:
     pass
+
+
+# TODO: Use this
+class PluginState(Enum):
+    LoadError = -1
+    NotExists = 0
+    Loaded = 1
+    AlreadyLoaded = 2
+    Unloaded = 3
+    DependencyMissing = 4
+
+
+# TODO: Use this
+class ProtocolState(Enum):
+    SetupError = -3
+    LoadError = -2
+    ConfigNotExists = -1
+    NotExists = 0
+    Loaded = 1
+    AlreadyLoaded = 2
+    Unloaded = 3
 
 # Constants related to (un)loading plugins
 

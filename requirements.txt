@@ -15,3 +15,4 @@ psutil
 clojure-py
 pymongo
 redis
+enum34
