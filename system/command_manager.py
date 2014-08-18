@@ -272,6 +272,7 @@ class CommandManager(object):
 
         :rtype: Tuple of (Boolean, [None, Exception or Boolean))
         """
+
         if command not in self.commands:
             if command not in self.aliases:  # Get alias, if it exists
                 return False, None
@@ -291,6 +292,20 @@ class CommandManager(object):
                 if not self.perm_handler or not self.auth_handlers:
                     if not self.commands[command]["default"]:
                         return False, True
+
+                    try:
+                        self.commands[command]["f"](protocol, caller,
+                                                    source, command,
+                                                    raw_args,
+                                                    parsed_args)
+                    except RateLimitExceededError:
+                        caller.respond("Rate limit for '%s' exceeded"
+                                       " - try again later." % command)
+                        return False, True
+                    except Exception as e:
+                        self.logger.exception("Error running "
+                                              "command %s" % command)
+                        return False, e
                 else:
                     authorized = False
                     for handler in self.auth_handlers:
