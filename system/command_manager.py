@@ -288,8 +288,8 @@ class CommandManager(object):
             parsed_args = None
         try:
             if self.commands[command]["permission"]:
-                if not self.commands[command]["default"]:
-                    if not self.perm_handler or not self.auth_handlers:
+                if not self.perm_handler or not self.auth_handlers:
+                    if not self.commands[command]["default"]:
                         return False, True
                 else:
                     authorized = False
