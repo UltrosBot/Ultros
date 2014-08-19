@@ -27,16 +27,16 @@ DESC = "The Ultros package manager"
 
 operations = ["install", "update", "uninstall", "list", "list-installed",
               "info", "setup"]
-
-p = argparse.ArgumentParser(description=DESC)
-p.add_argument("-l", "--language", help="Specify which language to use")
-
 if __name__ == "__main__":
+    p = argparse.ArgumentParser(description=DESC)
+    p.add_argument("-l", "--language", help="Specify which language to use")
     p.add_argument("operation", help="Specify what to do.", choices=operations)
     p.add_argument("target", nargs="?", default=None)
 
-args = p.parse_args()
-trans = Translations(args.language, log=False)
+    args = p.parse_args()
+    trans = Translations(args.language, log=False)
+else:
+    trans = Translations(log=False)
 
 _ = trans.get()
 
