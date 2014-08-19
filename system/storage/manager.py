@@ -1,7 +1,6 @@
 __author__ = 'Gareth Coles'
 
 import system.storage.files as files
-from system.storage.config import YamlConfig
 
 from system.storage.exceptions import UnknownStorageTypeError
 from system.singleton import Singleton
