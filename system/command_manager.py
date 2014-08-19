@@ -145,6 +145,12 @@ class CommandManager(object):
                 del self.commands[key]
                 self.logger.debug(_("Unregistered command: %s") % key)
 
+                aliases = self.aliases.items()
+                for k, v in aliases:
+                    if v == key:
+                        del self.aliases[k]
+                        self.logger.debug(_("Unregistered alias: %s") % k)
+
     def process_input(self, in_str, caller, source, protocol,
                       control_char=None, our_name=None, success=True,
                       failure=False):
