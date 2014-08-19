@@ -106,14 +106,22 @@ class URLsPlugin(plugin.PluginObject):
                                 "result TEXT)")
 
         self.catcher = Catcher(self, self.config, self.storage, self.logger)
-        self.blacklist = self.config.get("blacklist", [])
+
+        self.blacklist = []
+        blacklist = self.config.get("blacklist", [])
+
+        for element in blacklist:
+            try:
+                self.blacklist.append(re.compile(element))
+            except Exception:
+                self.logger.exception("Unable to compile regex '%s'" % element)
 
     def check_blacklist(self, url):
         for pattern in self.blacklist:
             try:
                 self.logger.debug(_("Checking pattern '%s' against URL '%s'")
                                   % (pattern, url))
-                if fnmatch.fnmatch(url, pattern):
+                if re.match(pattern, url):
                     return True
             except Exception as e:
                 self.logger.debug(_("Error in pattern matching: %s") % e)

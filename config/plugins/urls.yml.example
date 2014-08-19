@@ -8,11 +8,11 @@ content_types:  # Content-types to parse the title from. Be careful when modifyi
   - application/xhtml+xml
 
 blacklist: []  # List of patterns to match against URLs; if matched then the URL will be ignored.
-# Supports *, ?, [seq] and [!seq]
-# - yahoo.com/*
-# - youtube.com/watch?*
-# - vimeo.com/*/staffpicks/*
-# - bad-site.com/?????/*  # Dirs that are 5 chars long have massive titles
+# This uses regex!
+# - "yahoo\.com($|\/).*"  # Everything under yahoo.com
+# - "youtube\.com\/watch\?.*"  # Youtube watch URLs
+# - "vimeo\.com\/.*\/staffpicks\/[^\/]"  # Vimeo staff picks
+# - "bad-site\.com\/.{5,}\/.*"  # Dirs that are 5 chars long have massive titles
 
 catcher:
   # This is an advanced feature for people that run websites.
