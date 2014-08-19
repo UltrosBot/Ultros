@@ -244,4 +244,3 @@ class test_commands:
         r = self.manager.run_command("test7", caller, source, protocol, "")
         nosetools.assert_equals(r, (False, None))
         nosetools.assert_equals(self.plugin.handler.call_count, 0)
-
