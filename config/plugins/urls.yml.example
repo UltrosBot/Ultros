@@ -9,10 +9,11 @@ content_types:  # Content-types to parse the title from. Be careful when modifyi
 
 blacklist: []  # List of patterns to match against URLs; if matched then the URL will be ignored.
 # This uses regex! You've been warned!
-# - "yahoo\.com($|\/).*"  # Everything under yahoo.com
-# - "youtube\.com\/watch\?.*"  # Youtube watch URLs
-# - "vimeo\.com\/.*\/staffpicks\/[^\/]"  # Vimeo staff picks
-# - "bad-site\.com\/.{5,}\/.*"  # Dirs that are 5 chars long have massive titles
+# Use 'single quotes' - if you use "double quotes" then YAML will try to validate your regex escapes.
+# - 'yahoo\.com($|\/).*'  # Everything under yahoo.com
+# - 'youtube\.com\/watch\?.*'  # Youtube watch URLs
+# - 'vimeo\.com\/.*\/staffpicks\/[^\/]'  # Vimeo staff picks
+# - 'bad-site\.com\/.{5,}\/.*'  # Dirs that are 5 chars long have massive titles
 
 catcher:
   # This is an advanced feature for people that run websites.
