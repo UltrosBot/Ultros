@@ -53,7 +53,6 @@ class TestPlugin(PluginObject):
                   open(self.confdir + "settings.yml", "w"))
 
         self.storage = StorageManager(self.confdir, self.datadir)
-        self.storage.register_editor(self)
 
         self.data = self.storage.get_file(self, "data", formats.YAML,
                                           "permissions.yml")

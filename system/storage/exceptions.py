@@ -11,7 +11,3 @@ class AlreadyRegisteredError(Exception):
 
 class UnknownStorageTypeError(Exception):
     pass
-
-
-class OtherOwnershipError(Exception):
-    pass
