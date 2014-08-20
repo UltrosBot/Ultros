@@ -7,6 +7,7 @@ from twisted.internet import reactor
 from twisted.words.protocols import irc
 
 from system.command_manager import CommandManager
+from system.enums import CommandState
 from system.event_manager import EventManager
 from system.events import irc as irc_events
 from system.events import general as general_events
@@ -18,6 +19,7 @@ from system.protocols.irc.user import User
 
 from utils.irc import IRCUtils
 from utils.log import getLogger
+from utils.switch import Switch
 
 from system.translations import Translations
 _ = Translations().get()
@@ -344,29 +346,55 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         else:
             channel_obj = self.get_channel(channel)
 
-        if not self.command_manager.process_input(
-                message, user_obj, channel_obj, self,
-                self.control_chars, self.nickname
-        ):
-            event = general_events.PreMessageReceived(self,
-                                                      user_obj,
-                                                      channel_obj,
-                                                      message,
-                                                      "message",
-                                                      printable=True)
-            self.event_manager.run_callback("PreMessageReceived", event)
-            if event.printable:
-                self.log.info("<%s:%s> %s" % (user_obj.nickname, channel,
-                                              event.message))
+        result = self.command_manager.process_input(
+            message, user_obj, channel_obj, self,
+            self.control_chars, self.nickname
+        )
 
-            if not event.cancelled:
+        for case, default in Switch(result[0]):
+            if case(CommandState.RateLimited):
+                self.log.debug("Command rate-limited")
+                user_obj.respond("That command has been rate-limited, please "
+                                 "try again later.")
+                return  # It was a command
+            if case(CommandState.NotACommand):
+                self.log.debug("Not a command")
+                break
+            if case(CommandState.UnknownOverridden):
+                self.log.debug("Unknown command overridden")
+                return  # It was a command
+            if case(CommandState.Unknown):
+                self.log.debug("Unknown command")
+                break
+            if case(CommandState.Success):
+                self.log.debug("Command ran successfully")
+                return  # It was a command
+            if case(CommandState.NoPermission):
+                self.log.debug("No permission to run command")
+                return  # It was a command
+            if case(CommandState.Error):
+                user_obj.respond("Error running command: %s" % result[1])
+                return  # It was a command
+            if default:
+                self.log.debug("Unknown command state: %s" % result[0])
+                break
 
-                second_event = general_events.MessageReceived(
-                    self, user_obj, channel_obj, event.message, "message"
-                )
-                self.event_manager.run_callback(
-                    "MessageReceived", second_event
-                )
+        event = general_events.PreMessageReceived(self, user_obj, channel_obj,
+                                                  message, "message",
+                                                  printable=True)
+        self.event_manager.run_callback("PreMessageReceived", event)
+
+        if event.printable:
+            self.log.info("<%s:%s> %s" % (user_obj.nickname, channel,
+                                          event.message))
+
+        if not event.cancelled:
+            second_event = general_events.MessageReceived(
+                self, user_obj, channel_obj, event.message, "message"
+            )
+            self.event_manager.run_callback(
+                "MessageReceived", second_event
+            )
 
     def noticed(self, user, channel, message):
         """ Called when we receive a notice - channel or private. """

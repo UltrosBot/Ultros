@@ -9,6 +9,7 @@ import nose.tools as nosetools
 from mock import MagicMock as Mock
 
 from system.command_manager import CommandManager
+from system.enums import CommandState
 
 
 class test_commands:
@@ -115,10 +116,10 @@ class test_commands:
         # Testing defaults
 
         r = self.manager.run_command("test4", caller, source, protocol, "")
-        nosetools.assert_equals(r, (True, None))
+        nosetools.assert_equals(r, (CommandState.Success, None))
 
         r = self.manager.run_command("test5", caller, source, protocol, "")
-        nosetools.assert_equals(r, (True, None))
+        nosetools.assert_equals(r, (CommandState.Success, None))
 
         nosetools.assert_equals(self.plugin.handler.call_count, 2)
 
@@ -137,7 +138,7 @@ class test_commands:
         # Testing defaults
 
         r = self.manager.run_command("test4", caller, source, protocol, "")
-        nosetools.assert_equals(r, (True, None))
+        nosetools.assert_equals(r, (CommandState.Success, None))
 
         self.plugin.handler.assert_called_with(protocol, caller, source,
                                                "test4", "", [])
@@ -146,7 +147,7 @@ class test_commands:
         self.plugin.handler.reset_mock()
 
         r = self.manager.run_command("test5", caller, source, protocol, "")
-        nosetools.assert_equals(r, (True, None))
+        nosetools.assert_equals(r, (CommandState.Success, None))
 
         self.plugin.handler.assert_called_with(protocol, caller, source,
                                                "test4", "", [])
@@ -158,7 +159,7 @@ class test_commands:
                                       self.plugin, default=True)
 
         r = self.manager.run_command("test5", caller, source, protocol, "")
-        nosetools.assert_equals(r, (True, None))
+        nosetools.assert_equals(r, (CommandState.Success, None))
 
         self.plugin.handler.assert_called_with(protocol, caller, source,
                                                "test5", "", [])
@@ -187,7 +188,7 @@ class test_commands:
 
         r = self.manager.run_command("test5", caller, source, protocol, "")
 
-        nosetools.assert_equals(r, (True, None))
+        nosetools.assert_equals(r, (CommandState.Success, None))
         nosetools.assert_equals(self.plugin.handler.call_count, 1)
 
         auth.authorized.reset_mock()
@@ -198,7 +199,7 @@ class test_commands:
 
         r = self.manager.run_command("test6", caller, source, protocol, "")
 
-        nosetools.assert_equals(r, (True, None))
+        nosetools.assert_equals(r, (CommandState.Success, None))
         nosetools.assert_equals(self.plugin.handler.call_count, 1)
 
         auth.authorized.reset_mock()
@@ -212,7 +213,7 @@ class test_commands:
 
         r = self.manager.run_command("test5", caller, source, protocol, "")
 
-        nosetools.assert_equals(r, (False, True))
+        nosetools.assert_equals(r, (CommandState.NoPermission, None))
         nosetools.assert_equals(self.plugin.handler.call_count, 0)
 
         perms.check.return_value = True
@@ -231,7 +232,7 @@ class test_commands:
 
         r = self.manager.run_command("test5", caller, source, protocol, "")
 
-        nosetools.assert_equals(r[0], False)
+        nosetools.assert_equals(r[0], CommandState.Error)
         nosetools.assert_true(isinstance(r[1], Exception))
         nosetools.assert_equals(self.plugin.handler.call_count, 1)
 
@@ -242,5 +243,5 @@ class test_commands:
         ### UNKNOWN COMMAND ###
 
         r = self.manager.run_command("test7", caller, source, protocol, "")
-        nosetools.assert_equals(r, (False, None))
+        nosetools.assert_equals(r, (CommandState.Unknown, None))
         nosetools.assert_equals(self.plugin.handler.call_count, 0)

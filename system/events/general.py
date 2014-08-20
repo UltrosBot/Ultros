@@ -6,6 +6,7 @@ from system.events.base import BaseEvent
 class GeneralEvent(BaseEvent):
     """
     A general event, not tied to a protocol.
+
     If an event subclasses this, chances are it's a protocol-agnostic event.
     This can be thrown from anywhere - even from a protocol. You should avoid
     throwing it from your plugins, though - use a PluginEvent for that (see
@@ -28,6 +29,7 @@ class PluginsLoadedEvent(GeneralEvent):
 
     def __init__(self, caller, plugins):
         self.loaded_plugins = plugins
+
         super(PluginsLoadedEvent, self).__init__(caller)
 
 
@@ -51,6 +53,7 @@ class PreConnectEvent(GeneralEvent):
 
     def __init__(self, caller, config):
         self.config = config
+
         super(PreConnectEvent, self).__init__(caller)
 
 
@@ -64,6 +67,7 @@ class PostConnectEvent(GeneralEvent):
 
     def __init__(self, caller, config):
         self.config = config
+
         super(PostConnectEvent, self).__init__(caller)
 
 
@@ -77,6 +81,7 @@ class PreSetupEvent(GeneralEvent):
 
     def __init__(self, caller, config):
         self.config = config
+
         super(PreSetupEvent, self).__init__(caller)
 
 
@@ -90,6 +95,7 @@ class PostSetupEvent(GeneralEvent):
 
     def __init__(self, caller, config):
         self.config = config
+
         super(PostSetupEvent, self).__init__(caller)
 
 
@@ -124,6 +130,7 @@ class PreMessageReceived(GeneralEvent):
         self.message = message
         self.type = typ
         self.printable = printable
+
         super(PreMessageReceived, self).__init__(caller)
 
     def __str__(self):
@@ -153,6 +160,7 @@ class MessageReceived(GeneralEvent):
         self.target = target
         self.message = message
         self.type = typ
+
         super(MessageReceived, self).__init__(caller)
 
     def __str__(self):
@@ -186,6 +194,7 @@ class MessageSent(GeneralEvent):
         self.target = target
         self.message = message
         self.printable = printable
+
         super(MessageSent, self).__init__(caller)
 
     def __str__(self):
@@ -204,6 +213,7 @@ class NameChangedSelf(GeneralEvent):
 
     def __init__(self, caller, name):
         self.name = name
+
         super(NameChangedSelf, self).__init__(caller)
 
 
@@ -218,6 +228,7 @@ class NameChanged(GeneralEvent):
     def __init__(self, caller, user, old_name):
         self.old_name = old_name
         self.user = user
+
         super(NameChanged, self).__init__(caller)
 
 
@@ -230,6 +241,7 @@ class UserDisconnected(GeneralEvent):
 
     def __init__(self, caller, user):
         self.user = user
+
         super(UserDisconnected, self).__init__(caller)
 
 
@@ -255,6 +267,7 @@ class PreCommand(GeneralEvent):
         self.target = target
         self.printable = printable
         self.message = message
+
         super(PreCommand, self).__init__(caller)
 
     def __str__(self):
@@ -262,6 +275,36 @@ class PreCommand(GeneralEvent):
                "%s | printable: %s>" % (self.__class__.__name__, hex(id(self)),
                                         self.command, self.args, self.source,
                                         self.target, self.printable)
+
+
+class UnknownCommand(GeneralEvent):
+    """
+    Thrown when someone tries to run a command that doesn't exist.
+
+    The uses of this are debatable, but we'll leave that up to you,
+    the developers, to decide upon.
+    """
+
+    protocol = None
+    command = ""
+    args = ""
+    source = None
+    target = None
+
+    def __init__(self, caller, protocol, command, args, source, target):
+        self.protocol = protocol
+        self.command = command
+        self.args = args
+        self.source = source
+        self.target = target
+
+        super(UnknownCommand, self).__init__(caller)
+
+    def __str__(self):
+        return "<%s at %s | protocol: %s | command: %s | args: %s | source: " \
+               "%s | target: %s>" % (self.__class__.__name__, hex(id(self)),
+                                     self.protocol, self.command, self.args,
+                                     self.source, self.target)
 
 
 class ActionSent(GeneralEvent):
@@ -286,6 +329,7 @@ class ActionSent(GeneralEvent):
         self.target = target
         self.message = message
         self.printable = printable
+
         super(ActionSent, self).__init__(caller)
 
     def __str__(self):

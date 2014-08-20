@@ -4,9 +4,11 @@ import shlex
 __author__ = "Gareth Coles"
 
 from system.decorators.ratelimit import RateLimitExceededError
+from system.enums import CommandState
 from system.events import general as events
 from system.event_manager import EventManager
 from system.singleton import Singleton
+
 from utils.log import getLogger
 
 from system.translations import Translations
@@ -152,8 +154,7 @@ class CommandManager(object):
                         self.logger.debug(_("Unregistered alias: %s") % k)
 
     def process_input(self, in_str, caller, source, protocol,
-                      control_char=None, our_name=None, success=True,
-                      failure=False):
+                      control_char=None, our_name=None):
         """Process a set of inputs, to check if there's a command there and
         action it. This is designed to be used from a protocol.
 
@@ -163,8 +164,6 @@ class CommandManager(object):
         :param protocol: The Protocol object the User belongs to
         :param control_char: The control characters (prefix)
         :param our_name: The name of the bot on Protocol
-        :param success: What to return on a success
-        :param failure: What to return on a failure
 
         :type in_str: str
         :type caller: User
@@ -172,12 +171,10 @@ class CommandManager(object):
         :type protocol: Protocol
         :type control_char: str
         :type our_name: str
-        :type success: object
-        :type failure: object
 
-        :return: Success or Failure object depending on whether the command
-            exists
-        :rtype: object
+        :return: Tuple containing CommandState representing the state of
+            the command, and either None or an Exception.
+        :rtype: tuple(CommandState, None or Exception)
         """
 
         if control_char is None:
@@ -186,7 +183,10 @@ class CommandManager(object):
             else:
                 self.logger.debug("Protocol %s doesn't have a control "
                                   "character sequence!" % protocol.name)
-                return failure
+                return CommandState.Error, NoControlCharacterException(
+                    "Protocol %s doesn't have a control character sequence." %
+                    protocol.name
+                )
 
         if our_name is None:
             if hasattr(protocol, "nickname"):
@@ -199,7 +199,7 @@ class CommandManager(object):
         if len(in_str) < len(control_char):
             self.logger.trace("Control character sequence is longer than the "
                               "input string, so this cannot be a command.")
-            return failure
+            return CommandState.NotACommand, None
 
         if in_str.lower().startswith(control_char.lower()):  # It's a command!
             # Remove the command char(s) from the start
@@ -213,9 +213,6 @@ class CommandManager(object):
             if len(split) > 1:
                 args = split[1]
 
-            if command not in self.commands and command not in self.aliases:
-                return failure
-
             printable = "<%s:%s> %s" % (caller, source, in_str)
 
             event = events.PreCommand(protocol, command, args, caller,
@@ -223,47 +220,21 @@ class CommandManager(object):
             self.event_manager.run_callback("PreCommand", event)
 
             if event.printable:
-                if hasattr(protocol, "log"):
-                    protocol.log.info(event.printable)
-                elif hasattr(protocol, "logger"):
-                    protocol.logger.info(event.printable)
-                else:
-                    self.logger.info("%s | %s" % (protocol.name,
-                                                  event.printable))
+                self.logger.info("%s | %s" % (protocol.name,
+                                              event.printable)
+                                 )
 
             result = self.run_command(event.command, event.source,
                                       event.target, protocol, event.args)
 
-            if result[0]:
-                self.logger.trace("Command ran successfully.")
-                return success
-
-            if result[1] is True:
-                self.logger.debug("User doesn't have permission for this "
-                                  "command.")
-                return success
-
-            if result[1] is None:
-                self.logger.debug("Command not found.")
-                return failure
-
-            self.logger.debug("An error occured.")
-            return success
+            return result
 
         self.logger.debug("Command not found.")
-        return failure
+        return CommandState.NotACommand, None
 
     def run_command(self, command, caller, source, protocol, args):
         """
         Run a command, provided it's been registered.
-
-        This could return one of the following:
-
-        * (False, None) if the command isn't registered
-        * (False, True) if the command is registered but the user isn't allowed
-          to run it
-        * (False, Exception) if an error occurred while running the command
-        * (True, None) if the command was run successfully
 
         :param command: The command, a string
         :param caller: Who ran the command
@@ -277,12 +248,22 @@ class CommandManager(object):
         :type protocol: Protocol
         :type args: list
 
-        :rtype: Tuple of (Boolean, [None, Exception or Boolean))
+        :return: Tuple containing CommandState representing the state of
+            the command, and either None or an Exception.
+        :rtype: tuple(CommandState, None or Exception)
         """
 
         if command not in self.commands:
             if command not in self.aliases:  # Get alias, if it exists
-                return False, None
+                event = events.UnknownCommand(self, protocol, command, args,
+                                              caller, source)
+
+                self.event_manager.run_callback("UnknownCommand", event)
+
+                if event.cancelled:
+                    return CommandState.UnknownOverridden, None
+
+                return CommandState.Unknown, None
             command = self.aliases[command]
         # Parse args
         raw_args = args
@@ -298,7 +279,7 @@ class CommandManager(object):
             if self.commands[command]["permission"]:
                 if not self.perm_handler:
                     if not self.commands[command]["default"]:
-                        return False, True
+                        return CommandState.NoPermission, None
 
                     try:
                         self.commands[command]["f"](protocol, caller,
@@ -306,13 +287,11 @@ class CommandManager(object):
                                                     raw_args,
                                                     parsed_args)
                     except RateLimitExceededError:
-                        caller.respond("Rate limit for '%s' exceeded"
-                                       " - try again later." % command)
-                        return False, True
+                        # TODO: Proper decorator
+                        return CommandState.RateLimited, None
                     except Exception as e:
-                        self.logger.exception("Error running "
-                                              "command %s" % command)
-                        return False, e
+                        self.logger.exception("Error running command")
+                        return CommandState.Error, e
                 else:
                     if self.perm_handler.check(self.commands
                                                [command]["permission"],
@@ -323,27 +302,24 @@ class CommandManager(object):
                                                         raw_args,
                                                         parsed_args)
                         except RateLimitExceededError:
-                            caller.respond("Rate limit for '%s' exceeded"
-                                           " - try again later." % command)
-                            return False, True
+                            # TODO: Proper decorator
+                            return CommandState.RateLimited, None
                         except Exception as e:
-                            self.logger.exception("Error running "
-                                                  "command %s" % command)
-                            return False, e
+                            self.logger.exception("Error running command")
+                            return CommandState.Error, e
                     else:
-                        return False, True
+                        return CommandState.NoPermission, None
             else:
                 self.commands[command]["f"](protocol, caller, source, command,
                                             raw_args, parsed_args)
         except RateLimitExceededError:
-            caller.respond("Rate limit for '%s' exceeded - try again later."
-                           % command)
-            return False, True
+            # TODO: Proper decorator
+            return CommandState.RateLimited, None
         except Exception as e:
-            self.logger.exception("")
-            return False, e
+            self.logger.exception("Error running command")
+            return CommandState.Error, e
         else:
-            return True, None
+            return CommandState.Success, None
 
     def add_auth_handler(self, handler):
         """
@@ -380,3 +356,7 @@ class CommandManager(object):
             return False
         self.perm_handler = handler
         return True
+
+
+class NoControlCharacterException(Exception):
+    pass
