@@ -45,6 +45,8 @@ data/
 doc/_build
 ultros.pid
 apidocs/
+lib/*/
+!lib/definitions
 
 # Certificates
 *.p12

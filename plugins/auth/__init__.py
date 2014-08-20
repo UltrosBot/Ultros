@@ -1,3 +1,12 @@
+"""Authorization plugin. Handles logins and permissions.
+
+If you want any real control over permissions, you'll need to be using this
+plugin. Most plugins don't require it, however, due to the new "default"
+commands system.
+
+If you need to work directly with the auth handler or permissions handler,
+this is the plugin you want to get from the plugin manager.
+"""
 
 __author__ = 'Gareth Coles'
 
@@ -20,6 +29,7 @@ __ = Translations().get_m()
 
 
 class AuthPlugin(plugin.PluginObject):
+    """Auth plugin. In charge of logins and permissions."""
 
     config = None
     passwords = None
@@ -34,6 +44,8 @@ class AuthPlugin(plugin.PluginObject):
     perms_h = None
 
     def setup(self):
+        """Called when the plugin is loaded. Performs initial setup."""
+
         self.logger.trace(_("Entered setup method."))
 
         self.storage = StorageManager()
@@ -100,6 +112,8 @@ class AuthPlugin(plugin.PluginObject):
         self.events.add_callback("PreCommand", self, self.pre_command, 10000)
 
     def pre_command(self, event=PreCommand):
+        """Pre-command hook to remove passwords from the log output."""
+
         self.logger.trace(_("Command: %s") % event.command)
         if event.command.lower() in ["login", "register"]:
             if len(event.args) >= 2:
@@ -125,6 +139,8 @@ class AuthPlugin(plugin.PluginObject):
 
     def login_command(self, protocol, caller, source, command, raw_args,
                       parsed_args):
+        """Command handler for the login command - for logging users in."""
+
         args = raw_args.split()  # Quick fix for new command handler signature
         if len(args) < 2:
             caller.respond(__("Usage: {CHARS}login <username> <password>"))
@@ -149,6 +165,8 @@ class AuthPlugin(plugin.PluginObject):
 
     def logout_command(self, protocol, caller, source, command, raw_args,
                        parsed_args):
+        """Command handler for the logout command - for logging users out."""
+
         if self.auth_h.authorized(caller, source, protocol):
             self.auth_h.logout(caller, protocol)
             caller.respond(__("You have been logged out successfully."))
@@ -157,6 +175,10 @@ class AuthPlugin(plugin.PluginObject):
 
     def register_command(self, protocol, caller, source, command, raw_args,
                          parsed_args):
+        """Command handler for the register command - for creating new user
+        accounts.
+        """
+
         args = raw_args.split()  # Quick fix for new command handler signature
         if len(args) < 2:
             caller.respond(__("Usage: {CHARS}register <username> <password>"))
@@ -195,6 +217,8 @@ class AuthPlugin(plugin.PluginObject):
 
     def passwd_command(self, protocol, caller, source, command, raw_args,
                        parsed_args):
+        """Command handler for the passwd command - for changing passwords."""
+
         args = raw_args.split()  # Quick fix for new command handler signature
         if len(args) < 2:
             caller.respond(__("Usage: {CHARS}passwd <old password> "
@@ -223,14 +247,23 @@ class AuthPlugin(plugin.PluginObject):
                              % (caller, username))
 
     def get_auth_handler(self):
+        """API function for getting the auth handler.
+
+        This will return None if the handler is disabled.
+        """
+
         if self.config["use-auth"]:
             return self.auth_h
         return None
 
     def get_permissions_handler(self):
+        """API function for getting the permissions handler.
+
+        This will return None if the handler is disabled.
+        """
         if self.config["use-permissions"]:
             return self.perms_h
         return None
 
     def deactivate(self):
-        pass
+        """Called when the plugin is deactivated. Does nothing right now."""

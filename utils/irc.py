@@ -48,6 +48,7 @@ _re_formatting = re.compile("(%s[0-9]{1,2})|[%s]" %
 def split_hostmask(hostmask):
     """
     Split a hostmask into its parts and return them.
+
     :param hostmask: Hostmask to parse
     :return: [user, ident, host]
     :exception ValueError: Raised when the hostmask is not in the form "*!*@*"
@@ -64,6 +65,7 @@ def split_hostmask(hostmask):
 def format_string(value, values=None):
     """
     Used to format an IRC string based on various tokens.
+
     :param value: The string to format
     :param values: Dictionary of tokens to use for formatting
     :return: Formatted string
@@ -80,6 +82,7 @@ def strip_formatting(message):
     # WHY ARE THE ARGUMENTS BACK TO FRONT?!?
     """
     Why, indeed? Strips IRC formatting codes from message strings.
+
     :param message: The message string to strip from
     :return: Message string, sans IRC formatting characters
     """
@@ -119,6 +122,7 @@ class IRCUtils(object):
     def case_mapping(self):
         """
         Property for getting our case-mapping.
+
         :return: Int, the case-mapping.
         """
         return self._case_mapping
@@ -129,6 +133,7 @@ class IRCUtils(object):
         Setter for our case-mapping property.
 
         We support "ascii", "rfc1459" and "strict-rfc1459" as possible values.
+
         :param val: A string, the case-mapping to use.
         :return:
         """
@@ -143,6 +148,7 @@ class IRCUtils(object):
     def lowercase_nick_chan(self, nick):
         """
         Take a nick or channel, make it lowercase.
+
         :param nick: Nick/channel to make lowercase
         :return: Lowercase nick/channel
         """
@@ -158,6 +164,7 @@ class IRCUtils(object):
         """
         Since lots of string comparisons are case-insensitive, we can
         lower nicks properly using this function.
+
         :param nickone: First nick to compare
         :param nicktwo: Second nick to compare
         :return: Whether the nicks match, ignoring case
@@ -169,6 +176,7 @@ class IRCUtils(object):
     def split_hostmask(self, hostmask):
         """
         Wrapper. Split a hostmask.
+
         :param hostmask: Hostmask to split.
         :return: [user, ident, host]
         """
@@ -177,6 +185,7 @@ class IRCUtils(object):
     def match_hostmask(self, user, mask):
         """
         Match a user's hostmask with another one. Wildcards are supported.
+
         :param user: First hostmask to match against
         :param mask: Second hostmask to match against
         :return: Whether the two hostmasks match
@@ -196,6 +205,7 @@ class IRCUtils(object):
     def match_hostmask_part(self, user, mask):
         """
         Uses regex to compare parts of hostmasks. Supports wildcards.
+
         :param user: First part to match against
         :param mask: Second part to match against
         :return: Whether the two parts match
@@ -211,6 +221,7 @@ class IRCUtils(object):
     def format_string(self, value, values=None):
         """
         Wrapper. Formats an IRC string using a dict of tokens.
+
         :param value: String to format
         :param values: Dict of tokens to use for formatting. Optional.
         :return: Formatted string.
@@ -220,6 +231,7 @@ class IRCUtils(object):
     def strip_formatting(self, message):
         """
         Wrapper. Remove all IRC formatting characters from a string.
+
         :param message: String to strip from.
         :return: Stripped string.
         """

@@ -17,6 +17,7 @@ class HTMLTextExtractor(HTMLParser):
     Class for extracting text from HTML snippets. This is done by removing
     all the tags and optionally inserting newlines at the relevant
     places.
+
     Don't use this directly, use the function below.
     """
 
@@ -58,6 +59,7 @@ class HTMLTextExtractor(HTMLParser):
 def html_to_text(html, newlines=False):
     """
     Given a HTML snippet, strip out all the HTML and leave just the text.
+
     :param html: HTML to strip
     :param newlines: Whether to replace <p>, <p/> and <br /> with newlines
     :return: The stripped snippet

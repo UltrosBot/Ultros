@@ -23,6 +23,8 @@ def _output_error(logger, error, level):
 
 def dict_swap(d):
     """
+    Swap dictionary keys and values.
+
     :type d: dict
     """
     done = {}
@@ -36,6 +38,7 @@ def chunker(iterable, chunksize):
     """
     Split an iterable into chunks of size `chunksize` and return them in a
     list.
+
     :param iterable: An iterable to split into chunks
     :param chunksize: The size of the chunks that should be returned
     """
@@ -49,6 +52,7 @@ def string_split_readable(input, length):
     whilst being wary of spaces. This means that chunks will only be
     split on spaces, which means some chunks will be shorter, but it also
     means that the resulting list will only contain readable strings.
+
     :param input: The string to be split
     :param length: Maximum length of the chunks to return
     :return: List containing the split chunks

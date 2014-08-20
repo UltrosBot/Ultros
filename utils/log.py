@@ -91,6 +91,7 @@ class ColorizingStreamHandler(logging.StreamHandler):
     def is_tty(self):
         """
         Check if the current stream is a tty.
+
         :return: True if the stream is a tty, false otherwise.
         """
         isatty = getattr(self.stream, 'isatty', None)
@@ -99,6 +100,7 @@ class ColorizingStreamHandler(logging.StreamHandler):
     def emit(self, record):
         """
         Emit a logging record by outputting it to the stream.
+
         :param record: The record to emit
         :return:
         """
@@ -178,6 +180,7 @@ class ColorizingStreamHandler(logging.StreamHandler):
         def output_colorized(self, message):
             """
             Passthrough function for Windows-based systems.
+
             :param message: Message to write to the stream
             :return:
             """
@@ -201,6 +204,7 @@ class ColorizingStreamHandler(logging.StreamHandler):
             """
             Function that handles UNIX colour codes, for non-Windows-based
             systems.
+
             :param message: Message to write to the stream
             :return:
             """
@@ -238,6 +242,7 @@ class ColorizingStreamHandler(logging.StreamHandler):
     def colorize(self, message, record):
         """
         Turn a logging record into a coloured record.
+
         :param message: Log message
         :param record: Log record
         :return: Colourized message
@@ -259,6 +264,7 @@ class ColorizingStreamHandler(logging.StreamHandler):
     def format(self, record):
         """
         Format logging message
+
         :param record: Message to format
         :return: message
         """
@@ -273,6 +279,7 @@ def getLogger(name, path=None,
               datefmt="%d %b %Y - %H:%M:%S", displayname=None):
     """
     Works similarly to logging.getLogger(), get yourself a logger isntance.
+
     :param name: Name of the logger
     :param path: Path of the file to write to
     :param fmt: Logging format
@@ -353,6 +360,7 @@ def getLogger(name, path=None,
 def open_log(path):
     """
     Prints a nice message to file saying the log has been opened.
+
     :param path: Path to file.
     :return:
     """
@@ -386,6 +394,7 @@ def open_log(path):
 def close_log(path):
     """
     Prints a nice message to file saying the log has been closed.
+
     :param path: Path to file.
     :return:
     """
