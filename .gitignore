@@ -38,13 +38,13 @@ topics.css
 topics.html
 topics.txt
 *.log
-config/*.yml
 config/**/*.yml
 !config/*.yml.example
 !config/**/*.yml.example
 data/
 doc/_build
 ultros.pid
+apidocs/
 
 # Certificates
 *.p12

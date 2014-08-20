@@ -16,8 +16,7 @@ _ = Translations().get()
 
 
 class CommandManager(object):
-    """
-    This is the command manager. It's in charge of tracking commands that
+    """This is the command manager. It's in charge of tracking commands that
     plugins wish to offer, and providing ways for plugins to offer methods
     of providing authentication and permissions.
     """
@@ -64,9 +63,9 @@ class CommandManager(object):
         self.event_manager = EventManager()
 
     def set_factory_manager(self, factory_manager):
-        """
-        Set the factory manager. This should only ever be called by the
-        factory manager itself.
+        """Set the factory manager.
+
+        This should only ever be called by the factory manager itself.
 
         :param factory_manager: The factory manager
         :type factory_manager: Manager
@@ -75,9 +74,9 @@ class CommandManager(object):
 
     def register_command(self, command, handler, owner, permission=None,
                          aliases=None, default=False):
-        """
-        Register a command, provided it hasn't been registered already.
-        The params should go like this..
+        """Register a command, provided it hasn't been registered already.
+
+        The params should go like this.
 
         :param command: The command to register
         :param handler: The command handler
@@ -85,7 +84,7 @@ class CommandManager(object):
         :param permission: The permission needed to run the command
         :param aliases: A list of aliases for the command being registered.
         :param default: Whether the command should be run when there is no
-        permissions manager installed.
+            permissions manager installed.
 
         :type command: str
         :type handler: function
@@ -136,7 +135,9 @@ class CommandManager(object):
 
     def unregister_commands_for_owner(self, owner):
         """Unregister all commands that have been registered by a certain
-        object. This method checks instances, not types!
+        object.
+
+        This method checks instances, not types!
 
         :param owner: The owner to check for
         :type owner: object
@@ -156,7 +157,9 @@ class CommandManager(object):
     def process_input(self, in_str, caller, source, protocol,
                       control_char=None, our_name=None):
         """Process a set of inputs, to check if there's a command there and
-        action it. This is designed to be used from a protocol.
+        action it.
+
+        This is designed to be used from a protocol.
 
         :param in_str: The entire message to parse
         :param caller: The User that sent the message
@@ -233,8 +236,7 @@ class CommandManager(object):
         return CommandState.NotACommand, None
 
     def run_command(self, command, caller, source, protocol, args):
-        """
-        Run a command, provided it's been registered.
+        """Run a command, provided it's been registered.
 
         :param command: The command, a string
         :param caller: Who ran the command
@@ -322,8 +324,7 @@ class CommandManager(object):
             return CommandState.Success, None
 
     def add_auth_handler(self, handler):
-        """
-        Add an auth handler, provided it hasn't already been added.
+        """Add an auth handler, provided it hasn't already been added.
 
         :param handler: The handler to add
         :type handler: object
@@ -341,8 +342,7 @@ class CommandManager(object):
         return True
 
     def set_permissions_handler(self, handler):
-        """
-        Set the permissions handler, provided one hasn't already been set.
+        """Set the permissions handler, provided one hasn't already been set.
 
         :param handler: The handler to set
         :type handler: object
