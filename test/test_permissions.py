@@ -98,7 +98,10 @@ class TestPlugin(PluginObject):
                 "options": {"lerp": "gerp"},
                 "permissions": ["nose.test"],
                 "protocols": {"nose-test": {
-                    "permissions": ["nose.test2"],
+                    "permissions": [
+                        "nose.test2",
+                        "/g[A-Za-z].*2002/"
+                    ],
                     "sources": {
                         "#nose": ["nose.test3"]
                     }
@@ -159,6 +162,10 @@ class TestPlugin(PluginObject):
                                                         "nose-test"),
                       True)
         nosetools.eq_(self.handler.group_has_permission("default",
+                                                        "gDroid2002",
+                                                        "nose-test"),
+                      True)
+        nosetools.eq_(self.handler.group_has_permission("default",
                                                         "nose.test3",
                                                         "nose-test",
                                                         "#nose"),
@@ -186,6 +193,10 @@ class TestPlugin(PluginObject):
                       False)
         nosetools.eq_(self.handler.group_has_permission("default",
                                                         "nose.untest",
+                                                        "nose-test"),
+                      False)
+        nosetools.eq_(self.handler.group_has_permission("default",
+                                                        "g100d2002",
                                                         "nose-test"),
                       False)
         nosetools.eq_(self.handler.group_has_permission("default",

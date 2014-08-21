@@ -12,15 +12,21 @@ __author__ = 'Gareth Coles'
 # Required: check(permission, caller, source, protocol)
 
 import fnmatch
-from system.protocols.generic.user import User
+import re
 
+from system.protocols.generic.user import User
 from system.translations import Translations
+
+from utils.misc import str_to_regex_flags as s2rf
+
 _ = Translations().get()
 __ = Translations().get_m()
 
 
 class permissionsHandler(object):
     """Permissions handler class"""
+
+    pattern = re.compile(r"/(.*)/(.*)")
 
     def __init__(self, plugin, data):
         """Initialize the permissions handler.
@@ -622,7 +628,7 @@ class permissionsHandler(object):
 
     # Permissions comparisons
     def compare_permissions(self, perm, permissions, wildcard=True,
-                            deny_nodes=True):
+                            deny_nodes=True, regex=True):
         perm = perm.lower()
 
         grant = []
@@ -635,14 +641,35 @@ class permissionsHandler(object):
 
         if deny_nodes:
             for element in deny:
-                if wildcard and fnmatch.fnmatch(perm, element.lower()):
-                    return False
-                elif (not wildcard) and perm == element.lower():
-                    return False
+                result = False
+
+                if regex:
+                    result = self.pattern.match(element)
+
+                    if result:
+                        pattern, flags = result.groups()
+                        if re.match(pattern, perm, s2rf(flags)):
+                            return False
+                if not result:
+                    if wildcard and fnmatch.fnmatch(perm, element.lower()):
+                        return False
+                    elif (not wildcard) and perm == element.lower():
+                        return False
 
         for element in grant:
-            if wildcard and fnmatch.fnmatch(perm, element.lower()):
-                return True
-            elif (not wildcard) and perm == element.lower():
-                return True
+            result = False
+
+            if regex:
+                result = self.pattern.match(element)
+
+                if result:
+                    pattern, flags = result.groups()
+                    if re.match(pattern, perm, s2rf(flags)):
+                        return True
+            if not result:
+                if wildcard and fnmatch.fnmatch(perm, element.lower()):
+                    return True
+                elif (not wildcard) and perm == element.lower():
+                    return True
+
         return False

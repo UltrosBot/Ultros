@@ -7,6 +7,7 @@ These are used both by the main bot, and the package manager.
 
 __author__ = "Gareth Coles"
 
+import re
 from system.translations import Translations
 _ = Translations().get()
 
@@ -85,6 +86,52 @@ def string_split_readable(input, length):
 
 
 class AttrDict(dict):
+    """Simple attribute dictionary.
+
+    Simply, dictionary keys are also available as properties. Otherwise, this
+    is functionally equivalent to a dict.
+    """
+
     def __init__(self, *args, **kwargs):
         super(AttrDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
+
+
+flags = {
+    "d": re.DEBUG,
+    "i": re.IGNORECASE,
+    "l": re.LOCALE,
+    "m": re.MULTILINE,
+    "s": re.DOTALL,
+    "u": re.UNICODE,
+    "x": re.VERBOSE,
+}
+
+
+def str_to_regex_flags(string):
+    """Get a set of regex flags for an input string.
+
+    The supported flags are each of "dilmsux".
+
+    * `d` - Debug
+    * `i` - Ignore case
+    * `l` - Locale dependency
+    * `m` - Multi-line `^` and `$`
+    * `s` - Make `.` match newlines
+    * `u` - Unicode dependency
+    * `x` - Verbose (pretty) regexes
+
+    :param string: The string of flags
+    :type string: str
+
+    :return: The OR'd set of regex flags
+    :rtype: int
+    """
+    string = string.lower()
+
+    result = 0
+
+    for x in string:
+        result |= flags[x]
+
+    return result
