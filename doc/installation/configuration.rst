@@ -233,7 +233,7 @@ before joining channels. For example, to have the bot be invited to an invite-on
 .. literalinclude:: ../../config/protocols/irc-esper.yml.example
     :language: yaml
     :linenos:
-    :lines: 55
+    :lines: 56
 
 This section allows the bot to join channels automatically when someone on the network invites it. Note that turning this on
 will mean that anyone can have your bot join any channels they can use /invite in, so be aware of that.
@@ -247,7 +247,7 @@ Undocumented right now, please read the config file.
 .. literalinclude:: ../../config/protocols/mumble.yml.example
     :language: yaml
     :linenos:
-    :lines: 1:21
+    :lines: 1-21
 
 .. Footnote links, etc
 
