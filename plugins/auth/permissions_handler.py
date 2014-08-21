@@ -478,6 +478,8 @@ class permissionsHandler(object):
     #  Modification
 
     def create_group(self, group):
+        """As with `create_user`, but for groups."""
+
         group = group.lower()
 
         with self.data:
@@ -491,6 +493,8 @@ class permissionsHandler(object):
         return False
 
     def remove_group(self, group):
+        """As with `remove_user`, but for groups."""
+
         group = group.lower()
 
         with self.data:
@@ -500,6 +504,8 @@ class permissionsHandler(object):
         return False
 
     def set_group_option(self, group, option, value):
+        """As with `set_user_option`, but for groups."""
+
         group = group.lower()
         option = option.lower()
 
@@ -510,6 +516,24 @@ class permissionsHandler(object):
         return False
 
     def set_group_inheritance(self, group, inherit):
+        """Set group inheritance for a certain group.
+
+        Groups may inherit permissions from one other group - useful for
+        granting different groups of permissions.
+
+        This will fail if the group you're setting inheritance for doesn't
+        exist.
+
+        :param group: The group you're setting inheritance for
+        :param inherit: The group to inherit from, or None to remove it
+
+        :type group: str
+        :type inherit: str, None
+
+        :return: Whether tyhe inheritance was set
+        :rtype: bool
+        """
+
         group = group.lower()
 
         if isinstance(inherit, str):
@@ -525,6 +549,8 @@ class permissionsHandler(object):
 
     def add_group_permission(self, group, permission, protocol=None,
                              source=None):
+        """As with `add_user_permission`, but for groups."""
+
         group = group.lower()
         permission = permission.lower()
 
@@ -537,10 +563,23 @@ class permissionsHandler(object):
         return False
 
     def add_group_permissions(self, group, permissions):
+        """Add a list of multiple permissions to a certain group.
+
+        This simply maps the list over `add_group_permission` as a convenience.
+
+        :param group: The group to add permissions to
+        :param permissions: The permissions to add
+
+        :type group: str
+        :type permissions: list
+        """
+
         for permission in permissions:
             self.add_group_permission(group, permission)
 
     def remove_group_permission(self, group, permission):
+        """As with `remove_user_permission`, but for groups."""
+
         group = group.lower()
         permission = permission.lower()
 
@@ -555,6 +594,8 @@ class permissionsHandler(object):
     # Read-only
 
     def get_group_option(self, group, option):
+        """As with `get_user_option`, but for groups."""
+
         group = group.lower()
         option = option.lower()
 
@@ -565,6 +606,17 @@ class permissionsHandler(object):
         return False
 
     def get_group_inheritance(self, group):
+        """Get the inheritance setting for a group.
+
+        This will return False if the group doesn't exist, or None if
+        inheritance isn't set.
+
+        :param group: The group to get inheritance for
+        :type group: str
+
+        :return: The inheritance set for the group
+        :rtype: str, bool, None
+        """
         group = group.lower()
 
         if group in self.data["groups"]:
@@ -575,6 +627,8 @@ class permissionsHandler(object):
 
     def group_has_permission(self, group, permission,
                              protocol=None, source=None):
+        """As with `user_has_permission`, but for groups."""
+
         group = group.lower()
         permission = permission.lower()
 
@@ -629,6 +683,27 @@ class permissionsHandler(object):
     # Permissions comparisons
     def compare_permissions(self, perm, permissions, wildcard=True,
                             deny_nodes=True, regex=True):
+        """Compare a set of permissions to see if they match a specific
+        permission.
+
+        This is used a lot internally, but you may find it useful as well.
+
+        :param perm: The permissions to attempt to match
+        :param permissions: A list of permission to match,
+            including regex/wildcard permissions
+        :param wildcard: Whether to handle wildcard permissions
+        :param deny_nodes: Whether to handle denial/negative nodes
+        :param regex: Whether to handle regex permissions
+
+        :type perm: str
+        :type permissions: list
+        :type wildcard: bool
+        :type deny_nodes: bool
+        :type regex: bool
+
+        :return: Whether the permission has been matched or not
+        :rtype: bool
+        """
         perm = perm.lower()
 
         grant = []
