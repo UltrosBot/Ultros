@@ -39,7 +39,7 @@ protocol itself. See the sections below for more information on that.
 .. literalinclude:: ../../config/settings.yml.example
     :language: yaml
     :linenos:
-    :lines: 22-26
+    :lines: 17-21
 
 In this section, you can list off the names of all of the plugins you want Ultros to load. The names here are specified
 per-plugin, and you can usually find the names of the plugin in their documentation. If you can't, then you can also
@@ -57,7 +57,7 @@ The plugins that ship with Ultros are as follows:
 .. literalinclude:: ../../config/settings.yml.example
     :language: yaml
     :linenos:
-    :lines: 28-34
+    :lines: 23-29
 
 In this section, you specify how Ultros should behave when it loses connection or flat-out fails to connect. The options
 are explained in the snippet above. You should note that the reconnection counters are not shared between protocols,
@@ -67,7 +67,7 @@ which means that they will reconnect independently of each other.
 .. literalinclude:: ../../config/settings.yml.example
     :language: yaml
     :linenos:
-    :lines: 49
+    :lines: 31-48
 
 This final option is for configuring Ultros' basic metrics. If you don't like metrics and you haven't yet started your bot,
 then set this to **off** and it will never contact the server.
@@ -203,7 +203,7 @@ the bot if it sends messages too fast.
 .. literalinclude:: ../../config/protocols/irc-esper.yml.example
     :language: yaml
     :linenos:
-    :lines: 43
+    :lines: 48
 
 The **kick_rejoin** option here overrides the channel-specific ones if you set it to **yes**. Set it to **no** if you want to
 configure this for individual channels.
@@ -212,7 +212,7 @@ configure this for individual channels.
 .. literalinclude:: ../../config/protocols/irc-esper.yml.example
     :language: yaml
     :linenos:
-    :lines: 46
+    :lines: 51
 
 The **rejoin_delay** option simply specifies how long to wait before rejoining a channel the bot was kicked from, in seconds.
 
@@ -220,7 +220,7 @@ The **rejoin_delay** option simply specifies how long to wait before rejoining a
 .. literalinclude:: ../../config/protocols/irc-esper.yml.example
     :language: yaml
     :linenos:
-    :lines: 48-49
+    :lines: 53-54
 
 For **advanced users**, the **perform** section is a list of raw IRC messages to send to the server - after identifying, but
 before joining channels. For example, to have the bot be invited to an invite-only channel, you could do something like::
@@ -233,13 +233,21 @@ before joining channels. For example, to have the bot be invited to an invite-on
 .. literalinclude:: ../../config/protocols/irc-esper.yml.example
     :language: yaml
     :linenos:
-    :lines: 51
+    :lines: 55
 
 This section allows the bot to join channels automatically when someone on the network invites it. Note that turning this on
 will mean that anyone can have your bot join any channels they can use /invite in, so be aware of that.
 
 Protocols » Mumble
 ------------------
+
+Undocumented right now, please read the config file.
+
+.. Join-on-invite
+.. literalinclude:: ../../config/protocols/mumble.yml.example
+    :language: yaml
+    :linenos:
+    :lines: 1:21
 
 .. Footnote links, etc
 
