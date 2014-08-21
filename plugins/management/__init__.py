@@ -1,4 +1,12 @@
 # coding=utf-8
+
+"""Management plugin.
+
+This plugin will allow users to configure and administrate their bots from
+the chat networks they're connected to. See the ManagementPlugin docstring
+for more information on that.
+"""
+
 __author__ = "Gareth Coles"
 
 import system.plugin as plugin
@@ -18,24 +26,35 @@ class ManagementPlugin(plugin.PluginObject):
     This plugin has a few goals..
 
     * Storage management
+
         * Allow listing of files and their owners
         * Allow reloading of specific files
         * Allow reloading of files for a specific owner
+
     * Plugin management
+
         * Allow listing of plugins (available and loaded)
         * Allow plugin loading, reloading and unloading
         * Allow retrieval of plugin information
+
     * Package management
+
         * Allow listing of packages (available and installed)
         * Allow package installation and removal
         * Allow retrieval of package information
         * Cache list of packages for speed, configurable interval
+
     * Permissions management
+
         * Allow listing of permissions in all contexts
+
             * Point out where they come from
+
         * Allow addition and removal of permissions in all contexts
         * Allow listing and setting options on users and groups
+
     * User management
+
         * Allow listing of users and password resets
         * Allow management of blacklisted passwords
     """
