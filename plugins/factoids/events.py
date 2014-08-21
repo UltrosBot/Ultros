@@ -1,11 +1,12 @@
+"""Factoid-related events"""
+
 __author__ = 'Gareth Coles'
 
 from system.events.base import PluginEvent
 
 
 class FactoidAddedEvent(PluginEvent):
-    """
-    Event thrown when a factoid is added. This does not include when a factoid
+    """Event thrown when a factoid is added. This does not include when a factoid
     already exists but has a line added to it.
     """
 
@@ -20,9 +21,7 @@ class FactoidAddedEvent(PluginEvent):
 
 
 class FactoidDeletedEvent(PluginEvent):
-    """
-    Event thrown when an existing factoid is deleted.
-    """
+    """Event thrown when an existing factoid is deleted."""
 
     name = ""
 
@@ -33,8 +32,7 @@ class FactoidDeletedEvent(PluginEvent):
 
 
 class FactoidUpdatedEvent(PluginEvent):
-    """
-    Event thrown when an existing factoid is updated. This does include
+    """Event thrown when an existing factoid is updated. This does include
     when a factoid already exists and has a line added to it.
     """
 

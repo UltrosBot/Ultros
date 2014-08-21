@@ -1,3 +1,5 @@
+"""Various monitors for Python stuff"""
+
 __author__ = 'Gareth Coles'
 
 import gc
@@ -8,6 +10,7 @@ _ = Translations().get()
 
 
 class UncollectableMonitor(object):
+    """Monitor for objects Python's GC can't collect"""
 
     def __init__(self, logger, period=120):
         known = {}

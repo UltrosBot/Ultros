@@ -1,4 +1,7 @@
 # coding=utf-8
+
+"""Ye Olde dialectizer"""
+
 __author__ = "Gareth Coles"
 
 import re
@@ -6,6 +9,7 @@ from dialectizer import Dialectizer
 
 
 class Olde(Dialectizer):
+    """Ye Olde dialectizer"""
 
     subs = ((r'i([bcdfghjklmnpqrstvwxyz])e\b', r'y\1'),
             (r'i([bcdfghjklmnpqrstvwxyz])e', r'y\1\1e'),

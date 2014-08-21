@@ -1,3 +1,12 @@
+"""Debug plugin - Used to debug internal parts of thh code from a chat network.
+
+This allows direct access to the interpreter, so it's quite a dangerous
+plugin - don't give command access to someone you don't trust to delete
+all your files!
+
+This also does a few different monitoring tasks.
+"""
+
 __author__ = 'Gareth Coles'
 
 import code
@@ -17,6 +26,7 @@ PyCF_DONT_IMPLY_DEDENT = 0x200
 
 
 class DebugPlugin(plugin.PluginObject):
+    """Debug plugin object"""
 
     commands = None
 
@@ -29,6 +39,8 @@ class DebugPlugin(plugin.PluginObject):
     monitors = []
 
     def setup(self):
+        """The list of bridging rules"""
+
         self.commands = CommandManager()
         self.reload()
 
@@ -36,6 +48,8 @@ class DebugPlugin(plugin.PluginObject):
                                        self, "debug.debug", aliases=["dbg"])
 
     def output(self, message):
+        """Non-threadsafe function for outputting to the current target"""
+
         source = self.source
         message = to_bytes(message)
         message = message.replace("\r", "")
@@ -52,6 +66,8 @@ class DebugPlugin(plugin.PluginObject):
             source.respond(__("[DEBUG] %s") % line)
 
     def reload(self):
+        """Reload and restart the interpreter and monitors"""
+
         self.monitors = []
         self.monitors.append(UncollectableMonitor(self.logger))
 
@@ -63,6 +79,8 @@ class DebugPlugin(plugin.PluginObject):
 
     def debug_cmd(self, protocol, caller, source, command, raw_args,
                   parsed_args):
+        """Command handler for the debug command"""
+
         self.source = source
         self.caller = caller
         self.protocol = protocol

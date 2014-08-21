@@ -1,4 +1,7 @@
 # coding=utf-8
+
+"""Swedish Chef dialectizer"""
+
 __author__ = "Gareth Coles"
 
 import re
@@ -6,6 +9,7 @@ from dialectizer import Dialectizer
 
 
 class Chef(Dialectizer):
+    """Swedish Chef dialectizer"""
 
     subs = ((r'a([nu])', r'u\1'),
             (r'A([nu])', r'U\1'),

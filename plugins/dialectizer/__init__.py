@@ -1,4 +1,12 @@
 # coding=utf-8
+
+"""Dialectizer plugin - bork bork bork!
+
+This plugin transforms bot output using several filters (named dialectizers).
+It's just for fun, and can be extended by adding entries to the `dialectizers`
+dict.
+"""
+
 __author__ = "Gareth Coles"
 
 from system.command_manager import CommandManager
@@ -24,6 +32,7 @@ __ = Translations().get_m()
 
 
 class DialectizerPlugin(plugin.PluginObject):
+    """Dialectizer plugin object"""
 
     commands = None
     data = None
@@ -39,6 +48,8 @@ class DialectizerPlugin(plugin.PluginObject):
                     "upper": Upper()}
 
     def setup(self):
+        """The list of bridging rules"""
+
         self.commands = CommandManager()
         self.events = EventManager()
         self.storage = StorageManager()
@@ -53,6 +64,8 @@ class DialectizerPlugin(plugin.PluginObject):
                                        aliases=["dialectiser"])
 
     def handle_msg_sent(self, event=MessageSent):
+        """Handler for general message sent event"""
+
         if isinstance(event.target, User):
             return
 
@@ -74,6 +87,8 @@ class DialectizerPlugin(plugin.PluginObject):
 
     def dialectizer_command(self, protocol, caller, source, command, raw_args,
                             parsed_args):
+        """Handler for the dialectizer command"""
+
         args = raw_args.split()  # Quick fix for new command handler signature
         if isinstance(source, User):
             caller.respond(__("This command only applies to channels."))

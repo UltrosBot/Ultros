@@ -1,14 +1,14 @@
 # coding=utf-8
+
+"""Lowercase dialectizer"""
+
 __author__ = "Gareth Coles"
 
+from plugins.dialectizer import Dialectizer
 
-class Lower(object):
-    """
-    Class for implementing a dialectizer.
 
-    You need to define one function.
-    - sub(string): Dialectize and return the input.
-    """
+class Lower(Dialectizer):
+    """Lowercase dialectizer"""
 
     def sub(self, string):
         return string.lower()

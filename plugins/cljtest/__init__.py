@@ -1,5 +1,3 @@
-__author__ = 'Gareth Coles'
-
 """
 This is an example plugin to give you an idea of how to use Clojure in your
 plugins, should you wish to.
@@ -8,6 +6,8 @@ We don't really expect anyone to use this, but we've included it to show that
 it's actually possible. If you like Lisps, take a look at Clojure and also
 ClojurePy, which is what we're using here.
 """
+
+__author__ = 'Gareth Coles'
 
 import types
 
@@ -23,6 +23,8 @@ from system.storage.manager import StorageManager
 
 
 class ClojurePlugin(plugin.PluginObject):
+    """Example Clojure plugin """
+
     commands = None
     events = None
     storage = None

@@ -1,20 +1,29 @@
 # coding=utf-8
+
+"""Control plugin - Allows various forms of direct bot control
+
+There's no API use here. But it's a useful plugin for users!
+"""
+
 __author__ = "Gareth Coles"
 
 from system.command_manager import CommandManager
+from system.translations import Translations
 
 import system.plugin as plugin
 
-from system.translations import Translations
 _ = Translations().get()
 __ = Translations().get_m()
 
 
 class ControlPlugin(plugin.PluginObject):
+    """Control plugin object"""
 
     commands = None
 
     def setup(self):
+        """The list of bridging rules"""
+
         self.commands = CommandManager()
 
         self.commands.register_command("join", self.join_command,
@@ -32,6 +41,8 @@ class ControlPlugin(plugin.PluginObject):
 
     def join_command(self, protocol, caller, source, command, raw_args,
                      args):
+        """Command handler for the join command"""
+
         if not len(args) > 0:
             caller.respond(__("Usage: {CHARS}join <channel>"))
             return
@@ -49,6 +60,8 @@ class ControlPlugin(plugin.PluginObject):
 
     def leave_command(self, protocol, caller, source, command, raw_args,
                       args):
+        """Command handler for the leave command"""
+
         if not len(args) > 0:
             caller.respond(__("Usage: {CHARS}leave <channel>"))
             return
@@ -66,6 +79,8 @@ class ControlPlugin(plugin.PluginObject):
 
     def raw_command(self, protocol, caller, source, command, raw_args,
                     args):
+        """Command handler for the raw command"""
+
         if not len(args) > 0:
             caller.respond(__("Usage: {CHARS}raw <data>"))
             return
@@ -80,6 +95,8 @@ class ControlPlugin(plugin.PluginObject):
 
     def say_command(self, protocol, caller, source, command, raw_args,
                     args):
+        """Command handler for the say command"""
+
         if not len(args) > 1:
             caller.respond(__("Usage: {CHARS}say <target> <message>"))
             return
@@ -97,6 +114,8 @@ class ControlPlugin(plugin.PluginObject):
 
     def action_command(self, protocol, caller, source, command, raw_args,
                        args):
+        """Command handler for the action command"""
+
         if not len(args) > 1:
             caller.respond(__("Usage: {CHARS}action <target> <message>"))
             return
@@ -114,6 +133,8 @@ class ControlPlugin(plugin.PluginObject):
 
     def func_command(self, protocol, caller, source, command, raw_args,
                      args):
+        """Command handler for the func command"""
+
         if not len(args) > 1:
             caller.respond(__("Usage: {CHARS}func <function> <data>"))
             return

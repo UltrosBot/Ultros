@@ -1,14 +1,14 @@
 # coding=utf-8
+
+"""Uppercase dialectizer"""
+
 __author__ = "Gareth Coles"
 
+from plugins.dialectizer import Dialectizer
 
-class Upper(object):
-    """
-    Class for implementing a dialectizer.
 
-    You need to define one function.
-    - sub(string): Dialectize and return the input.
-    """
+class Upper(Dialectizer):
+    """Uppercase dialectizer"""
 
     def sub(self, string):
         return string.upper()
