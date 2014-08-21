@@ -6,6 +6,9 @@ get an instance of the Auth plugin and get the instance from there.
 
 This class is in charge of managing user accounts - logins and passwords. It
 also includes a rudimentary password blacklist system.
+
+If you want to write your own auth handler, be sure to implement all the
+documented methods.
 """
 
 __author__ = 'Gareth Coles'

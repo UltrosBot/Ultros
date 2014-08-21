@@ -1,3 +1,12 @@
+"""Permissions handler. In charge of deciding who can do what.
+
+If this is the permissions handler in use, you can get an instance of it from
+the CommandManager - otherwise you'll have to get it from the plugin instance.
+
+The permissions handler supports inheritance, patterns and other useful stuff.
+If you want to write your own, be sure to implement all the documented methods.
+"""
+
 __author__ = 'Gareth Coles'
 
 # Required: check(permission, caller, source, protocol)
@@ -11,8 +20,14 @@ __ = Translations().get_m()
 
 
 class permissionsHandler(object):
+    """Permissions handler class"""
 
     def __init__(self, plugin, data):
+        """Initialize the permissions handler.
+
+        This will also create a default group with some default permissions.
+        """
+
         self.data = data
         self.plugin = plugin
 
@@ -35,6 +50,15 @@ class permissionsHandler(object):
                                         "urls.title"])
 
     def find_username(self, username):
+        """Find permissions data for a given username.
+
+        :param username: Username to check for
+        :type username: str
+
+        :return: The user's data, or None if it's not found
+        :rtype: dict, None
+        """
+
         username = username.lower()
 
         if username in self.data["users"]:
@@ -42,6 +66,15 @@ class permissionsHandler(object):
         return None
 
     def find_group(self, group):
+        """Find permissions data for a given group.
+
+        :param group: Group to check for
+        :type group: str
+
+        :return: The group's data, or None if it's not found
+        :rtype: dict, None
+        """
+
         group = group.lower()
 
         if group in self.data["groups"]:
@@ -49,9 +82,31 @@ class permissionsHandler(object):
         return None
 
     def reload(self):
+        """Performs a dumb reload of the data file."""
+
         return self.data.reload()
 
     def check(self, permission, caller, source, protocol):
+        """Check whether someone has a specified permission.
+
+        You can supply `source` and `protocol` as their relevant objects
+        or simple strings - however, `caller` must be a User object, and
+        `protocol` cannot be None.
+
+        :param permission: The permission to check against
+        :param caller: The User to check against
+        :param source: The source to check against
+        :param protocol: The protocol to check against
+
+        :type permission: str
+        :type caller: User
+        :type source: User, Channel, str, None
+        :type protocol: Protocol, str
+
+        :return: Whether the user has the given permission in this context
+        :rtype: bool
+        """
+
         permission = permission.lower()
 
         if isinstance(source, User):
@@ -88,6 +143,19 @@ class permissionsHandler(object):
     #  Modification
 
     def create_user(self, user):
+        """Create an entry for a username in the permissions file.
+
+        This will fail if the entry already exists. Entries will, by default,
+        have users set to the `default` group, with no extra permissions and
+        `superadmin` disabled.
+
+        :param user: The username to create the entry for
+        :type user: str
+
+        :return: Whether the entry was created
+        :rtype: bool
+        """
+
         user = user.lower()
 
         with self.data:
@@ -108,6 +176,17 @@ class permissionsHandler(object):
         return False
 
     def remove_user(self, user):
+        """Remove the entry for a username in the permissions file.
+
+        This will fail if the entry doesn't exist.
+
+        :param user: The username to remove the entry for
+        :type user: str
+
+        :return: Whether the entry was removed
+        :rtype: bool
+        """
+
         user = user.lower()
 
         with self.data:
@@ -117,6 +196,29 @@ class permissionsHandler(object):
         return True
 
     def set_user_option(self, user, option, value):
+        """Set an option for a user in the permissions file.
+
+        Don't use this for plugin-specific data! This is for
+        permissions-related stuff only. If you have plugins that need to share
+        data, create an API in the plugins.
+
+        This will fail if the user doesn't have an entry in the permissions
+        file.
+
+        Note, if the user already has the option set, it will be overwritten.
+
+        :param user: The username to set the option for
+        :param option: The option to set
+        :param value: The value to set for the option
+
+        :type user: str
+        :type option: str
+        :type value: object
+
+        :return: Whether the option was set
+        :rtype: bool
+        """
+
         user = user.lower()
         option = option.lower()
 
@@ -131,6 +233,28 @@ class permissionsHandler(object):
 
     def add_user_permission(self, user, permission, protocol=None,
                             source=None):
+        """Add a permission to a user in the permissions file.
+
+        This will fail if the user doesn't exist, or the permission
+        is already set.
+
+        You may optionally specify a protocol and source to match against. If
+        you want to match a source, you must also specify a protocol.
+
+        :param user: The username to set the permission for
+        :param permission: The permission to set
+        :param protocol: The protocol to set the permission for
+        :param source: The source to set the permission for
+
+        :type user: str
+        :type permission: str
+        :type protocol: str, None
+        :type source: str, None
+
+        :return: Whether the permission was set
+        :rtype: bool
+        """
+
         user = user.lower()
         permission = permission.lower()
 
@@ -172,6 +296,28 @@ class permissionsHandler(object):
 
     def remove_user_permission(self, user, permission, protocol=None,
                                source=None):
+        """Remove a permission from a user in the permissions file.
+
+        This will fail if the user doesn't exist, or the permission
+        isn't already set.
+
+        You may optionally specify a protocol and source to match against. If
+        you want to match a source, you must also specify a protocol.
+
+        :param user: The username to remove the permission from
+        :param permission: The permission to remove
+        :param protocol: The protocol to remove the permission from
+        :param source: The source to remove the permission from
+
+        :type user: str
+        :type permission: str
+        :type protocol: str, None
+        :type source: str, None
+
+        :return: Whether the permission was removed
+        :rtype: bool
+        """
+
         user = user.lower()
         permission = permission.lower()
 
@@ -212,6 +358,22 @@ class permissionsHandler(object):
         return False
 
     def set_user_group(self, user, group):
+        """Set the group for a user.
+
+        The user will inherit all the permissions from the group.
+
+        This will fail if the user entry doesn't exist.
+
+        :param user: The username to set the group for
+        :param group: The group to set
+
+        :type user: str
+        :type group: str
+
+        :return: Whether the group was set
+        :rtype: bool
+        """
+
         group = group.lower()
         user = user.lower()
 
@@ -224,6 +386,22 @@ class permissionsHandler(object):
     #  Read-only
 
     def get_user_option(self, user, option):
+        """Get the value of an option for a user.
+
+        This will return None if the option isn't found, or False if the
+        user doesn't have an entry.
+
+        :param user: Username to check the option on
+        :param option: Option to check for
+
+        :type user: str
+        :type option: str
+
+        :return: The value, or False or None
+        :rtype: object, None
+        """
+        #TODO: Saner returns
+
         user = user.lower()
         option = option.lower()
 
@@ -236,6 +414,27 @@ class permissionsHandler(object):
     def user_has_permission(self, user, permission,
                             protocol=None, source=None,
                             check_group=True, check_superadmin=True):
+        """Check whether a user has a permission. Don't use this if you're
+        doing real permissions work - use check() instead.
+
+        :param user: Username to check against
+        :param permission: Permissions to check for
+        :param protocol: Protocol to check against
+        :param source: Source to check against
+        :param check_group: Whether to check group permissions
+        :param check_superadmin: Whether to honor superadmin
+
+        :type user: str
+        :type permission: str
+        :type protocol: str
+        :type source: str
+        :type check_group: bool
+        :type check_superadmin: bool
+
+        :return: Whether the user has the given permission
+        :rtype: bool
+        """
+
         user = user.lower()
         permission = permission.lower()
 
