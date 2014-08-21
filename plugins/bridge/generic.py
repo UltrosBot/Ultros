@@ -1,4 +1,7 @@
 # coding=utf-8
+
+"""An unused module"""
+
 __author__ = "Gareth Coles"
 
 from system.translations import Translations
@@ -6,6 +9,7 @@ _ = Translations().get()
 
 
 class BaseSupport(object):
+    """An unused class"""
 
     plugin = None
     logger = None
