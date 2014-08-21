@@ -12,6 +12,8 @@ extensibility and ease-of-use in mind.
 There's not a lot here right now, but keep an eye out, this will be fleshed
 out very soon!
 
+Are you a developer? Maybe you're looking for the api_
+
 .. toctree::
    :includehidden:
    :maxdepth: 1
@@ -23,8 +25,6 @@ out very soon!
 
    usage/commands
 
-   api/index
-
 .. development/index
 
 Indexes
@@ -33,3 +33,12 @@ Indexes
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+.. Footnote links, etc
+
+.. _site: https://ultros.io
+.. _api: http://apidocs.ultros.io
+
+.. |br| raw:: html
+
+   <br />
