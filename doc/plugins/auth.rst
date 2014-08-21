@@ -203,6 +203,19 @@ Within the **default** group, there are a couple more sections.
 
             * For example: :yaml:`"factoids.get.[*?[]]"`
 
+    * Permissions also support **regular expressions**.
+
+        * Definition: :yaml:`"/pattern/flags"`
+        * The following flags are supported:
+
+            * **d**: Debug output
+            * **i**: Ignore case
+            * **l**: Depend on the locale for certain escapes
+            * **m**: Multi-line start and end of string chars (**^** and **$**)
+            * **s**: Make the dot (**.**) match newlines too
+            * **u**: Depend on the unicode character table for certain escapes
+            * **x**: "Verbose" or pretty regex support (with comments!)
+
     * You can also specify **negative permissions nodes**, which will **deny** specific permissions already granted. They
       are always prefixed with the circumflex character, :yaml:`^`.
 
