@@ -1,5 +1,8 @@
 # coding=utf-8
 
+"""Filtering decorators. Right now, only contains a type-checker for functions.
+"""
+
 from system.translations import Translations
 _ = Translations().get()
 
@@ -36,8 +39,6 @@ def accepts(*argstypes, **kwargstypes):
     This also does a few checks to make sure we're getting the correct number
     of keyword and non-keyword arguments. Remember, if the function defines
     an argument as a keyword, the decorator should too!
-
-    :param argstypes: The types
     """
 
     def wrapper(func):

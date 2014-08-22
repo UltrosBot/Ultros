@@ -1,4 +1,6 @@
 # coding=utf-8
+"""Various threading-related decorators. These allow you to use the threadpool.
+"""
 
 from functools import wraps
 from threading import Thread
@@ -14,12 +16,11 @@ pool = ThreadPool(name="Decorators")
 
 @deprecated("Use run_async_threadpool instead.")
 def run_async(func):
-    """
-    A function decorator intended to cause the function to run in another
+    """A function decorator intended to cause the function to run in another
     thread (in other words, asynchronously).
 
     These threads **will not be stopped** with Ultros; if you want them to be
-    stopped then use the **run_async_daemon** function.
+    stopped then use the `run_async_daemon` function.
 
     Functions that are decorated will return their Thread, which you can use
     as normal. For example::
@@ -32,9 +33,6 @@ def run_async(func):
         t1 = func()
         # Something else that takes some time
         t1.join()
-
-    :param func: The function to decorate
-    :type func: function
     """
 
     @wraps(func)
@@ -48,8 +46,7 @@ def run_async(func):
 
 @deprecated("Use run_async_threadpool instead.")
 def run_async_daemon(func):
-    """
-    A function decorator intended to cause the function to run in another
+    """A function decorator intended to cause the function to run in another
     thread (in other words, asynchronously).
 
     These threads **will** be stopped with Ultros.
@@ -65,9 +62,6 @@ def run_async_daemon(func):
         t1 = func()
         # Something else that takes some time
         t1.join()
-
-    :param func: The function to decorate
-    :type func: function
     """
 
     @wraps(func)
@@ -81,8 +75,7 @@ def run_async_daemon(func):
 
 
 def run_async_threadpool(func):
-    """
-    A function decorator intended to cause the function to run in another
+    """A function decorator intended to cause the function to run in another
     thread (in other words, asynchronously).
 
     These threads are run using a special threadpool which is only used for
@@ -95,9 +88,6 @@ def run_async_threadpool(func):
         def func():
             # Something that takes forever to run
             pass
-
-    :param func: The function to decorate
-    :type func: function
     """
 
     @wraps(func)
@@ -111,13 +101,12 @@ def run_async_threadpool(func):
 
 
 def run_async_threadpool_callback(cb):
-    """
-    A function decorator intended to cause the function to run in another
+    """A function decorator intended to cause the function to run in another
     thread (in other words, asynchronously).
 
     These threads are run using a special threadpool which is only used for
-    decorators (the same one run_async_threadpool uses). The callback function
-    will be called with the following parameters:
+    decorators (the same one `run_async_threadpool` uses). The callback
+    function will be called with the following parameters:
 
     * success: True if the call succeeded, false otherwise
     * result: Whatever the call returned, or a Failure if it didn't succeed

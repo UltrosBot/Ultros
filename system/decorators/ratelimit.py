@@ -1,3 +1,7 @@
+"""Rate-limiting decorators. This is for rate-limiting API methods, not
+commands!
+"""
+
 from functools import wraps
 import Queue
 import time
@@ -14,29 +18,36 @@ _log = log.getLogger(__name__)
 
 
 class RateLimitExceededError(Exception):
-    pass
+    """Raised when the rate limit is exceeded"""
 
 
 def _raise_rate_limit_exceeded_error():
+    """Function to raise a `RateLimitExceededError`"""
     raise RateLimitExceededError("Rate limit exceeded")
 
 
 class RateLimiter(object):
+    """The rate-limiter decorator. See `__init__` for details."""
+
     def __init__(self, limit=60, buffer=10, time_period=60,
                  delay=None, on_limit=_raise_rate_limit_exceeded_error):
-        """
-        Limit the rate a function can be called by soft_limit per time_period.
+        """Limit the rate a function can be called by soft_limit per
+        time_period.
+
         Can store a buffer of calls to run when limit is available again.
+
         Returns the result if possible, or a deferred if the function is put in
-        the buffer. If you don't want to deal with deferreds, set the buffer to
+        the buffer. If you don't want to deal with Deferreds, set the buffer to
         0.
+
         :param limit: Limit of calls per time_period
         :param buffer: Length of backlog
         :param time_period: Time period for limit
         :param delay: Time per check of backlog (default: time_period/limit)
         :param on_limit: Callable to be run on rate limit being reached.
-        (default: raise RateLimitExceededError)
+            (default: raise RateLimitExceededError)
         """
+
         self.soft_limit = limit
         self.buffer = buffer
         self.time_period = float(time_period)

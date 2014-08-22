@@ -1,3 +1,11 @@
+"""Various extremely useful decorators, covering a good deal of functionality.
+
+* Filter: function type-checking, if you really need it
+* Log: Logging and deprecation decorators
+* Rate limit: Rate-limiting designed for API calls
+* Threads: Decorators for running things in the threadpool
+"""
+
 __author__ = 'Sean'
 
 # Deprecated imports, to support old decorator usage
