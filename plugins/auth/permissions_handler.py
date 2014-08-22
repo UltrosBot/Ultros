@@ -1,4 +1,5 @@
-"""Permissions handler. In charge of deciding who can do what.
+"""
+Permissions handler. In charge of deciding who can do what.
 
 If this is the permissions handler in use, you can get an instance of it from
 the CommandManager - otherwise you'll have to get it from the plugin instance.
@@ -24,12 +25,15 @@ __ = Translations().get_m()
 
 
 class permissionsHandler(object):
-    """Permissions handler class"""
+    """
+    Permissions handler class
+    """
 
     pattern = re.compile(r"/(.*)/(.*)")
 
     def __init__(self, plugin, data):
-        """Initialize the permissions handler.
+        """
+        Initialize the permissions handler.
 
         This will also create a default group with some default permissions.
         """
@@ -56,7 +60,8 @@ class permissionsHandler(object):
                                         "urls.title"])
 
     def find_username(self, username):
-        """Find permissions data for a given username.
+        """
+        Find permissions data for a given username.
 
         :param username: Username to check for
         :type username: str
@@ -72,7 +77,8 @@ class permissionsHandler(object):
         return None
 
     def find_group(self, group):
-        """Find permissions data for a given group.
+        """
+        Find permissions data for a given group.
 
         :param group: Group to check for
         :type group: str
@@ -88,12 +94,15 @@ class permissionsHandler(object):
         return None
 
     def reload(self):
-        """Performs a dumb reload of the data file."""
+        """
+        Performs a dumb reload of the data file.
+        """
 
         return self.data.reload()
 
     def check(self, permission, caller, source, protocol):
-        """Check whether someone has a specified permission.
+        """
+        Check whether someone has a specified permission.
 
         You can supply *source* and *protocol* as their relevant objects
         or simple strings - however, *caller* must be a User object, and
@@ -149,7 +158,8 @@ class permissionsHandler(object):
     #  Modification
 
     def create_user(self, user):
-        """Create an entry for a username in the permissions file.
+        """
+        Create an entry for a username in the permissions file.
 
         This will fail if the entry already exists. Entries will, by default,
         have users set to the *default* group, with no extra permissions and
@@ -182,7 +192,8 @@ class permissionsHandler(object):
         return False
 
     def remove_user(self, user):
-        """Remove the entry for a username in the permissions file.
+        """
+        Remove the entry for a username in the permissions file.
 
         This will fail if the entry doesn't exist.
 
@@ -202,7 +213,8 @@ class permissionsHandler(object):
         return True
 
     def set_user_option(self, user, option, value):
-        """Set an option for a user in the permissions file.
+        """
+        Set an option for a user in the permissions file.
 
         Don't use this for plugin-specific data! This is for
         permissions-related stuff only. If you have plugins that need to share
@@ -239,7 +251,8 @@ class permissionsHandler(object):
 
     def add_user_permission(self, user, permission, protocol=None,
                             source=None):
-        """Add a permission to a user in the permissions file.
+        """
+        Add a permission to a user in the permissions file.
 
         This will fail if the user doesn't exist, or the permission
         is already set.
@@ -302,7 +315,8 @@ class permissionsHandler(object):
 
     def remove_user_permission(self, user, permission, protocol=None,
                                source=None):
-        """Remove a permission from a user in the permissions file.
+        """
+        Remove a permission from a user in the permissions file.
 
         This will fail if the user doesn't exist, or the permission
         isn't already set.
@@ -364,7 +378,8 @@ class permissionsHandler(object):
         return False
 
     def set_user_group(self, user, group):
-        """Set the group for a user.
+        """
+        Set the group for a user.
 
         The user will inherit all the permissions from the group.
 
@@ -392,7 +407,8 @@ class permissionsHandler(object):
     #  Read-only
 
     def get_user_option(self, user, option):
-        """Get the value of an option for a user.
+        """
+        Get the value of an option for a user.
 
         This will return None if the option isn't found, or False if the
         user doesn't have an entry.
@@ -420,7 +436,8 @@ class permissionsHandler(object):
     def user_has_permission(self, user, permission,
                             protocol=None, source=None,
                             check_group=True, check_superadmin=True):
-        """Check whether a user has a permission. Don't use this if you're
+        """
+        Check whether a user has a permission. Don't use this if you're
         doing real permissions work - use check() instead.
 
         :param user: Username to check against
@@ -478,7 +495,9 @@ class permissionsHandler(object):
     #  Modification
 
     def create_group(self, group):
-        """As with `create_user`, but for groups."""
+        """
+        As with `create_user`, but for groups.
+        """
 
         group = group.lower()
 
@@ -493,7 +512,9 @@ class permissionsHandler(object):
         return False
 
     def remove_group(self, group):
-        """As with `remove_user`, but for groups."""
+        """
+        As with `remove_user`, but for groups.
+        """
 
         group = group.lower()
 
@@ -504,7 +525,9 @@ class permissionsHandler(object):
         return False
 
     def set_group_option(self, group, option, value):
-        """As with `set_user_option`, but for groups."""
+        """
+        As with `set_user_option`, but for groups.
+        """
 
         group = group.lower()
         option = option.lower()
@@ -516,7 +539,8 @@ class permissionsHandler(object):
         return False
 
     def set_group_inheritance(self, group, inherit):
-        """Set group inheritance for a certain group.
+        """
+        Set group inheritance for a certain group.
 
         Groups may inherit permissions from one other group - useful for
         granting different groups of permissions.
@@ -549,7 +573,9 @@ class permissionsHandler(object):
 
     def add_group_permission(self, group, permission, protocol=None,
                              source=None):
-        """As with `add_user_permission`, but for groups."""
+        """
+        As with `add_user_permission`, but for groups.
+        """
 
         group = group.lower()
         permission = permission.lower()
@@ -563,7 +589,8 @@ class permissionsHandler(object):
         return False
 
     def add_group_permissions(self, group, permissions):
-        """Add a list of multiple permissions to a certain group.
+        """
+        Add a list of multiple permissions to a certain group.
 
         This simply maps the list over `add_group_permission` as a convenience.
 
@@ -578,7 +605,9 @@ class permissionsHandler(object):
             self.add_group_permission(group, permission)
 
     def remove_group_permission(self, group, permission):
-        """As with `remove_user_permission`, but for groups."""
+        """
+        As with `remove_user_permission`, but for groups.
+        """
 
         group = group.lower()
         permission = permission.lower()
@@ -594,7 +623,9 @@ class permissionsHandler(object):
     # Read-only
 
     def get_group_option(self, group, option):
-        """As with `get_user_option`, but for groups."""
+        """
+        As with `get_user_option`, but for groups.
+        """
 
         group = group.lower()
         option = option.lower()
@@ -606,7 +637,8 @@ class permissionsHandler(object):
         return False
 
     def get_group_inheritance(self, group):
-        """Get the inheritance setting for a group.
+        """
+        Get the inheritance setting for a group.
 
         This will return False if the group doesn't exist, or None if
         inheritance isn't set.
@@ -627,7 +659,9 @@ class permissionsHandler(object):
 
     def group_has_permission(self, group, permission,
                              protocol=None, source=None):
-        """As with `user_has_permission`, but for groups."""
+        """
+        As with `user_has_permission`, but for groups.
+        """
 
         group = group.lower()
         permission = permission.lower()
@@ -683,7 +717,8 @@ class permissionsHandler(object):
     # Permissions comparisons
     def compare_permissions(self, perm, permissions, wildcard=True,
                             deny_nodes=True, regex=True):
-        """Compare a set of permissions to see if they match a specific
+        """
+        Compare a set of permissions to see if they match a specific
         permission.
 
         This is used a lot internally, but you may find it useful as well.

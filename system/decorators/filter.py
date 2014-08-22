@@ -1,6 +1,7 @@
 # coding=utf-8
 
-"""Filtering decorators. Right now, only contains a type-checker for functions.
+"""
+Filtering decorators. Right now, only contains a type-checker for functions.
 """
 
 from system.translations import Translations

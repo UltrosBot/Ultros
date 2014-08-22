@@ -1,6 +1,8 @@
 # coding=utf-8
 
-"""Uppercase dialectizer"""
+"""
+UPPERCASE DIALECTIZER
+"""
 
 __author__ = "Gareth Coles"
 
@@ -8,7 +10,9 @@ from plugins.dialectizer import Dialectizer
 
 
 class Upper(Dialectizer):
-    """Uppercase dialectizer"""
+    """
+    UPPERCASE DIALECTIZER
+    """
 
     def sub(self, string):
         return string.upper()

@@ -1,4 +1,5 @@
-"""A plugin to provide various URL-related tools and services.
+"""
+A plugin to provide various URL-related tools and services.
 
 This plugin does quite a lot of things - URL title parsing, URL shortening,
 URL logging to database, specialized URL handlers.. Its partner plugin,
@@ -40,7 +41,9 @@ __ = Translations().get_m()
 
 
 class URLsPlugin(plugin.PluginObject):
-    """URLs plugin object"""
+    """
+    URLs plugin object
+    """
 
     catcher = None
     channels = None
@@ -59,7 +62,9 @@ class URLsPlugin(plugin.PluginObject):
                      "text/x-server-parsed-html", "application/xhtml+xml"]
 
     def setup(self):
-        """Called when the plugin is loaded. Performs initial setup."""
+        """
+        Called when the plugin is loaded. Performs initial setup.
+        """
 
         self.logger.trace(_("Entered setup method."))
         self.storage = StorageManager()
@@ -111,7 +116,9 @@ class URLsPlugin(plugin.PluginObject):
                                        "urls.shorten", default=True)
 
     def reload(self):
-        """Reload files and create tables as necessary"""
+        """
+        Reload files and create tables as necessary
+        """
 
         self.shortened.runQuery("CREATE TABLE IF NOT EXISTS urls ("
                                 "url TEXT, "
@@ -130,7 +137,8 @@ class URLsPlugin(plugin.PluginObject):
                 self.logger.exception("Unable to compile regex '%s'" % element)
 
     def check_blacklist(self, url):
-        """Check whether a URL is in the user-defined blacklist
+        """
+        Check whether a URL is in the user-defined blacklist
 
         :param url: The URL to check
         :type url: str
@@ -152,7 +160,9 @@ class URLsPlugin(plugin.PluginObject):
 
     @run_async_threadpool
     def message_handler(self, event=MessageReceived):
-        """Event handler for general messages"""
+        """
+        Event handler for general messages
+        """
 
         protocol = event.caller
         source = event.source
@@ -249,7 +259,9 @@ class URLsPlugin(plugin.PluginObject):
 
     def urls_command(self, protocol, caller, source, command, raw_args,
                      parsed_args):
-        """Command handler for the urls command"""
+        """
+        Command handler for the urls command
+        """
 
         args = raw_args.split()  # Quick fix for new command handler signature
         if not isinstance(source, Channel):
@@ -311,7 +323,9 @@ class URLsPlugin(plugin.PluginObject):
             caller.respond(__("Unknown operation: '%s'.") % operation)
 
     def _respond_shorten(self, result, source, handler):
-        """Respond to a shorten command, after a successful Deferred"""
+        """
+        Respond to a shorten command, after a successful Deferred
+        """
 
         if result is not None:
             return source.respond(result)
@@ -320,14 +334,18 @@ class URLsPlugin(plugin.PluginObject):
                               % handler)
 
     def _respond_shorten_fail(self, failure, source, handler):
-        """Respond to a shorten command, after a failed Deferred"""
+        """
+        Respond to a shorten command, after a failed Deferred
+        """
 
         return source.respond(__("Error shortening url with handler %s: %s")
                               % (handler, failure))
 
     def shorten_command(self, protocol, caller, source, command, raw_args,
                         parsed_args):
-        """Command handler for the shorten command"""
+        """
+        Command handler for the shorten command
+        """
 
         args = parsed_args  # Quick fix for new command handler signature
         if not isinstance(source, Channel):
@@ -381,13 +399,16 @@ class URLsPlugin(plugin.PluginObject):
                 return
 
     def tinyurl(self, url):
-        """Shorten a URL with TinyURL. Don't use this directly."""
+        """
+        Shorten a URL with TinyURL. Don't use this directly.
+        """
 
         return urllib2.urlopen("http://tinyurl.com/api-create.php?url="
                                + urllib.quote_plus(url)).read()
 
     def parse_title(self, url, use_handler=True):
-        """Get and return the page title for a URL, or the title from a
+        """
+        Get and return the page title for a URL, or the title from a
         specialized handler, if one is registered.
 
         This function returns a tuple which may be one of these forms..
@@ -541,7 +562,8 @@ class URLsPlugin(plugin.PluginObject):
             return None, None
 
     def _shorten(self, txn, url, handler):
-        """Shorten a URL, checking the database in case it's already been
+        """
+        Shorten a URL, checking the database in case it's already been
         done. This is a database interaction and uses Deferreds.
         """
 
@@ -563,7 +585,8 @@ class URLsPlugin(plugin.PluginObject):
         return None
 
     def shorten_url(self, url, handler):
-        """Shorten a URL using the specified handler. This returns a Deferred.
+        """
+        Shorten a URL using the specified handler. This returns a Deferred.
 
         :param url: The URL to shorten
         :param handler: The name of the handler to shorten with
@@ -581,7 +604,8 @@ class URLsPlugin(plugin.PluginObject):
         return self.shortened.runInteraction(self._shorten, url, handler)
 
     def add_handler(self, domain, handler):
-        """API method to add a specialized URL handler.
+        """
+        API method to add a specialized URL handler.
 
         This will fail if there's already a handler there for that domain.
 
@@ -605,7 +629,8 @@ class URLsPlugin(plugin.PluginObject):
         return False
 
     def add_shortener(self, name, handler):
-        """ API method to add a URL shortener. This is the same as
+        """
+        API method to add a URL shortener. This is the same as
         `add_handler`, but for URL shortening.
         """
 

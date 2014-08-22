@@ -1,6 +1,8 @@
 # coding=utf-8
 
-"""Reverse-text dialectizer"""
+"""
+rezitcelaid txet-esreveR
+"""
 
 __author__ = "Gareth Coles"
 
@@ -8,7 +10,9 @@ from plugins.dialectizer import Dialectizer
 
 
 class Reverse(Dialectizer):
-    """Reverse-text dialectizer"""
+    """
+    rezitcelaid txet-esreveR
+    """
 
     def sub(self, string):
         return string[::-1]

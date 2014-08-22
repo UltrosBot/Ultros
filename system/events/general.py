@@ -1,4 +1,6 @@
-"""General events that are not specific to any protocols."""
+"""
+General events that are not specific to any protocols.
+"""
 
 __author__ = 'Gareth Coles'
 
@@ -6,7 +8,8 @@ from system.events.base import BaseEvent
 
 
 class GeneralEvent(BaseEvent):
-    """A general event, not tied to a protocol.
+    """
+    A general event, not tied to a protocol.
 
     If an event subclasses this, chances are it's a protocol-agnostic event.
     This can be thrown from anywhere - even from a protocol. You should avoid
@@ -19,7 +22,8 @@ class GeneralEvent(BaseEvent):
 
 
 class PluginsLoadedEvent(GeneralEvent):
-    """This event is fired when all of the plugins have been loaded.
+    """
+    This event is fired when all of the plugins have been loaded.
 
     The caller will be the factory manager instead of a protocol.
     This also includes a dictionary of all loaded plugins.
@@ -28,7 +32,9 @@ class PluginsLoadedEvent(GeneralEvent):
     loaded_plugins = {}
 
     def __init__(self, caller, plugins):
-        """Initialise the event object."""
+        """
+        Initialise the event object.
+        """
 
         self.loaded_plugins = plugins
 
@@ -36,7 +42,8 @@ class PluginsLoadedEvent(GeneralEvent):
 
 
 class ReactorStartedEvent(GeneralEvent):
-    """This event is fired just after the reactor is started.
+    """
+    This event is fired just after the reactor is started.
 
     The caller will be the factory manager instead of a protocol.
     """
@@ -48,14 +55,17 @@ class ReactorStartedEvent(GeneralEvent):
 
 
 class PreConnectEvent(GeneralEvent):
-    """Thrown just before we connect. Includes the configuration of the
+    """
+    Thrown just before we connect. Includes the configuration of the
     protocol that threw the event.
     """
 
     config = None
 
     def __init__(self, caller, config):
-        """Initialise the event object."""
+        """
+        Initialise the event object.
+        """
 
         self.config = config
 
@@ -63,7 +73,8 @@ class PreConnectEvent(GeneralEvent):
 
 
 class PostConnectEvent(GeneralEvent):
-    """Thrown just after we connect, before we do any logging in or such.
+    """
+    Thrown just after we connect, before we do any logging in or such.
 
     Includes the configuration of the protocol that threw the event.
     """
@@ -71,7 +82,9 @@ class PostConnectEvent(GeneralEvent):
     config = None
 
     def __init__(self, caller, config):
-        """Initialise the event object."""
+        """
+        Initialise the event object.
+        """
 
         self.config = config
 
@@ -79,7 +92,8 @@ class PostConnectEvent(GeneralEvent):
 
 
 class PreSetupEvent(GeneralEvent):
-    """Thrown just before we do our setup, post-connect.
+    """
+    Thrown just before we do our setup, post-connect.
 
     Includes the configuration of the protocol that threw the event.
     """
@@ -87,7 +101,9 @@ class PreSetupEvent(GeneralEvent):
     config = None
 
     def __init__(self, caller, config):
-        """Initialise the event object."""
+        """
+        Initialise the event object.
+        """
 
         self.config = config
 
@@ -95,7 +111,8 @@ class PreSetupEvent(GeneralEvent):
 
 
 class PostSetupEvent(GeneralEvent):
-    """Thrown after before we do our setup.
+    """
+    Thrown after before we do our setup.
 
     Includes the configuration of the protocol that threw the event.
     """
@@ -111,7 +128,8 @@ class PostSetupEvent(GeneralEvent):
 
 
 class PreMessageReceived(GeneralEvent):
-    """Thrown when we receive a message, before we parse or otherwise do
+    """
+    Thrown when we receive a message, before we parse or otherwise do
     anything with it.
 
     The following attributes are available.
@@ -137,7 +155,9 @@ class PreMessageReceived(GeneralEvent):
     printable = True
 
     def __init__(self, caller, source, target, message, typ, printable=True):
-        """Initialise the event object."""
+        """
+        Initialise the event object.
+        """
 
         self.source = source
         self.target = target
@@ -158,7 +178,8 @@ class PreMessageReceived(GeneralEvent):
 
 
 class MessageReceived(GeneralEvent):
-    """Thrown when we get a message.
+    """
+    Thrown when we get a message.
 
     This is a "clean", parsed message, and you can presume that it's already
     been printed to the log. See the `PreMessageReceived` event for param info.
@@ -170,7 +191,9 @@ class MessageReceived(GeneralEvent):
     type = ""
 
     def __init__(self, caller, source, target, message, typ):
-        """Initialise the event object."""
+        """
+        Initialise the event object.
+        """
 
         self.source = source
         self.target = target
@@ -187,7 +210,8 @@ class MessageReceived(GeneralEvent):
 
 
 class MessageSent(GeneralEvent):
-    """Thrown when we send a message - plugins are free to catch this and even
+    """
+    Thrown when we send a message - plugins are free to catch this and even
     modify the message before it actually gets sent out.
 
     The params available are as follows..
@@ -206,7 +230,9 @@ class MessageSent(GeneralEvent):
     printable = ""
 
     def __init__(self, caller, typ, target, message, printable=True):
-        """Initialise the event object."""
+        """
+        Initialise the event object.
+        """
 
         self.type = typ
         self.target = target
@@ -223,12 +249,16 @@ class MessageSent(GeneralEvent):
 
 
 class NameChangedSelf(GeneralEvent):
-    """Thrown whenever our name is changed."""
+    """
+    Thrown whenever our name is changed.
+    """
 
     name = ""
 
     def __init__(self, caller, name):
-        """Initialise the event object."""
+        """
+        Initialise the event object.
+        """
 
         self.name = name
 
@@ -236,13 +266,17 @@ class NameChangedSelf(GeneralEvent):
 
 
 class NameChanged(GeneralEvent):
-    """Thrown whenever someone else's name is changed."""
+    """
+    Thrown whenever someone else's name is changed.
+    """
 
     old_name = ""
     user = None
 
     def __init__(self, caller, user, old_name):
-        """Initialise the event object."""
+        """
+        Initialise the event object.
+        """
 
         self.old_name = old_name
         self.user = user
@@ -251,12 +285,16 @@ class NameChanged(GeneralEvent):
 
 
 class UserDisconnected(GeneralEvent):
-    """Thrown when a user disconnects."""
+    """
+    Thrown when a user disconnects.
+    """
 
     user = None
 
     def __init__(self, caller, user):
-        """Initialise the event object."""
+        """
+        Initialise the event object.
+        """
 
         self.user = user
 
@@ -264,7 +302,8 @@ class UserDisconnected(GeneralEvent):
 
 
 class PreCommand(GeneralEvent):
-    """Thrown just before a command is called.
+    """
+    Thrown just before a command is called.
 
     Don't action your commands here, this is more for stats collection
     and output modification, as well as perhaps a little duck-punching.
@@ -279,7 +318,9 @@ class PreCommand(GeneralEvent):
 
     def __init__(self, caller, command, args, source, target, printable,
                  message):
-        """Initialise the event object."""
+        """
+        Initialise the event object.
+        """
 
         self.command = command
         self.args = args
@@ -298,7 +339,8 @@ class PreCommand(GeneralEvent):
 
 
 class UnknownCommand(GeneralEvent):
-    """Thrown when someone tries to run a command that doesn't exist.
+    """
+    Thrown when someone tries to run a command that doesn't exist.
 
     The uses of this are debatable, but we'll leave that up to you,
     the developers, to decide upon.
@@ -311,7 +353,9 @@ class UnknownCommand(GeneralEvent):
     target = None
 
     def __init__(self, caller, protocol, command, args, source, target):
-        """Initialise the event object."""
+        """
+        Initialise the event object.
+        """
 
         self.protocol = protocol
         self.command = command
@@ -329,7 +373,8 @@ class UnknownCommand(GeneralEvent):
 
 
 class ActionSent(GeneralEvent):
-    """Thrown when we send a action - plugins are free to catch this and even
+    """
+    Thrown when we send a action - plugins are free to catch this and even
     modify the action before it actually gets sent out.
 
     The params available are as follows..
@@ -347,7 +392,9 @@ class ActionSent(GeneralEvent):
     printable = ""
 
     def __init__(self, caller, target, message, printable=True):
-        """Initialise the event object."""
+        """
+        Initialise the event object.
+        """
 
         self.target = target
         self.message = message

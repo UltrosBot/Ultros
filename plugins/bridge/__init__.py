@@ -1,6 +1,7 @@
 # coding=utf-8
 
-"""Configurable message-bridging plugin.
+"""
+Configurable message-bridging plugin.
 
 This plugin is used to relay messages between any number of endpoints - that
 is to say, between any channels or users on any connected protocol.
@@ -34,7 +35,9 @@ __ = Translations().get_m()
 
 
 class BridgePlugin(plugin.PluginObject):
-    """Message bridging plugin object"""
+    """
+    Message bridging plugin object
+    """
 
     config = None
     events = None
@@ -45,12 +48,16 @@ class BridgePlugin(plugin.PluginObject):
 
     @property
     def rules(self):
-        """The list of bridging rules"""
+        """
+        The list of bridging rules
+        """
 
         return self.config["rules"]
 
     def setup(self):
-        """Called when the plugin is loaded. Performs initial setup."""
+        """
+        Called when the plugin is loaded. Performs initial setup.
+        """
 
         self.logger.trace(_("Entered setup method."))
         self.storage = StorageManager()
@@ -118,21 +125,27 @@ class BridgePlugin(plugin.PluginObject):
                                  self.handle_mumble_move, 1000)
 
     def handle_irc_join(self, event=UserJoinedEvent):
-        """Event handler for IRC join events"""
+        """
+        Event handler for IRC join events
+        """
 
         self.do_rules("", event.caller, event.user, event.channel,
                       f_str=["general", "join"],
                       tokens={"CHANNEL": event.channel.name})
 
     def handle_irc_part(self, event=UserPartedEvent):
-        """Event handler for IRC part events"""
+        """
+        Event handler for IRC part events
+        """
 
         self.do_rules("", event.caller, event.user, event.channel,
                       f_str=["general", "part"],
                       tokens={"CHANNEL": event.channel.name})
 
     def handle_irc_kick(self, event=UserKickedEvent):
-        """Event handler for IRC kick events"""
+        """
+        Event handler for IRC kick events
+        """
 
         self.do_rules(event.reason, event.caller, event.user, event.channel,
                       f_str=["general", "kick"],
@@ -140,34 +153,44 @@ class BridgePlugin(plugin.PluginObject):
                               "KICKER": event.kicker.nickname})
 
     def handle_irc_quit(self, event=UserQuitEvent):
-        """Event handler for IRC quit events"""
+        """
+        Event handler for IRC quit events
+        """
 
         self.do_rules(event.message, event.caller, event.user, event.user,
                       f_str=["irc", "disconnect"],
                       tokens={"USER": event.user.nickname})
 
     def handle_irc_action(self, event=CTCPQueryEvent):
-        """Event handler for IRC CTCP query events"""
+        """
+        Event handler for IRC CTCP query events
+        """
 
         if event.action == "ACTION":
             self.do_rules(event.data, event.caller, event.user,
                           event.channel, f_str=["general", "action"])
 
     def handle_disconnect(self, event=UserDisconnected):
-        """Event handler for general disconnect events"""
+        """
+        Event handler for general disconnect events
+        """
 
         self.do_rules("", event.caller, event.user, event.user,
                       f_str=["general", "disconnect"],
                       tokens={"USER": event.user.nickname})
 
     def handle_mumble_join(self, event=UserJoined):
-        """Event handler for Mumble join events"""
+        """
+        Event handler for Mumble join events
+        """
 
         self.do_rules("", event.caller, event.user, event.user,
                       f_str=["mumble", "connect"])
 
     def handle_mumble_move(self, event=UserMoved):
-        """Event handler for Mumble move events"""
+        """
+        Event handler for Mumble move events
+        """
 
         # Moving /from/ the configured channel to another one
         self.do_rules("", event.caller, event.user, event.old_channel,
@@ -179,7 +202,9 @@ class BridgePlugin(plugin.PluginObject):
                       tokens={"CHANNEL": event.channel.name})
 
     def handle_mumble_remove(self, event=UserRemove):
-        """Event handler for Mumble remove events"""
+        """
+        Event handler for Mumble remove events
+        """
 
         self.do_rules(event.reason, event.caller, event.user, event.user,
                       f_str=["mumble", "remove"],
@@ -187,24 +212,32 @@ class BridgePlugin(plugin.PluginObject):
                               "BANNED?": "banned" if event.ban else "kicked"})
 
     def handle_msg(self, event=MessageReceived):
-        """Event handler for general message events"""
+        """
+        Event handler for general message events
+        """
 
         self.do_rules(event.message, event.caller, event.source, event.target)
 
     def handle_msg_sent(self, event=MessageSent):
-        """Event handler for general message sent events"""
+        """
+        Event handler for general message sent events
+        """
 
         self.do_rules(event.message, event.caller, event.caller.ourselves,
                       event.target)
 
     def handle_action_sent(self, event=ActionSent):
-        """Event handler for general action sent events"""
+        """
+        Event handler for general action sent events
+        """
 
         self.do_rules(event.message, event.caller, event.caller.ourselves,
                       event.target, f_str=["general", "action"])
 
     def handle_command(self, event=PreCommand):
-        """Event handler for general pre-command events"""
+        """
+        Event handler for general pre-command events
+        """
 
         if event.printable:
             self.do_rules(event.message, event.caller, event.source,
@@ -212,7 +245,8 @@ class BridgePlugin(plugin.PluginObject):
 
     def do_rules(self, msg, caller, source, target, from_user=True,
                  to_user=True, f_str=None, tokens=None, use_event=False):
-        """Action the bridge ruleset based on input.
+        """
+        Action the bridge ruleset based on input.
 
         :param msg: Message to relay
         :param caller: User that sent the message
@@ -220,7 +254,8 @@ class BridgePlugin(plugin.PluginObject):
         :param target: User or Channel the message was sent to
         :param from_user: Whether to relay from a PM
         :param to_user: Whether to relay to a PM
-        :param f_str: Custom format string
+        :param f_str: Definition of the formatting string to use. For example,
+            ["general", "action"] or ["irc", "quit"]
         :param tokens: Dict of extra tokens to replace
         :param use_event: Whether to throw a MessageSent event
 
@@ -230,7 +265,7 @@ class BridgePlugin(plugin.PluginObject):
         :type target: User, Channel
         :type from_user: bool
         :type to_user: bool
-        :type f_str: str
+        :type f_str: list
         :type tokens: dict
         :type use_event: bool
         """

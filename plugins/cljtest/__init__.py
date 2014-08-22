@@ -23,7 +23,9 @@ from system.storage.manager import StorageManager
 
 
 class ClojurePlugin(plugin.PluginObject):
-    """Example Clojure plugin """
+    """
+    Example Clojure plugin
+    """
 
     commands = None
     events = None

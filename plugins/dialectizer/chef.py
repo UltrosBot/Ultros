@@ -1,6 +1,8 @@
 # coding=utf-8
 
-"""Swedish Chef dialectizer"""
+"""
+Swedish Chef dialectizer, bork bork bork!
+"""
 
 __author__ = "Gareth Coles"
 
@@ -9,7 +11,9 @@ from dialectizer import Dialectizer
 
 
 class Chef(Dialectizer):
-    """Swedish Chef dialectizer"""
+    """
+    Swedish Chef dialectizer, bork bork bork!
+    """
 
     subs = ((r'a([nu])', r'u\1'),
             (r'A([nu])', r'U\1'),

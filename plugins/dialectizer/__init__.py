@@ -1,6 +1,7 @@
 # coding=utf-8
 
-"""Dialectizer plugin - bork bork bork!
+"""
+Dialectizer plugin - bork bork bork!
 
 This plugin transforms bot output using several filters (named dialectizers).
 It's just for fun, and can be extended by adding entries to the *dialectizers*

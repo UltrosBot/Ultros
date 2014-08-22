@@ -1,4 +1,5 @@
-"""Class designed for logging caught URLs. It doesn't work very well right now.
+"""
+Class designed for logging caught URLs. It doesn't work very well right now.
 
 This uses a configured dbapi source along with some SQL defined in the sql/
 folder. You can always add SQL there if you need another dialect.
@@ -18,7 +19,9 @@ _ = Translations().get()
 
 
 class Catcher(object):
-    """URL catcher object"""
+    """
+    URL catcher object
+    """
 
     _config = {}
     where = ""
@@ -34,7 +37,9 @@ class Catcher(object):
 
     @property
     def enabled(self):
-        """Whether the catcher is enabled."""
+        """
+        Whether the catcher is enabled.
+        """
 
         if "catcher" not in self._config:
             return False
@@ -43,13 +48,17 @@ class Catcher(object):
 
     @property
     def config(self):
-        """The catcher's configuration."""
+        """
+        The catcher's configuration.
+        """
 
         return self._config["catcher"]
 
     @property
     def ignored(self):
-        """The catcher's configured ignored sources."""
+        """
+        The catcher's configured ignored sources.
+        """
 
         return self.config.get("ignored", [])
 
@@ -74,7 +83,9 @@ class Catcher(object):
         self.reload()
 
     def _log_callback_success(self, result, message, use_result=False):
-        """Log that a callback succeeded."""
+        """
+        Log that a callback succeeded.
+        """
 
         if use_result:
             self.logger.info(message % result)
@@ -82,7 +93,9 @@ class Catcher(object):
             self.logger.info(message)
 
     def _log_callback_failure(self, failure, message, use_failure=False):
-        """Log that a callback failed."""
+        """
+        Log that a callback failed.
+        """
 
         if isinstance(failure, SocketError):
             if failure.errno == 32:
@@ -100,7 +113,9 @@ class Catcher(object):
             self.logger.error(message)
 
     def reload(self):
-        """Reload the catcher entirely."""
+        """
+        Reload the catcher entirely.
+        """
 
         self.load_sql(self.config["dialect"])
 
@@ -127,7 +142,9 @@ class Catcher(object):
                        errbackArgs=(_("Failed to create table: %s"), True))
 
     def load_sql(self, dialect):
-        """Load the SQL for a certain dialect."""
+        """
+        Load the SQL for a certain dialect.
+        """
 
         base_path = "%s/sql/%s/" % (self.where, dialect)
         self.logger.debug(_("Looking for SQL in %s") % base_path)
@@ -139,7 +156,9 @@ class Catcher(object):
             raise ValueError(_("No SQL found for dialect '%s'.") % dialect)
 
     def create_interaction(self, txn):
-        """DBAPI interaction for creating the table."""
+        """
+        DBAPI interaction for creating the table.
+        """
 
         sql = self.sql["create"].replace(
             "{TABLE}", self.config["table_prefix"] + "_urls"
@@ -148,7 +167,9 @@ class Catcher(object):
         txn.execute(sql)
 
     def find_interaction(self, txn, url):
-        """DBAPI interaction for finding a URL."""
+        """
+        DBAPI interaction for finding a URL.
+        """
 
         sql = self.sql["find"].replace(
             "{TABLE}", self.config["table_prefix"] + "_urls"
@@ -160,7 +181,9 @@ class Catcher(object):
         return r is not None
 
     def insert_interaction(self, txn, url, user, target, protocol):
-        """DBAPI interaction for inserting a URL."""
+        """
+        DBAPI interaction for inserting a URL.
+        """
 
         found = self.find_interaction(txn, url)
         self.pipe_breakages = 0
@@ -174,7 +197,9 @@ class Catcher(object):
             txn.execute(sql, (url, now, user, target, protocol))
 
     def insert_url(self, url, user, target, protocol):
-        """Insert a URL into the database."""
+        """
+        Insert a URL into the database.
+        """
 
         if self.enabled:
             if isinstance(target, Channel):

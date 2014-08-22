@@ -1,6 +1,8 @@
 # coding=utf-8
 
-"""Lowercase dialectizer"""
+"""
+Lowercase dialectizer
+"""
 
 __author__ = "Gareth Coles"
 
@@ -8,7 +10,9 @@ from plugins.dialectizer import Dialectizer
 
 
 class Lower(Dialectizer):
-    """Lowercase dialectizer"""
+    """
+    Lowercase dialectizer
+    """
 
     def sub(self, string):
         return string.lower()

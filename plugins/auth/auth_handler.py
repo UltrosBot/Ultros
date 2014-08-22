@@ -1,4 +1,5 @@
-"""Authorization handler. This is in charge of logins and accounts.
+"""
+Authorization handler. This is in charge of logins and accounts.
 
 If this is one of the authorization handlers being used, you can get access
 to its instance from the command manager. In all other cases, you'll have to
@@ -23,10 +24,13 @@ _ = Translations().get()
 
 
 class authHandler(object):
-    """Authorization handler class"""
+    """
+    Authorization handler class
+    """
 
     def __init__(self, plugin, data, blacklist):
-        """Initialise the auth handler.
+        """
+        Initialise the auth handler.
 
         This will also create a default account and default password
         blacklist if one doesn't already exist.
@@ -40,7 +44,8 @@ class authHandler(object):
         self.create_blacklisted_passwords()
 
     def create_blacklisted_passwords(self):
-        """Create the default password blacklist, if one doesn't exist already.
+        """
+        Create the default password blacklist, if one doesn't exist already.
 
         This blacklist contains the top 20 most popular passwords of 2013 by
         default, and will prevent them for being used to register. They are
@@ -66,7 +71,8 @@ class authHandler(object):
                                           "2013."))
 
     def create_superadmin_account(self):
-        """Creates the default superadmin account, if no accounts exist.
+        """
+        Creates the default superadmin account, if no accounts exist.
 
         If the superadmin setting is enabled, this account will have access
         to all available permissions. It's given a 32-length randomly
@@ -116,7 +122,8 @@ class authHandler(object):
             self.plugin.logger.warn(_("Please do this manually!"))
 
     def hash(self, salt, password):
-        """Returns the hash for a given password and salt.
+        """
+        Returns the hash for a given password and salt.
 
         :param salt: The salt to use in the hash
         :param password: The password itself
@@ -131,12 +138,15 @@ class authHandler(object):
         return hashlib.sha512(salt + password).hexdigest()
 
     def reload(self):
-        """Performs a dumb reload of the data file."""
+        """
+        Performs a dumb reload of the data file.
+        """
 
         self.data.reload()
 
     def check_login(self, username, password):
-        """Check whether a password is the valid login for a user.
+        """
+        Check whether a password is the valid login for a user.
 
         :param username: The username to check against
         :param password: The attempted password
@@ -161,7 +171,8 @@ class authHandler(object):
         return False
 
     def create_user(self, username, password):
-        """Create a new user account with a given username and password.
+        """
+        Create a new user account with a given username and password.
 
         The salt will be generated randomly, at a length of 64. Creation will
         fail if the user account already exists.
@@ -193,7 +204,8 @@ class authHandler(object):
         return True
 
     def change_password(self, username, old, new):
-        """Change a user's password.
+        """
+        Change a user's password.
 
         This function requires the user's old password, and will fail if the
         user's account doesn't exist or the old password doesn't match.
@@ -230,7 +242,8 @@ class authHandler(object):
         return True
 
     def delete_user(self, username):
-        """Delete a user's account.
+        """
+        Delete a user's account.
 
         This will fail if the user account doesn't exist.
 
@@ -249,7 +262,8 @@ class authHandler(object):
         return False
 
     def login(self, user, protocol, username, password):
-        """Log a user in.
+        """
+        Log a user in.
 
         This requires a user and protocol object, as well as their username
         and password. The user and username are not the same thing!
@@ -283,7 +297,8 @@ class authHandler(object):
         return False
 
     def logout(self, user, protocol):
-        """Log a logged-in user out.
+        """
+        Log a logged-in user out.
 
         This will fail if the user isn't logged in.
 
@@ -304,7 +319,8 @@ class authHandler(object):
         return False
 
     def authorized(self, caller, source, protocol):
-        """Check whether a User has logged in.
+        """
+        Check whether a User has logged in.
 
         :param caller: The User to check against
         :param source: The User or Channel relating to the request
@@ -321,7 +337,8 @@ class authHandler(object):
         return caller.authorized
 
     def user_exists(self, username):
-        """Check whether an account exists.
+        """
+        Check whether an account exists.
 
         :param username: The username to check
         :type username: str
@@ -334,7 +351,8 @@ class authHandler(object):
         return username in self.data
 
     def blacklist_password(self, password, username=None):
-        """Add a password to the blacklist, optionally only for a specific
+        """
+        Add a password to the blacklist, optionally only for a specific
         username.
 
         This will fail if the password already exists in the relevant
@@ -368,7 +386,8 @@ class authHandler(object):
             return True
 
     def password_backlisted(self, password, username=None):
-        """Check whether a password has been blacklisted, optionall only for
+        """
+        Check whether a password has been blacklisted, optionally only for
         a specific username.
 
         :param password: The password to check against

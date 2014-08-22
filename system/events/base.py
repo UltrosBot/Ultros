@@ -1,11 +1,14 @@
-"""Base events for you to base your events on."""
+"""
+Base events for you to base your events on.
+"""
 
 __author__ = 'Gareth Coles'
 
 
 class BaseEvent(object):
 
-    """This is a basic event object. All other events should inherit this
+    """
+    This is a basic event object. All other events should inherit this
     class.
 
     When you're re-implementing this, be sure to call your supers! That also
@@ -21,7 +24,8 @@ class BaseEvent(object):
     cancelled = False
 
     def __init__(self, caller):
-        """Initialise the event.
+        """
+        Initialise the event.
 
         For filtering reasons, every event *must* be supplied with the
         caller.
@@ -41,7 +45,8 @@ class BaseEvent(object):
 
 
 class PluginEvent(BaseEvent):
-    """This is an event specifically thrown from a plugin. It'll only be thrown
+    """
+    This is an event specifically thrown from a plugin. It'll only be thrown
     by a plugin, and plugins should only throw subclasses of this event.
     """
 

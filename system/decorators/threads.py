@@ -1,5 +1,6 @@
 # coding=utf-8
-"""Various threading-related decorators. These allow you to use the threadpool.
+"""
+Various threading-related decorators. These allow you to use the threadpool.
 """
 
 from functools import wraps
@@ -16,8 +17,8 @@ pool = ThreadPool(name="Decorators")
 
 @deprecated("Use run_async_threadpool instead.")
 def run_async(func):
-    """A function decorator intended to cause the function to run in another
-    thread (in other words, asynchronously).
+    """
+    Function decorator to run in a normal thread.
 
     These threads **will not be stopped** with Ultros; if you want them to be
     stopped then use the `run_async_daemon` function.
@@ -46,8 +47,8 @@ def run_async(func):
 
 @deprecated("Use run_async_threadpool instead.")
 def run_async_daemon(func):
-    """A function decorator intended to cause the function to run in another
-    thread (in other words, asynchronously).
+    """
+    Function decorator to run in a daemon thread.
 
     These threads **will** be stopped with Ultros.
 
@@ -75,8 +76,8 @@ def run_async_daemon(func):
 
 
 def run_async_threadpool(func):
-    """A function decorator intended to cause the function to run in another
-    thread (in other words, asynchronously).
+    """
+    Function decorator to run in a a thread from the threadpool.
 
     These threads are run using a special threadpool which is only used for
     decorators. You will not be able to join these threads, nor will you
@@ -101,8 +102,9 @@ def run_async_threadpool(func):
 
 
 def run_async_threadpool_callback(cb):
-    """A function decorator intended to cause the function to run in another
-    thread (in other words, asynchronously).
+    """
+    Function decorator to run in a a thread from the threadpool, with a
+    callback on completion.
 
     These threads are run using a special threadpool which is only used for
     decorators (the same one `run_async_threadpool` uses). The callback

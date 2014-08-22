@@ -1,4 +1,5 @@
-"""Various extremely useful decorators, covering a good deal of functionality.
+"""
+Various extremely useful decorators, covering a good deal of functionality.
 
 * Filter: function type-checking, if you really need it
 * Log: Logging and deprecation decorators

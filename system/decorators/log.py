@@ -1,4 +1,5 @@
-"""Logging-related decorators for wrapping functions. Also includes a way
+"""
+Logging-related decorators for wrapping functions. Also includes a way
 of deprecating things.
 """
 
@@ -11,7 +12,8 @@ _log = log.getLogger(__name__)
 
 
 def log_message(message, level=None, logger=None, before=True):
-    """Log a message before or after calling the wrapped function. If logging
+    """
+    Log a message before or after calling the wrapped function. If logging
     after, the result of the function is passed into the log message for
     formatting as *wrapped_result*.
 

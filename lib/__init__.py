@@ -10,7 +10,8 @@ import urllib2
 
 
 def get_libs():
-    """Get all of the libraries defined in lib/definitions.
+    """
+    Get all of the libraries defined in lib/definitions.
 
     This is called automatically when the package is imported.
     """

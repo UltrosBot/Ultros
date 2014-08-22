@@ -1,4 +1,5 @@
-"""Rate-limiting decorators. This is for rate-limiting API methods, not
+"""
+Rate-limiting decorators. This is for rate-limiting API methods, not
 commands!
 """
 
@@ -18,20 +19,27 @@ _log = log.getLogger(__name__)
 
 
 class RateLimitExceededError(Exception):
-    """Raised when the rate limit is exceeded"""
+    """
+    Raised when the rate limit is exceeded
+    """
 
 
 def _raise_rate_limit_exceeded_error():
-    """Function to raise a `RateLimitExceededError`"""
+    """
+    Function to raise a `RateLimitExceededError`
+    """
     raise RateLimitExceededError("Rate limit exceeded")
 
 
 class RateLimiter(object):
-    """The rate-limiter decorator. See `__init__` for details."""
+    """
+    The rate-limiter decorator. See `__init__` for details.
+    """
 
     def __init__(self, limit=60, buffer=10, time_period=60,
                  delay=None, on_limit=_raise_rate_limit_exceeded_error):
-        """Limit the rate a function can be called by soft_limit per
+        """
+        Limit the rate a function can be called by soft_limit per
         time_period.
 
         Can store a buffer of calls to run when limit is available again.

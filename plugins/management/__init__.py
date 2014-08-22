@@ -1,6 +1,7 @@
 # coding=utf-8
 
-"""Management plugin.
+"""
+Management plugin.
 
 This plugin will allow users to configure and administrate their bots from
 the chat networks they're connected to. See the ManagementPlugin docstring
@@ -67,7 +68,9 @@ class ManagementPlugin(plugin.PluginObject):
     pages = None
 
     def setup(self):
-        """Called when the plugin is loaded. Performs initial setup."""
+        """
+        Called when the plugin is loaded. Performs initial setup.
+        """
 
         self.commands = CommandManager()
 
@@ -97,7 +100,9 @@ class ManagementPlugin(plugin.PluginObject):
 
     def storage_command(self, protocol, caller, source, command, raw_args,
                         args):
-        """Command handler for the storage command"""
+        """
+        Command handler for the storage command
+        """
 
         if args is None:
             args = raw_args.split()
@@ -113,7 +118,9 @@ class ManagementPlugin(plugin.PluginObject):
 
     def protocols_command(self, protocol, caller, source, command, raw_args,
                           args):
-        """Command handler for the protocols command"""
+        """
+        Command handler for the protocols command
+        """
 
         if args is None:
             args = raw_args.split()
@@ -133,7 +140,9 @@ class ManagementPlugin(plugin.PluginObject):
 
     def plugins_command(self, protocol, caller, source, command, raw_args,
                         args):
-        """Command handler for the plugins command"""
+        """
+        Command handler for the plugins command
+        """
 
         if args is None:
             args = raw_args.split()
@@ -321,7 +330,9 @@ class ManagementPlugin(plugin.PluginObject):
 
     def packages_command(self, protocol, caller, source, command, raw_args,
                          args):
-        """Command handler for the packages command"""
+        """
+        Command handler for the packages command
+        """
 
         if args is None:
             args = raw_args.split()
@@ -337,7 +348,9 @@ class ManagementPlugin(plugin.PluginObject):
 
     def permissions_command(self, protocol, caller, source, command, raw_args,
                             args):
-        """Command handler for the permissions command"""
+        """
+        Command handler for the permissions command
+        """
 
         if args is None:
             args = raw_args.split()
@@ -353,7 +366,9 @@ class ManagementPlugin(plugin.PluginObject):
 
     def users_command(self, protocol, caller, source, command, raw_args,
                       args):
-        """Command handler for the users command"""
+        """
+        Command handler for the users command
+        """
 
         if args is None:
             args = raw_args.split()
@@ -369,6 +384,8 @@ class ManagementPlugin(plugin.PluginObject):
 
     def shutdown_command(self, protocol, caller, source, command, raw_args,
                          args):
-        """Command handler for the shutdown command"""
+        """
+        Command handler for the shutdown command
+        """
 
         self.factory_manager.unload()

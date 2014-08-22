@@ -1,6 +1,7 @@
 # coding=utf-8
 
-"""Module containing classes for all the default and base events.
+"""
+Module containing classes for all the default and base events.
 
 Evemts are Ultros' way of connecting different parts of the code. Something
 happens, so some code is called, and something else happens, and so on. Events

@@ -1,6 +1,8 @@
 # coding=utf-8
 
-"""Elmer Fudd dialectizer"""
+"""
+Elmer Fudd dialectizer, uh-hah-hah-hah
+"""
 
 __author__ = "Gareth Coles"
 
@@ -9,7 +11,9 @@ from dialectizer import Dialectizer
 
 
 class Fudd(Dialectizer):
-    """Elmer Fudd dialectizer"""
+    """
+    Elmer Fudd dialectizer, uh-hah-hah-hah
+    """
 
     subs = ((r'[rl]', r'w'),
             (r'qu', r'qw'),
