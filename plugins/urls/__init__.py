@@ -1,3 +1,11 @@
+"""A plugin to provide various URL-related tools and services.
+
+This plugin does quite a lot of things - URL title parsing, URL shortening,
+URL logging to database, specialized URL handlers.. Its partner plugin,
+URL-tools (in the contrib repo) extends its functionality using the API it
+exposes.
+"""
+
 __author__ = 'Gareth Coles'
 
 import fnmatch
@@ -32,6 +40,7 @@ __ = Translations().get_m()
 
 
 class URLsPlugin(plugin.PluginObject):
+    """URLs plugin object"""
 
     catcher = None
     channels = None
@@ -50,6 +59,8 @@ class URLsPlugin(plugin.PluginObject):
                      "text/x-server-parsed-html", "application/xhtml+xml"]
 
     def setup(self):
+        """Called when the plugin is loaded. Performs initial setup."""
+
         self.logger.trace(_("Entered setup method."))
         self.storage = StorageManager()
         try:
@@ -100,6 +111,8 @@ class URLsPlugin(plugin.PluginObject):
                                        "urls.shorten", default=True)
 
     def reload(self):
+        """Reload files and create tables as necessary"""
+
         self.shortened.runQuery("CREATE TABLE IF NOT EXISTS urls ("
                                 "url TEXT, "
                                 "shortener TEXT, "
@@ -117,6 +130,15 @@ class URLsPlugin(plugin.PluginObject):
                 self.logger.exception("Unable to compile regex '%s'" % element)
 
     def check_blacklist(self, url):
+        """Check whether a URL is in the user-defined blacklist
+
+        :param url: The URL to check
+        :type url: str
+
+        :return: Whether the URL is in the blacklist
+        :rtype: bool
+        """
+
         for pattern in self.blacklist:
             try:
                 self.logger.debug(_("Checking pattern '%s' against URL '%s'")
@@ -130,6 +152,8 @@ class URLsPlugin(plugin.PluginObject):
 
     @run_async_threadpool
     def message_handler(self, event=MessageReceived):
+        """Event handler for general messages"""
+
         protocol = event.caller
         source = event.source
         target = event.target
@@ -225,6 +249,8 @@ class URLsPlugin(plugin.PluginObject):
 
     def urls_command(self, protocol, caller, source, command, raw_args,
                      parsed_args):
+        """Command handler for the urls command"""
+
         args = raw_args.split()  # Quick fix for new command handler signature
         if not isinstance(source, Channel):
             caller.respond(__("This command can only be used in a channel."))
@@ -285,6 +311,8 @@ class URLsPlugin(plugin.PluginObject):
             caller.respond(__("Unknown operation: '%s'.") % operation)
 
     def _respond_shorten(self, result, source, handler):
+        """Respond to a shorten command, after a successful Deferred"""
+
         if result is not None:
             return source.respond(result)
         return source.respond(__("Unable to shorten using handler %s. Poke the"
@@ -292,11 +320,15 @@ class URLsPlugin(plugin.PluginObject):
                               % handler)
 
     def _respond_shorten_fail(self, failure, source, handler):
+        """Respond to a shorten command, after a failed Deferred"""
+
         return source.respond(__("Error shortening url with handler %s: %s")
                               % (handler, failure))
 
     def shorten_command(self, protocol, caller, source, command, raw_args,
                         parsed_args):
+        """Command handler for the shorten command"""
+
         args = parsed_args  # Quick fix for new command handler signature
         if not isinstance(source, Channel):
             if len(args) == 0:
@@ -349,10 +381,36 @@ class URLsPlugin(plugin.PluginObject):
                 return
 
     def tinyurl(self, url):
+        """Shorten a URL with TinyURL. Don't use this directly."""
+
         return urllib2.urlopen("http://tinyurl.com/api-create.php?url="
                                + urllib.quote_plus(url)).read()
 
     def parse_title(self, url, use_handler=True):
+        """Get and return the page title for a URL, or the title from a
+        specialized handler, if one is registered.
+
+        This function returns a tuple which may be one of these forms..
+
+        * (title, None) if the title was fetched by a specialized handler
+        * (title, domain) if the title was parsed from the HTML
+        * (None, None) if fetching the title was entirely unsuccessful.
+            This occurs in each of the following cases..
+
+            * When a portscan is detected and stopped
+            * When the page simply has no title
+            * When there is an exception in the chain somewhere
+
+        :param url: The URL to check
+        :param use_handler: Whether to use specialized handlers
+
+        :type url: str
+        :type use_handler: bool
+
+        :returns: A tuple containing the result
+        :rtype: tuple(None, None), tuple(str, str), tuple(str, None)
+        """
+
         domain = ""
         self.logger.trace(_("Url: %s") % url)
         try:
@@ -483,6 +541,10 @@ class URLsPlugin(plugin.PluginObject):
             return None, None
 
     def _shorten(self, txn, url, handler):
+        """Shorten a URL, checking the database in case it's already been
+        done. This is a database interaction and uses Deferreds.
+        """
+
         txn.execute("SELECT * FROM urls WHERE url=? AND shortener=?",
                     (url, handler.lower()))
         r = txn.fetchone()
@@ -501,12 +563,38 @@ class URLsPlugin(plugin.PluginObject):
         return None
 
     def shorten_url(self, url, handler):
+        """Shorten a URL using the specified handler. This returns a Deferred.
+
+        :param url: The URL to shorten
+        :param handler: The name of the handler to shorten with
+
+        :type url: str
+        :type handler: str
+
+        :returns: Deferred which will fire with the result or None
+        :rtype: Deferred
+        """
+
         self.logger.trace(_("URL: %s") % url)
         self.logger.trace(_("Handler: %s") % handler)
 
         return self.shortened.runInteraction(self._shorten, url, handler)
 
     def add_handler(self, domain, handler):
+        """API method to add a specialized URL handler.
+
+        This will fail if there's already a handler there for that domain.
+
+        :param domain: The domain to handle, without the 'www.'.
+        :param handler: The callable handler
+
+        :type domain: str
+        :type handler: callable
+
+        :returns: Whether the handler was registered
+        :rtype: bool
+        """
+
         if domain.startswith("www."):
             raise ValueError(_("Domain should not start with 'www.'"))
         if domain not in self.handlers:
@@ -517,6 +605,10 @@ class URLsPlugin(plugin.PluginObject):
         return False
 
     def add_shortener(self, name, handler):
+        """ API method to add a URL shortener. This is the same as
+        `add_handler`, but for URL shortening.
+        """
+
         if name not in self.shorteners:
             self.logger.trace(_("Shortener '%s' registered: %s")
                               % (name, handler))
