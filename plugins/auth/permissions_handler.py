@@ -95,9 +95,9 @@ class permissionsHandler(object):
     def check(self, permission, caller, source, protocol):
         """Check whether someone has a specified permission.
 
-        You can supply `source` and `protocol` as their relevant objects
-        or simple strings - however, `caller` must be a User object, and
-        `protocol` cannot be None.
+        You can supply *source* and *protocol* as their relevant objects
+        or simple strings - however, *caller* must be a User object, and
+        *protocol* cannot be None.
 
         :param permission: The permission to check against
         :param caller: The User to check against
@@ -152,8 +152,8 @@ class permissionsHandler(object):
         """Create an entry for a username in the permissions file.
 
         This will fail if the entry already exists. Entries will, by default,
-        have users set to the `default` group, with no extra permissions and
-        `superadmin` disabled.
+        have users set to the *default* group, with no extra permissions and
+        *superadmin* disabled.
 
         :param user: The username to create the entry for
         :type user: str
