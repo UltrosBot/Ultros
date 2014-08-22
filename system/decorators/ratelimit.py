@@ -23,6 +23,8 @@ class RateLimitExceededError(Exception):
     Raised when the rate limit is exceeded
     """
 
+    pass
+
 
 def _raise_rate_limit_exceeded_error():
     """
