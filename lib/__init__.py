@@ -15,6 +15,7 @@ def get_libs():
 
     This is called automatically when the package is imported.
     """
+
     print ">> Checking for libraries to download.."
 
     definitions = os.listdir("lib/definitions")
@@ -23,6 +24,8 @@ def get_libs():
     downloaded = 0
     failed = 0
     exists = 0
+
+    definitions.remove("__init__.py")
 
     for filename in definitions:
         if not filename.endswith(".json"):
