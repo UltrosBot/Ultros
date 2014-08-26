@@ -1,3 +1,14 @@
+"""
+The storage manager itself
+
+This is in charge of keeping track of all data and config files that
+are used throughout the bot. If you're not using this for that, you're doing
+it wrong.
+
+Submit an issue or pull request if you need some other kind of storage
+format.
+"""
+
 __author__ = 'Gareth Coles'
 
 import system.storage.files as files
@@ -34,6 +45,20 @@ class StorageManager(object):
         self.log = getLogger("Storage")
 
     def get_file(self, obj, storage_type, file_format, path, *args, **kwargs):
+        """
+        Get the instance of a storage file, creating it if it doesn't exist.
+
+        :param obj: The object requesting access to the file, usually *self*
+        :param storage_type: The type of storage file - "data" or "config"
+        :param file_format: The file format, as defined in formats.py
+        :param path: The path to the file, this also acts as the file's
+            identifier
+        :param args: Arguments to pass to the file's constructor
+        :param kwargs: Keyword arguments to pass to the file's constructor
+
+        :return: The storage file
+        """
+
         if ".." in path:
             path = path.replace("..", ".")
 
@@ -70,6 +95,19 @@ class StorageManager(object):
                                           % storage_type)
 
     def release_file(self, obj, storage_type, path):
+        """
+        When you're done with a file, you should release it here.
+
+        Please only do this if your object actually owns the file.
+
+        :param obj: The object requesting access to the file, usually *self*
+        :param storage_type: The type of storage file - "data" or "config"
+        :param path: The path to the file, this also acts as the file's
+            identifier
+
+        :return: Whether the file existed to be unloaded
+        """
+
         if ".." in path:
             path = path.replace("..", ".")
 
@@ -94,8 +132,8 @@ class StorageManager(object):
     def release_files(self, instance):
         """
         Release all loaded files for an instance.
+
         :param instance: Instance to release files from
-        :return:
         """
 
         for key in self.config_files.keys():

@@ -9,14 +9,6 @@ that never needs to be written to programmatically. There is no in-between
 right now, so you'll have to split your plugin storage between data and
 configuration, and this is for a good reason - separating configuration
 and data is very, very important.
-
-We've got three types of configuration here, and they're all key-value
-dict-like objects.
-
-* Yaml-format configuration
-* JSON-format configuration
-* In-memory dict-like configuration, to be inserted where you may need to
-  pass a configuration around but don't have a file to load from.
 """
 
 __author__ = "Gareth Coles"
@@ -54,13 +46,14 @@ class Config(object):
         Override this for admin interfaces, where applicable.
 
         If there are errors on certain lines, you can return something like::
+
             [ [12, "Dick too big"], [15, "Not enough lube"] ]
 
         Otherwise, return [True] for a success, or [False, "reason"] for a
         failure.
 
         :param data: The data to validate
-        :type data: (usually) str
+        :type data: Object
         """
         return [True]
 
@@ -75,13 +68,14 @@ class Config(object):
         to file.
 
         :param data: The data to try to save
-        :type data: (usually) str
+        :type data: Object
         """
         return None
 
     def read(self):
         """
         Override this for admin interfaces, where applicable.
+
         You should return a list such as the following::
 
             [True, "data"] # The first arg is whether the data is editable.
@@ -100,7 +94,7 @@ class Config(object):
         Add a callback to be called when the config file is reloaded.
 
         :param func: The callback to add
-        :type func: function
+        :type func: callable
         """
         if callable(func):
             self.callbacks.append(func)
@@ -109,7 +103,7 @@ class Config(object):
 
     def reload(self, run_callbacks=True):
         """
-        Reload the data file (re-parse it), if applicable.
+        Reload the data file (and re-parse it), if applicable.
 
         This should also call the registered callbacks.
         """
@@ -120,20 +114,18 @@ class Config(object):
 class YamlConfig(Config):
     """
     Configuration object that uses YAML files for storage.
-    Configuration cannot be written. It can only be read. This is to keep
-        configuration separate from data storage.
 
     Pass the constructor a filename - this will be relative to the config
-        folder. The file will be loaded and parsed as a YAML file.
+    folder. The file will be loaded and parsed as a YAML file.
 
     Data access is supplied similarly to a dict: Config[get], but remember
-        that you can't write to it!
+    that you can't write to it!
 
-    If you need to reload the file, use the `.reload()` function. You can also
-        check if a file `.exists`.
+    If you need to reload the file, use the `reload` function. You can also
+    check if a file exists.
 
     For the sake of keeping things sane, all YAML files should end in .yml, but
-        this isn't enforced.
+    this isn't enforced.
     """
 
     representation = "yaml"
@@ -189,13 +181,21 @@ class YamlConfig(Config):
         try:
             yaml.load(data)
         except yaml.YAMLError as e:
-            problem = e.problem
-            problem = problem.replace("could not found", "could not find")
+            mark = None
+            problem = str(e)
 
-            mark = e.problem_mark
+            if hasattr(e, "problem"):
+                problem = e.problem
+                problem = problem.replace("could not found", "could not find")
+
+            if hasattr(e, "problem_mark"):
+                mark = e.problem_mark
+
             if mark is not None:
                 return [[mark.line, problem]]
+
             return [False, problem]
+
         return [True]
 
     def write(self, data):
@@ -228,6 +228,7 @@ class YamlConfig(Config):
     keys.__doc__ = data.keys.__doc__
     items.__doc__ = data.items.__doc__
     values.__doc__ = data.values.__doc__
+    get.__doc__ = data.get.__doc__
 
     def __getitem__(self, y):
         return self.data.__getitem__(y)
@@ -261,12 +262,13 @@ class JSONConfig(Config):
     This class is similar to the YAML config handler, but it uses JSON.
 
     Why does this exist when we have YAML?
+
     ..heck if I know. Don't use this unless it makes more sense than YAML.
-        If you're generating configs using some tool, don't be lazy and just
-        generate JSON. Generate YAML, like a good monkey.
+    If you're generating configs using some tool, don't be lazy and just
+    generate JSON. Generate YAML, like a good monkey.
 
     For sanity's sake, all JSON files should end in .json, but this isn't
-        enforced.
+    enforced.
     """
 
     representation = "json"
@@ -367,6 +369,7 @@ class JSONConfig(Config):
     keys.__doc__ = data.keys.__doc__
     items.__doc__ = data.items.__doc__
     values.__doc__ = data.values.__doc__
+    get.__doc__ = data.get.__doc__
 
     def __getitem__(self, y):
         return self.data.__getitem__(y)
@@ -399,8 +402,8 @@ class MemoryConfig(Config):
     That dict will be used to supply data, instead of a parsed YAML file.
 
     Aside from that, this object emulates the normal YamlConfig. This is
-        intended to be used where Configs are required in the code but you need
-        to supply one programmatically.
+    intended to be used where Configs are required in the code but you need
+    to supply one programmatically.
     """
 
     representation = "json"
@@ -453,6 +456,7 @@ class MemoryConfig(Config):
     keys.__doc__ = data.keys.__doc__
     items.__doc__ = data.items.__doc__
     values.__doc__ = data.values.__doc__
+    get.__doc__ = data.get.__doc__
 
     def __getitem__(self, y):
         return self.data.__getitem__(y)

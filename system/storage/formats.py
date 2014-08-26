@@ -1,3 +1,9 @@
+"""
+Storage file format definitions
+"""
+
+# TODO: Replace this with an enum
+
 __author__ = 'Gareth Coles'
 
 YAML = "Yaml"

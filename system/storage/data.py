@@ -1,20 +1,16 @@
 # coding=utf-8
 
 """
-A bunch of classes for working with data. These are to be used in your
-plugins. There's several different ones to choose from, each will store
-data using a different format and sometimes method. There are, so far, two
-types of data storage, encapsulating four classes.
+A bunch of classes for working with data.
+
+These are to be used in your plugins. There's several different ones to
+choose from, each will store data using a different format and sometimes
+method. There are, so far, three types of data storage, encapsulating a bunch
+of classes.
 
 * Key-value  (Dictionary-like)
-  * YAML-format with dict-like access and thread safety
-  * JSON-format with dict-like access and thread safety
-  * In-memory dict-like storage with tread-safety. This is for plugins to
-    insert where they need to change the data object of something for some
-    reason.
-* Relational (SQL)
-  * SQLite-format with cursors and thread safety. Also supports in-memory
-    storage by specifying ":memory:" as the filename.
+* Relational (SQL databases)
+* Document-based (NoSQL databases)
 """
 
 __author__ = "Gareth Coles"
@@ -57,13 +53,14 @@ class Data(object):
         Override this for admin interfaces, where applicable.
 
         If there are errors on certain lines, you can return something like::
+
             [ [12, "Dick too big"], [15, "Not enough lube"] ]
 
         Otherwise, return [True] for a success, or [False, "reason"] for a
         failure.
 
         :param data: The data to validate
-        :type data: (usually) str
+        :type data: Object
         """
         return [True]
 
@@ -75,13 +72,14 @@ class Data(object):
         applicable.
 
         :param data: The data to try to save
-        :type data: (usually) str
+        :type data: Object
         """
         return None
 
     def read(self):
         """
         Override this for admin interfaces, where applicable.
+
         You should return a list such as the following::
 
             [True, "data"] # The first arg is whether the data is editable.
@@ -121,27 +119,26 @@ class YamlData(Data):
     This is a standard Data object, its base type is a dictionary, so don't
     try to store anything else in this.
 
-    The correct way to use this is with the `with` macro. This ensures both
+    The correct way to use this is with the *with* macro. This ensures both
     thread-safety and that any data edits will be saved when the block has been
     exited.
 
     If you're not writing any data, then you can just use this object in the
-    same way you'd use a dict, but this will not guarantee thread-safety.
+    same way you'd use a dict, but this will not guarantee thread-safety. ::
 
-    Example:
-
-    with data:
-        data["x"]["y"] = "z"
-        thing = data["a"]
-        # Some other stuff
+        with data:
+            data["x"]["y"] = "z"
+            thing = data["a"]
+            # Some other stuff
+        # File is now saved
 
     This object uses dict-like access methods, including iteration, `keys`
     and `values` methods. Use it how you would a dict. Additionally, the
-    following methods are supported..
+    following methods are supported:
 
-    Normal dict getters and setters, length, contains, and deletion methods.
-    `save()` - Force a flush to file.
-    `load()` - Force a reload from file.
+    * Normal dict getters and setters, length, contains, and deletion methods.
+    * `save` - Force a flush to file.
+    * `load` - Force a reload from file.
 
     Note: Data access is "jailed" - you can't load a file from outside the data
     directory.
@@ -282,6 +279,7 @@ class YamlData(Data):
     keys.__doc__ = data.keys.__doc__
     items.__doc__ = data.items.__doc__
     values.__doc__ = data.values.__doc__
+    get.__doc__ = data.get.__doc__
 
     def __enter__(self):
         with self.context_mutex:
@@ -321,10 +319,11 @@ class YamlData(Data):
 
 class MemoryData(Data):
     """
-    In-memory dict-like thread-safe storage. This is to be used as a shim where
-    you may need to insert a data object directly, without loading data from
-    some kind of file. Pass a dictionary instead of a filename to initialize
-    this.
+    In-memory dict-like thread-safe storage.
+
+    This is to be used as a shim where you may need to insert a data object
+    directly, without loading data from some kind of file. Pass a dictionary
+    instead of a filename to initialize this.
     """
 
     editable = False
@@ -399,6 +398,7 @@ class MemoryData(Data):
     keys.__doc__ = data.keys.__doc__
     items.__doc__ = data.items.__doc__
     values.__doc__ = data.values.__doc__
+    get.__doc__ = data.get.__doc__
 
     def __enter__(self):
         with self.mutex:
@@ -586,6 +586,11 @@ class JSONData(Data):
     def get(self, key, default):
         return self.data.get(key, default)
 
+    keys.__doc__ = data.keys.__doc__
+    items.__doc__ = data.items.__doc__
+    values.__doc__ = data.values.__doc__
+    get.__doc__ = data.get.__doc__
+
     def __enter__(self):
         with self.context_mutex:
             self._context_guarded = True
@@ -636,7 +641,7 @@ class DBAPIData(Data):
         d.addCallback(...)
 
     If you need full access to the underlying ConnectionPool, you can use
-    the **with** construct::
+    the *with* construct::
 
         with data as c:
             # Do stuff with c here
@@ -656,32 +661,36 @@ class DBAPIData(Data):
 
         # Connect to local SQLite database
         manager.get_file(
+            self, "data", Formats.DBAPI,
             "sqlite3:data/test.sqlite",
             "data/test.sqlite"
         )
 
         # Connect to remote PostgreSQL with a username and password
         manager.get_file(
+            self, "data", Formats.DBAPI,
             "psycopg2:my.site/database",
-            "host": "my.site",
-            "user": "root",
-            "password": "password",
-            "db": "database"
+            host="my.site",
+            user="root",
+            password="password",
+            db="database"
         )
 
         // Connect to remote MySQL with a username and no password
         manager.get_file(
+            self, "data", Formats.DBAPI,
             "pymysql:my.site/database",
-            "host": "my.site",
-            "user": "root",
-            "db": "database"
+            host="my.site",
+            user="root",
+            db="database"
         )
 
         // Connect to local MySQL with no username or password
         manager.get_file(
+            self, "data", Formats.DBAPI,
             "pymysql:my.site/database",
-            "host": "localhost",
-            "db": "database"
+            host="localhost",
+            db="database"
         )
 
     If there are problems using this database abstraction then you should run
@@ -729,12 +738,18 @@ class DBAPIData(Data):
                                           cp_reconnect=True, **kwargs)
 
     def serialize(self, yielder):
-        # Only used when we don't have a conventional serialization, this
-        # should return some json/yaml that provides a /SAMPLE/ of the data.
-        # It shouldn't return a full set of data - database tables can be huge.
-        # Remember, use the yielder - and remember to .close() it! Seriously,
-        # use a try...finally block or the thread will loop forever. You have
-        # been warned.
+        """
+        Only used when we don't have a conventional serialization.
+
+        This should return a yielder containing some json/yaml that provides a
+        /SAMPLE/ of the data. It shouldn't return a full set of data -
+        database tables can be huge.
+
+        Remember, use the yielder - and remember to .close() it! Seriously,
+        use a try...finally block or the thread will loop forever. You have
+        been warned.
+        """
+
         yielder.close()
         return None
 
@@ -763,7 +778,9 @@ class DBAPIData(Data):
 
 class MongoDBData(Data):
     """
-    Data object that uses MongoDB for storage. ::
+    Data object that uses MongoDB for storage.
+
+    For example, ::
 
         x = storage.get_file(
             self, "data", Formats.MONGO, "localhost/database",
@@ -779,8 +796,8 @@ class MongoDBData(Data):
 
         db = x.dbname
 
-        # Second method - use this if your DB is named `representation`,
-        # `format`, `client`, `info`, `reconnect`, `serialize`, or anything
+        # Second method - use this if your DB is named *representation`*,
+        # *format*, *client*, *info*, *reconnect*, *serialize*, or anything
         # else defined in this class. If you're not sure, use the second
         # method.
 
@@ -789,10 +806,10 @@ class MongoDBData(Data):
 
     Getting a collection and working with it thereafter is pretty simple::
 
-        coll = db.collectionname
-        results = db.find({"key": "value"})
+        coll = db.collection_name
+        results = coll.find({"key": "value"})
 
-        for r in result:
+        for r in results:
             pass  # Do stuff with each document
 
     More info: http://api.mongodb.org/python/2.7rc0/
@@ -827,12 +844,18 @@ class MongoDBData(Data):
         self.client = pymongo.MongoClient(self.url, *args, **kwargs)
 
     def serialize(self, yielder):
-        # Only used when we don't have a conventional serialization, this
-        # should return some json/yaml that provides a /SAMPLE/ of the data.
-        # It shouldn't return a full set of data - database tables can be huge.
-        # Remember, use the yielder - and remember to .close() it! Seriously,
-        # use a try...finally block or the thread will loop forever. You have
-        # been warned.
+        """
+        Only used when we don't have a conventional serialization.
+
+        This should return a yielder containing some json/yaml that provides a
+        /SAMPLE/ of the data. It shouldn't return a full set of data -
+        database collections can be huge.
+
+        Remember, use the yielder - and remember to .close() it! Seriously,
+        use a try...finally block or the thread will loop forever. You have
+        been warned.
+        """
+
         yielder.close()
         return None
 
@@ -861,7 +884,9 @@ class MongoDBData(Data):
 
 class RedisData(Data):
     """
-    Data object that uses Redis for storage. ::
+    Data object that uses Redis for storage.
+
+    For example, ::
 
         x = storage.get_file(
             self, "data", Formats.REDIS, "something unique",
@@ -876,7 +901,8 @@ class RedisData(Data):
         self.logger.info(x["key"])
 
     You can access the standard redis class's fields and methods directly on
-    this class as well.
+    this class as well. This is one of the only storage options that doesn't
+    provide access with the *with* macro at all.
 
     More info: https://github.com/andymccurdy/redis-py/blob/master/README.rst
     """

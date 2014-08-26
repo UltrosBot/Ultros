@@ -1,3 +1,10 @@
+"""
+Base storage file classes and utils
+
+You should never have to use these directly. These are only used by the
+storage manager.
+"""
+
 __author__ = 'Gareth Coles'
 
 import system.storage.config as Config
@@ -28,6 +35,10 @@ file_formats_map = {
 
 
 class StorageFile(object):
+    """
+    Basic storage file wrapper, to be used with the storage manager.
+    """
+
     _ready = False
     _owner = None
 
@@ -56,20 +67,36 @@ class StorageFile(object):
         self.kwargs = kwargs
 
     def load(self):
+        """
+        Load up the defined file.
+        """
+
         self.obj = file_formats_map[self.file_type][self.type_](self.path,
                                                                 *self.args,
                                                                 **self.kwargs)
 
     def get(self):
+        """
+        If the file is ready, get a copy of it.
+        """
+
         if self._ready and self.obj:
             return self.obj
         else:
             raise NotReadyError(_("This file is not ready for use."))
 
     def is_ready(self):
+        """
+        Returns whether the file is ready for use.
+        """
+
         return self._ready
 
     def make_ready(self, caller):
+        """
+        Make the file ready. Needs to be called by the storage manager.
+        """
+
         if isinstance(caller, self.manager_class):
             self._ready = True
         else:
@@ -90,6 +117,10 @@ class StorageFile(object):
         return isinstance(candidate, self._owner.__class__)
 
     def release(self, caller):
+        """
+        Release the file object and let it be garbage collected.
+        """
+
         if isinstance(caller, self.manager_class):
             del self.obj
             self.obj = None
