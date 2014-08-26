@@ -1,6 +1,6 @@
 #!/bin/sh
 
-touch __init__.py
+cp __init__._py __init__.py
 
 if [ $# -eq 0 ]
 then
