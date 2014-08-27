@@ -25,7 +25,7 @@ class TimeDataAggregator(object):
         :param saved_periods: Number of time slices to save
         :param initial_value: Initial value of new time slices (default: 0)
         :param increment_function: Function to increment value (default: += 1)
-        :param decrement_function: Function to decrement value (default: += 1)
+        :param decrement_function: Function to decrement value (default: -= 1)
         """
 
         self.TIME_PERIOD = time_period
