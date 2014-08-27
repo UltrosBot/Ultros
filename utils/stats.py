@@ -106,7 +106,6 @@ class TimeDataAggregator(object):
         Defined here to avoid defining on every call to get_records().
 
         :param record:
-        :return:
         """
 
         return record[self._TIME] != 0

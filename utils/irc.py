@@ -49,9 +49,10 @@ def split_hostmask(hostmask):
     """
     Split a hostmask into its parts and return them.
 
+    ValueError raised when the hostmask is not in the form "*!*@*"
+
     :param hostmask: Hostmask to parse
     :return: [user, ident, host]
-    :exception ValueError: Raised when the hostmask is not in the form "*!*@*"
     """
     posex = hostmask.find(u'!')
     posat = hostmask.find(u'@')

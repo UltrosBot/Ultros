@@ -28,6 +28,7 @@ def dict_swap(d):
 
     :type d: dict
     """
+
     done = {}
     for k, v in d.items():
         done[v] = k
@@ -37,32 +38,37 @@ def dict_swap(d):
 
 def chunker(iterable, chunksize):
     """
-    Split an iterable into chunks of size `chunksize` and return them in a
+    Split an iterable into chunks of size *chunksize* and return them in a
     list.
 
     :param iterable: An iterable to split into chunks
     :param chunksize: The size of the chunks that should be returned
     """
+
     for i, c in enumerate(iterable[::chunksize]):
         yield iterable[i * chunksize: (i + 1) * chunksize]
 
 
-def string_split_readable(input, length):
+def string_split_readable(inp, length):
     """
     Convenience function to chunk a string into parts of a certain length,
-    whilst being wary of spaces. This means that chunks will only be
-    split on spaces, which means some chunks will be shorter, but it also
-    means that the resulting list will only contain readable strings.
+    whilst being wary of spaces.
 
-    :param input: The string to be split
+    This means that chunks will only be split on spaces, which means some
+    chunks will be shorter, but it also means that the resulting list will
+    only contain readable strings.
+
+    ValueError is thrown if there's a word that's longer than the max chunk
+    size.
+
+    :param inp: The string to be split
     :param length: Maximum length of the chunks to return
     :return: List containing the split chunks
-    :except ValueError: Thrown if there's a word that's longer than the max \
- chunk size.
     """
+
     done = []
     current = ""
-    for word in input.split():
+    for word in inp.split():
         if len(current) == length:
             done.append(current)
             current = ""
@@ -113,13 +119,13 @@ def str_to_regex_flags(string):
 
     The supported flags are each of "dilmsux".
 
-    * `d` - Debug
-    * `i` - Ignore case
-    * `l` - Locale dependency
-    * `m` - Multi-line `^` and `$`
-    * `s` - Make `.` match newlines
-    * `u` - Unicode dependency
-    * `x` - Verbose (pretty) regexes
+    * *d* - Debug
+    * *i* - Ignore case
+    * *l* - Locale dependency
+    * *m* - Multi-line *^* and *$*
+    * *s* - Make *.* match newlines
+    * *u* - Unicode dependency
+    * *x* - Verbose (pretty) regexes
 
     :param string: The string of flags
     :type string: str
@@ -127,6 +133,7 @@ def str_to_regex_flags(string):
     :return: The OR'd set of regex flags
     :rtype: int
     """
+
     string = string.lower()
 
     result = 0

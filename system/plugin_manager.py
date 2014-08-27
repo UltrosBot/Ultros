@@ -245,8 +245,8 @@ class PluginFileAnalyzerWithYamlInfoFile(PluginFileAnalyzerWithInfoFile):
         Return a dictionary with name and path of the plugin as well
         as the yaml data containing the info.
 
-        .. note:: This is supposed to be used internally by subclasses
-                  and decorators.
+        **Note** - This is supposed to be used internally by subclasses and
+        decorators.
         """
         # now we can consider the file as a serious candidate
         if not (isinstance(filename, str) or isinstance(filename, unicode)):

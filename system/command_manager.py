@@ -1,7 +1,7 @@
 # coding=utf-8
-import shlex
-
 __author__ = "Gareth Coles"
+
+import shlex
 
 from system.decorators.ratelimit import RateLimitExceededError
 from system.enums import CommandState
