@@ -686,6 +686,8 @@ class Protocol(ChannelsProtocol):
     def handle_msg_textmessage(self, message):
         if message.actor in self.users:
             user_obj = self.users[message.actor]
+            # TODO: Replace this with proper formatting stuff when implemented
+            # Perhaps a new command-handler/event parameter for raw and parsed
             msg = html_to_text(message.message, True)
 
             if message.channel_id:
@@ -698,7 +700,7 @@ class Protocol(ChannelsProtocol):
                 channel_obj = user_obj
 
             result = self.command_manager.process_input(
-                message, user_obj, channel_obj, self,
+                msg, user_obj, channel_obj, self,
                 self.control_chars, self.nickname
             )
 
@@ -741,7 +743,7 @@ class Protocol(ChannelsProtocol):
 
             if not event.cancelled:
                 second_event = general_events.MessageReceived(
-                    self, user_obj, channel_obj, event.message, "message"
+                    self, user_obj, channel_obj, msg, "message"
                 )
 
                 self.event_manager.run_callback(
