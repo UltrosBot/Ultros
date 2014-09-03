@@ -16,6 +16,12 @@ channel: # Channel to join on connect, specified either by name or id
   name:
   id:
 
+audio:  # Audio (voice comm) settings
+  # Should automatically mute/deafen self on join? Deafening self is recommended
+  # if you do not have any plugins that use the audio, as it will save on processing.
+  should_mute_self: True
+  should_deafen_self: True
+
 control_chars: "." # What messages must be prefixed with to count as a command.
                    # This doesn't have to be just one character!
                    # You can also use {NICK} in place of the bot's current nick.
