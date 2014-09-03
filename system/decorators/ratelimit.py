@@ -33,6 +33,7 @@ def _raise_rate_limit_exceeded_error():
     raise RateLimitExceededError("Rate limit exceeded")
 
 
+# This was added before the TokenBucket, which is why it doesn't use it.
 class RateLimiter(object):
     """
     The rate-limiter decorator. See `__init__` for details.
