@@ -70,8 +70,12 @@ class Factory(protocol.ClientFactory):
                 current_protocol = importlib.import_module(
                     "system.protocols.%s.protocol" % self.ptype)
             else:
+                del self.protocol
                 self.logger.debug(_("Reloading module."))
                 current_protocol = reload(self.protocol_class)
+
+                if hasattr(current_protocol, "reload"):
+                    current_protocol.reload()
             self.protocol_class = current_protocol
         except ImportError:
             self.logger.exception(

@@ -10,6 +10,9 @@ Also, for using tabs. Fuck, I hate tabs. Hasn't anyone heard of the PEP?
 """
 
 from distutils.version import StrictVersion
+import sys
+import imp
+from yapsy import NormalizePluginNameForModuleName, log
 
 __author__ = 'Gareth Coles'
 
@@ -342,6 +345,7 @@ class YamlPluginManagerSingleton(PluginManager):
             Thus we may use it if provided. Returns the (possibly modified)
             *plugin_locator*.
             """
+
             specific_info_ext = plugin_info_ext is not None
             specific_locator = plugin_locator is not None
             res = None

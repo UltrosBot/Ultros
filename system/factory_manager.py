@@ -169,6 +169,7 @@ class Manager(object):
 
         if self.main_config["plugins"]:
             todo = []
+
             for info in self.plugman.getAllPlugins():
                 name = info.name
                 if info.dependencies:
@@ -400,6 +401,16 @@ class Manager(object):
                 % name)
             return PROTOCOL_SETUP_ERROR
 
+    # Reload stuff
+
+    def reload_protocol(self, name):
+        factory = self.get_factory(name)
+
+        if name is not None:
+            factory.shutdown()
+            factory.setup()
+            return True
+
     # Unload stuff
 
     def unload_plugin(self, name):
@@ -415,15 +426,22 @@ class Manager(object):
         """
 
         if name in self.loaded_plugins:
-            plug = self.plugman.getPluginByName(name).plugin_object
+            plugin_info = self.plugman.getPluginByName(name)
+
+            plug = plugin_info.plugin_object
+
             self.commands.unregister_commands_for_owner(plug)
+            self.event_manager.remove_callbacks_for_plugin(name)
+            self.storage.release_files(plug)
+
             try:
                 self.plugman.deactivatePluginByName(name)
             except Exception:
                 self.logger.exception(_("Error disabling plugin: %s") % name)
-            self.event_manager.remove_callbacks_for_plugin(name)
-            self.storage.release_files(plug)
+
             del self.loaded_plugins[name]
+            del plug.info
+
             return PLUGIN_UNLOADED
         return PLUGIN_NOT_EXISTS
 
