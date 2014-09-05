@@ -276,23 +276,29 @@ class ManagementPlugin(plugin.PluginObject):
                                       "is not loaded.") % name)
                     return
 
-                result = self.factory_manager.load_plugin(name, unload=True)
+                result = self.factory_manager.reload_plugin(name)
 
-                if result == PLUGIN_NOT_EXISTS:
-                    source.respond(__("Unknown plugin: %s") % name)
-                elif result == PLUGIN_LOAD_ERROR:
-                    source.respond(__("Unable to reload plugin %s: An error "
-                                      "occurred.") % name)
-                elif result == PLUGIN_DEPENDENCY_MISSING:
-                    source.respond(__("Unable to reload plugin %s: Another "
-                                      "plugin this one depends on is missing.")
-                                   % name)
-                elif result == PLUGIN_LOADED:
+                if result:
                     source.respond(__("Reloaded plugin: %s") % name)
-                else:  # THIS SHOULD NEVER HAPPEN
-                    source.respond(__("Error while reloading plugin %s: "
-                                      "Unknown return code %s")
-                                   % (name, result))
+                else:
+                    source.respond(__("Unknown plugin: %s") % name)
+
+                # if result == PLUGIN_NOT_EXISTS:
+                #     source.respond(__("Unknown plugin: %s") % name)
+                # elif result == PLUGIN_LOAD_ERROR:
+                #     source.respond(__("Unable to reload plugin %s: An error "
+                #                       "occurred.") % name)
+                # elif result == PLUGIN_DEPENDENCY_MISSING:
+                #     source.respond(__("Unable to reload plugin %s: Another "
+                #                       "plugin this one depends on is "
+                #                       "missing.")
+                #                    % name)
+                # elif result == PLUGIN_LOADED:
+                #     source.respond(__("Reloaded plugin: %s") % name)
+                # else:  # THIS SHOULD NEVER HAPPEN
+                #     source.respond(__("Error while reloading plugin %s: "
+                #                       "Unknown return code %s")
+                #                    % (name, result))
 
                 break
             if case("unload"):
