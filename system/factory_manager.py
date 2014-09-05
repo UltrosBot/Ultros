@@ -403,16 +403,6 @@ class Manager(object):
 
     # Reload stuff
 
-    def reload_plugin(self, name):
-        if not self.get_plugin(name):
-            return False
-
-        self.unload_plugin(name)
-        self.plugman.reloadPlugin(name)
-        self.load_plugin(name)
-
-        return True
-
     def reload_protocol(self, name):
         factory = self.get_factory(name)
 
