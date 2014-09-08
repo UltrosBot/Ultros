@@ -131,6 +131,7 @@ def main():
     try:
         logger.debug("Starting..")
         manager = Manager()
+        manager.setup()
         manager.run()
 
     except Exception:

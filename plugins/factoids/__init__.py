@@ -8,7 +8,7 @@ from system.event_manager import EventManager
 
 import system.plugin as plugin
 
-from system.plugin_manager import YamlPluginManagerSingleton
+from system.plugins.manager import PluginManager
 from system.protocols.generic.channel import Channel
 from system.storage.formats import DBAPI
 from system.storage.manager import StorageManager
@@ -51,7 +51,7 @@ class FactoidsPlugin(plugin.PluginObject):
         self.commands = CommandManager()
         self.events = EventManager()
         self.storage = StorageManager()
-        self.plugman = YamlPluginManagerSingleton()
+        self.plugman = PluginManager()
 
         # ## Set up database
         self.database = self.storage.get_file(
@@ -517,7 +517,11 @@ class FactoidsPlugin(plugin.PluginObject):
     def web_routes(self, event=None):
         self.logger.info(_("Registering web routes.."))
 
-        web = self.plugman.getPluginByName("Web").plugin_object
+        web = self.plugman.get_plugin("Web")
+
+        if web is None:
+            self.logger.debug("Web plugin not found.")
+            return
 
         web.add_route("/factoids", ["GET", "POST"], self.web_factoids)
         web.add_route("/factoids/", ["GET", "POST"], self.web_factoids)
@@ -525,7 +529,11 @@ class FactoidsPlugin(plugin.PluginObject):
         web.add_navbar_entry("Factoids", "/factoids/", "text file outline")
 
     def web_factoids_callback_success(self, result, y, objs):
-        web = self.plugman.getPluginByName("Web").plugin_object
+        web = self.plugman.get_plugin("Web")
+
+        if web is None:
+            self.logger.debug("Web plugin not found.")
+            return
 
         fragment = "<table class=\"ui celled table segment table-sortable\">"
         fragment += "<thead>" \
@@ -552,13 +560,22 @@ class FactoidsPlugin(plugin.PluginObject):
                                    r=objs)
 
     def web_factoids_callback_fail(self, failure, y, objs):
-        web = self.plugman.getPluginByName("Web").plugin_object
+        web = self.plugman.get_plugin("Web")
+
+        if web is None:
+            self.logger.debug("Web plugin not found.")
+            return
 
         y.data = web.wrap_template(_("Error: %s") % failure, _("Factoids"),
                                    _("Factoids"), r=objs)
 
     def web_factoids(self):
-        web = self.plugman.getPluginByName("Web").plugin_object
+        web = self.plugman.get_plugin("Web")
+
+        if web is None:
+            self.logger.debug("Web plugin not found.")
+            return
+
         objs = web.get_objects()
 
         r = web.check_permission(self.PERM_GET % "web", r=objs)

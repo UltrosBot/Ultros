@@ -33,7 +33,6 @@ class PluginManager(object):
 
         self.module = module
         self.path = path
-        self.scan()
 
     def scan(self, output=True):
         """
@@ -42,7 +41,7 @@ class PluginManager(object):
         :param output: Whether to output info messages
         """
 
-        self.objects = {}
+        self.info_objects = {}
         files = glob.glob("%s/*.plug" % self.path)
 
         if not files:
@@ -140,9 +139,7 @@ class PluginManager(object):
                 self.log.error("This was a load operation - THIS SHOULD NEVER "
                                "HAPPEN")
             elif result is PluginState.DependencyMissing:
-                self.log.warn("Unable to load plugin '%s': Plugins that "
-                              "this plugin depends upon are not "
-                              "available." % name)
+                pass  # Already output
 
     def load_plugin(self, name):
         if name not in self.info_objects:
@@ -154,6 +151,8 @@ class PluginManager(object):
         info = self.info_objects[name]
 
         for dep in info["core"].get("dependencies", []):
+            dep = dep.lower()
+
             if dep not in self.objects:
                 return PluginState.DependencyMissing
 
@@ -193,7 +192,7 @@ class PluginManager(object):
 
             self.objects[name] = obj
         except ImportError:
-            self.log.error("Unable to find module for plugin: %s" % name)
+            self.log.exception("Unable to import plugin: %s" % name)
             self.log.debug("Module: %s" % module)
             return PluginState.LoadError
         except Exception:
@@ -203,7 +202,7 @@ class PluginManager(object):
             try:
                 info["module"] = module
                 obj.add_variables(Info(info), self.factory_manager)
-                obj.logger = getLogger(name)
+                obj.logger = getLogger("Plugin: %s" % name)
                 obj.setup()
             except Exception:
                 self.log.exception("Error setting up plugin: %s" % name)
@@ -240,7 +239,7 @@ class PluginManager(object):
         obj = self.objects[name]
 
         self.factory_manager.commands.unregister_commands_for_owner(obj)
-        self.factory_manager.event_manager.remove_callbacks_for_plugin(name)
+        self.factory_manager.event_manager.remove_callbacks_for_plugin(obj)
         self.factory_manager.storage.release_files(obj)
 
         try:
@@ -252,7 +251,41 @@ class PluginManager(object):
         return PluginState.Unloaded
 
     def reload_plugins(self, output=True):
-        pass
+        plugins = self.objects.keys()
+        self.scan(output)
 
-    def reload_plugin(self):
-        pass
+        for name in plugins:
+            result = self.reload_plugin(name)
+
+            if result is PluginState.LoadError:
+                pass  # Already output
+            elif result is PluginState.NotExists:
+                self.log.warn("Plugin has disappeared: %s" % name)
+            elif result is PluginState.Loaded:
+                if output:
+                    self.log.info("Reloaded plugin: %s" % name)
+            elif result is PluginState.AlreadyLoaded:
+                if output:
+                    self.log.warn("Plugin already loaded: %s" % name)
+            elif result is PluginState.Unloaded:
+                pass  # Should never happen
+            elif result is PluginState.DependencyMissing:
+                pass  # Already output
+
+    def reload_plugin(self, name):
+        result = self.unload_plugin(name)
+
+        if result is not PluginState.Unloaded:
+            return result
+
+        return self.load_plugin(name)
+
+    def get_plugin(self, name):
+        if name in self.objects:
+            return self.objects[name]
+        return None
+
+    def get_plugin_info(self, name):
+        if name in self.info_objects:
+            return self.info_objects[name]
+        return False

@@ -229,13 +229,18 @@ class EventManager(object):
         Remove all handlers for a certain plugin.
 
         :param plugin: Name of the plugin
-        :type plugin: str
+        :type plugin: str, PluginObject
         """
+
         current = self.callbacks.items()
+
+        if not isinstance(plugin, str):
+            plugin = plugin.info.name
+
         for key, value in current:
             done = []
             for cb in value:
-                if not cb["name"] == plugin:
+                if cb["name"] != plugin:
                     done.append(cb)
             if len(done) > 0:
                 self.callbacks[key] = self._sort(done)

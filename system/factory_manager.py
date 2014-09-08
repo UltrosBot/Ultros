@@ -2,13 +2,13 @@
 
 __author__ = "Gareth Coles"
 
-import inspect
 import signal
 
 from twisted.internet import reactor
 
 from system.command_manager import CommandManager
 from system.constants import *
+from system.decorators.log import deprecated
 from system.enums import PluginState
 from system.event_manager import EventManager
 from system.events.general import PluginsLoadedEvent, ReactorStartedEvent
@@ -48,25 +48,28 @@ class Manager(object):
     #: The main configuration is stored here.
     main_config = None
 
-    #: Storage of /all/ of the plugins, loaded or not.
-    all_plugins = {}
-
-    #: Storage of all of the loaded plugins.
-    loaded_plugins = {}
-
-    #: Storage of every plugin that depends on another plugin.
-    plugins_with_dependencies = {}
-
     #: Whether the manager is already running or not
     running = False
 
     def __init__(self):
-        # Set up the logger
-
-        signal.signal(signal.SIGINT, self.signal_callback)
-
+        self.commands = CommandManager()
+        self.event_manager = EventManager()
         self.logger = getLogger("Manager")
+        self.plugman = PluginManager(self)
         self.yapsy_logger = getLogger("yapsy")
+
+        self.metrics = None
+
+    @property
+    def all_plugins(self):
+        return self.plugman.info_objects
+
+    @property
+    def loaded_plugins(self):
+        return self.plugman.objects
+
+    def setup(self):
+        signal.signal(signal.SIGINT, self.signal_callback)
 
         self.yapsy_logger.debug_ = self.yapsy_logger.debug
         self.yapsy_logger.debug = self.yapsy_logger.trace
@@ -75,12 +78,7 @@ class Manager(object):
         self.main_config = self.storage.get_file(self, "config", YAML,
                                                  "settings.yml")
 
-        self.commands = CommandManager()
         self.commands.set_factory_manager(self)
-
-        self.event_manager = EventManager()
-
-        self.plugman = PluginManager(self)
 
         self.load_config()  # Load the configuration
 
@@ -89,7 +87,7 @@ class Manager(object):
         except Exception:
             self.logger.exception(_("Error setting up metrics."))
 
-        self.collect_plugins()  # Collect the plugins
+        self.plugman.scan()
         self.load_plugins()  # Load the configured plugins
         self.load_protocols()  # Load and set up the protocols
 
@@ -171,14 +169,9 @@ class Manager(object):
 
     def load_plugin(self, name, unload=False):
         """
-        Load a single plugin by name. This can return one of the following,
-        from system.constants:
+        Load a single plugin by name.
 
-        * PLUGIN_ALREADY_LOADED
-        * PLUGIN_DEPENDENCY_MISSING
-        * PLUGIN_LOAD_ERROR
-        * PLUGIN_LOADED
-        * PLUGIN_NOT_EXISTS
+        This will return one of the system.enums.PluginState values.
 
         :param name: The plugin to load.
         :type name: str
@@ -198,70 +191,14 @@ class Manager(object):
 
                 result = self.plugman.load_plugin(name)
 
-        # TODO: Continue work here
+        return result
 
-
-        if name in self.all_plugins:
-            if name in self.loaded_plugins:
-                if unload:
-                    res = self.unload_plugin(name)
-                    if res != PLUGIN_UNLOADED:
-                        return res
-                else:
-                    return PLUGIN_ALREADY_LOADED
-
-            info = self.plugman.getPluginByName(name)
-            if info.dependencies:
-                depends = info.dependencies
-                self.logger.trace(_("Dependencies for %s: %s") % (name,
-                                                                  depends))
-                for d_name in depends:
-                    if d_name not in self.all_plugins:
-                        self.logger.error(_("Error loading plugin %s: the"
-                                            " plugin relies on another plugin "
-                                            "(%s), but it is not present.")
-                                          % (name, d_name))
-                        return PLUGIN_DEPENDENCY_MISSING
-                for d_name in depends:
-                    result = self.load_plugin(d_name)
-                    if result is not PLUGIN_LOADED:
-                        if result is PLUGIN_ALREADY_LOADED:
-                            continue
-
-                        self.logger.warn(_("Unable to load dependency: %s")
-                                         % d_name)
-                        return result
-
-            try:
-                self.plugman.activatePluginByName(info.name)
-                self.logger.debug(_("Loading plugin: %s")
-                                  % info.plugin_object)
-                self.logger.trace(_("Location: %s") % inspect.getfile
-                                  (info.plugin_object.__class__))
-                info.plugin_object.add_variables(info, self)
-                info.plugin_object.logger = getLogger(name)
-                self.logger.trace(_("Running setup method.."))
-                info.plugin_object.setup()
-            except Exception:
-                self.logger.exception(_("Unable to load plugin: %s v%s")
-                                      % (name, info.version))
-                self.plugman.deactivatePluginByName(name)
-                return PLUGIN_LOAD_ERROR
-            else:
-                self.loaded_plugins[name] = info
-                self.logger.info(_("Loaded plugin: %s v%s")
-                                 % (name, info.version))
-                if info.copyright:
-                    self.logger.info(_("Licensing: %s") % info.copyright)
-                return PLUGIN_LOADED
-        return PLUGIN_NOT_EXISTS
-
+    @deprecated("Use the plugin manager directly")
     def collect_plugins(self):
         """
         Collect all possible plugin candidates.
         """
 
-        self.all_plugins = {}
         self.plugman.scan()
 
     def load_protocols(self):
@@ -339,6 +276,18 @@ class Manager(object):
 
     # Reload stuff
 
+    @deprecated("Use the plugin manager directly")
+    def reload_plugin(self, name):
+        """
+        Attempt to reload a plugin by name.
+
+        This will return one of the system.enums.PluginState values.
+
+        :param name: The name of the plugin
+        :type name: str
+        """
+        return self.plugman.reload_plugin(name)
+
     def reload_protocol(self, name):
         factory = self.get_factory(name)
 
@@ -349,37 +298,18 @@ class Manager(object):
 
     # Unload stuff
 
+    @deprecated("Use the plugin manager directly")
     def unload_plugin(self, name):
         """
-        Attempt to unload a plugin by name. This can return one of the
-        following, from system.constants:
+        Attempt to unload a plugin by name.
 
-        * PLUGIN_NOT_EXISTS
-        * PLUGIN_UNLOADED
+        This will return one of the system.enums.PluginState values.
 
         :param name: The name of the plugin
         :type name: str
         """
 
-        if name in self.loaded_plugins:
-            plugin_info = self.plugman.getPluginByName(name)
-
-            plug = plugin_info.plugin_object
-
-            self.commands.unregister_commands_for_owner(plug)
-            self.event_manager.remove_callbacks_for_plugin(name)
-            self.storage.release_files(plug)
-
-            try:
-                self.plugman.deactivatePluginByName(name)
-            except Exception:
-                self.logger.exception(_("Error disabling plugin: %s") % name)
-
-            del self.loaded_plugins[name]
-            del plug.info
-
-            return PLUGIN_UNLOADED
-        return PLUGIN_NOT_EXISTS
+        return self.plugman.unload_plugin(name)
 
     def unload_protocol(self, name):  # Removes with a shutdown
         """
@@ -421,9 +351,8 @@ class Manager(object):
         for name in self.factories.keys():
             self.logger.info(_("Unloading protocol: %s") % name)
             self.unload_protocol(name)
-        for name in self.loaded_plugins.keys():
-            self.logger.info(_("Unloading plugin: %s") % name)
-            self.unload_plugin(name)
+
+        self.plugman.unload_plugins()
 
         if reactor.running:
             try:
@@ -461,6 +390,7 @@ class Manager(object):
             return self.factories[name]
         return None
 
+    @deprecated("Use the plugin manager directly")
     def get_plugin(self, name):
         """
         Get the insatnce of a plugin, by name.
@@ -470,10 +400,7 @@ class Manager(object):
         :return: The plugin, or None if it isn't loaded.
         """
 
-        plug = self.plugman.getPluginByName(name)
-        if plug:
-            return plug.plugin_object
-        return plug
+        return self.plugman.get_plugin(name)
 
     def remove_protocol(self, protocol):  # Removes without shutdown
         """
