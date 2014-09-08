@@ -9,11 +9,12 @@ from twisted.internet import reactor
 
 from system.command_manager import CommandManager
 from system.constants import *
+from system.enums import PluginState
 from system.event_manager import EventManager
 from system.events.general import PluginsLoadedEvent, ReactorStartedEvent
 from system.factory import Factory
 from system.metrics import Metrics
-from system.plugin_manager import YamlPluginManagerSingleton
+from system.plugins.manager import PluginManager
 from system.singleton import Singleton
 from system.storage.formats import YAML
 from system.storage.config import Config
@@ -79,9 +80,7 @@ class Manager(object):
 
         self.event_manager = EventManager()
 
-        self.plugman = YamlPluginManagerSingleton()
-        self.plugman.setPluginPlaces(["plugins"])
-        self.plugman.setPluginInfoExtension("plug")
+        self.plugman = PluginManager(self)
 
         self.load_config()  # Load the configuration
 
@@ -165,82 +164,10 @@ class Manager(object):
         self.logger.trace(_("Configured plugins: %s")
                           % ", ".join(self.main_config["plugins"]))
 
-        self.logger.debug(_("Collecting plugins.."))
+        self.plugman.load_plugins(self.main_config.get("plugins", []))
 
-        if self.main_config["plugins"]:
-            todo = []
-
-            for info in self.plugman.getAllPlugins():
-                name = info.name
-                if info.dependencies:
-                    self.plugins_with_dependencies[name] = info
-                else:
-                    todo.append(info)
-
-            self.logger.trace(_("Loading plugins that have no dependencies "
-                                "first."))
-
-            for info in todo:
-                name = info.name
-                self.logger.trace(_("Checking if plugin '%s' is configured to "
-                                    "load..") % name)
-                if name in self.main_config["plugins"]:
-                    self.logger.info(_("Attempting to load plugin: %s") % name)
-                    result = self.load_plugin(name)
-                    if result is not PLUGIN_LOADED:
-                        if result is PLUGIN_LOAD_ERROR:
-                            self.logger.warn(_("Error detected while loading "
-                                               "plugin."))
-                        elif result is PLUGIN_ALREADY_LOADED:
-                            self.logger.warn(_("Plugin already loaded."))
-                        elif result is PLUGIN_NOT_EXISTS:
-                            self.logger.warn(_("Plugin doesn't exist."))
-                        elif result is PLUGIN_DEPENDENCY_MISSING:
-                            # THIS SHOULD NEVER HAPPEN!
-                            self.logger.warn(_("Plugin dependency is "
-                                               "missing."))
-
-            self.logger.trace(_("Loading plugins that have dependencies."))
-
-            for name, info in self.plugins_with_dependencies.items():
-                self.logger.trace(_("Checking if plugin '%s' is configured to "
-                                    "load..") % name)
-                if name in self.main_config["plugins"]:
-                    self.logger.info(_("Attempting to load plugin: %s") % name)
-                    try:
-                        result = self.load_plugin(name)
-                    except RuntimeError as e:
-                        message = e.message
-                        if message == "maximum recursion depth exceeded " \
-                                      "while calling a Python object":
-                            self.logger.error(_("Dependency loop detected "
-                                                "while loading: %s") % name)
-                            self.logger.error(_("This plugin will not be "
-                                                "available."))
-                        elif message == "maximum recursion depth exceeded":
-                            self.logger.error(_("Dependency loop detected "
-                                                "while loading: %s") % name)
-                            self.logger.error(_("This plugin will not be "
-                                                "available."))
-                        else:
-                            raise e
-                    except Exception as e:
-                        raise e
-                    if result is not PLUGIN_LOADED:
-                        if result is PLUGIN_LOAD_ERROR:
-                            self.logger.warn(_("Error detected while loading "
-                                               "plugin."))
-                        elif result is PLUGIN_ALREADY_LOADED:
-                            self.logger.warn(_("Plugin already loaded."))
-                        elif result is PLUGIN_NOT_EXISTS:
-                            self.logger.warn(_("Plugin doesn't exist."))
-                        elif result is PLUGIN_DEPENDENCY_MISSING:
-                            self.logger.warn(_("Plugin dependency is "
-                                               "missing."))
-            event = PluginsLoadedEvent(self, self.loaded_plugins)
-            self.event_manager.run_callback("PluginsLoaded", event)
-        else:
-            self.logger.info(_("No plugins are configured to load."))
+        event = PluginsLoadedEvent(self, self.plugman.objects)
+        self.event_manager.run_callback("PluginsLoaded", event)
 
     def load_plugin(self, name, unload=False):
         """
@@ -259,6 +186,20 @@ class Manager(object):
         :param unload: Whether to unload the plugin, if it's already loaded.
         :type unload: bool
         """
+
+        result = self.plugman.load_plugin(name)
+
+        if result is PluginState.AlreadyLoaded:
+            if unload:
+                result_two = self.plugman.unload_plugin(name)
+
+                if result_two is not PluginState.Unloaded:
+                    return result_two
+
+                result = self.plugman.load_plugin(name)
+
+        # TODO: Continue work here
+
 
         if name in self.all_plugins:
             if name in self.loaded_plugins:
@@ -318,15 +259,10 @@ class Manager(object):
     def collect_plugins(self):
         """
         Collect all possible plugin candidates.
-
-        If you're calling this, you should unload all of the plugins
-        first.
         """
 
         self.all_plugins = {}
-        self.plugman.collectPlugins()
-        for info in self.plugman.getAllPlugins():
-            self.all_plugins[info.name] = info
+        self.plugman.scan()
 
     def load_protocols(self):
         """

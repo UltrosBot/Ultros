@@ -1,5 +1,7 @@
 __author__ = 'Gareth Coles'
 
+import weakref
+
 
 class Info(object):
 
@@ -8,7 +10,7 @@ class Info(object):
     core = None
     info = None
 
-    def __init__(self, yaml_data):
+    def __init__(self, yaml_data, plugin_object=None):
         """
 
         :param yaml_data:
@@ -17,6 +19,9 @@ class Info(object):
         """
 
         self.data = yaml_data
+
+        if plugin_object:
+            self._plugin_object = weakref.ref(plugin_object)
 
         for key in yaml_data.keys():
             obj = yaml_data[key]
@@ -34,3 +39,9 @@ class Info(object):
             self.dependencies = self.core.dependencies
         else:
             self.dependencies = []
+
+    @property
+    def plugin_object(self):
+        if hasattr(self, "_plugin_object"):
+            return self._plugin_object()
+        return None

@@ -65,14 +65,16 @@ class PluginManager(object):
                 self.info_objects[name] = obj
 
                 if output:
-                    self.log.info("Found plugin: %s" % name)
+                    self.log.debug("Found plugin info: %s" % name)
             except Exception:
                 self.log.exception("Error loading info file: %s" % fn)
 
         if output:
             self.log.info("%s plugins found." % len(self.info_objects))
 
-    def load_plugins(self, plugins, passes=0, max_passes=10, output=True):
+    def load_plugins(self, plugins_, passes=0, max_passes=10, output=True):
+        plugins = [plug.lower() for plug in plugins_]
+
         if passes > max_passes:
             self.log.warn("Possible dependency loop detected!")
             self.log.warn("Attempting to load: %s" % ", ".join(plugins))
@@ -97,6 +99,11 @@ class PluginManager(object):
                 dep = dep.lower()
 
                 if dep not in self.objects:
+                    if dep not in plugins:
+                        self.log.warn("Unable to load plugin: %s - It "
+                                      "depends on '%s' but it's not going to "
+                                      "be loaded" % (name, dep))
+                        continue
                     self.log.debug(
                         "Pass %s/%s | Needs dep: %s"
                         % (passes, max_passes, dep)
@@ -138,7 +145,7 @@ class PluginManager(object):
                               "available." % name)
 
     def load_plugin(self, name):
-        if not name in self.info_objects:
+        if name not in self.info_objects:
             return PluginState.NotExists
 
         if name in self.objects:
@@ -153,30 +160,29 @@ class PluginManager(object):
         module = "%s.%s" % (self.module, info["core"]["module"])
 
         try:
-            self.log.debug("Module: %s" % module)
+            self.log.trace("Module: %s" % module)
             obj = None
 
             if module in sys.modules:
-                self.log.debug("Module exists, reloading..")
+                self.log.trace("Module exists, reloading..")
                 reload(sys.modules[module])
 
             module_obj = importlib.import_module(module)
 
-            self.log.debug("Module object: %s" % module_obj)
+            self.log.trace("Module object: %s" % module_obj)
 
             for name_, clazz in inspect.getmembers(module_obj):
-                self.log.debug("Member: %s" % name_)
+                self.log.trace("Member: %s" % name_)
 
                 if inspect.isclass(clazz):
-                    self.log.debug("It's a class!")
+                    self.log.trace("It's a class!")
 
                     if clazz.__module__ == module:
-                        self.log.debug("It's the right module!")
+                        self.log.trace("It's the right module!")
 
                         for parent in clazz.__bases__:
-                            self.log.debug("Parent: %s" % parent)
                             if parent == PluginObject:
-                                self.log.debug("It's the right subclass!")
+                                self.log.trace("It's the right subclass!")
                                 obj = clazz()
 
             if obj is None:
