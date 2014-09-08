@@ -2,7 +2,8 @@ __author__ = 'Gareth Coles'
 
 from enum import Enum
 
-"""Enums for various different things.
+"""
+Enums for various different things.
 
 These will mostly be used to confer some kind of state.
 """
@@ -21,7 +22,7 @@ class CommandState(Enum):
     * Error - There was an error while running the command.
 
     Remember, this is an enum - don't try to use the values directly or
-    instanciate the class!
+    instantiate the class!
     """
 
     RateLimited = -4

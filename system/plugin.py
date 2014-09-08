@@ -53,18 +53,11 @@ class PluginObject(IPlugin):
         """
 
         self.info = info
-        self.module = self.info.path.replace("\\", "/").split("/")[-1]
+        try:
+            self.module = self.info.path.replace("\\", "/").split("/")[-1]
+        except:
+            self.module = self.info.module
         self.factory_manager = factory_manager
-
-    def activate(self):
-        """
-        Called when the plugin is loaded.
-
-        Not to be used for setup! You probably don't need this at all. It's
-        a Yapsy convention, but critical objects aren't available in this
-        function call.
-        """
-        super(PluginObject, self).activate()
 
     def deactivate(self):
         """
