@@ -87,61 +87,76 @@ class PluginManager(object):
             if extra > 1:
                 self.log.warning("%s plugins have disappeared." % extra)
 
-    def load_plugins(self, plugins, passes=0, max_passes=10, output=True):
-        if passes > max_passes:
-            self.log.warn("Possible dependency loop detected!")
-            self.log.warn("Attempting to load: %s" % ", ".join(plugins))
-            return False
+    def load_plugins(self, plugins, output=True):
+        # Plugins still needing loaded
+        to_load = []
+        # Final, ordered, list of plugins to load
+        load_order = []
 
+        # Get plugin info objects, etc.
         for name in plugins:
             name = name.lower()
 
             if name not in self.info_objects:
                 if output:
-                    self.log.warn("Unknown plugin: %s" % name)
+                    self.log.warning("Unknown plugin: %s" % name)
                 continue
-
-            self.log.debug("Loading plugin: %s" % name)
 
             info = self.info_objects[name]
+            # Store the list of deps separately so we can keep track of the
+            # unmet ones, for logging later on
+            to_load.append((info, [i.lower() for i in info.dependencies]))
 
-            deps = info.dependencies
-            todo = []
+        # Determine order
+        has_loaded = True
+        while len(to_load) > 0 and has_loaded:
+            has_loaded = False
+            # Iterate backwards so we can remove items
+            for x in xrange(len(to_load) - 1, -1, -1):
+                info = to_load[x][0]
+                deps = to_load[x][1]
+                self.log.trace(
+                    "Checking dependencies for plugins: %s" % info.name
+                )
+                for loaded in load_order:
+                    # I know this isn't super efficient, but it doesn't matter,
+                    # it's a tiny list. This comment exists purely for myself.
+                    if loaded.name.lower() in deps:
+                        self.log.trace("To-load in deps")
+                        deps.remove(loaded.name.lower())
+                        if len(deps) == 0:
+                            self.log.trace("No more deps")
+                            break
+                        self.log.trace(deps)
+                if len(deps) == 0:
+                    # No outstanding dependencies - safe to load
+                    self.log.trace("All dependencies met, adding to load queue.")
+                    load_order.append(info)
+                    del to_load[x]
+                    has_loaded = True
 
-            breakout = False
-
-            for dep in deps:
-                dep = dep.lower()
-
-                if dep not in self.plugin_objects:
-                    if dep not in plugins:
-                        self.log.warn("Unable to load plugin: %s - It "
-                                      "depends on '%s' but it's not going to "
-                                      "be loaded" % (info.name, dep))
-                        breakout = True
-                        break
-                    self.log.debug(
-                        "Pass %s/%s | Needs dep: %s"
-                        % (passes, max_passes, dep)
+        # Deal with unloadable plugins
+        if len(to_load) > 0:
+            for plugin in to_load:
+                self.log.warning(
+                    'Unable to load plugin "%s" due to missing dependencies: '
+                    '%s' %
+                    (
+                        plugin[0].name,
+                        ", ".join(plugin[1])
                     )
-
-                    todo.append(dep)
-
-            if breakout:
-                continue
-
-            if todo:
-                passes += 1
-                self.load_plugins(
-                    todo, passes=passes, max_passes=max_passes, output=output
                 )
 
-            result = self.load_plugin(name)
+        # Deal with loadable plugins
+        for info in load_order:
+            self.log.debug("Loading plugin: %s" % info.name)
+
+            result = self.load_plugin(info.name)
 
             if result is PluginState.LoadError:
-                pass  # Already output
+                pass  # Already output by load_plugin
             elif result is PluginState.NotExists:  # Should never happen
-                self.log.warn("No such plugin: %s" % name)
+                self.log.warning("No such plugin: %s" % info.name)
             elif result is PluginState.Loaded:
                 if output:
                     self.log.info(
@@ -153,13 +168,13 @@ class PluginManager(object):
                     )
             elif result is PluginState.AlreadyLoaded:
                 if output:
-                    self.log.warn("Plugin already loaded: %s" % info.name)
+                    self.log.warning("Plugin already loaded: %s" % info.name)
             elif result is PluginState.Unloaded:  # Should never happen
-                self.log.error("Plugin unloaded: %s" % name)
+                self.log.error("Plugin unloaded: %s" % info.name)
                 self.log.error("This was a load operation - THIS SHOULD NEVER "
                                "HAPPEN")
             elif result is PluginState.DependencyMissing:
-                pass  # Already output
+                pass  # Already output by load_plugin
 
     def load_plugin(self, name):
         name = name.lower()
@@ -245,7 +260,7 @@ class PluginManager(object):
             if result is PluginState.LoadError:
                 pass  # Should never happen
             elif result is PluginState.NotExists:
-                self.log.warn("No such plugin: %s" % key)
+                self.log.warning("No such plugin: %s" % key)
             elif result is PluginState.Loaded:
                 pass  # Should never happen
             elif result is PluginState.AlreadyLoaded:
@@ -287,13 +302,13 @@ class PluginManager(object):
             if result is PluginState.LoadError:
                 pass  # Already output
             elif result is PluginState.NotExists:
-                self.log.warn("Plugin has disappeared: %s" % c_name)
+                self.log.warning("Plugin has disappeared: %s" % c_name)
             elif result is PluginState.Loaded:
                 if output:
                     self.log.info("Reloaded plugin: %s" % c_name)
             elif result is PluginState.AlreadyLoaded:
                 if output:
-                    self.log.warn("Plugin already loaded: %s" % c_name)
+                    self.log.warning("Plugin already loaded: %s" % c_name)
             elif result is PluginState.Unloaded:
                 pass  # Should never happen
             elif result is PluginState.DependencyMissing:
