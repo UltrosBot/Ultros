@@ -34,6 +34,10 @@ class Info(object):
         if self.core is not None:
             self.name = self.core.name
             self.module = self.core.module
+            if hasattr(self.core, "dependencies"):
+                self.dependencies = self.core.dependencies
+            else:
+                self.dependencies = []
 
         if self.info is not None:
             self.version = self.info.version
@@ -42,10 +46,7 @@ class Info(object):
             self.website = self.info.website
             self.copyright = self.info.copyright
 
-        if hasattr(self.core, "dependencies"):
-            self.dependencies = self.core.dependencies
-        else:
-            self.dependencies = []
+
 
     @property
     def plugin_object(self):

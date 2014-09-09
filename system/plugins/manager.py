@@ -87,9 +87,7 @@ class PluginManager(object):
             if extra > 1:
                 self.log.warning("%s plugins have disappeared." % extra)
 
-    def load_plugins(self, plugins_, passes=0, max_passes=10, output=True):
-        plugins = [plug.lower() for plug in plugins_]
-
+    def load_plugins(self, plugins, passes=0, max_passes=10, output=True):
         if passes > max_passes:
             self.log.warn("Possible dependency loop detected!")
             self.log.warn("Attempting to load: %s" % ", ".join(plugins))
@@ -107,8 +105,10 @@ class PluginManager(object):
 
             info = self.info_objects[name]
 
-            deps = info.core.dependencies
+            deps = info.dependencies
             todo = []
+
+            breakout = False
 
             for dep in deps:
                 dep = dep.lower()
@@ -118,13 +118,17 @@ class PluginManager(object):
                         self.log.warn("Unable to load plugin: %s - It "
                                       "depends on '%s' but it's not going to "
                                       "be loaded" % (info.name, dep))
-                        continue
+                        breakout = True
+                        break
                     self.log.debug(
                         "Pass %s/%s | Needs dep: %s"
                         % (passes, max_passes, dep)
                     )
 
                     todo.append(dep)
+
+            if breakout:
+                continue
 
             if todo:
                 passes += 1
