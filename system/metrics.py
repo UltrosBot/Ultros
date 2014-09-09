@@ -185,7 +185,9 @@ class Metrics(object):
         compiled = {"plugins": [], "packages": [], "protocols": []}
         if self.status is True:
             self.log.debug(_("Submitting metrics."))
-            compiled["plugins"] = self.manager.loaded_plugins.keys()
+            compiled["plugins"] = [
+                obj.info.name for obj in self.manager.plugman.objects.values()
+            ]
             compiled["packages"] = self.packages.get_installed_packages()
 
             for name in self.manager.factories.keys():

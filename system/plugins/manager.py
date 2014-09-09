@@ -74,6 +74,19 @@ class PluginManager(object):
         if output:
             self.log.info("%s plugins found." % len(self.info_objects))
 
+        extra = 0
+
+        for k, v in self.objects.iteritems():
+            if k in self.info_objects:
+                continue
+
+            extra += 1
+            self.info_objects[k] = v.info
+
+        if output:
+            if extra > 1:
+                self.log.warning("%s plugins have disappeared." % extra)
+
     def load_plugins(self, plugins_, passes=0, max_passes=10, output=True):
         plugins = [plug.lower() for plug in plugins_]
 
@@ -161,7 +174,7 @@ class PluginManager(object):
             if dep not in self.objects:
                 return PluginState.DependencyMissing
 
-        module = "%s.%s" % (self.module, info.module)
+        module = info.get_module()
 
         try:
             self.log.trace("Module: %s" % module)
@@ -206,8 +219,6 @@ class PluginManager(object):
             return PluginState.LoadError
         else:
             try:
-                info.module = module
-                info.core.module = module
                 info.set_plugin_object(obj)
 
                 obj.add_variables(info, self.factory_manager)

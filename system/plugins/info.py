@@ -53,5 +53,10 @@ class Info(object):
             return self._plugin_object()
         return None
 
+    def get_module(self):
+        if hasattr(self, "module"):
+            return "plugins.%s" % self.module
+        return None
+
     def set_plugin_object(self, obj):
         self._plugin_object = weakref.ref(obj)

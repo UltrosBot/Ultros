@@ -53,6 +53,7 @@ class ClojurePlugin(plugin.PluginObject):
         # actual plugin.
         try:
             # Check whether we defined our own attribute on this class
+            # noinspection PyCallByClass
             return object.__getattribute__(self, item)
         except AttributeError:
             # If not, use the one on the clojure plugin
