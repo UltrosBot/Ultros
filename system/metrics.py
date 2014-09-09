@@ -186,7 +186,8 @@ class Metrics(object):
         if self.status is True:
             self.log.debug(_("Submitting metrics."))
             compiled["plugins"] = [
-                obj.info.name for obj in self.manager.plugman.objects.values()
+                obj.info.name for obj in
+                self.manager.plugman.plugin_objects.values()
             ]
             compiled["packages"] = self.packages.get_installed_packages()
 

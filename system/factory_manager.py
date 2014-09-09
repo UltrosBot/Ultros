@@ -66,7 +66,7 @@ class Manager(object):
 
     @property
     def loaded_plugins(self):
-        return self.plugman.objects
+        return self.plugman.plugin_objects
 
     def setup(self):
         signal.signal(signal.SIGINT, self.signal_callback)
@@ -164,7 +164,7 @@ class Manager(object):
 
         self.plugman.load_plugins(self.main_config.get("plugins", []))
 
-        event = PluginsLoadedEvent(self, self.plugman.objects)
+        event = PluginsLoadedEvent(self, self.plugman.plugin_objects)
         self.event_manager.run_callback("PluginsLoaded", event)
 
     def load_plugin(self, name, unload=False):

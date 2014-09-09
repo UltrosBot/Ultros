@@ -24,7 +24,7 @@ class PluginManager(object):
     path = ""
 
     info_objects = {}
-    objects = {}
+    plugin_objects = {}
 
     def __init__(self, factory_manager, path="./plugins", module="plugins"):
         self.log = getLogger("Plugins")
@@ -76,7 +76,7 @@ class PluginManager(object):
 
         extra = 0
 
-        for k, v in self.objects.iteritems():
+        for k, v in self.plugin_objects.iteritems():
             if k in self.info_objects:
                 continue
 
@@ -113,7 +113,7 @@ class PluginManager(object):
             for dep in deps:
                 dep = dep.lower()
 
-                if dep not in self.objects:
+                if dep not in self.plugin_objects:
                     if dep not in plugins:
                         self.log.warn("Unable to load plugin: %s - It "
                                       "depends on '%s' but it's not going to "
@@ -163,7 +163,7 @@ class PluginManager(object):
         if name not in self.info_objects:
             return PluginState.NotExists
 
-        if name in self.objects:
+        if name in self.plugin_objects:
             return PluginState.AlreadyLoaded
 
         info = self.info_objects[name]
@@ -171,7 +171,7 @@ class PluginManager(object):
         for dep in info.core.dependencies:
             dep = dep.lower()
 
-            if dep not in self.objects:
+            if dep not in self.plugin_objects:
                 return PluginState.DependencyMissing
 
         module = info.get_module()
@@ -209,7 +209,7 @@ class PluginManager(object):
                 )
                 return PluginState.LoadError
 
-            self.objects[name] = obj
+            self.plugin_objects[name] = obj
         except ImportError:
             self.log.exception("Unable to import plugin: %s" % info.name)
             self.log.debug("Module: %s" % module)
@@ -228,14 +228,14 @@ class PluginManager(object):
                 self.log.exception("Error setting up plugin: %s" % info.name)
                 return PluginState.LoadError
             else:
-                self.objects[name] = obj
+                self.plugin_objects[name] = obj
                 return PluginState.Loaded
 
     def unload_plugins(self, output=True):
         if output:
-            self.log.info("Unloading %s plugins.." % len(self.objects))
+            self.log.info("Unloading %s plugins.." % len(self.plugin_objects))
 
-        for key in self.objects.keys():
+        for key in self.plugin_objects.keys():
             result = self.unload_plugin(key)
 
             if result is PluginState.LoadError:
@@ -255,10 +255,10 @@ class PluginManager(object):
     def unload_plugin(self, name):
         name = name.lower()
 
-        if name not in self.objects:
+        if name not in self.plugin_objects:
             return PluginState.NotExists
 
-        obj = self.objects[name]
+        obj = self.plugin_objects[name]
 
         self.factory_manager.commands.unregister_commands_for_owner(obj)
         self.factory_manager.event_manager.remove_callbacks_for_plugin(obj)
@@ -269,11 +269,11 @@ class PluginManager(object):
         except Exception:
             self.log.exception("Error deactivating plugin: %s" % obj.info.name)
 
-        del self.objects[name]
+        del self.plugin_objects[name]
         return PluginState.Unloaded
 
     def reload_plugins(self, output=True):
-        plugins = self.objects.keys()
+        plugins = self.plugin_objects.keys()
         self.scan(output)
 
         for name in plugins:
@@ -308,8 +308,8 @@ class PluginManager(object):
     def get_plugin(self, name):
         name = name.lower()
 
-        if name in self.objects:
-            return self.objects[name]
+        if name in self.plugin_objects:
+            return self.plugin_objects[name]
         return None
 
     def get_plugin_info(self, name):
@@ -322,4 +322,4 @@ class PluginManager(object):
     def plugin_loaded(self, name):
         name = name.lower()
 
-        return name in self.objects
+        return name in self.plugin_objects
