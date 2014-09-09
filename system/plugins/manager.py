@@ -130,7 +130,9 @@ class PluginManager(object):
                         self.log.trace(deps)
                 if len(deps) == 0:
                     # No outstanding dependencies - safe to load
-                    self.log.trace("All dependencies met, adding to load queue.")
+                    self.log.trace(
+                        "All dependencies met, adding to load queue."
+                    )
                     load_order.append(info)
                     del to_load[x]
                     has_loaded = True
