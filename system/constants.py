@@ -27,26 +27,6 @@ except Exception as e:
         __version__ = "1.0.0"
         __version_info__ = "Unable to get last commit."
 
-# Constants related to (un)loading plugins
-
-#: This means there was an error loading the plugin.
-PLUGIN_LOAD_ERROR = enums.PluginState.LoadError
-
-#: This means the plugin doesn't exist.
-PLUGIN_NOT_EXISTS = enums.PluginState.NotExists
-
-#: This means the plugin was loaded successfully.
-PLUGIN_LOADED = enums.PluginState.Loaded
-
-#: This means the plugin was already loaded.
-PLUGIN_ALREADY_LOADED = enums.PluginState.AlreadyLoaded
-
-#: This means the plugin was unloaded successfully.
-PLUGIN_UNLOADED = enums.PluginState.Unloaded
-
-#: This means the plugin is missing another plugin it depends on.
-PLUGIN_DEPENDENCY_MISSING = enums.PluginState.DependencyMissing
-
 # Constants related to (un)loading protocols
 
 #: This means there was a problem setting up the protocol.

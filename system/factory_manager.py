@@ -167,6 +167,7 @@ class Manager(object):
         event = PluginsLoadedEvent(self, self.plugman.plugin_objects)
         self.event_manager.run_callback("PluginsLoaded", event)
 
+    @deprecated("Use the plugin manager directly")
     def load_plugin(self, name, unload=False):
         """
         Load a single plugin by name.
