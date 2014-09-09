@@ -35,6 +35,13 @@ class Info(object):
             self.name = self.core.name
             self.module = self.core.module
 
+        if self.info is not None:
+            self.version = self.info.version
+            self.description = self.info.description
+            self.author = self.info.author
+            self.website = self.info.website
+            self.copyright = self.info.copyright
+
         if hasattr(self.core, "dependencies"):
             self.dependencies = self.core.dependencies
         else:
@@ -45,3 +52,6 @@ class Info(object):
         if hasattr(self, "_plugin_object"):
             return self._plugin_object()
         return None
+
+    def set_plugin_object(self, obj):
+        self._plugin_object = weakref.ref(obj)

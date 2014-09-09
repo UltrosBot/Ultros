@@ -9,6 +9,7 @@ ClojurePy, which is what we're using here.
 
 __author__ = 'Gareth Coles'
 
+import cljplugin
 import types
 
 # Import main so the lib adds its import handler
@@ -18,7 +19,7 @@ from clojure.lang import ifn
 from system import plugin
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
-from system.plugin_manager import YamlPluginManagerSingleton
+from system.plugins.manager import PluginManager
 from system.storage.manager import StorageManager
 
 
@@ -35,10 +36,6 @@ class ClojurePlugin(plugin.PluginObject):
     def __init__(self):
         super(ClojurePlugin, self).__init__()
 
-        # You need to match the namespace in the Clojure file, so we do an
-        # absolute import to avoid being inside a Yapsy generated module
-        import plugins.cljtest.cljplugin as cljplugin
-
         self.clj_plugin = cljplugin
 
     def setup(self):
@@ -46,7 +43,7 @@ class ClojurePlugin(plugin.PluginObject):
         self.commands = CommandManager()
         self.events = EventManager()
         self.storage = StorageManager()
-        self.plugman = YamlPluginManagerSingleton()
+        self.plugman = PluginManager()
 
         # Now run the actual setup function
         self.wrapper(self.clj_plugin.setup)()
@@ -73,6 +70,7 @@ class ClojurePlugin(plugin.PluginObject):
     #
     # Use this when you create any functions in Clojure files that need to be
     # passed elsewhere - for example, event and command handlers.
+
     def wrapper(self, func):
         def inner(*args, **kwargs):
             return func(self, *args, **kwargs)

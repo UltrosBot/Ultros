@@ -14,6 +14,7 @@ import system.plugin as plugin
 
 from system.command_manager import CommandManager
 from system.constants import *
+from system.enums import PluginState
 from system.translations import Translations
 
 from utils.switch import Switch as switch
@@ -64,8 +65,9 @@ class ManagementPlugin(plugin.PluginObject):
 
     commands = None
 
-    #: :type: PagesPlugin
-    pages = None
+    @property
+    def pages(self):
+        return self.factory_manager.plugman.get_plugin("Pages")
 
     def setup(self):
         """
@@ -73,9 +75,6 @@ class ManagementPlugin(plugin.PluginObject):
         """
 
         self.commands = CommandManager()
-
-        #: :type: PagesPlugin
-        self.pages = self.factory_manager.get_plugin("Pages")
 
         self.commands.register_command("storage", self.storage_command, self,
                                        "management.storage",
@@ -155,178 +154,145 @@ class ManagementPlugin(plugin.PluginObject):
             )
             return
 
-        operation = args[0]
+        operation = args[0].lower()
 
-        for case, default in switch(operation):
-            if case("help"):
-                lines = [
-                    __(  # Yey, PEP
-                        "{CHARS}%s <operation> [params] - the plugin "
-                        "management command. Operations:" % command
-                    ),
-                    __("> help - This help"),
-                    __("> info <plugin> - Get information on an available "
-                       "plugin"),
-                    __("> list - List all available plugins"),
-                    __("> load <plugin> - Load a plugin that's available"),
-                    __(  # Yeeeeeey, PEP
-                        "> reload <plugin> - Reload a plugin that's already "
-                        "loaded"
-                    ),
-                    __("> unload <plugin> - Unload a currently-loaded plugin"),
-                ]
+        if operation == "help":
+            lines = [
+                __(  # Yey, PEP
+                    "{CHARS}%s <operation> [params] - the plugin "
+                    "management command. Operations:" % command
+                ),
+                __("> help - This help"),
+                __("> info <plugin> - Get information on an available "
+                   "plugin"),
+                __("> list - List all available plugins"),
+                __("> load <plugin> - Load a plugin that's available"),
+                __(  # Yeeeeeey, PEP
+                    "> reload <plugin> - Reload a plugin that's already "
+                    "loaded"
+                ),
+                __("> unload <plugin> - Unload a currently-loaded plugin"),
+            ]
 
-                pageset = self.pages.get_pageset(protocol, source)
-                self.pages.page(pageset, lines)
-                self.pages.send_page(pageset, 1, source)
+            page_set = self.pages.get_pageset(protocol, source)
+            self.pages.page(page_set, lines)
+            self.pages.send_page(page_set, 1, source)
+        elif operation == "info":
+            if len(args) < 2:
+                caller.respond(__("Usage: {CHARS}%s info <plugin>")
+                               % command)
+                return
 
-                break
-            if case("info"):
-                if len(args) < 2:
-                    caller.respond(__("Usage: {CHARS}%s info <plugin>")
-                                   % command)
-                    return
+            name = args[1]
+            plug = self.factory_manager.plugman.get_plugin_info(name)
 
-                name = args[1]
-                plug = self.factory_manager.plugman.getPluginByName(name)
+            if plug is None:
+                source.respond(__("Unknown plugin: %s") % name)
+                return
 
-                if plug is None:
-                    source.respond(__("Unknown plugin: %s") % name)
-                    return
+            source.respond(  # Fucking PEP8
+                "%s v%s (%s): %s" % (
+                    plug.name, plug.version, plug.author, (
+                        __("Loaded") if
+                        self.factory_manager.plugman.plugin_loaded(plug.name)
+                        is not None else __("Unloaded"))
+                ))
 
-                source.respond(  # Fucking PEP8
-                    "%s v%s (%s): %s" % (
-                        plug.name, plug.version, plug.author, (
-                            __("Loaded") if plug.name in
-                            self.factory_manager.loaded_plugins
-                            else __("Unloaded"))
-                    ))
+            source.respond("> %s" % plug.description)
+            source.respond(__("Website: %s") % plug.website)
+        elif operation == "list":
+            self.factory_manager.plugman.scan()
+            done = {}
+            lines = []
 
-                source.respond("> %s" % plug.description)
-                source.respond(__("Website: %s") % plug.website)
+            for info in self.factory_manager.plugman.info_objects.values():
+                done["%s v%s" % (info.name, info.version)] = (
+                    self.factory_manager.plugman.plugin_loaded(info.name)
+                )
 
-                break
-            if case("list"):
-                self.factory_manager.collect_plugins()
-                plugs = self.factory_manager.plugman.getAllPlugins()
-                done = {}
-                lines = []
+            for key in sorted(done.keys()):
+                if done[key]:
+                    lines.append(__("%s: Loaded") % key)
+                else:
+                    lines.append(__("%s: Unloaded") % key)
 
-                for info in plugs:
-                    name = info.name
-                    done["%s v%s" % (name, info.version)] = (
-                        name in self.factory_manager.loaded_plugins
-                    )
+            page_set = self.pages.get_pageset(protocol, source)
+            self.pages.page(page_set, lines)
+            self.pages.send_page(page_set, 1, source)
+        elif operation == "load":
+            if len(args) < 2:
+                caller.respond(__("Usage: {CHARS}%s load <plugin>")
+                               % command)
+                return
 
-                for key in sorted(done.keys()):
-                    if done[key]:
-                        lines.append(__("%s: Loaded") % key)
-                    else:
-                        lines.append(__("%s: Unloaded") % key)
+            name = args[1]
+            result = self.factory_manager.plugman.load_plugin(name)
+            info = self.factory_manager.plugman.get_plugin_info(name)
 
-                pageset = self.pages.get_pageset(protocol, source)
-                self.pages.page(pageset, lines)
-                self.pages.send_page(pageset, 1, source)
+            if result is PluginState.AlreadyLoaded:
+                source.respond(__("Unable to load plugin %s: The plugin "
+                                  "is already loaded.") % info.name)
+            elif result is PluginState.NotExists:
+                source.respond(__("Unknown plugin: %s") % name)
+            elif result is PluginState.LoadError:
+                source.respond(__("Unable to load plugin %s: An error "
+                                  "occurred.") % info.name)
+            elif result is PluginState.DependencyMissing:
+                source.respond(__("Unable to load plugin %s: Another "
+                                  "plugin this one depends on is "
+                                  "missing.") % info.name)
+            elif result is PluginState.Loaded:
+                source.respond(__("Loaded plugin: %s") % info.name)
+            else:  # THIS SHOULD NEVER HAPPEN
+                source.respond(__("Error while loading plugin %s: Unknown "
+                                  "return code %s") % (name, result))
+        elif operation == "reload":
+            if len(args) < 2:
+                caller.respond(__("Usage: {CHARS}%s reload <plugin>")
+                               % command)
+                return
 
-                break
-            if case("load"):
-                if len(args) < 2:
-                    caller.respond(__("Usage: {CHARS}%s load <plugin>")
-                                   % command)
-                    return
+            name = args[1]
 
-                name = args[1]
-                result = self.factory_manager.load_plugin(name)
+            result = self.factory_manager.plugman.reload_plugin(name)
+            info = self.factory_manager.plugman.get_plugin_info(name)
 
-                if result == PLUGIN_ALREADY_LOADED:
-                    source.respond(__("Unable to load plugin %s: The plugin "
-                                      "is already loaded.") % name)
-                elif result == PLUGIN_NOT_EXISTS:
-                    source.respond(__("Unknown plugin: %s") % name)
-                elif result == PLUGIN_LOAD_ERROR:
-                    source.respond(__("Unable to load plugin %s: An error "
-                                      "occurred.") % name)
-                elif result == PLUGIN_DEPENDENCY_MISSING:
-                    source.respond(__("Unable to load plugin %s: Another "
-                                      "plugin this one depends on is "
-                                      "missing.") % name)
-                elif result == PLUGIN_LOADED:
-                    source.respond(__("Loaded plugin: %s") % name)
-                else:  # THIS SHOULD NEVER HAPPEN
-                    source.respond(__("Error while loading plugin %s: Unknown "
-                                      "return code %s") % (name, result))
+            if result is PluginState.NotExists:
+                source.respond(__("Unknown plugin or plugin not loaded: "
+                                  "%s") % name)
+            elif result is PluginState.LoadError:
+                source.respond(__("Unable to reload plugin %s: An error "
+                                  "occurred.") % info.name)
+            elif result is PluginState.DependencyMissing:
+                source.respond(__("Unable to reload plugin %s: Another "
+                                  "plugin this one depends on is missing.")
+                               % info.name)
+            elif result is PluginState.Loaded:
+                source.respond(__("Reloaded plugin: %s") % info.name)
+            else:  # THIS SHOULD NEVER HAPPEN
+                source.respond(__("Error while reloading plugin %s: "
+                                  "Unknown return code %s")
+                               % (name, result))
+        elif operation == "unload":
+            if len(args) < 2:
+                caller.respond(__("Usage: {CHARS}%s unload <plugin>")
+                               % command)
+                return
 
-                break
-            if case("reload"):
-                if len(args) < 2:
-                    caller.respond(__("Usage: {CHARS}%s reload <plugin>")
-                                   % command)
-                    return
+            name = args[1]
 
-                name = args[1]
+            result = self.factory_manager.plugman.unload_plugin(name)
+            info = self.factory_manager.plugman.get_plugin_info(name)
 
-                plug = self.factory_manager.plugman.getPluginByName(name)
-
-                if plug is None:
-                    source.respond(__("Unknown plugin: %s") % name)
-                    return
-
-                if name not in self.factory_manager.loaded_plugins:
-                    source.respond(__("Unable to reload plugin %s: The plugin "
-                                      "is not loaded.") % name)
-                    return
-
-                result = self.factory_manager.load_plugin(name, unload=True)
-
-                if result == PLUGIN_NOT_EXISTS:
-                    source.respond(__("Unknown plugin: %s") % name)
-                elif result == PLUGIN_LOAD_ERROR:
-                    source.respond(__("Unable to reload plugin %s: An error "
-                                      "occurred.") % name)
-                elif result == PLUGIN_DEPENDENCY_MISSING:
-                    source.respond(__("Unable to reload plugin %s: Another "
-                                      "plugin this one depends on is missing.")
-                                   % name)
-                elif result == PLUGIN_LOADED:
-                    source.respond(__("Reloaded plugin: %s") % name)
-                else:  # THIS SHOULD NEVER HAPPEN
-                    source.respond(__("Error while reloading plugin %s: "
-                                      "Unknown return code %s")
-                                   % (name, result))
-
-                break
-            if case("unload"):
-                if len(args) < 2:
-                    caller.respond(__("Usage: {CHARS}%s unload <plugin>")
-                                   % command)
-                    return
-
-                name = args[1]
-
-                plug = self.factory_manager.plugman.getPluginByName(name)
-
-                if plug is None:
-                    source.respond(__("Unknown plugin: %s") % name)
-                    return
-
-                if name not in self.factory_manager.loaded_plugins:
-                    source.respond(__("Unable to unload plugin %s: The plugin "
-                                      "is not loaded.") % name)
-                    return
-
-                result = self.factory_manager.unload_plugin(name)
-
-                if result == PLUGIN_NOT_EXISTS:
-                    source.respond(__("Unknown plugin: %s") % name)
-                elif result == PLUGIN_UNLOADED:
-                    source.respond(__("Unloaded plugin: %s") % name)
-                else:  # THIS SHOULD NEVER HAPPEN
-                    source.respond(__("Error while loading plugin %s: Unknown "
-                                      "return code %s") % (name, result))
-
-                break
-            if default:
-                caller.respond(__("Unknown operation: %s") % operation)
+            if result is PluginState.NotExists:
+                source.respond(__("Unknown plugin: %s") % name)
+            elif result is PluginState.Unloaded:
+                source.respond(__("Unloaded plugin: %s") % info.name)
+            else:  # THIS SHOULD NEVER HAPPEN
+                source.respond(__("Error while loading plugin %s: Unknown "
+                                  "return code %s") % (name, result))
+        else:
+            caller.respond(__("Unknown operation: %s") % operation)
 
     def packages_command(self, protocol, caller, source, command, raw_args,
                          args):

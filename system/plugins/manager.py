@@ -54,17 +54,20 @@ class PluginManager(object):
         for fn in files:
             try:
                 obj = yaml.load(open(fn, "r"))
-                name = obj["core"]["name"].lower()
+                c_name = obj["core"]["name"]  # "Cased" name
+                name = c_name.lower()
 
                 if name in self.info_objects:
-                    self.log.error("Duplicate plugin name detected: %s" % name)
+                    self.log.error(
+                        "Duplicate plugin name detected: %s" % c_name
+                    )
                     self.log.error("Only the first one will be able to load!")
                     continue
 
-                self.info_objects[name] = obj
+                self.info_objects[name] = Info(obj)
 
                 if output:
-                    self.log.debug("Found plugin info: %s" % name)
+                    self.log.debug("Found plugin info: %s" % c_name)
             except Exception:
                 self.log.exception("Error loading info file: %s" % fn)
 
@@ -91,7 +94,7 @@ class PluginManager(object):
 
             info = self.info_objects[name]
 
-            deps = info["core"].get("dependencies", [])
+            deps = info.core.dependencies
             todo = []
 
             for dep in deps:
@@ -101,7 +104,7 @@ class PluginManager(object):
                     if dep not in plugins:
                         self.log.warn("Unable to load plugin: %s - It "
                                       "depends on '%s' but it's not going to "
-                                      "be loaded" % (name, dep))
+                                      "be loaded" % (info.name, dep))
                         continue
                     self.log.debug(
                         "Pass %s/%s | Needs dep: %s"
@@ -126,14 +129,14 @@ class PluginManager(object):
                 if output:
                     self.log.info(
                         "Loaded plugin: %s v%s by %s" % (
-                            name,
-                            info["info"]["version"],
-                            info["info"]["author"]
+                            info.name,
+                            info.version,
+                            info.author
                         )
                     )
             elif result is PluginState.AlreadyLoaded:
                 if output:
-                    self.log.warn("Plugin already loaded: %s" % name)
+                    self.log.warn("Plugin already loaded: %s" % info.name)
             elif result is PluginState.Unloaded:  # Should never happen
                 self.log.error("Plugin unloaded: %s" % name)
                 self.log.error("This was a load operation - THIS SHOULD NEVER "
@@ -142,6 +145,8 @@ class PluginManager(object):
                 pass  # Already output
 
     def load_plugin(self, name):
+        name = name.lower()
+
         if name not in self.info_objects:
             return PluginState.NotExists
 
@@ -150,13 +155,13 @@ class PluginManager(object):
 
         info = self.info_objects[name]
 
-        for dep in info["core"].get("dependencies", []):
+        for dep in info.core.dependencies:
             dep = dep.lower()
 
             if dep not in self.objects:
                 return PluginState.DependencyMissing
 
-        module = "%s.%s" % (self.module, info["core"]["module"])
+        module = "%s.%s" % (self.module, info.module)
 
         try:
             self.log.trace("Module: %s" % module)
@@ -165,8 +170,9 @@ class PluginManager(object):
             if module in sys.modules:
                 self.log.trace("Module exists, reloading..")
                 reload(sys.modules[module])
-
-            module_obj = importlib.import_module(module)
+                module_obj = sys.modules[module]
+            else:
+                module_obj = importlib.import_module(module)
 
             self.log.trace("Module object: %s" % module_obj)
 
@@ -186,26 +192,29 @@ class PluginManager(object):
 
             if obj is None:
                 self.log.error(
-                    "Unable to find plugin class for plugin: %s" % name
+                    "Unable to find plugin class for plugin: %s" % info.name
                 )
                 return PluginState.LoadError
 
             self.objects[name] = obj
         except ImportError:
-            self.log.exception("Unable to import plugin: %s" % name)
+            self.log.exception("Unable to import plugin: %s" % info.name)
             self.log.debug("Module: %s" % module)
             return PluginState.LoadError
         except Exception:
-            self.log.exception("Error loading plugin: %s" % name)
+            self.log.exception("Error loading plugin: %s" % info.name)
             return PluginState.LoadError
         else:
             try:
-                info["module"] = module
-                obj.add_variables(Info(info), self.factory_manager)
-                obj.logger = getLogger("Plugin: %s" % name)
+                info.module = module
+                info.core.module = module
+                info.set_plugin_object(obj)
+
+                obj.add_variables(info, self.factory_manager)
+                obj.logger = getLogger(info.name)
                 obj.setup()
             except Exception:
-                self.log.exception("Error setting up plugin: %s" % name)
+                self.log.exception("Error setting up plugin: %s" % info.name)
                 return PluginState.LoadError
             else:
                 self.objects[name] = obj
@@ -233,6 +242,8 @@ class PluginManager(object):
                 pass  # Should never happen
 
     def unload_plugin(self, name):
+        name = name.lower()
+
         if name not in self.objects:
             return PluginState.NotExists
 
@@ -245,7 +256,7 @@ class PluginManager(object):
         try:
             obj.deactivate()
         except Exception:
-            self.log.exception("Error deactivating plugin: %s" % name)
+            self.log.exception("Error deactivating plugin: %s" % obj.info.name)
 
         del self.objects[name]
         return PluginState.Unloaded
@@ -255,24 +266,27 @@ class PluginManager(object):
         self.scan(output)
 
         for name in plugins:
+            c_name = self.get_plugin_info(name).name
             result = self.reload_plugin(name)
 
             if result is PluginState.LoadError:
                 pass  # Already output
             elif result is PluginState.NotExists:
-                self.log.warn("Plugin has disappeared: %s" % name)
+                self.log.warn("Plugin has disappeared: %s" % c_name)
             elif result is PluginState.Loaded:
                 if output:
-                    self.log.info("Reloaded plugin: %s" % name)
+                    self.log.info("Reloaded plugin: %s" % c_name)
             elif result is PluginState.AlreadyLoaded:
                 if output:
-                    self.log.warn("Plugin already loaded: %s" % name)
+                    self.log.warn("Plugin already loaded: %s" % c_name)
             elif result is PluginState.Unloaded:
                 pass  # Should never happen
             elif result is PluginState.DependencyMissing:
                 pass  # Already output
 
     def reload_plugin(self, name):
+        name = name.lower()
+
         result = self.unload_plugin(name)
 
         if result is not PluginState.Unloaded:
@@ -281,11 +295,20 @@ class PluginManager(object):
         return self.load_plugin(name)
 
     def get_plugin(self, name):
+        name = name.lower()
+
         if name in self.objects:
             return self.objects[name]
         return None
 
     def get_plugin_info(self, name):
+        name = name.lower()
+
         if name in self.info_objects:
             return self.info_objects[name]
         return False
+
+    def plugin_loaded(self, name):
+        name = name.lower()
+
+        return name in self.objects
