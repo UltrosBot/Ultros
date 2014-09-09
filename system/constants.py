@@ -6,7 +6,6 @@ __version_info__ = "Not being run from a Git repo."
 __release__ = "1.1.0"
 
 import datetime
-from system import enums
 
 try:
     from git import repo
