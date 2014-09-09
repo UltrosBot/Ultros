@@ -46,8 +46,6 @@ class Info(object):
             self.website = self.info.website
             self.copyright = self.info.copyright
 
-
-
     @property
     def plugin_object(self):
         if hasattr(self, "_plugin_object"):
