@@ -70,7 +70,7 @@ release = '1.0.0'
 # non-false value, then it is used:
 #  today = ''
 # Else, today_fmt is used as the format for a strftime call.
-#  today_fmt = '%B %d, %Y'
+today_fmt = '%B %d, %Y'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -81,7 +81,7 @@ exclude_patterns = ['_build']
 #  default_role = None
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
-#  add_function_parentheses = True
+add_function_parentheses = True
 
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
@@ -121,45 +121,10 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
     else:
         import pip
         pip.main(["install", "sphinx_rtd_theme", "--upgrade"])
-
         reload(sphinx_rtd_theme)
+
     html_theme = 'sphinx_rtd_theme'
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
-else:  # RTD doesn't know how to install requirements, so let's do it ourselves
-    print "**********************************************"
-    print "* RTD build detected.                        *"
-    print "*                                            *"
-    print "* We're going to do some hacky stuff now, to *"
-    print "* work around a bug in RTD's environment.    *"
-    print "*                                            *"
-    print "* Hopefully they fix this soon!              *"
-    print "**********************************************"
-    print ""
-
-    import pip
-
-    fh = open("../requirements.txt")
-    packages = fh.read().splitlines()
-
-    reqs = ["pyopenssl", "gitpython==0.1.7", "gitdb", "pycrypto", "twisted",
-            "zope.interface"]
-    for x in reqs:
-        if x in packages:
-            packages.remove(x)
-
-    print "*******************"
-    print "*   HACKY STUFF   *"
-    print "*******************"
-    print "Manually installing packages: %s" % " ".join(packages)
-
-    pip.main(["install", "--upgrade"] + packages)
-
-    print "*******************"
-    print "* END HACKY STUFF *"
-    print "*******************"
-
-    del pip
-
 
 # otherwise, readthedocs.org uses their theme by default, so no need to specify
 
@@ -173,19 +138,19 @@ else:  # RTD doesn't know how to install requirements, so let's do it ourselves
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-#  html_title = None
+html_title = "Ultros documentation"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-#  html_short_title = None
+html_short_title = "Ultros"
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-#  html_logo = None
+html_logo = "images/logo.png"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-#  html_favicon = None
+html_favicon = "images/ultros.png"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -199,7 +164,7 @@ html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
-#  html_last_updated_fmt = '%b %d, %Y'
+html_last_updated_fmt = '%b %d, %Y'
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
@@ -222,13 +187,13 @@ html_static_path = ['_static']
 #  html_split_index = False
 
 # If true, links to the reST sources are added to the pages.
-#  html_show_sourcelink = True
+html_show_sourcelink = True
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
-#  html_show_sphinx = True
+html_show_sphinx = False
 
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
-#  html_show_copyright = True
+html_show_copyright = True
 
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the
@@ -239,7 +204,7 @@ html_static_path = ['_static']
 #  html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Ultrosdoc'
+htmlhelp_basename = 'Ultros'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -265,7 +230,7 @@ latex_documents = [
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-#  latex_logo = None
+latex_logo = "images/logo.png"
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
@@ -305,8 +270,8 @@ man_pages = [
 texinfo_documents = [
     ('index', 'Ultros', u'Ultros Documentation',
      u'Gareth Coles, Sean Gordon', 'Ultros',
-     'One line description of project.',
-     'Miscellaneous'),
+     'Connecting communities, one squid at a time!',
+     'Documentation'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -316,35 +281,7 @@ texinfo_documents = [
 #  texinfo_domain_indices = True
 
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
-#  texinfo_show_urls = 'footnote'
+texinfo_show_urls = 'footnote'
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #  texinfo_no_detailmenu = False
-
-import sys
-
-
-class Mock(object):
-
-    __all__ = []
-
-    def __init__(self, *args, **kwargs):
-        pass
-
-    def __call__(self, *args, **kwargs):
-        return Mock()
-
-    @classmethod
-    def __getattr__(cls, name):
-        if name in ('__file__', '__path__'):
-            return '/dev/null'
-        elif name[0] == name[0].upper():
-            mock_type = type(name, (), {})
-            mock_type.__module__ = __name__
-            return mock_type
-        else:
-            return Mock()
-
-MOCK_MODULES = ["pycrypto", "cryptography"]
-for mod_name in MOCK_MODULES:
-    sys.modules[mod_name] = Mock()
