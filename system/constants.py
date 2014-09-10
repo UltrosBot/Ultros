@@ -1,7 +1,5 @@
 __author__ = 'Gareth Coles'
 
-from distutils.version import StrictVersion
-
 #: The current version. This gets replaced if you're using git.
 __version__ = "1.0.0"
 __version_info__ = "Not being run from a Git repo."
