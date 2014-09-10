@@ -26,7 +26,8 @@ class PluginManager(object):
     info_objects = {}
     plugin_objects = {}
 
-    def __init__(self, factory_manager=None, path="./plugins", module="plugins"):
+    def __init__(self, factory_manager=None,
+                 path="./plugins", module="plugins"):
         if factory_manager is None:
             raise ValueError("Factory manager cannot be None!")
 
