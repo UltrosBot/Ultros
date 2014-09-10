@@ -32,6 +32,7 @@ import sys
 from kitchen.text.converters import getwriter
 
 from system.translations import Translations
+from system.versions import VersionManager
 from utils import log
 
 
@@ -101,6 +102,8 @@ def main():
 
     sys.stdout = getwriter('utf-8')(sys.stdout)
     sys.stderr = getwriter('utf-8')(sys.stderr)
+
+    versions = VersionManager()
 
     if not os.path.exists("logs"):
         os.mkdir("logs")

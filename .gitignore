@@ -47,6 +47,7 @@ ultros.pid
 apidocs/
 lib/*/
 !lib/definitions
+version
 
 # Certificates
 *.p12
