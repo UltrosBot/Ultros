@@ -37,6 +37,7 @@ class Info(object):
             if hasattr(self.core, "dependencies"):
                 self.dependencies = self.core.dependencies
             else:
+                self.core.dependencies = []
                 self.dependencies = []
 
         if self.info is not None:
