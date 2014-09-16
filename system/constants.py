@@ -1,9 +1,9 @@
 __author__ = 'Gareth Coles'
 
 #: The current version. This gets replaced if you're using git.
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __version_info__ = "Not being run from a Git repo."
-__release__ = "1.0.0"
+__release__ = "1.1.0"
 
 import datetime
 
