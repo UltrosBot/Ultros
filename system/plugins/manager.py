@@ -1,20 +1,30 @@
-import importlib
-import sys
-from system.plugin import PluginObject
+"""
+The plugin manager. It manages plugins.
+
+The manager is in charge of discovering, loading, unloading, reloading and
+generally looking after all things plugin.
+"""
 
 __author__ = 'Gareth Coles'
 
+import glob
+import importlib
+import inspect
+import sys
+import yaml
+
 from system.enums import PluginState
 from system.plugins.info import Info
+from system.plugins.plugin import PluginObject
 from system.singleton import Singleton
 from utils.log import getLogger
 
-import glob
-import inspect
-import yaml
-
 
 class PluginManager(object):
+    """
+    The plugin manager itself. This is a Singleton.
+    """
+
     __metaclass__ = Singleton
 
     factory_manager = None
@@ -92,6 +102,21 @@ class PluginManager(object):
                 self.log.warning("%s plugins have disappeared." % extra)
 
     def load_plugins(self, plugins, output=True):
+        """
+        Attempt to load up all plugins specified in a list
+
+        This is intended to do the primary plugin load operation on startup,
+        using the plugin names specified in the configuration.
+
+        Plugin names are not case-sensitive.
+
+        :param plugins: List of plugin names to look for
+        :param output: Whether to output errors and other messages to the log
+
+        :type plugins: list
+        :type output: bool
+        """
+
         # Plugins still needing loaded
         to_load = []
         # Final, ordered, list of plugins to load
@@ -175,14 +200,24 @@ class PluginManager(object):
             elif result is PluginState.AlreadyLoaded:
                 if output:
                     self.log.warning("Plugin already loaded: %s" % info.name)
-            elif result is PluginState.Unloaded:  # Should never happen
-                self.log.error("Plugin unloaded: %s" % info.name)
-                self.log.error("This was a load operation - THIS SHOULD NEVER "
-                               "HAPPEN")
+            elif result is PluginState.Unloaded:  # Can actually happen now
+                self.log.warn("Plugin unloaded: %s" % info.name)
+                self.log.warn("This means the plugin disabled itself - did "
+                              "it output anything on its own?")
             elif result is PluginState.DependencyMissing:
                 pass  # Already output by load_plugin
 
     def load_plugin(self, name):
+        """
+        Load a single plugin by its case-insensitive name
+
+        :param name: The name of the plugin to load
+        :type name: str
+
+        :return: A PluginState enum value representing the result
+        :rtype: PluginState
+        """
+
         name = name.lower()
 
         if name not in self.info_objects:
@@ -244,19 +279,34 @@ class PluginManager(object):
             return PluginState.LoadError
         else:
             try:
+                self.plugin_objects[name] = obj
+
                 info.set_plugin_object(obj)
 
                 obj.add_variables(info, self.factory_manager)
                 obj.logger = getLogger(info.name)
+
                 obj.setup()
+
+                if not self.plugin_loaded(name):
+                    return PluginState.Unloaded
             except Exception:
+                if name in self.plugin_objects:
+                    del self.plugin_objects[name]
+
                 self.log.exception("Error setting up plugin: %s" % info.name)
                 return PluginState.LoadError
             else:
-                self.plugin_objects[name] = obj
                 return PluginState.Loaded
 
     def unload_plugins(self, output=True):
+        """
+        Unload all loaded plugins
+
+        :param output: Whether to output errors and other messages to the log
+        :type output: bool
+        """
+
         if output:
             self.log.info("Unloading %s plugins.." % len(self.plugin_objects))
 
@@ -278,6 +328,16 @@ class PluginManager(object):
                 pass  # Should never happen
 
     def unload_plugin(self, name):
+        """
+        Unload a single loaded plugin by its case-insensitive name
+
+        :param name: The name of the plugin to unload
+        :type name: str
+
+        :return: A PluginState enum value representing the result
+        :rtype: PluginState
+        """
+
         name = name.lower()
 
         if name not in self.plugin_objects:
@@ -298,6 +358,13 @@ class PluginManager(object):
         return PluginState.Unloaded
 
     def reload_plugins(self, output=True):
+        """
+        Reload all loaded plugins
+
+        :param output: Whether to output errors and other messages to the log
+        :type output: bool
+        """
+
         plugins = self.plugin_objects.keys()
         self.scan(output)
 
@@ -321,6 +388,16 @@ class PluginManager(object):
                 pass  # Already output
 
     def reload_plugin(self, name):
+        """
+        Reload a single loaded plugin by its case-insensitive name
+
+        :param name: The name of the plugin to reload
+        :type name: str
+
+        :return: A PluginState enum value representing the result
+        :rtype: PluginState
+        """
+
         name = name.lower()
 
         result = self.unload_plugin(name)
@@ -331,6 +408,17 @@ class PluginManager(object):
         return self.load_plugin(name)
 
     def get_plugin(self, name):
+        """
+        Get a plugin instance by its case-insensitive name
+
+        returns None if the plugin isn't loaded or doesn't exist
+
+        :param name: The name of the plugin to get
+        :type name: str
+
+        :return: PluginObject instance, or None
+        """
+
         name = name.lower()
 
         if name in self.plugin_objects:
@@ -338,6 +426,17 @@ class PluginManager(object):
         return None
 
     def get_plugin_info(self, name):
+        """
+        Get a plugin's info object by its case-insensitive name
+
+        returns None if the plugin doesn't exist
+
+        :param name: The name of the plugin to get the info for
+        :type name: str
+
+        :return: Info instance, or None
+        """
+
         name = name.lower()
 
         if name in self.info_objects:
@@ -345,6 +444,16 @@ class PluginManager(object):
         return False
 
     def plugin_loaded(self, name):
+        """
+        Check whether a plugin is loaded by its case-insensitive name
+
+        :param name: The name of the plugin to check
+        :type name: str
+
+        :return: Whether the plugin is loaded
+        :rtype: bool
+        """
+
         name = name.lower()
 
         return name in self.plugin_objects

@@ -16,32 +16,20 @@ class PluginObject(object):
     concise!
     """
 
-    #: Storage for the PluginInfo object
-    #: :type: PluginInfo
-    info = None
-
-    #: Name of the plugin module, populated automatically
-    #: :type: str
-    module = ""
-
-    #: Assigned instance of the standard Python logger
-    #: :type: logger
-    logger = None
-
-    #: Stored instance of the factory manager, for convenience
-    #: :type: FactoryManager
-    factory_manager = None
+    factory_manager = None  # Instance of the factory manager
+    info = None  # Plugin info object
+    logger = None  # Standard python Logger named appropriately
+    module = ""  # Module the plugin exists in
 
     def add_variables(self, info, factory_manager):
         """
-        Do not override this function!
-        This function is used to store essential data, required for it to
-        work properly. It also sets up logging.
+        Adds essential variables at load time and sets up logging
 
-        If you override this and don't call super, your plugin WILL NOT WORK.
+        Do not override this function! If you *do* override this and don't call
+        super, your plugin WILL NOT WORK.
 
         :param info: The plugin info file
-        :type info: PluginInfo instance
+        :type info: Info instance
 
         :param factory_manager: The factory manager
         :type factory_manager: Manager instance
@@ -53,10 +41,11 @@ class PluginObject(object):
 
     def deactivate(self):
         """
-        Called when the plugin is unloaded.
+        Called when the plugin is unloaded
 
         This is intended to be used for last-minute saving and cleanup.
         """
+
         pass
 
     def reload(self):
@@ -68,19 +57,21 @@ class PluginObject(object):
         It should return True if the reload succeeded, and False if not.
         If you return None, then it will be treated as if it doesn't exist.
         """
+
         return None
 
     def setup(self):
         """
-        Called when the plugin is loaded.
+        Called when the plugin is loaded
+
         This is used for setting up the plugin.
         Remember to override this function!
 
         Remember, **self.info** and **self.factory** are only available once
         this method is called.
         """
+
         self.logger.warn(_("Setup method not defined!"))
 
     def _disable_self(self):
-        # TODO: Fix
-        self.factory_manager.plugman.deactivatePluginByName(self.info.name)
+        self.factory_manager.plugman.unload_plugin(self.info.name)

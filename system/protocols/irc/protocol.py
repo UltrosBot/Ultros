@@ -379,9 +379,10 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                 self.log.debug("Unknown command state: %s" % result[0])
                 break
 
-        event = general_events.PreMessageReceived(self, user_obj, channel_obj,
-                                                  message, "message",
-                                                  printable=True)
+        event = general_events.PreMessageReceived(
+            self, user_obj, channel_obj, message, "message"
+        )
+
         self.event_manager.run_callback("PreMessageReceived", event)
 
         if event.printable:

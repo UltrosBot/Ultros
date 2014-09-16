@@ -243,6 +243,9 @@ class ManagementPlugin(plugin.PluginObject):
                                   "missing.") % info.name)
             elif result is PluginState.Loaded:
                 source.respond(__("Loaded plugin: %s") % info.name)
+            elif result is PluginState.Unloaded:
+                source.respond(__("Unloaded plugin: %s") % info.name)
+                source.respond(__("This means the plugin disabled itself!"))
             else:  # THIS SHOULD NEVER HAPPEN
                 source.respond(__("Error while loading plugin %s: Unknown "
                                   "return code %s") % (name, result))
@@ -269,6 +272,9 @@ class ManagementPlugin(plugin.PluginObject):
                                % info.name)
             elif result is PluginState.Loaded:
                 source.respond(__("Reloaded plugin: %s") % info.name)
+            elif result is PluginState.Unloaded:
+                source.respond(__("Unloaded plugin: %s") % info.name)
+                source.respond(__("This means the plugin disabled itself!"))
             else:  # THIS SHOULD NEVER HAPPEN
                 source.respond(__("Error while reloading plugin %s: "
                                   "Unknown return code %s")
