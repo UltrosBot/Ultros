@@ -23,7 +23,7 @@ try:
                         commit.summary.replace("\n", " / "))
 except Exception as e:
     if __version__ is None:
-        __version__ = "1.0.0"
+        __version__ = "1.1.0"
         __version_info__ = "Unable to get last commit."
 
 # Constants related to (un)loading protocols
