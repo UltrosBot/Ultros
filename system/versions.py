@@ -11,7 +11,7 @@ from utils.log import getLogger
 
 versions = {
     "1.0.0": "Default, this will never be shown",
-    "1.1.0: (
+    "1.1.0": (
         "============= Version {VERSION} =============\n"
         "\n"
         "This release requires you to update your\n"
