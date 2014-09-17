@@ -7,6 +7,6 @@ core:
 info:
   description: A plugin designed for cross-network relating  # A short description of the plugin
   author: Gareth Coles  # Who created this plugin?
-  version: 0.0.1  # Version of the plugin
+  version: 0.1.1  # Version of the plugin
   website: https://github.com/McBlockitHelpbot/Ultros/tree/master/plugins/bridge  # Place to find up-to-date info on the plugin
   copyright: See Ultros' license # Licensing information. You can omit this.

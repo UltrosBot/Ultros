@@ -344,6 +344,23 @@ class BridgePlugin(plugin.PluginObject):
                 continue
 
             else:
+                sf_name = s_name
+                tf_name = t_name
+                if from_.get("obfuscate-names", False):
+                    sf_name = s_name[:-1] + "_" + s_name[-1]
+                    if "USER" in tokens:
+                        _u = tokens["USER"]
+                        tokens["USER"] = _u[:-1] + "_" + _u[-1]
+
+                if to_.get("obfuscate-names", False):
+                    tf_name = t_name[:-1] + "_" + t_name[-1]
+                    if "TARGET" in tokens:
+                        _u = tokens["TARGET"]
+                        tokens["TARGET"] = _u[:-1] + "_" + _u[-1]
+
+                if "disconnected" in format_string:
+                    pass
+
                 for line in msg.strip("\r").split("\n"):
                     format_string = formatting[f_str[0]][f_str[1]]
 
@@ -351,8 +368,8 @@ class BridgePlugin(plugin.PluginObject):
                         format_string = format_string.replace("{%s}" % k, v)
 
                     format_string = format_string.replace("{MESSAGE}", line)
-                    format_string = format_string.replace("{USER}", s_name)
-                    format_string = format_string.replace("{TARGET}", t_name)
+                    format_string = format_string.replace("{USER}", sf_name)
+                    format_string = format_string.replace("{TARGET}", tf_name)
                     format_string = format_string.replace("{PROTOCOL}",
                                                           caller.name)
 
