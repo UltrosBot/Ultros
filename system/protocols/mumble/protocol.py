@@ -488,6 +488,7 @@ class Protocol(ChannelsProtocol):
         """
         # TODO: Use UDP rather than TCP tunnel (see protocol docs section 5)
         # We don't actually need to parse this atm
+        return
         _first_byte = ord(data[0])
         msg_type = (_first_byte & 0xE0) >> 5
         target = _first_byte & 0x1F
