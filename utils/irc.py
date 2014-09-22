@@ -115,9 +115,10 @@ class IRCUtils(object):
 
     _case_mapping = RFC1459
 
-    def __init__(self, log, case_mapping="rfc1459"):
+    def __init__(self, log, case_mapping="rfc1459", chan_types="&#+!"):
         self.log = log
         self.case_mapping = case_mapping
+        self.chan_types = chan_types
 
     @property
     def case_mapping(self):
@@ -234,3 +235,6 @@ class IRCUtils(object):
         :return: Stripped string.
         """
         return strip_formatting(message)
+
+    def is_channel(self, target):
+        return target[0] in self.chan_types

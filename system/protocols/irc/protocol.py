@@ -777,6 +777,10 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                 self.ranks = Ranks()
                 for k, v in self.supported.getFeature("PREFIX").iteritems():
                     self.ranks.add_rank(k, v[0], v[1])
+            elif prm == "CHANTYPES":
+                derp = self.supported.getFeature("CHANTYPES")
+                self.utils.chan_types =\
+                    self.supported.getFeature("CHANTYPES")[0]  # Tuple
 
         event = irc_events.ISUPPORTReplyEvent(self, prefix, params)
         self.event_manager.run_callback("IRC/ISUPPORT", event)
@@ -1073,7 +1077,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
     def send_msg(self, target, message, target_type=None, use_event=True):
         if isinstance(target, str):
-            if target.startswith("#") or target.startswith("&"):
+            if self.utils.is_channel(target):
                 # Channel
                 target = self.get_channel(target)
                 if not target:
@@ -1093,7 +1097,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
     def send_action(self, target, message, target_type=None, use_event=True):
         if isinstance(target, str):
-            if target.startswith("#") or target.startswith("&"):
+            if self.utils.is_channel(target):
                 # Channel
                 target = self.get_channel(target)
                 if not target:
