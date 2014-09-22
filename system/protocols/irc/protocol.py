@@ -7,6 +7,7 @@ from twisted.internet import reactor
 from twisted.words.protocols import irc
 
 from system.command_manager import CommandManager
+from system.decorators.log import deprecated
 from system.enums import CommandState
 from system.event_manager import EventManager
 from system.events import irc as irc_events
@@ -1126,6 +1127,72 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         for line in messages:
             self.sendLine(line, True)
 
+    @deprecated("Use join_channel()")
+    def join(self, *args, **kwargs):
+        """
+        DEPRECATED: Use join_channel
+        """
+        # NOTE: This method is only here to prevent unwanted behaviour from
+        # anything calling the base twisted irc client method. It should be
+        # removed if we ever get around to removing that dependency.
+        self.join_channel(*args, **kwargs)
+
+    @deprecated("Use leave_channel()")
+    def leave(self, *args, **kwargs):
+        """
+        DEPRECATED: Use leave_channel()
+        """
+        # NOTE: This method is only here to prevent unwanted behaviour from
+        # anything calling the base twisted irc client method. It should be
+        # removed if we ever get around to removing that dependency.
+        self.leave_channel(*args, **kwargs)
+
+    part = leave
+
+    def invite(self, user, channel):
+        """
+        Attempt to invite user to channel
+
+        @type user: C{str}
+        @param user: The user to invite
+        @type channel: C{str}
+        @param channel: The channel to invite the user too
+
+        @since: 11.0
+        """
+        self.sendLine(u"INVITE %s %s" % (user, channel))
+
+    def topic(self, channel, topic=None):
+        """
+        Attempt to set the topic of the given channel, or ask what it is.
+
+        If topic is None, then I sent a topic query instead of trying to set
+        the topic. The server should respond with a TOPIC message containing
+        the current topic of the given channel.
+
+        @type channel: C{str}
+        @param channel: The name of the channel to change the topic on.
+        @type topic: C{str}
+        @param topic: If specified, what to set the topic to.
+        """
+        # << TOPIC #xtestx :fff
+        if topic is None:
+            self.sendLine(u"TOPIC %s" % channel)
+        else:
+            self.sendLine(u"TOPIC %s :%s" % (channel, topic))
+
+    @deprecated("Use send_msg()")
+    def say(self, channel, message, length=None):
+        """
+        DEPRECATED: Use send_msg
+
+        The length parameter is ignored.
+        """
+        # NOTE: This method is only here to prevent unwanted behaviour from
+        # anything calling the base twisted irc client method. It should be
+        # removed if we ever get around to removing that dependency.
+        self.send_msg(channel, message)
+
     def kick(self, user, channel=None, reason=None, force=False):
         # TODO: Event?
         if not force:
@@ -1134,9 +1201,10 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                 return False
         if channel is None:
             return False
-        if reason is None:
-            reason = ""
-        self.sendLine(u"KICK %s %s :%s" % (channel, user, reason))
+        if reason:
+            self.sendLine(u"KICK %s %s :%s" % (channel, user, reason))
+        else:
+            self.sendLine(u"KICK %s %s" % (channel, user))
         return True
 
     def ban(self, user, channel=None, reason=None, force=False):
@@ -1145,11 +1213,17 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         return False
 
     def join_channel(self, channel, password=None):
-        self.join(channel, password)
+        if password:
+            self.sendLine(u"JOIN %s %s" % (channel, password))
+        else:
+            self.sendLine(u"JOIN %s" % (channel,))
         return True
 
     def leave_channel(self, channel, reason=None):
-        self.leave(channel, reason)
+        if reason:
+            self.sendLine(u"PART %s :%s" % (channel, reason))
+        else:
+            self.sendLine(u"PART %s" % (channel,))
         return True
 
     def send_notice(self, target, message, use_event=True):
