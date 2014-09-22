@@ -139,10 +139,7 @@ class IRCUtils(object):
         :return:
         """
         try:
-            x = val.lower()
-            y = self.CASE_MAPPINGS
-            self._case_mapping = y[x]
-            # self._case_mapping = self.CASE_MAPPINGS[val.lower()]
+            self._case_mapping = self.CASE_MAPPINGS[val.lower()]
         except Exception:
             self.log.warning(_("Invalid case mapping: %s") % val)
 
