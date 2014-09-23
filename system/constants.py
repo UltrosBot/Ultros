@@ -5,6 +5,12 @@ __version__ = "1.1.0"
 __version_info__ = "Not being run from a Git repo."
 __release__ = "1.1.0"
 
+version_info = {
+    "release": __release__,
+    "hash": None,
+    "commit": None
+}
+
 import datetime
 
 try:
@@ -21,6 +27,9 @@ try:
                             commit.committed_date
                         ).strftime("%d %b, %Y - %H:%M:%S"),
                         commit.summary.replace("\n", " / "))
+
+    version_info["hash"] = str(commit)
+    version_info["commit"] = commit.summary.replace("\n", " / ")
 except Exception as e:
     if __version__ is None:
         __version__ = "1.1.0"

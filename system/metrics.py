@@ -11,6 +11,7 @@ import urllib2
 
 from twisted.internet.task import LoopingCall
 
+from system.constants import version_info
 from system.decorators.threads import run_async_threadpool
 from system.event_manager import EventManager
 from system.singleton import Singleton
@@ -83,9 +84,9 @@ class Metrics(object):
     task = None
     manager = None
 
-    interval = 300  # Every 5 minutes
+    interval = 1  # Every 5 minutes
 
-    domain = "https://ultros.io"
+    domain = "http://localhost:8080"
 
     submit_url = domain + "/api/metrics/post/%s"
     exception_url = domain + "/api/metrics/post/exception/%s"
@@ -213,11 +214,16 @@ class Metrics(object):
                     "x64" if is_64bits else "x86"
                 )
 
+                release = version_info["release"]
+                _hash = version_info["hash"] or "Zipball (%s)" % release
+
                 compiled["system"] = {
                     "cpu": cpu,
                     "os": _os,
                     "python": python,
-                    "ram": ram
+                    "ram": ram,
+                    "release": release,
+                    "hash": _hash
                 }
 
                 r = self.post(self.submit_url % self.data["uuid"], compiled)
