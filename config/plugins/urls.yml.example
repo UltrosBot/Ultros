@@ -51,3 +51,9 @@ catcher:
   ignored:  # A list of channels to ignore links from
             # Channels are in the format "protocol:channel"
   - "irc-esper:#staff"
+
+accept_language:
+  # This section is entirely optional
+  # default: "en"  # Sent for any site not in the list below
+  domains:  # Leave out the starting "www."
+    "example.com": "en-GB,en;q=0.9"

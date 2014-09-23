@@ -480,6 +480,21 @@ class URLsPlugin(plugin.PluginObject):
                                                  'i686; en-US; rv:1.9.0.1) '
                                                  'Gecko/2008071615 Fedora/3.0.'
                                                  '1-1.fc9-1.fc9 Firefox/3.0.1')
+
+            # Deal with Accept-Language
+            language_value = None
+            language = self.config.get("accept_language", {})
+            language_domains = language.get("domains", {})
+            if domain in language_domains:
+                language_value = language_domains[domain]
+            elif domain.lower() in language_domains:
+                language_value = language_domains[domain.lower()]
+            elif "default" in language:
+                language_value = language["default"]
+
+            if language_value is not None:
+                request.add_header("Accept-Language", language_value)
+
             response = urllib2.urlopen(request)
 
             self.logger.trace(_("Info: %s") % response.info())
