@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 from system.protocols.mumble.acl import Perms
+from utils.protobuf import decode_varint
 
 __author__ = 'Gareth Coles'
 
@@ -121,6 +122,10 @@ class Protocol(ChannelsProtocol):
         self.tokens = config["identity"]["tokens"]
 
         self.control_chars = config["control_chars"]
+
+        audio_conf = config.get("audio", {})
+        self.should_mute_self = audio_conf.get("should_mute_self", True)
+        self.should_deafen_self = audio_conf.get("should_deafen_self", True)
 
         event = general_events.PreConnectEvent(self, config)
         self.event_manager.run_callback("PreConnect", event)
@@ -260,10 +265,11 @@ class Protocol(ChannelsProtocol):
         # Then we initialize our ping handler
         self.init_ping()
 
-        # Then we mute ourselves to prevent errors with voice packets
+        # Mute/deafen ourselves if wanted (saves processing UDP packets if not
+        # needed)
         message = Mumble_pb2.UserState()
-        message.self_mute = True
-        message.self_deaf = True
+        message.self_mute = self.should_mute_self
+        message.self_deaf = self.should_deafen_self
 
         self.sendProtobuf(message)
 
@@ -296,17 +302,24 @@ class Protocol(ChannelsProtocol):
                 self.log.trace(_("Need to fill data"))
                 return
 
-            # Read the specific message
-            msg = Protocol.ID_MESSAGE[msg_type]()
-            msg.ParseFromString(
-                self.received[Protocol.PREFIX_LENGTH:
-                              Protocol.PREFIX_LENGTH + length])
+            # Read and handle the specific message
+            if msg_type == 1:
+                # Non-Protobuf messages
+                # 1 is taken from the position of UDPTunnel in ID_MESSAGE
+                self.recv_UDP(self.received[Protocol.PREFIX_LENGTH:
+                                            Protocol.PREFIX_LENGTH + length])
+            else:
+                # Regular (Protobuf) messages
+                msg = Protocol.ID_MESSAGE[msg_type]()
+                msg.ParseFromString(
+                    self.received[Protocol.PREFIX_LENGTH:
+                                  Protocol.PREFIX_LENGTH + length])
 
-            # Handle the message
-            try:
-                self.recvProtobuf(msg_type, msg)
-            except Exception:
-                self.log.exception(_("Exception while handling data."))
+                # Handle the message
+                try:
+                    self.recvProtobuf(msg_type, msg)
+                except Exception:
+                    self.log.exception(_("Exception while handling data."))
 
             self.received = self.received[full_length:]
 
@@ -467,6 +480,39 @@ class Protocol(ChannelsProtocol):
 
             event = mumble_events.Unknown(self, type(message), message)
             self.event_manager.run_callback("Mumble/Unknown", event)
+
+    def recv_UDP(self, data):
+        """
+        Handle a UDP message (whether it be from actual UDP or via TCP tunnel)
+        :param data: UDP
+        """
+        # TODO: Use UDP rather than TCP tunnel (see protocol docs section 5)
+        # We don't actually need to parse this atm
+        return
+        _first_byte = ord(data[0])
+        msg_type = (_first_byte & 0xE0) >> 5
+        target = _first_byte & 0x1F
+        pos = 1
+        session, pos = decode_varint(data, pos)
+        sequence, pos = decode_varint(data, pos)
+        self.log.trace(
+            "UDP Message: Type=%s, target=%s, session=%s, sequence=%s",
+            msg_type,
+            target,
+            self.get_user(session),
+            sequence
+        )
+        # TEMP: Forward the packet back to the server
+
+        msg_data = data
+
+        length = len(msg_data)
+
+        # Compile the data with the header
+        data = struct.pack(Protocol.PREFIX_FORMAT, 1, length) + msg_data
+
+        # Send the data
+        # self.transport.write(data)
 
     def init_ping(self):
         # Call ping every PING_REPEAT_TIME seconds.

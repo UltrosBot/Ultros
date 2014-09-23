@@ -115,9 +115,10 @@ class IRCUtils(object):
 
     _case_mapping = RFC1459
 
-    def __init__(self, log, case_mapping="rfc1459"):
+    def __init__(self, log, case_mapping="rfc1459", chan_types="&#+!"):
         self.log = log
         self.case_mapping = case_mapping
+        self.chan_types = chan_types
 
     @property
     def case_mapping(self):
@@ -139,10 +140,7 @@ class IRCUtils(object):
         :return:
         """
         try:
-            x = val.lower()
-            y = self.CASE_MAPPINGS
-            self._case_mapping = y[x]
-            # self._case_mapping = self.CASE_MAPPINGS[val.lower()]
+            self._case_mapping = self.CASE_MAPPINGS[val.lower()]
         except Exception:
             self.log.warning(_("Invalid case mapping: %s") % val)
 
@@ -237,3 +235,6 @@ class IRCUtils(object):
         :return: Stripped string.
         """
         return strip_formatting(message)
+
+    def is_channel(self, target):
+        return target[0] in self.chan_types

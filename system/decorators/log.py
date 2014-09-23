@@ -4,6 +4,7 @@ of deprecating things.
 """
 
 import logging
+import traceback
 from utils import log
 
 __author__ = 'Sean'
@@ -111,7 +112,15 @@ def deprecated(hint_message=None, logger=None):
             msg += " - " + hint_message
 
         def wrapper(*args, **kwargs):
-            logger.warning(msg)
+            try:
+                logger.warning(
+                    msg + "\n" + traceback.format_list(
+                        traceback.extract_stack()[-2:-1]
+                    )[0].strip()
+                )
+            except Exception:
+                # In case the traceback is derp and the index assumptions break
+                logger.warning(msg)
             return func(*args, **kwargs)
         return wrapper
     return wrap_func
