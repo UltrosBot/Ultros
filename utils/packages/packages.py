@@ -7,8 +7,6 @@ management script.
 
 __author__ = 'Gareth Coles'
 
-import calendar
-import datetime
 import os
 import pip
 import shutil
@@ -59,9 +57,9 @@ class Packages(object):
         self.config = self.storage.get_file(self, "data", YAML, "packages.yml")
 
         with self.config:
-            if not "installed" in self.config:
+            if "installed" not in self.config:
                 self.config["installed"] = {}
-            if not "etags" in self.config:
+            if "etags" not in self.config:
                 self.config["etags"] = {}
 
     def _get_file(self, base_path, path, overwrite=False):

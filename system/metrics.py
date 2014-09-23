@@ -201,7 +201,7 @@ class Metrics(object):
             try:
                 compiled["enabled"] = True
 
-                is_64bits = sys.maxsize > 2**32
+                is_64bits = sys.maxsize > 2 ** 32
 
                 cpu = platform.processor().strip() or "Unknown"
                 _os = platform.system()
