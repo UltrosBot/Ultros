@@ -257,7 +257,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
         def do_channel_joins():
             for channel in self.config["channels"]:
-                self.join(channel["name"], channel["key"])
+                self.join_channel(channel["name"], channel["key"])
 
             _event = general_events.PostSetupEvent(self, self.config)
             self.event_manager.run_callback("PostSetup", _event)
@@ -1128,14 +1128,14 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             self.sendLine(line, True)
 
     @deprecated("Use join_channel()")
-    def join(self, *args, **kwargs):
+    def join(self, channel, key=None):
         """
         DEPRECATED: Use join_channel
         """
         # NOTE: This method is only here to prevent unwanted behaviour from
         # anything calling the base twisted irc client method. It should be
         # removed if we ever get around to removing that dependency.
-        self.join_channel(*args, **kwargs)
+        self.join_channel(channel, key)
 
     @deprecated("Use leave_channel()")
     def leave(self, *args, **kwargs):
