@@ -34,7 +34,7 @@ do
     python run.py --update
 
     echo "** Updating plugins.. **"
-    python packages.py update all
+    python packages.py update all --overwrite
 done
 
 echo "** Deactivating virtualenv.. **"

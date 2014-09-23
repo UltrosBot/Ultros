@@ -7,10 +7,11 @@ management script.
 
 __author__ = 'Gareth Coles'
 
+import calendar
+import datetime
 import os
 import pip
 import shutil
-import urllib
 import urllib2
 import yaml
 
@@ -56,15 +57,45 @@ class Packages(object):
             self.packages = sorted(self.data.keys())
 
         self.config = self.storage.get_file(self, "data", YAML, "packages.yml")
-        if len(self.config) == 0:
-            self.config["installed"] = {}
 
-    def _get_file(self, base_path, path):
-        if os.path.exists(path):
+        with self.config:
+            if not "installed" in self.config:
+                self.config["installed"] = {}
+            if not "etags" in self.config:
+                self.config["etags"] = {}
+
+    def _get_file(self, base_path, path, overwrite=False):
+        if os.path.exists(path) and not overwrite:
             raise ValueError("A file at `%s` already exists" % path)
 
         constructed_path = self.base_file_url + base_path + path
-        urllib.urlretrieve(constructed_path, path)
+        etag = None
+
+        opener = urllib2.build_opener()
+        request = urllib2.Request(constructed_path)
+        stream = opener.open(request)
+
+        if "ETag" in stream.headers:
+            etag = stream.headers["ETag"]
+
+        if os.path.exists(path):
+            if etag is not None and path in self.config["etags"]:
+                if etag == self.config["etags"][path]:
+                    raise urllib2.HTTPError(
+                        constructed_path,
+                        304,
+                        "Matching ETag",
+                        stream.headers,
+                        stream
+                    )
+
+        with open(path, 'wb') as fp:
+            fp.write(stream.read())
+            fp.flush()
+
+        if etag is not None:
+            with self.config:
+                self.config["etags"][path] = etag
 
     def get_installed_packages(self):
         return self.config["installed"]
@@ -111,13 +142,14 @@ class Packages(object):
         """
         return package in self.config["installed"]
 
-    def install_package(self, package):
+    def install_package(self, package, overwrite=False):
         """
         Attempt to install a package.
         :param package: The package to try to install
+        :param overwrite: Whether to just overwrite an installed package
         :return: Any conflicts that were detected
         """
-        if self.package_installed(package):
+        if self.package_installed(package) and not overwrite:
             raise ValueError("Package '%s' is already installed"
                              % package)
         info = self.get_package_info(package)
@@ -149,13 +181,24 @@ class Packages(object):
                     print ">> Folder | Already exists (%s/%s): %s" % \
                           (current_folder, total_folders, _file)
                     path = _file
-                    conflicts["folders"].append(path)
+                    if not overwrite:
+                        conflicts["folders"].append(path)
                 current_folder += 1
             else:
-                if not os.path.exists(_file):
-                    print ">>   File | Downloading (%s/%s): %s" % \
-                          (current_file, total_files, _file)
-                    self._get_file(package + "/", _file)
+                if not os.path.exists(_file) or overwrite:
+                    try:
+                        self._get_file(package + "/", _file, overwrite)
+                        print ">>   File | Downloaded (%s/%s): %s" % \
+                            (current_file, total_files, _file)
+                    except urllib2.HTTPError as e:
+                        if e.code == 304:
+                            print ">>   File | Skipping (%s/%s): %s " \
+                                  "[Matching ETag]" % \
+                                (current_file, total_files, _file)
+                        else:
+                            print ">>   File | Failed (%s/%s): %s" % \
+                                  (current_file, total_files, _file)
+                            raise
                 else:
                     print ">>   File | Conflict (%s/%s): %s" % \
                           (current_file, total_files, _file)

@@ -30,6 +30,12 @@ operations = ["install", "update", "uninstall", "list", "list-installed",
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description=DESC)
     p.add_argument("-l", "--language", help="Specify which language to use")
+    p.add_argument(
+        "-ow",
+        "--overwrite",
+        action="store_true",
+        help="Overwrite already-installed packages"
+    )
     p.add_argument("operation", help="Specify what to do.", choices=operations)
     p.add_argument("target", nargs="?", default=None)
 
@@ -138,11 +144,18 @@ def main():
             for package in packages.config["installed"].keys():
                 _args[1] = package
 
+                if not args.overwrite:
+                    uninstall(_args, packages)
+                    install(_args, packages)
+                else:
+                    install(_args, packages, True)
+
+        else:
+            if not args.overwrite:
                 uninstall(_args, packages)
                 install(_args, packages)
-        else:
-            uninstall(_args, packages)
-            install(_args, packages)
+            else:
+                install(_args, packages, True)
     else:
         print _(">> Unknown operation: %s") % operation
 
@@ -201,7 +214,7 @@ def _list_installed(args, packages):
     print "+%s+%s+" % ("-" * 17, "-" * 12)
 
 
-def install(args, packages):
+def install(args, packages, overwrite=False):
     if len(args) < 2:
         print _(">> Syntax: 'python packages.py install <package>'")
         print _(">> Try 'python packages.py -h' if you're stuck")
@@ -211,12 +224,12 @@ def install(args, packages):
 
     print _(">> Installing package '%s'.") % package
 
-    if packages.package_installed(package):
+    if packages.package_installed(package) and not overwrite:
         print _(">> Package is already installed. Nothing to do.")
         return exit(1)
 
     try:
-        conflicts = packages.install_package(package)
+        conflicts = packages.install_package(package, overwrite)
     except Exception as e:
         print _(">> Error installing package: %s") % e
         exc_type, exc_value, exc_traceback = sys.exc_info()
