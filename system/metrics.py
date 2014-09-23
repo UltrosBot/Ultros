@@ -3,6 +3,8 @@ import urllib
 __author__ = 'Gareth Coles'
 
 import json
+import platform
+import psutil
 import urllib2
 import traceback
 
@@ -197,6 +199,24 @@ class Metrics(object):
 
             try:
                 compiled["enabled"] = True
+
+                cpu = platform.processor().strip()
+                _os = platform.system()
+                python = "%s %s" % (
+                    platform.python_implementation(), platform.python_version()
+                )
+                ram = psutil.virtual_memory().total / 1048576.0
+
+                if cpu == "":
+                    cpu = "Unknown"
+
+                compiled["system"] = {
+                    "cpu": cpu,
+                    "os": _os,
+                    "python": python,
+                    "ram": ram
+                }
+
                 r = self.post(self.submit_url % self.data["uuid"], compiled)
                 r = json.loads(r)
 
