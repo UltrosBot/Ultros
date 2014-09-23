@@ -18,6 +18,8 @@ import os
 import sys
 import traceback
 
+is_64bits = sys.maxsize > 2 ** 32
+
 if os.path.dirname(sys.argv[0]):
     os.chdir(os.path.dirname(sys.argv[0]))
 
@@ -334,22 +336,40 @@ def setup(auto=False):
             if x in reqs:
                 reqs.remove(x)
 
-        urls = {
-            "Twisted": [
-                ["https://pypi.python.org/packages/2.7/T/Twisted/Twisted-"
-                 "13.2.0.win32-py2.7.msi", "twisted.msi"]
-            ],
-            "OpenSSL and PyOpenSSL": [
-                ["http://slproweb.com/download/Win32OpenSSL-1_0_1h.exe",
-                 "openssl.exe"],
-                ["https://pypi.python.org/packages/2.7/p/pyOpenSSL/pyOpenSSL-0"
-                 ".13.1.win32-py2.7.exe", "pyopenssl.exe"]
-            ],
-            "PSUtil": [
-                ["https://pypi.python.org/packages/2.7/p/psutil/"
-                 "psutil-2.1.1.win32-py2.7.exe", "psutil.exe"]
-            ]
-        }
+        if not is_64bits:
+            urls = {
+                "Twisted": [
+                    ["https://pypi.python.org/packages/2.7/T/Twisted/"
+                     "Twisted-14.0.2.win32-py2.7.msi", "twisted.msi"]
+                ],
+                "OpenSSL and PyOpenSSL": [
+                    ["https://slproweb.com/download/Win32OpenSSL-1_0_1i.exe",
+                     "openssl.exe"],
+                    ["https://pypi.python.org/packages/2.7/p/pyOpenSSL/"
+                     "pyOpenSSL-0.13.1.win32-py2.7.exe", "pyopenssl.exe"]
+                ],
+                "PSUtil": [
+                    ["https://pypi.python.org/packages/2.7/p/psutil/"
+                     "psutil-2.1.2.win32-py2.7.exe", "psutil.exe"]
+                ]
+            }
+        else:
+            urls = {
+                "Twisted": [
+                    ["https://pypi.python.org/packages/2.7/T/Twisted/"
+                     "Twisted-14.0.2.win-amd64-py2.7.msi", "twisted.msi"]
+                ],
+                "OpenSSL and PyOpenSSL": [
+                    ["https://slproweb.com/download/Win64OpenSSL-1_0_1i.exe",
+                     "openssl.exe"],
+                    ["https://pypi.python.org/packages/2.7/p/pyOpenSSL/"
+                     "pyOpenSSL-0.13.1.win-amd64-py2.7.exe", "pyopenssl.exe"]
+                ],
+                "PSUtil": [
+                    ["https://pypi.python.org/packages/2.7/p/psutil/"
+                     "psutil-2.1.2.win-amd64-py2.7.exe", "psutil.exe"]
+                ]
+            }
 
         pip.main(["install"] + reqs)
 
