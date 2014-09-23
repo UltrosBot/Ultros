@@ -84,9 +84,9 @@ class Metrics(object):
     task = None
     manager = None
 
-    interval = 1  # Every 5 minutes
+    interval = 300  # Every 5 minutes
 
-    domain = "http://localhost:8080"
+    domain = "https://ultros.io"
 
     submit_url = domain + "/api/metrics/post/%s"
     exception_url = domain + "/api/metrics/post/exception/%s"
