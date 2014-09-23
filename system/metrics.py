@@ -5,8 +5,9 @@ __author__ = 'Gareth Coles'
 import json
 import platform
 import psutil
-import urllib2
+import sys
 import traceback
+import urllib2
 
 from twisted.internet.task import LoopingCall
 
@@ -200,15 +201,17 @@ class Metrics(object):
             try:
                 compiled["enabled"] = True
 
-                cpu = platform.processor().strip()
+                is_64bits = sys.maxsize > 2**32
+
+                cpu = platform.processor().strip() or "Unknown"
                 _os = platform.system()
-                python = "%s %s" % (
-                    platform.python_implementation(), platform.python_version()
-                )
                 ram = psutil.virtual_memory().total / 1048576.0
 
-                if cpu == "":
-                    cpu = "Unknown"
+                python = "%s %s %s" % (
+                    platform.python_implementation(),
+                    platform.python_version(),
+                    "x64" if is_64bits else "x86"
+                )
 
                 compiled["system"] = {
                     "cpu": cpu,
