@@ -193,10 +193,12 @@ To start Ultros in debug mode::
 Mac OSX
 -------
 
+These instructions are for Mavericks (10.9) and may need to be modified accordingly.
+
 * First of all, you should install Homebrew, if you haven't already: http://brew.sh/
+* Set up your environment as described here: http://hackercodex.com/guide/mac-osx-mavericks-10.9-configuration/
 * Open Terminal.app and run the following::
 
-    sudo xcode-select --install
     brew install python
     cd <path>  # Replace <path> with the directory you downloaded Ultros to
     pip install -r requirements.txt
