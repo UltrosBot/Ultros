@@ -407,3 +407,33 @@ class ActionSent(GeneralEvent):
                "printable: %s>" % (self.__class__.__name__, hex(id(self)),
                                    str(self.target),
                                    repr(self.message), self.printable)
+
+
+class ActionReceived(GeneralEvent):
+    """
+    Thrown when we get a message.
+
+    This is an action (for example, /me).
+    See the `PreMessageReceived` event for param info.
+    """
+
+    source = None
+    target = None
+    message = ""
+
+    def __init__(self, caller, source, target, message):
+        """
+        Initialise the event object.
+        """
+
+        self.source = source
+        self.target = target
+        self.message = message
+
+        super(ActionReceived, self).__init__(caller)
+
+    def __str__(self):
+        return "<%s at %s | target: %s | source: %s | " \
+               "message: %s>" % (self.__class__.__name__, hex(id(self)),
+                                 str(self.target), str(self.source),
+                                 repr(self.message))

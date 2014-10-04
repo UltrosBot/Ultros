@@ -480,6 +480,14 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             event.cancelled = True
         self.event_manager.run_callback("IRC/CTCPQueryReceived", event)
 
+        if action.upper() == "ACTION":
+            e = general_events.ActionReceived(
+                self, user_obj, channel_obj, data
+            )
+
+            e.cancelled = event.cancelled
+
+            self.event_manager.run_callback("ActionReceived", e)
         if not event.cancelled:
             # Call super() to handle specific commands appropriately
             irc.IRCClient.ctcpQuery(self, user, channel, messages)
