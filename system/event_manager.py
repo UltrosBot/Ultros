@@ -2,7 +2,6 @@
 __author__ = "Gareth Coles"
 
 from operator import itemgetter
-from types import FunctionType
 
 from twisted.internet import reactor
 
@@ -260,7 +259,7 @@ class EventManager(object):
             main reactor thread.
 
         :type callback: str
-        :type event: object
+        :type event: BaseEvent
         :type threaded: bool
         :type from_thread: bool
         """
@@ -289,7 +288,7 @@ class EventManager(object):
                 try:
                     self.logger.debug(_("Running callback: %s") % cb)
                     if cb["filter"]:
-                        if isinstance(cb["filter"], FunctionType):
+                        if callable(cb["filter"]):
                             if not cb["filter"](event):
                                 self.logger.trace(_("Not running, filter "
                                                     "function returned "
@@ -297,7 +296,7 @@ class EventManager(object):
                                 continue
                         else:
                             self.logger.warn(_("Not running event, filter "
-                                               "is not actually a function. "
+                                               "is not actually a callable. "
                                                "Bug the developers of the %s "
                                                "plugin about it!") %
                                              cb["name"])
