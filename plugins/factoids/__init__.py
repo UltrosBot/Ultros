@@ -2,6 +2,7 @@
 
 from kitchen.text.converters import to_unicode
 from twisted.internet import defer
+from xml.sax.saxutils import escape
 
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
@@ -549,8 +550,9 @@ class FactoidsPlugin(plugin.PluginObject):
             fragment += "<tr>"
 
             for column in row:
-                fragment += "<td>%s</td>" % column.replace("\n",
-                                                           "<br /><br />")
+                fragment += "<td>%s</td>" % escape(column).replace(
+                    "\n", "<br /><br />"
+                )
             fragment += "</tr>"
 
         fragment += "</tbody>" \
@@ -566,8 +568,8 @@ class FactoidsPlugin(plugin.PluginObject):
             self.logger.debug("Web plugin not found.")
             return
 
-        y.data = web.wrap_template(_("Error: %s") % failure, _("Factoids"),
-                                   _("Factoids"), r=objs)
+        y.data = web.wrap_template(_("Error: %s") % escape(failure),
+                                   _("Factoids"), _("Factoids"), r=objs)
 
     def web_factoids(self):
         web = self.plugman.get_plugin("Web")
