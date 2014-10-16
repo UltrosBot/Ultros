@@ -26,7 +26,7 @@ class test_commands:
         # Clean up
         self.manager.commands = {}
         self.manager.aliases = {}
-        self.manager.auth_handlers = []
+        self.manager.auth_handler = None
         self.manager.perm_handler = None
 
         self.plugin.reset_mock()
@@ -175,7 +175,7 @@ class test_commands:
         auth = Mock(name="auth")
         perms = Mock(name="perms")
 
-        self.manager.add_auth_handler(auth)
+        self.manager.set_auth_handler(auth)
         self.manager.set_permissions_handler(perms)
 
         ### COMMAND WITH PERMISSION ###
