@@ -15,6 +15,7 @@ of classes.
 
 __author__ = "Gareth Coles"
 
+import datetime
 import json
 import os
 import pprint
@@ -47,6 +48,17 @@ class Data(object):
     #: List of callbacks to be called when the file is reloaded
     #: :type: list
     callbacks = None
+
+    @property
+    def mtime(self):
+        """
+        The last modified time of this data file.
+
+        Returns None if this isn't a file-like and can't know this.
+
+        :rtype: datetime.datetime, None
+        """
+        return None
 
     def validate(self, data):
         """
@@ -157,6 +169,12 @@ class YamlData(Data):
     _context_guarded = False
 
     format = formats.YAML
+
+    @property
+    def mtime(self):
+        return datetime.datetime.fromtimestamp(
+            os.path.getmtime(self.filename)
+        )
 
     def __init__(self, filename):
         self.callbacks = []
@@ -269,6 +287,15 @@ class YamlData(Data):
 
     def items(self):
         return self.data.items()
+
+    def iteritems(self):
+        return self.data.iteritems()
+
+    def iterkeys(self):
+        return self.data.iterkeys()
+
+    def itervalues(self):
+        return self.data.itervalues()
 
     def values(self):
         return self.data.values()
@@ -389,6 +416,15 @@ class MemoryData(Data):
     def items(self):
         return self.data.items()
 
+    def iteritems(self):
+        return self.data.iteritems()
+
+    def iterkeys(self):
+        return self.data.iterkeys()
+
+    def itervalues(self):
+        return self.data.itervalues()
+
     def values(self):
         return self.data.values()
 
@@ -457,6 +493,12 @@ class JSONData(Data):
     mutex = Lock()
     context_mutex = Lock()
     _context_guarded = False
+
+    @property
+    def mtime(self):
+        return datetime.datetime.fromtimestamp(
+            os.path.getmtime(self.filename)
+        )
 
     def __init__(self, filename):
         self.callbacks = []
@@ -579,6 +621,15 @@ class JSONData(Data):
 
     def items(self):
         return self.data.items()
+
+    def iteritems(self):
+        return self.data.iteritems()
+
+    def iterkeys(self):
+        return self.data.iterkeys()
+
+    def itervalues(self):
+        return self.data.itervalues()
 
     def values(self):
         return self.data.values()

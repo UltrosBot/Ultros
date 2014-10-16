@@ -3,6 +3,7 @@ __author__ = "Gareth Coles"
 
 import shlex
 
+from system.decorators.log import deprecated
 from system.decorators.ratelimit import RateLimitExceededError
 from system.enums import CommandState
 from system.events import general as events
@@ -41,11 +42,18 @@ class CommandManager(object):
     #:     }
     aliases = {}
 
-    #: Storage for all the registered auth handlers.
+    @property
+    @deprecated("Use the singular auth_handler instead")
+    def auth_handlers(self):
+        if self.auth_handler:
+            return [self.auth_handler]
+        return []
+
+    #: Storage for all the registered auth handler.
     #:
     #: Auth handlers are in charge of asserting whether users are logged in
     #: or not, and identifying who they are logged in as.
-    auth_handlers = []
+    auth_handler = None
 
     #: Storage for the permissions handler. There may only ever be one of
     #: these.
@@ -323,7 +331,11 @@ class CommandManager(object):
         else:
             return CommandState.Success, None
 
+    @deprecated("Use set_auth_handler instead")
     def add_auth_handler(self, handler):
+        return self.set_auth_handler(handler)
+
+    def set_auth_handler(self, handler):
         """Add an auth handler, provided it hasn't already been added.
 
         :param handler: The handler to add
@@ -332,14 +344,11 @@ class CommandManager(object):
         :returns: Whether the handler was added or not
         :rtype: Boolean
         """
-        for instance in self.auth_handlers:
-            if isinstance(instance, handler.__class__):
-                self.logger.warn(_("Auth handler %s is already registered.")
-                                 % handler)
-                return False
+        if self.auth_handler is None:
+            self.auth_handler = handler
+            return True
 
-        self.auth_handlers.append(handler)
-        return True
+        return False
 
     def set_permissions_handler(self, handler):
         """Set the permissions handler, provided one hasn't already been set.

@@ -104,19 +104,19 @@ class permissionsHandler(object):
         """
         Check whether someone has a specified permission.
 
-        You can supply *source* and *protocol* as their relevant objects
-        or simple strings - however, *caller* must be a User object, and
-        *protocol* cannot be None.
+        You can supply *source*, *caller* and *protocol* as their relevant
+        objects or simple strings - however, *protocol* and *caller* cannot
+        be None.
 
         :param permission: The permission to check against
-        :param caller: The User to check against
+        :param caller: The User or username to check against
         :param source: The source to check against
         :param protocol: The protocol to check against
 
-        :type permission: str
-        :type caller: User
-        :type source: User, Channel, str, None
-        :type protocol: Protocol, str
+        :type permission: str, unicode
+        :type caller: User, str, unicode
+        :type source: User, Channel, str, unicode, None
+        :type protocol: Protocol, str, unicode
 
         :return: Whether the user has the given permission in this context
         :rtype: bool
@@ -126,12 +126,12 @@ class permissionsHandler(object):
 
         if isinstance(source, User):
             source = None
-        elif isinstance(source, str):
+        elif isinstance(source, str) or isinstance(source, unicode):
             source = source.lower()
         else:
             source = source.name.lower()
 
-        if isinstance(protocol, str):
+        if isinstance(protocol, str) or isinstance(protocol, unicode):
             protocol = protocol.lower()
         else:
             protocol = protocol.name.lower()
@@ -141,11 +141,17 @@ class permissionsHandler(object):
         self.plugin.logger.debug(_("CHECK | Source: %s") % source)
         self.plugin.logger.debug(_("CHECK | Protoc: %s") % protocol)
 
-        if caller.authorized:
+        superuser = self.plugin.config["use-superuser"]
+        username = None
+
+        if isinstance(caller, str) or isinstance(caller, unicode):
+            username = caller.lower()
+        elif caller.authorized:
             self.plugin.logger.debug(_("CHECK | Authorized: %s") %
                                      caller.authorized)
             username = caller.auth_name
-            superuser = self.plugin.config["use-superuser"]
+
+        if username is not None:
             return self.user_has_permission(username, permission,
                                             protocol, source,
                                             check_superadmin=superuser)
@@ -447,10 +453,10 @@ class permissionsHandler(object):
         :param check_group: Whether to check group permissions
         :param check_superadmin: Whether to honor superadmin
 
-        :type user: str
-        :type permission: str
-        :type protocol: str
-        :type source: str
+        :type user: str, unicode
+        :type permission: str, unicode
+        :type protocol: str, unicode
+        :type source: str, unicode
         :type check_group: bool
         :type check_superadmin: bool
 
@@ -461,7 +467,11 @@ class permissionsHandler(object):
         user = user.lower()
         permission = permission.lower()
 
+        user_group = "default"
+
         if user in self.data["users"]:
+            user_group = self.data["users"][user]["group"]
+
             if check_superadmin:
                 superadmin = self.get_user_option(user, "superadmin")
                 if superadmin:
@@ -483,12 +493,11 @@ class permissionsHandler(object):
             if self.compare_permissions(permission, user_perms):
                 return True
 
-            if check_group:
-                user_group = self.data["users"][user]["group"]
-                has_perm = self.group_has_permission(user_group, permission,
-                                                     protocol, source)
-                if has_perm:
-                    return True
+        if check_group:
+            has_perm = self.group_has_permission(user_group, permission,
+                                                 protocol, source)
+            if has_perm:
+                return True
         return False
 
     # Group operations

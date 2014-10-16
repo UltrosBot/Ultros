@@ -13,6 +13,7 @@ and data is very, very important.
 
 __author__ = "Gareth Coles"
 
+import datetime
 import json
 import pprint
 import os
@@ -40,6 +41,17 @@ class Config(object):
     #: List of callbacks to be called when the file is reloaded
     #: :type: list
     callbacks = None
+
+    @property
+    def mtime(self):
+        """
+        The last modified time of this data file.
+
+        Returns None if this isn't a file-like and can't know this.
+
+        :rtype: datetime.datetime, None
+        """
+        return None
 
     def validate(self, data):
         """
@@ -139,6 +151,12 @@ class YamlConfig(Config):
 
     callbacks = list()
 
+    @property
+    def mtime(self):
+        return datetime.datetime.fromtimestamp(
+            os.path.getmtime(self.filename)
+        )
+
     def __init__(self, filename):
         self.callbacks = []
 
@@ -219,6 +237,15 @@ class YamlConfig(Config):
     def items(self):
         return self.data.items()
 
+    def iteritems(self):
+        return self.data.iteritems()
+
+    def iterkeys(self):
+        return self.data.iterkeys()
+
+    def itervalues(self):
+        return self.data.itervalues()
+
     def values(self):
         return self.data.values()
 
@@ -279,6 +306,12 @@ class JSONConfig(Config):
 
     exists = True
     fh = None
+
+    @property
+    def mtime(self):
+        return datetime.datetime.fromtimestamp(
+            os.path.getmtime(self.filename)
+        )
 
     def __init__(self, filename):
         self.callbacks = []
@@ -359,6 +392,15 @@ class JSONConfig(Config):
 
     def items(self):
         return self.data.items()
+
+    def iteritems(self):
+        return self.data.iteritems()
+
+    def iterkeys(self):
+        return self.data.iterkeys()
+
+    def itervalues(self):
+        return self.data.itervalues()
 
     def values(self):
         return self.data.values()
@@ -446,6 +488,15 @@ class MemoryConfig(Config):
 
     def items(self):
         return self.data.items()
+
+    def iteritems(self):
+        return self.data.iteritems()
+
+    def iterkeys(self):
+        return self.data.iterkeys()
+
+    def itervalues(self):
+        return self.data.itervalues()
 
     def values(self):
         return self.data.values()

@@ -1,14 +1,12 @@
 #TODO: Go over documentation
 
+import system.plugin as plugin
+
 from kitchen.text.converters import to_unicode
 from twisted.internet import defer
-from xml.sax.saxutils import escape
 
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
-
-import system.plugin as plugin
-
 from system.plugins.manager import PluginManager
 from system.protocols.generic.channel import Channel
 from system.storage.formats import DBAPI
@@ -516,102 +514,19 @@ class FactoidsPlugin(plugin.PluginObject):
         pprint(result)
 
     def web_routes(self, event=None):
-        self.logger.info(_("Registering web routes.."))
+        self.logger.info(_("Registering web route.."))
 
+        #: :type: WebPlugin
         web = self.plugman.get_plugin("Web")
 
         if web is None:
             self.logger.debug("Web plugin not found.")
             return
 
-        web.add_route("/factoids", ["GET", "POST"], self.web_factoids)
-        web.add_route("/factoids/", ["GET", "POST"], self.web_factoids)
+        web.add_handler(r"/factoids", "plugins.factoids.route.Route")
+        web.add_handler(r"/factoids/", "plugins.factoids.route.Route")
 
-        web.add_navbar_entry("Factoids", "/factoids/", "text file outline")
-
-    def web_factoids_callback_success(self, result, y, objs):
-        web = self.plugman.get_plugin("Web")
-
-        if web is None:
-            self.logger.debug("Web plugin not found.")
-            return
-
-        fragment = "<table class=\"ui celled table segment table-sortable\">"
-        fragment += "<thead>" \
-                    "<tr>" + \
-                    _("<th>Location</th>") + \
-                    _("<th>Protocol</th>") + \
-                    _("<th>Channel</th>") + \
-                    _("<th>Name</th>") + \
-                    _("<th>Content</th>") + \
-                    "</tr></thead>" \
-                    "<tbody>"
-        for row in result:
-            fragment += "<tr>"
-
-            for column in row:
-                fragment += "<td>%s</td>" % escape(column).replace(
-                    "\n", "<br /><br />"
-                )
-            fragment += "</tr>"
-
-        fragment += "</tbody>" \
-                    "</table>"
-
-        y.data = web.wrap_template(fragment, _("Factoids"), _("Factoids"),
-                                   r=objs)
-
-    def web_factoids_callback_fail(self, failure, y, objs):
-        web = self.plugman.get_plugin("Web")
-
-        if web is None:
-            self.logger.debug("Web plugin not found.")
-            return
-
-        y.data = web.wrap_template(_("Error: %s") % escape(failure),
-                                   _("Factoids"), _("Factoids"), r=objs)
-
-    def web_factoids(self):
-        web = self.plugman.get_plugin("Web")
-
-        if web is None:
-            self.logger.debug("Web plugin not found.")
-            return
-
-        objs = web.get_objects()
-
-        r = web.check_permission(self.PERM_GET % "web", r=objs)
-
-        self.logger.trace(_("WEB | Checking permissions.."))
-
-        if not r:
-            self.logger.trace(_("WEB | User does not have permission. "
-                                "Are they logged in?"))
-            r = web.require_login(r=objs)
-
-            if not r[0]:
-                return r[1]
-
-            self.logger.trace(_("WEB | Yup. They must not have permission."))
-            self.logger.trace(_("WEB | Presenting error.."))
-
-            if not r:
-                return web.wrap_template(_("Error: You do not have permission "
-                                           "to list the factoids."),
-                                         _("Factoids"),
-                                         _("Factoids"))
-
-        self.logger.trace(_("WEB | User has permission."))
-
-        d = self.get_all_factoids()
-        y = web.get_yielder()
-
-        d.addCallbacks(self.web_factoids_callback_success,
-                       self.web_factoids_callback_fail,
-                       callbackArgs=(y, objs),
-                       errbackArgs=(y, objs))
-
-        return y
+        web.add_navbar_entry("factoids", "/factoids", "text file outline")
 
     def message_handler(self, event):
         """

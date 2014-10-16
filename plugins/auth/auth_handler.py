@@ -14,12 +14,12 @@ documented methods.
 
 __author__ = 'Gareth Coles'
 
-# Required: authorized(caller, source, protocol)
-
-from utils.password import mkpasswd
 import hashlib
 
 from system.translations import Translations
+from utils.password import mkpasswd
+
+from weakreflist.weakreflist import WeakList
 _ = Translations().get()
 
 
@@ -27,6 +27,8 @@ class authHandler(object):
     """
     Authorization handler class
     """
+
+    users = {}
 
     def __init__(self, plugin, data, blacklist):
         """
@@ -42,6 +44,56 @@ class authHandler(object):
 
         self.create_superadmin_account()
         self.create_blacklisted_passwords()
+
+    def add_logged_in_user(self, username, user):
+        """
+        Store a logged-in user in our internal weak-list-using dict
+
+        This should only be used internally but is here just in case it's
+        needed
+
+        :param username: The username of the user object
+        :param user: The user object
+        """
+        if username not in self.users:
+            self.users[username] = WeakList([user])
+        else:
+            self.users[username].append(user)
+
+    def delete_logged_in_user(self, username, user):
+        """
+
+        :param username:
+        :param user:
+        :return:
+        """
+
+        if username in self.users:
+            if user in self.users[username]:
+                self.users[username].remove(user)
+
+    def get_logged_in_users(self, username):
+        """
+        Get a list of logged-in User objects for a username
+
+        :param username: The username to find
+        :return: A list of logged-in User objects
+        """
+
+        if not self.has_logged_in_user(username):
+            return []
+        else:
+            return self.users[username]
+
+    def has_logged_in_user(self, username):
+        if username not in self.users:
+            return False
+        else:
+            results = self.users[username]
+            if len(results) < 1:
+                del self.users[username]
+                return False
+            return True
 
     def create_blacklisted_passwords(self):
         """
@@ -293,6 +345,8 @@ class authHandler(object):
         if calculated == real_hash:
             user.authorized = True
             user.auth_name = username
+
+            self.add_logged_in_user(username, user)
             return True
         return False
 
@@ -314,6 +368,7 @@ class authHandler(object):
 
         if user.authorized:
             user.authorized = False
+            self.delete_logged_in_user(user.auth_name, user)
             del user.auth_name
             return True
         return False

@@ -100,7 +100,7 @@ class AuthPlugin(plugin.PluginObject):
             else:
                 self.auth_h = auth_handler.authHandler(self, self.passwords,
                                                        self.blacklist)
-                result = self.commands.add_auth_handler(self.auth_h)
+                result = self.commands.set_auth_handler(self.auth_h)
                 if not result:
                     self.logger.warn(_("Unable to set auth handler!"))
 
@@ -264,7 +264,7 @@ class AuthPlugin(plugin.PluginObject):
         """
         API function for getting the auth handler.
 
-        This will return None if the handler is disabled.
+        This will return None if no handler is registered.
         """
 
         if self.config["use-auth"]:
@@ -275,7 +275,7 @@ class AuthPlugin(plugin.PluginObject):
         """
         API function for getting the permissions handler.
 
-        This will return None if the handler is disabled.
+        This will return None if no handler is registered.
         """
         if self.config["use-permissions"]:
             return self.perms_h

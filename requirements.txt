@@ -2,7 +2,6 @@ six>=1.6.1
 twisted
 zope.interface
 kitchen
-yapsy==1.10.2-pythons2n3
 pyyaml
 protobuf
 beautifulsoup4
@@ -16,3 +15,4 @@ clojure-py
 pymongo
 redis
 enum34
+weakreflist
