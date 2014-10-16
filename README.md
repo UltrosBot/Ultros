@@ -14,7 +14,7 @@ For more information, see the [site](http://ultros.io) and [documentation (beta)
 
 -------------------
 
-IRC: [irc://irc.esper.net/#Ultros](irc://irc.esper.net/#Ultros) ([webchat](https://webchat.esper.net/?nick=&channels=Ultros))
+IRC: [irc://irc.esper.net/Ultros](irc://irc.esper.net/Ultros) ([webchat](https://webchat.esper.net/?nick=&channels=Ultros))
 
 Site (Currently under development): [ultros.io](https://ultros.io)
 
