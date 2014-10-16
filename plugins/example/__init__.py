@@ -11,7 +11,7 @@ import system.plugin as plugin  # Import the plugin base class
 from system.command_manager import CommandManager  # Needed for commands
 
 
-class PagesPlugin(plugin.PluginObject):  # Create the plugin class
+class ExamplePlugin(plugin.PluginObject):  # Create the plugin class
     """
     Example plugin object
     """
