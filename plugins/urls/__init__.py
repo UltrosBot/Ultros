@@ -175,6 +175,12 @@ class URLsPlugin(plugin.PluginObject):
         if not allowed:
             return
 
+        # PEP = wat sometimes
+        if self.channels.get(protocol.name,
+                             {}).get(target.name,
+                                     {}).get("status", "on") == "off":
+            return
+
         # Strip formatting characters if possible
         message_stripped = message
         try:
