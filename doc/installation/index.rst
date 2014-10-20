@@ -65,7 +65,7 @@ Quick-start
 If you're going to use one of the start scripts, you'll need to install both **pip** and **virtualenv**. Install python, and then run the following commands to set both of those up::
 
     cd <path>/Ultros  # Replace <path> with the directory you stored Ultros in
-    python packages.py
+    python packages.py setup
     pip install virtualenv
 
 On linux, you'll also want to run the following::
