@@ -285,4 +285,15 @@ class AuthPlugin(plugin.PluginObject):
         """
         Called when the plugin is deactivated. Does nothing right now.
         """
-        pass
+        if self.config["use-auth"]:
+            if isinstance(
+                    self.commands.auth_handler, auth_handler.authHandler
+            ):
+                self.commands.auth_handler = None
+
+        if self.config["use-permissions"]:
+            if isinstance(
+                    self.commands.perm_handler,
+                    permissions_handler.permissionsHandler
+            ):
+                self.commands.perm_handler = None
