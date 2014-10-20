@@ -210,6 +210,14 @@ class Manager(object):
         self.logger.info(_("Setting up protocols.."))
 
         for protocol in self.main_config["protocols"]:
+            if protocol.lower().startswith("plugin-"):
+                self.logger.error("Invalid protocol name: %s" % protocol)
+                self.logger.error(
+                    "Protocol names beginning with \"plugin-\" are reserved "
+                    "for internal use."
+                )
+                continue
+
             self.logger.info(_("Setting up protocol: %s") % protocol)
             conf_location = "protocols/%s.yml" % protocol
             result = self.load_protocol(protocol, conf_location)
