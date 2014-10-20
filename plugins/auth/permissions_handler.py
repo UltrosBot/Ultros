@@ -144,7 +144,9 @@ class permissionsHandler(object):
         superuser = self.plugin.config["use-superuser"]
         username = None
 
-        if isinstance(caller, str) or isinstance(caller, unicode):
+        if caller is None:
+            username = None
+        elif isinstance(caller, str) or isinstance(caller, unicode):
             username = caller.lower()
         elif caller.authorized:
             self.plugin.logger.debug(_("CHECK | Authorized: %s") %
