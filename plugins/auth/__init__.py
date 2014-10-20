@@ -51,6 +51,9 @@ class AuthPlugin(plugin.PluginObject):
         Called when the plugin is loaded. Performs initial setup.
         """
 
+        reload(auth_handler)
+        reload(permissions_handler)
+
         self.logger.trace(_("Entered setup method."))
 
         self.storage = StorageManager()
