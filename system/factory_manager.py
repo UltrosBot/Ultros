@@ -214,7 +214,7 @@ class Manager(object):
                 self.logger.error("Invalid protocol name: %s" % protocol)
                 self.logger.error(
                     "Protocol names beginning with \"plugin-\" are reserved "
-                    "for internal use."
+                    "for plugin use."
                 )
                 continue
 
