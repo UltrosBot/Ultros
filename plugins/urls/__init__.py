@@ -661,3 +661,17 @@ class URLsPlugin(plugin.PluginObject):
             self.shorteners[name] = handler
             return True
         return False
+
+    def remove_handler(self, domain):
+        if domain.startswith("www."):
+            raise ValueError(_("Domain should not start with 'www.'"))
+        if domain in self.handlers:
+            del self.handlers[domain]
+            return True
+        return False
+
+    def remove_shortener(self, name):
+        if name in self.shorteners:
+            del self.shorteners[name]
+            return True
+        return False
