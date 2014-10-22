@@ -286,7 +286,8 @@ class PluginManager(object):
                 obj.add_variables(info, self.factory_manager)
                 obj.logger = getLogger(info.name)
 
-                obj.setup()
+                # TODO: Handle deferreds here
+                d = obj.setup()
 
                 if not self.plugin_loaded(name):
                     return PluginState.Unloaded
@@ -350,7 +351,8 @@ class PluginManager(object):
         self.factory_manager.storage.release_files(obj)
 
         try:
-            obj.deactivate()
+            # TODO: Handle deferreds here
+            d = obj.deactivate()
         except Exception:
             self.log.exception("Error deactivating plugin: %s" % obj.info.name)
 
@@ -400,6 +402,7 @@ class PluginManager(object):
 
         name = name.lower()
 
+        # TODO: Handle deferreds here
         result = self.unload_plugin(name)
 
         if result is not PluginState.Unloaded:
