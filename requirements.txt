@@ -1,3 +1,4 @@
+ez_setup
 six>=1.6.1
 twisted
 zope.interface
