@@ -76,6 +76,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
     _ctcp_flood_last = 0
     _ctcp_flood_count = 0
 
+    has_sasl = False
+
     @property
     def num_channels(self):
         return len(self._channels)
@@ -115,6 +117,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         self.networking = config["network"]
         self.identity = config["identity"]
         self.control_chars = config["control_chars"]
+
         if config["rate_limiting"]["enabled"]:
             self.lineRate = config["rate_limiting"]["line_delay"]
 
@@ -188,6 +191,10 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
     def shutdown(self):
         self.sendLine("QUIT :%s" % _("Protocol shutdown"))
         self.transport.loseConnection()
+
+    def register(self, nickname, hostname='foo', servername='bar'):
+        self.sendLine("CAP REQ :sasl")  # It has to be sent early
+        irc.IRCClient.register(self, nickname, hostname, servername)
 
     # endregion
 
@@ -720,6 +727,62 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
     # endregion
 
+    # region SASL stuff
+
+    def sendSASL(self, name, password):
+        sasl = (
+            "%s\0%s\0%s" % (name, name, password)
+        ).encode("base64").strip()
+        self.sendLine("AUTHENTICATE PLAIN")
+        self.sendLine("AUTHENTICATE %s" % sasl)
+
+    def irc_CAP(self, prefix, params):
+        self.log.debug("Capability message: %s / %s" % (prefix, params))
+
+        if (
+            len(params) < 2 or
+            params[1] != "ACK" or
+            params[2].split() != ["sasl"]
+        ):  # PEP8!
+            self.log.warn("SASL not available")
+        else:
+            self.has_sasl = True
+
+            if self.identity["authentication"].lower() == "sasl":
+                if self.has_sasl:
+                    self.sendSASL(
+                        self.identity["auth_name"], self.identity["auth_pass"]
+                    )
+                else:
+                    self.log.error(
+                        "SASL auth requested, but the server doesn't support "
+                        "it!"
+                    )
+                    self.log.error(
+                        "The bot will not login. Please correct this."
+                    )
+
+    def irc_900(self, prefix, params):
+        # "You are now logged in as x"
+        self.log.debug("IRC 900")
+        if len(params) > 3:
+            self.log.info(params[3])
+
+    def irc_903(self, prefix, params):
+        self.log.debug("IRC 903")
+        self.log.info(params[1])
+        self.sendLine("CAP END")
+
+    def irc_904(self, prefix, params):
+        self.log.debug("IRC 904")
+        self.log.warn(params[1])
+
+    def irc_905(self, prefix, params):
+        self.log.debug("IRC 905")
+        self.log.warn(params[1])
+
+    # endregion
+
     # region Other RPL_* handlers
 
     def irc_RPL_WHOREPLY(self, *nargs):
@@ -856,6 +919,10 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                                                            Channel(self,
                                                                    channel))
             self.event_manager.run_callback("IRC/InviteOnlyError", event)
+
+        elif command == "ERR_ALREADYREGISTRED":
+            message = params[1]
+            self.log.warn("Already registered: %s" % message)
 
         elif str(command) == "972" or str(command) == "ERR_UNKNOWNCOMMAND":
             self.log.warn(_("Cannot do command '%s': %s") % (params[1],

@@ -15,7 +15,7 @@ network: # Network connection settings
 
 identity: # Settings relating to identification and authentication
   nick: Ultros # The bot's nickname
-  authentication: None # This can be None, NickServ, NS-old Auth or Password.
+  authentication: None # This can be None, NickServ, NS-old Auth, SASL or Password.
                        # Use Auth if you're connecting to QuakeNet
                        # Use NS-old to omit the username when identifying with NickServ. If in doubt, use NickServ.
                        # Note that using NS-old means that you must sign on as the user you want to login as.
