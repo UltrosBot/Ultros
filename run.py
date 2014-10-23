@@ -29,6 +29,8 @@ import logging
 import os
 import sys
 
+import lib  # noqa
+
 from kitchen.text.converters import getwriter
 
 from system.translations import Translations
