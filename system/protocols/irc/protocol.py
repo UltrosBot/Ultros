@@ -193,7 +193,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         self.transport.loseConnection()
 
     def register(self, nickname, hostname='foo', servername='bar'):
-        self.sendLine("CAP REQ :sasl")  # It has to be sent early
+        if self.identity["authentication"].lower() == "sasl":
+            self.sendLine("CAP REQ :sasl")  # It has to be sent early
         irc.IRCClient.register(self, nickname, hostname, servername)
 
     # endregion
