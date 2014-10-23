@@ -76,8 +76,6 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
     _ctcp_flood_last = 0
     _ctcp_flood_count = 0
 
-    has_sasl = False
-
     @property
     def num_channels(self):
         return len(self._channels)
@@ -745,23 +743,19 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             params[1] != "ACK" or
             params[2].split() != ["sasl"]
         ):  # PEP8!
-            self.log.warn("SASL not available")
-        else:
-            self.has_sasl = True
-
             if self.identity["authentication"].lower() == "sasl":
-                if self.has_sasl:
-                    self.sendSASL(
-                        self.identity["auth_name"], self.identity["auth_pass"]
-                    )
-                else:
-                    self.log.error(
-                        "SASL auth requested, but the server doesn't support "
-                        "it!"
-                    )
-                    self.log.error(
-                        "The bot will not login. Please correct this."
-                    )
+                self.log.error(
+                    "SASL auth requested, but the server doesn't support "
+                    "it!"
+                )
+                self.log.error(
+                    "The bot will not login. Please correct this."
+                )
+        else:
+            if self.identity["authentication"].lower() == "sasl":
+                self.sendSASL(
+                    self.identity["auth_name"], self.identity["auth_pass"]
+                )
 
     def irc_900(self, prefix, params):
         # "You are now logged in as x"
