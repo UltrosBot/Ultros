@@ -9,6 +9,19 @@ These will mostly be used to confer some kind of state.
 """
 
 
+class HelpTopicType(Enum):
+    """The various types a help topic can be.
+
+    These types will define what a help topic may contain.
+
+    * GenericTopic - Doesn't contain any special data
+    * CommandTopic - Contains information specific to a command
+    """
+
+    GenericTopic = 0
+    CommandTopic = 1
+
+
 class CommandState(Enum):
     """The state of a command that's been run.
 
