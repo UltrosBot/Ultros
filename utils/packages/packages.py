@@ -206,8 +206,11 @@ class Packages(object):
 
         requirements = info["requires"]
         for module in requirements["modules"]:
+            to_import = module
+            if ":" in module:
+                to_import, module = tuple(module.split(":", 1))
             try:
-                __import__(module)
+                __import__(to_import)
             except ImportError:
                 pip.main(["install", module])
 
