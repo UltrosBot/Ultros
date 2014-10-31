@@ -174,6 +174,50 @@ class Protocol(protocol.Protocol):
 
         raise NotImplementedError(_("This function needs to be implemented."))
 
+    def kick(self, user, channel=None, reason=None, force=False):
+        """
+        Attempts to kick a user from a channel.
+
+        In many protocols, we can't
+        know if we have permission to kick until we do it, and in those cases,
+        this method should always attempt it.
+        Some protocols may not require a channel (single-channel, for example),
+        or may not support giving a reason, in which case, those parameters
+        should be ignored.
+        If a protocol does not support kicking, then it should always return
+        False.
+
+        :param user: The user to kick
+        :param channel: The channel to kick from
+        :param reason: The reason for the kick
+        :param force: Bypass local permissions check
+        :return: Whether or not a kick was attempted
+        """
+
+        raise NotImplementedError(_("This function needs to be implemented!"))
+
+    def ban(self, user, channel=None, reason=None, force=False):
+        """
+        Attempts to ban a user from a channel.
+
+        In many protocols, we can't
+        know if we have permission to ban until we do it, and in those cases,
+        this method should always attempt it.
+        Some protocols may not require a channel (single-channel, for example),
+        or may not support giving a reason, in which case, those parameters
+        should be ignored.
+        If a protocol does not support baning, then it should always return
+        False.
+
+        :param user: The user to ban
+        :param channel: The channel to ban from
+        :param reason: The reason for the ban
+        :param force: Bypass local permissions check
+        :return: Whether or not a ban was attempted
+        """
+
+        raise NotImplementedError("This function needs to be implemented!")
+
 
 class ChannelsProtocol(Protocol):
     """
@@ -232,50 +276,6 @@ class ChannelsProtocol(Protocol):
         """
 
         raise NotImplementedError(_("This function needs to be implemented!"))
-
-    def kick(self, user, channel=None, reason=None, force=False):
-        """
-        Attempts to kick a user from a channel.
-
-        In many protocols, we can't
-        know if we have permission to kick until we do it, and in those cases,
-        this method should always attempt it.
-        Some protocols may not require a channel (single-channel, for example),
-        or may not support giving a reason, in which case, those parameters
-        should be ignored.
-        If a protocol does not support kicking, then it should always return
-        False.
-
-        :param user: The user to kick
-        :param channel: The channel to kick from
-        :param reason: The reason for the kick
-        :param force: Bypass local permissions check
-        :return: Whether or not a kick was attempted
-        """
-
-        raise NotImplementedError(_("This function needs to be implemented!"))
-
-    def ban(self, user, channel=None, reason=None, force=False):
-        """
-        Attempts to ban a user from a channel.
-
-        In many protocols, we can't
-        know if we have permission to ban until we do it, and in those cases,
-        this method should always attempt it.
-        Some protocols may not require a channel (single-channel, for example),
-        or may not support giving a reason, in which case, those parameters
-        should be ignored.
-        If a protocol does not support baning, then it should always return
-        False.
-
-        :param user: The user to ban
-        :param channel: The channel to ban from
-        :param reason: The reason for the ban
-        :param force: Bypass local permissions check
-        :return: Whether or not a ban was attempted
-        """
-
-        raise NotImplementedError("This function needs to be implemented!")
 
 
 class NoChannelsProtocol(Protocol):

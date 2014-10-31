@@ -81,14 +81,14 @@ class BridgePlugin(plugin.PluginObject):
 
         # General
 
-        self.events.add_callback("MessageReceived", self, self.handle_msg,
+        self.events.add_callback("PreMessageReceived", self, self.handle_msg,
                                  1000)
 
         self.events.add_callback("MessageSent", self, self.handle_msg_sent,
                                  0)
 
-        self.events.add_callback("PreCommand", self, self.handle_command,
-                                 1000)
+        # self.events.add_callback("PreCommand", self, self.handle_command,
+        #                          1000)
 
         self.events.add_callback("ActionSent", self, self.handle_action_sent,
                                  0)

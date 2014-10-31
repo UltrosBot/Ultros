@@ -346,45 +346,12 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         except Exception:
             # Privmsg from the server itself and things (if that happens)
             self.log.trace(_("Message from irregular user: %s") % user)
-            user_obj = User(self, nickname=user, is_tracked=False)
+            user_obj = User(self, nickname=user)
 
         if self.utils.compare_nicknames(channel, self.nickname):
             channel_obj = user_obj
         else:
             channel_obj = self.get_channel(channel)
-
-        result = self.command_manager.process_input(
-            message, user_obj, channel_obj, self,
-            self.control_chars, self.nickname
-        )
-
-        for case, default in Switch(result[0]):
-            if case(CommandState.RateLimited):
-                self.log.debug("Command rate-limited")
-                user_obj.respond("That command has been rate-limited, please "
-                                 "try again later.")
-                return  # It was a command
-            if case(CommandState.NotACommand):
-                self.log.debug("Not a command")
-                break
-            if case(CommandState.UnknownOverridden):
-                self.log.debug("Unknown command overridden")
-                return  # It was a command
-            if case(CommandState.Unknown):
-                self.log.debug("Unknown command")
-                break
-            if case(CommandState.Success):
-                self.log.debug("Command ran successfully")
-                return  # It was a command
-            if case(CommandState.NoPermission):
-                self.log.debug("No permission to run command")
-                return  # It was a command
-            if case(CommandState.Error):
-                user_obj.respond("Error running command: %s" % result[1])
-                return  # It was a command
-            if default:
-                self.log.debug("Unknown command state: %s" % result[0])
-                break
 
         event = general_events.PreMessageReceived(
             self, user_obj, channel_obj, message, "message"
@@ -397,6 +364,39 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                                           event.message))
 
         if not event.cancelled:
+            result = self.command_manager.process_input(
+                event.message, user_obj, channel_obj, self,
+                self.control_chars, self.nickname
+            )
+
+            for case, default in Switch(result[0]):
+                if case(CommandState.RateLimited):
+                    self.log.debug("Command rate-limited")
+                    user_obj.respond("That command has been rate-limited,"
+                                     " please try again later.")
+                    return  # It was a command
+                if case(CommandState.NotACommand):
+                    self.log.debug("Not a command")
+                    break
+                if case(CommandState.UnknownOverridden):
+                    self.log.debug("Unknown command overridden")
+                    return  # It was a command
+                if case(CommandState.Unknown):
+                    self.log.debug("Unknown command")
+                    break
+                if case(CommandState.Success):
+                    self.log.debug("Command ran successfully")
+                    return  # It was a command
+                if case(CommandState.NoPermission):
+                    self.log.debug("No permission to run command")
+                    return  # It was a command
+                if case(CommandState.Error):
+                    user_obj.respond("Error running command: %s" % result[1])
+                    return  # It was a command
+                if default:
+                    self.log.debug("Unknown command state: %s" % result[0])
+                    break
+
             second_event = general_events.MessageReceived(
                 self, user_obj, channel_obj, event.message, "message"
             )
