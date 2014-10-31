@@ -781,7 +781,8 @@ class Protocol(ChannelsProtocol):
                         self.log.debug("No permission to run command")
                         return  # It was a command
                     if case(CommandState.Error):
-                        user_obj.respond("Error running command: %s" % result[1])
+                        user_obj.respond("Error running command: %s"
+                                         % result[1])
                         return  # It was a command
                     if default:
                         self.log.debug("Unknown command state: %s" % result[0])
