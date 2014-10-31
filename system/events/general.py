@@ -218,7 +218,7 @@ class MessageSent(GeneralEvent):
 
     * caller: As usual, the protocol that threw the event
     * type: String describing what type of message this is
-    * target: Where the message is going; a string
+    * target: Where the message is going; a User or Channel
     * message: The actual message
     * printable: A boolean specifying whether we should print the message
         or not

@@ -1302,7 +1302,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         msg = to_unicode(message)
         if use_event:
             event = general_events.MessageSent(self, "notice", target,
-                                               message)
+                                               msg)
             self.event_manager.run_callback("MessageSent", event)
             msg = to_unicode(event.message)
 
@@ -1338,7 +1338,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         msg = to_unicode(message)
         if use_event:
             event = general_events.MessageSent(self, "message", target,
-                                               message)
+                                               msg)
             self.event_manager.run_callback("MessageSent", event)
             msg = to_unicode(event.message)
 
