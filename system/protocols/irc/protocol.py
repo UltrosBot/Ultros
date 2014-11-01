@@ -1279,6 +1279,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
     def channel_kick(self, user, channel=None, reason=None, force=False):
         # TODO: Event?
+        # TODO: Ban types
         if not force:
             if not self.ourselves.can_kick(user, channel):
                 self.log.trace("Tried to kick, but don't have permission")
