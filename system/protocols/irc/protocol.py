@@ -1263,12 +1263,28 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         # removed if we ever get around to removing that dependency.
         self.send_msg(channel, message)
 
-    def kick(self, user, channel=None, reason=None, force=False):
+    def channel_ban(self, user, channel=None, reason=None, force=False):
+        # TODO: Event?
+        if not force:
+            if not self.ourselves.can_kick(user, channel):
+                self.log.trace("Tried to ban, but don't have permission")
+                return False
+        if isinstance(user, str):
+            user = self.get_user(user)
+        if channel is None:
+            return False
+        self.sendLine(u"MODE %s +b *!*@%s" % (channel, user.host))
+        self.channel_kick(user, channel, reason, force)
+        return True
+
+    def channel_kick(self, user, channel=None, reason=None, force=False):
         # TODO: Event?
         if not force:
             if not self.ourselves.can_kick(user, channel):
                 self.log.trace("Tried to kick, but don't have permission")
                 return False
+        if isinstance(user, str):
+            user = self.get_user(user)
         if channel is None:
             return False
         if reason:
@@ -1277,9 +1293,14 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             self.sendLine(u"KICK %s %s" % (channel, user))
         return True
 
-    def ban(self, user, channel=None, reason=None, force=False):
+    def global_ban(self, user, reason=None, force=False):
         # TODO: Event?
-        # TODO: Implement
+        # TODO: Oper detection?
+        return False
+
+    def global_kick(self, user, reason=None, force=False):
+        # TODO: Event?
+        # TODO: Oper detection?
         return False
 
     def join_channel(self, channel, password=None):

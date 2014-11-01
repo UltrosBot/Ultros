@@ -3,6 +3,7 @@ __author__ = "Gareth Coles"
 
 from twisted.internet import protocol
 
+from system.decorators.log import deprecated
 from system.translations import Translations
 _ = Translations().get()
 
@@ -144,6 +145,42 @@ class Protocol(protocol.Protocol):
 
         raise NotImplementedError(_("This function needs to be implemented!"))
 
+    def global_kick(self, user, reason=None, force=False):
+        """
+        Attempts to kick a user from the network.
+
+        In many protocols, we can't know if we have permission to kick until
+        we do it, and in those cases, this method should always attempt it.
+
+        If a protocol does not support kicking, then it should always return
+        False.
+
+        :param user: The user to kick
+        :param reason: The reason for the kick
+        :param force: Bypass local permissions check
+        :return: Whether or not a kick was attempted
+        """
+
+        raise NotImplementedError(_("This function needs to be implemented!"))
+
+    def global_ban(self, user, reason=None, force=False):
+        """
+        Attempts to ban a user from the network.
+
+        In many protocols, we can't know if we have permission to ban until
+        we do it, and in those cases, this method should always attempt it.
+
+        If a protocol does not support baning, then it should always return
+        False.
+
+        :param user: The user to ban
+        :param reason: The reason for the ban
+        :param force: Bypass local permissions check
+        :return: Whether or not a ban was attempted
+        """
+
+        raise NotImplementedError("This function needs to be implemented!")
+
     def send_msg(self, target, message, target_type=None, use_event=True):
         """
         Send a message to a user or a channel.
@@ -173,50 +210,6 @@ class Protocol(protocol.Protocol):
         """
 
         raise NotImplementedError(_("This function needs to be implemented."))
-
-    def kick(self, user, channel=None, reason=None, force=False):
-        """
-        Attempts to kick a user from a channel.
-
-        In many protocols, we can't
-        know if we have permission to kick until we do it, and in those cases,
-        this method should always attempt it.
-        Some protocols may not require a channel (single-channel, for example),
-        or may not support giving a reason, in which case, those parameters
-        should be ignored.
-        If a protocol does not support kicking, then it should always return
-        False.
-
-        :param user: The user to kick
-        :param channel: The channel to kick from
-        :param reason: The reason for the kick
-        :param force: Bypass local permissions check
-        :return: Whether or not a kick was attempted
-        """
-
-        raise NotImplementedError(_("This function needs to be implemented!"))
-
-    def ban(self, user, channel=None, reason=None, force=False):
-        """
-        Attempts to ban a user from a channel.
-
-        In many protocols, we can't
-        know if we have permission to ban until we do it, and in those cases,
-        this method should always attempt it.
-        Some protocols may not require a channel (single-channel, for example),
-        or may not support giving a reason, in which case, those parameters
-        should be ignored.
-        If a protocol does not support baning, then it should always return
-        False.
-
-        :param user: The user to ban
-        :param channel: The channel to ban from
-        :param reason: The reason for the ban
-        :param force: Bypass local permissions check
-        :return: Whether or not a ban was attempted
-        """
-
-        raise NotImplementedError("This function needs to be implemented!")
 
 
 class ChannelsProtocol(Protocol):
@@ -276,6 +269,66 @@ class ChannelsProtocol(Protocol):
         """
 
         raise NotImplementedError(_("This function needs to be implemented!"))
+
+    @deprecated("Use `channel_kick` or `global_kick` instead")
+    def kick(self, *args, **kwargs):
+        """
+        Deprecated, please see `channel_kick`
+        """
+
+        return self.channel_kick(*args, **kwargs)
+
+    @deprecated("Use `channel_ban` or `global_ban` instead")
+    def ban(self, *args, **kwargs):
+        """
+        Deprecated, please see `channel_ban`
+        """
+
+        return self.channel_ban(*args, **kwargs)
+
+    def channel_kick(self, user, channel=None, reason=None, force=False):
+        """
+        Attempts to kick a user from a channel.
+
+        In many protocols, we can't
+        know if we have permission to kick until we do it, and in those cases,
+        this method should always attempt it.
+        Some protocols may not require a channel (single-channel, for example),
+        or may not support giving a reason, in which case, those parameters
+        should be ignored.
+        If a protocol does not support kicking, then it should always return
+        False.
+
+        :param user: The user to kick
+        :param channel: The channel to kick from
+        :param reason: The reason for the kick
+        :param force: Bypass local permissions check
+        :return: Whether or not a kick was attempted
+        """
+
+        raise NotImplementedError(_("This function needs to be implemented!"))
+
+    def channel_ban(self, user, channel=None, reason=None, force=False):
+        """
+        Attempts to ban a user from a channel.
+
+        In many protocols, we can't
+        know if we have permission to ban until we do it, and in those cases,
+        this method should always attempt it.
+        Some protocols may not require a channel (single-channel, for example),
+        or may not support giving a reason, in which case, those parameters
+        should be ignored.
+        If a protocol does not support baning, then it should always return
+        False.
+
+        :param user: The user to ban
+        :param channel: The channel to ban from
+        :param reason: The reason for the ban
+        :param force: Bypass local permissions check
+        :return: Whether or not a ban was attempted
+        """
+
+        raise NotImplementedError("This function needs to be implemented!")
 
 
 class NoChannelsProtocol(Protocol):

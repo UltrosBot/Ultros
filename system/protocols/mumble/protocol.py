@@ -863,7 +863,8 @@ class Protocol(ChannelsProtocol):
             return True
         return False
 
-    def kick(self, user, channel=None, reason=None, force=False):
+    def channel_kick(self, user, channel=None, reason=None, force=False):
+        # TODO: Event?
         self.log.debug("Attempting to kick '%s' for '%s'" % (user, reason))
         if not isinstance(user, User):
             user = self.get_user(user)
@@ -881,7 +882,8 @@ class Protocol(ChannelsProtocol):
 
         self.sendProtobuf(msg)
 
-    def ban(self, user, channel=None, reason=None, force=False):
+    def channel_ban(self, user, channel=None, reason=None, force=False):
+        # TODO: Event?
         self.log.debug("Attempting to ban '%s' for '%s'" % (user, reason))
         if not isinstance(user, User):
             user = self.get_user(user)
@@ -899,6 +901,14 @@ class Protocol(ChannelsProtocol):
         msg.ban = True
 
         self.sendProtobuf(msg)
+
+    def global_ban(self, user, reason=None, force=False):
+        # TODO: Event?
+        return False
+
+    def global_kick(self, user, reason=None, force=False):
+        # TODO: Event?
+        return False
 
     def msg(self, message, target="channel", target_id=None):
         if target_id is None and target == "channel":
