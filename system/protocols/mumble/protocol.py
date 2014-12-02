@@ -834,7 +834,7 @@ class Protocol(SingleChannelProtocol):
                 if not target:
                     return False
 
-        if isinstance(target, None):
+        if target is None:
             target = self.get_channel()
 
         if isinstance(target, User):
@@ -857,7 +857,7 @@ class Protocol(SingleChannelProtocol):
                 if not target:
                     return False
 
-        if isinstance(target, None):
+        if target is None:
             target = self.get_channel()
 
         # TODO: Add italics once formatter is added
