@@ -219,6 +219,7 @@ class ChannelsProtocol(Protocol):
     """
 
     CHANNELS = True
+    SINGLE_CHANNEL = False
 
     @property
     def num_channels(self):
@@ -329,6 +330,46 @@ class ChannelsProtocol(Protocol):
         """
 
         raise NotImplementedError("This function needs to be implemented!")
+
+
+class SingleChannelProtocol(ChannelsProtocol):
+    """
+    Just like `ChannelsProtocol` but the bot may only be in one channel at
+    once.
+
+    Channel-oriented targeting functions should accept None to mean the
+    current channel.
+    """
+
+    SINGLE_CHANNEL = True
+
+    def get_channel(self, channel=None):
+        """
+        Used to retrieve a channel. Return None if we can't find it.
+
+        :param channel: string representing the channel we need, or None for
+            the current channel.
+        """
+
+        raise NotImplementedError(_("This function needs to be implemented!"))
+
+    def leave_channel(self, channel=None, reason=None):
+        """
+        Attempts to leave a channel.
+
+        An optional reason may be provided, which
+        should be ignored by protocols that do not support them.
+        Return value is whether or not a channel leave was attempted - it is
+        not a guarantee that the operation will be successful. An example of
+        when it could return False is if a protocol requires you to be in a
+        channel.
+
+        :param channel: Channel to leave, or None for the current channel
+        :param reason: Reason for leaving
+        :return: Whether or not a part was attempted
+        """
+
+        raise NotImplementedError(_("This function needs to be implemented!"))
 
 
 class NoChannelsProtocol(Protocol):

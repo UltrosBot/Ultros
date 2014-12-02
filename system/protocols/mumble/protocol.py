@@ -24,7 +24,7 @@ from system.enums import CommandState
 from system.event_manager import EventManager
 from system.events import general as general_events
 from system.events import mumble as mumble_events
-from system.protocols.generic.protocol import ChannelsProtocol
+from system.protocols.generic.protocol import SingleChannelProtocol
 from system.protocols.mumble import Mumble_pb2
 from system.protocols.mumble.user import User
 from system.protocols.mumble.channel import Channel
@@ -39,7 +39,7 @@ _ = Translations().get()
 log = logging.getLogger(__name__)
 
 
-class Protocol(ChannelsProtocol):
+class Protocol(SingleChannelProtocol):
 
     TYPE = "mumble"
 
@@ -833,12 +833,17 @@ class Protocol(ChannelsProtocol):
                 target = self.get_channel(target)
                 if not target:
                     return False
+
+        if isinstance(target, None):
+            target = self.get_channel()
+
         if isinstance(target, User):
             self.msg_user(message, target, use_event)
             return True
         elif isinstance(target, Channel):
             self.msg_channel(message, target, use_event)
             return True
+
         return False
 
     def send_action(self, target, message, target_type=None, use_event=True):
@@ -851,10 +856,17 @@ class Protocol(ChannelsProtocol):
                 target = self.get_channel(target)
                 if not target:
                     return False
+
+        if isinstance(target, None):
+            target = self.get_channel()
+
         # TODO: Add italics once formatter is added
-        message = u"*%s*" % (message)
+
+        message = u"*%s*" % message
         event = general_events.ActionSent(self, target, message)
+
         self.event_manager.run_callback("ActionSent", event)
+
         if isinstance(target, User) and not event.cancelled:
             self.msg_user(message, target, use_event)
             return True
@@ -969,10 +981,13 @@ class Protocol(ChannelsProtocol):
         self.sendProtobuf(msg)
         return True
 
-    def leave_channel(self, channel, reason=None):
+    def leave_channel(self, channel=None, reason=None):
         return False
 
-    def get_channel(self, name_or_id):
+    def get_channel(self, name_or_id=None):
+        if name_or_id is None:
+            return self.ourselves.channel  # Yay
+
         if isinstance(name_or_id, str) or isinstance(name_or_id, unicode):
             name = name_or_id.lower()
             for cid, channel in self.channels.iteritems():
