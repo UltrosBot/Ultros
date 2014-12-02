@@ -51,7 +51,7 @@ You will now have a full copy of Ultros, just waiting to be set up!
 To update Ultros in future, simply do the following::
 
     cd <path>/Ultros  # Replace <path> with the directory from above
-    git pull --rebase
+    git pull
 
 If you're thick-skulled, paranoid about wasting space or just don't like Git, you can download a zipball from the site_, but you will have to keep it up-to-date manually.
 
