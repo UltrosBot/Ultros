@@ -1,4 +1,5 @@
 # coding=utf-8
+from system.console import ConsoleMagic
 
 __author__ = "Gareth Coles"
 
@@ -51,6 +52,9 @@ class Manager(object):
     #: Whether the manager is already running or not
     running = False
 
+    #: Console handler
+    console_magic = None
+
     def __init__(self):
         self.commands = CommandManager()
         self.event_manager = EventManager()
@@ -96,6 +100,8 @@ class Manager(object):
                                "Shutting down.."))
             return
 
+        self.console_magic = ConsoleMagic()
+
     def run(self):
         if not self.running:
             event = ReactorStartedEvent(self)
@@ -112,6 +118,7 @@ class Manager(object):
         try:
             try:
                 self.unload()
+                self.console_magic.unwrap()
             except Exception:
                 self.logger.exception(_("Error while unloading!"))
                 try:
@@ -355,6 +362,8 @@ class Manager(object):
         """
         Shut down and unload everything.
         """
+
+        self.console_magic.unwrap()
 
         # Shut down!
         for name in self.factories.keys():

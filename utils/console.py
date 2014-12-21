@@ -156,7 +156,7 @@ class _GetchWindows:
 
     def __call__(self):
         import msvcrt
-        return msvcrt.getch()
+        return msvcrt.getwch()
 
 
 getch = _Getch()

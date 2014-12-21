@@ -42,6 +42,8 @@ DESC = "Ultros - that squidoctopus bot thing"
 
 p = argparse.ArgumentParser(description=DESC)
 p.add_argument("--debug", help="Enable debug output", action="store_true")
+p.add_argument("--no-console", help="Disable the console input",
+               action="store_true")
 p.add_argument("--trace", help="Enable debug and trace output",
                action="store_true")
 p.add_argument("-l", "--language", help="Specify which language to use for "

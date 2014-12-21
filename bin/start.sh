@@ -41,7 +41,7 @@ fi
 echo "Starting process.."
 echo ""
 
-python run.py &> logs/ultros.out &
+python run.py --no-console &> logs/ultros.out &
 
 # Remember to wait for the process to start before checking the pid.
 
