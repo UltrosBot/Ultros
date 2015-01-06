@@ -17,3 +17,4 @@ pymongo
 redis
 enum34
 weakreflist
+logbook

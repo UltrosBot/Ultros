@@ -1,51 +1,10 @@
-# coding=utf-8
-
-"""
-Semi-convenient logging wrapper. This is used to sort out terminal
-colouring, file output and basic logging configuration. Use this if you
-need to explicitly grab a logger!
-"""
-
-__author__ = "Gareth Coles"
+__author__ = 'Gareth Coles'
 
 import ctypes
 import logging
-import logging.handlers
 import os
 
-from system.translations import Translations
-
-_globals = {"level": logging.INFO}
-
-loggers = {}
-
-setattr(logging, "TRACE", 9)
-
-logging.addLevelName(logging.TRACE, "TRACE")
-
-
-def _trace(self, message, *args, **kws):
-    # Yes, logger takes its '*args' as 'args'.
-    if self.isEnabledFor(logging.TRACE):
-        self._log(logging.TRACE, message, args, **kws)
-
-logging.Logger.trace = _trace
-
-
-def set_level():
-    logging.basicConfig(
-        level=_globals["level"],
-        format="%(asctime)s | %(name)25s | %(levelname)8s | %(message)s",
-        datefmt="%d %b %Y - %H:%M:%S"
-    )
-
-
-def set_debug():
-    _globals["level"] = logging.DEBUG
-
-
-def set_trace():
-    _globals["level"] = logging.TRACE
+from logging import getLogger
 
 
 class ColorizingStreamHandler(logging.StreamHandler):
@@ -68,7 +27,7 @@ class ColorizingStreamHandler(logging.StreamHandler):
     # levels to (background, foreground, bold/intense)
     if os.name == 'nt':
         level_map = {
-            logging.TRACE: ('black', 'magenta', True),
+            # logging.TRACE: ('black', 'magenta', True),
             logging.DEBUG: ('black', 'blue', True),
             logging.INFO: ('black', 'white', False),
             logging.WARNING: ('black', 'yellow', True),
@@ -77,7 +36,7 @@ class ColorizingStreamHandler(logging.StreamHandler):
         }
     else:
         level_map = {
-            logging.TRACE: ('magenta', 'magenta', False),
+            # logging.TRACE: ('magenta', 'magenta', False),
             logging.DEBUG: ('black', 'blue', False),
             logging.INFO: ('black', 'white', False),
             logging.WARNING: ('black', 'yellow', False),
@@ -128,7 +87,7 @@ class ColorizingStreamHandler(logging.StreamHandler):
                 except Exception as e:
                     print "Error: %s" % e
 
-                if _globals["level"] == logging.TRACE and False:
+                if False:
                     tb = record.exc_info[2]
 
                     while 1:
@@ -272,153 +231,3 @@ class ColorizingStreamHandler(logging.StreamHandler):
         if self.is_tty:
             message = self.colorize(message, record)
         return message
-
-
-def getLogger(name, path=None,
-              fmt="%(asctime)s | %(name)25s | %(levelname)8s | %(message)s",
-              datefmt="%d %b %Y - %H:%M:%S", displayname=None):
-    """
-    Works similarly to logging.getLogger(), get yourself a logger isntance.
-
-    :param name: Name of the logger
-    :param path: Path of the file to write to
-    :param fmt: Logging format
-    :param datefmt: Date format to use
-    :param displayname: Display name for your logger
-    :return: Logger
-    """
-
-    if len(name) > 25:
-        if "." in name:
-            parts = name.split(".")
-            last = parts.pop()
-
-            done = ""
-
-            for x in parts:
-                done += x[0]
-                done += "."
-
-            done += last
-
-            if len(done) > 25:
-                done = done[:24] + "~"
-
-            name = done
-        else:
-            name = name[:24] + "~"
-
-    if displayname is None:
-        displayname = name
-
-    if name in loggers:
-        return loggers[name]
-    logger = logging.getLogger(displayname)
-    logger.propagate = False
-
-    chandler = ColorizingStreamHandler()
-    formatter = logging.Formatter(
-        "%(asctime)s | %(name)25s | %(levelname)8s | %(message)s")
-    formatter.datefmt = datefmt
-    chandler.setFormatter(formatter)
-    chandler.setLevel(_globals["level"])
-
-    logger.addHandler(chandler)
-    del formatter
-
-    if path:
-        path = path.replace("..", "")
-        path = "logs/" + path
-        if not os.path.exists(os.path.dirname(path)):
-            os.makedirs(os.path.dirname(path))
-
-        handler = logging.FileHandler(path)
-        formatter = logging.Formatter(fmt)
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-
-        del handler
-
-    handler = logging.FileHandler("logs/output.log")
-    formatter = logging.Formatter(
-        "%(asctime)s | %(name)25s | %(levelname)8s | %(message)s")
-    formatter.datefmt = datefmt
-    handler.setFormatter(formatter)
-    handler.setLevel(_globals["level"])
-
-    logger.addHandler(handler)
-
-    del handler
-
-    logger.trace("Created logger.")
-
-    loggers[name] = logger
-
-    return logger
-
-
-def open_log(path):
-    """
-    Prints a nice message to file saying the log has been opened.
-
-    :param path: Path to file.
-    :return:
-    """
-    _ = Translations().get()
-
-    path = path.replace("..", "")
-    path = "logs/" + path
-    if not os.path.exists(os.path.dirname(path)):
-        os.makedirs(os.path.dirname(path))
-
-    logger = logging.getLogger("Logging")
-
-    logger.propagate = False
-
-    handler = logging.FileHandler(path)
-    formatter = logging.Formatter(
-        "%(asctime)s | %(name)25s | %(levelname)8s | %(message)s")
-    formatter.datefmt = "%d %b %Y - %H:%M:%S"
-    handler.setFormatter(formatter)
-    handler.setLevel(_globals["level"])
-    logger.addHandler(handler)
-
-    logger.info(_("*** LOGFILE OPENED: %s ***") % path)
-
-    logger.removeHandler(handler)
-
-    del handler
-    del logger
-
-
-def close_log(path):
-    """
-    Prints a nice message to file saying the log has been closed.
-
-    :param path: Path to file.
-    :return:
-    """
-    _ = Translations().get()
-
-    path = path.replace("..", "")
-    path = "logs/" + path
-    if not os.path.exists(os.path.dirname(path)):
-        return
-
-    logger = logging.getLogger("Logging")
-
-    logger.propagate = False
-
-    handler = logging.FileHandler(path)
-    formatter = logging.Formatter(
-        "%(asctime)s | %(name)25s | %(levelname)8s | %(message)s")
-    formatter.datefmt = "%d %b %Y - %H:%M:%S"
-    handler.setFormatter(formatter)
-    handler.setLevel(_globals["level"])
-    logger.addHandler(handler)
-
-    logger.info(_("*** LOGFILE CLOSED: %s ***\n\n") % path)
-    logger.removeHandler(handler)
-
-    del handler
-    del logger

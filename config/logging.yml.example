@@ -1,0 +1,13 @@
+# Logging configuration file
+
+format_string: "{record.time:%b %d %Y - %H:%M:%S} | {record.channel:<25} | {record.level_name:<8} | {record.message}"
+
+handlers:  # TODO
+    boxcar: {}
+    email: {}
+    external: {}
+    growl: no
+    libnotify: no
+    redis: {}
+    system: no
+    twitter: {}
