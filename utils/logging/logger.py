@@ -4,7 +4,9 @@ __author__ = 'Gareth Coles'
 
 """
 
-from logbook import Logger, NOTICE, NullHandler
+import utils.logging.shim as shim
+
+from logbook import INFO, NullHandler
 from logbook.more import ColorizedStderrHandler
 
 configuration = {
@@ -30,7 +32,7 @@ def getLogger(name, add_handlers=True):
     if name in loggers:
         return loggers[name]
     else:
-        logger = Logger(name)
+        logger = shim.OurLogger(name)
 
         if add_handlers:
             add_standard_handlers(logger)
@@ -46,7 +48,7 @@ def add_standard_handlers(logger):
     :return:
     """
     logger.handlers.append(ColorizedStderrHandler(
-        level=NOTICE, format_string=configuration["format_string"]
+        level=INFO, format_string=configuration["format_string"]
     ))
     logger.handlers.append(NullHandler())
 
