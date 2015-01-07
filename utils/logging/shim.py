@@ -1,5 +1,8 @@
 __author__ = 'Gareth Coles'
 
+# So we can translate logging levels
+import logging
+
 # Logbook stores its levels and their info here
 import logbook.base
 
@@ -66,3 +69,26 @@ class OurLogger(Logger):
 
         if not self.disabled and logbook.TRACE >= self.level:
             self._log(logbook.TRACE, args, kwargs)
+
+    def setLevel(self, level):
+        """
+        Takes a level from the standard python logging module
+        and translates it so this logger can use it.
+        """
+
+        if level == logging.CRITICAL:
+            self.level_name = logbook.base.CRITICAL
+        elif level == logging.ERROR:
+            self.level_name = logbook.base.ERROR
+        elif level == logging.WARNING:
+            self.level_name = logbook.base.WARNING
+        elif level == logging.ERROR:
+            self.level_name = logbook.base.ERROR
+        elif level == logging.INFO:
+            self.level_name = logbook.base.INFO
+        elif level == logging.DEBUG:
+            self.level_name = logbook.base.DEBUG
+        elif level == logging.NOTSET:
+            self.level_name = logbook.base.NOTSET
+        else:
+            self.level_name = level
