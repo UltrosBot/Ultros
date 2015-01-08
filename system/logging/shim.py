@@ -55,12 +55,12 @@ setattr(logbook, "TRACE", our_TRACE)
 setattr(logbook.base, "_level_names", level_names)
 setattr(logbook.base, "_reverse_level_names", reverse_level_names)
 
-
 from logbook import Logger
 
 
 # This is our own Logger, which also has a .trace()
 class OurLogger(Logger):
+    handlers = []
 
     def trace(self, *args, **kwargs):
         """
@@ -92,3 +92,30 @@ class OurLogger(Logger):
             self.level_name = logbook.base.NOTSET
         else:
             self.level_name = level
+
+
+class LoggerForwarder(object):
+    """
+    Forwarding class that lets us reassign a logger instance when handlers
+    need to be reapplied.
+
+    This means that other parts of Ultros that want to do logging don't need to
+    constantly call getLogger() - they can just save their logger objects.
+    """
+
+    logger = None
+    name = ""
+
+    def __init__(self, logger, name):
+        self.logger = logger
+        self.name = name
+
+    def reassign(self, logger):
+        self.logger = logger
+
+    def __getattr__(self, item):
+        logger = self.__getattribute__("logger")
+
+        if hasattr(logger, item):
+            return getattr(logger, item)
+        return self.__getattribute__(item)

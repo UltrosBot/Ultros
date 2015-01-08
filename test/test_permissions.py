@@ -14,6 +14,7 @@ import yaml
 import nose.tools as nosetools
 
 from plugins.auth.permissions_handler import permissionsHandler
+from system.logging.logger import configure
 from system.plugin import PluginObject
 from system.storage import formats
 from system.storage.manager import StorageManager
@@ -37,6 +38,7 @@ class TestPlugin(PluginObject):
         pass
 
     def __init__(self):
+        configure(None)
         self.logger = getLogger("Permissions")
 
         self.confdir = tmpdir + "/config/"
