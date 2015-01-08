@@ -4,10 +4,11 @@ __author__ = 'Gareth Coles'
 
 """
 
-import utils.logging.shim as shim
-
 from logbook import INFO, NullHandler
 from logbook.more import ColorizedStderrHandler
+
+import system.logging.shim as shim
+
 
 configuration = {
     "format_string": "{record.time:%b %d %Y - %H:%M:%S} | "
@@ -22,7 +23,9 @@ configuration = {
         "redis": False,
         "system": False,
         "twitter": False
-    }
+    },
+
+    "configured": False
 }
 
 loggers = {}
@@ -47,6 +50,10 @@ def add_standard_handlers(logger):
     :param logger:
     :return:
     """
+
+    if not configuration["configured"]:
+        return
+
     logger.handlers.append(ColorizedStderrHandler(
         level=INFO, format_string=configuration["format_string"]
     ))
@@ -58,6 +65,8 @@ def configure(config):
         configuration["format_string"] = config["format_string"]
         configuration["date_format"] = config["date_format"]
         configuration["handlers"] = config["handlers"]
+
+    configuration["configured"] = True
 
     for logger in loggers.values():
         add_standard_handlers(logger)
