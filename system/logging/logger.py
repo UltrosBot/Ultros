@@ -5,9 +5,9 @@ __author__ = 'Gareth Coles'
 """
 
 from logbook import INFO, NullHandler
-from logbook.more import ColorizedStderrHandler
 
 import system.logging.shim as shim
+from system.logging.handlers.colours import ColourHandler
 
 
 configuration = {
@@ -54,7 +54,7 @@ def add_standard_handlers(logger):
     if not configuration["configured"]:
         return
 
-    logger.handlers.append(ColorizedStderrHandler(
+    logger.handlers.append(ColourHandler(
         level=INFO, format_string=configuration["format_string"]
     ))
     logger.handlers.append(NullHandler())
