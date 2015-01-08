@@ -115,7 +115,8 @@ def add_all_handlers(logger):
             if isinstance(config, dict):
                 default = {
                     "level": configuration["level"],
-                    "format_string": configuration["format_string"]
+                    "format_string": configuration["format_string"],
+                    "bubble": True
                 }
 
                 default.update(config)
