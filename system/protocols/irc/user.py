@@ -43,7 +43,7 @@ class User(user.User):
             channel = channel.name
         channel = self.protocol.utils.lowercase_nick_chan(channel)
         try:
-            return set(self._ranks[channel])
+            return self._ranks[channel]
         except KeyError:
             return []
 
@@ -92,7 +92,7 @@ class User(user.User):
             other_rank = user.get_highest_rank_in_channel(channel)
         if other_rank is None:
             other_rank = 0
-        return rank.is_hop() and rank >= other_rank
+        return self.protocol.ranks.is_hop(rank, True) and rank >= other_rank
 
     def can_ban(self, user, channel):
         return self.can_kick(user, channel)
