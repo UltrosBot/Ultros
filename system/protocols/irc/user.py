@@ -51,7 +51,7 @@ class User(user.User):
         ranks = self.get_ranks_in_channel(channel)
         highest_rank = None
         for rank in ranks:
-            if rank["order"] > highest_rank:
+            if rank > highest_rank:
                 highest_rank = rank
         return highest_rank
 
