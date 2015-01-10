@@ -55,9 +55,21 @@ p.add_argument("-u", "--update", help="Run an update and quit",
 p.add_argument("-c", "--catch",
                help="Don't exit immediately; useful for Windows users",
                action="store_true")
+p.add_argument("-prd", "--pycharm-remote-debug",
+               help="Enable PyCharm remote debugging on port 20202. "
+                    "Takes a hostname as an argument. This requires you to "
+                    "have pycharm-debug.egg in your Python PATH. If you don't "
+                    "know what this means, then you don't need to use this.")
 
 args = p.parse_args()
 trans = Translations(args.language, args.mlanguage)
+
+if args.pycharm_remote_debug:
+    import pydevd
+    pydevd.settrace(
+        args.pycharm_remote_debug, port=20202,
+        stdoutToServer=True, stderrToServer=True
+    )
 
 _ = trans.get()
 
