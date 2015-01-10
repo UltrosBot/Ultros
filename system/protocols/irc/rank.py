@@ -23,21 +23,33 @@ class Rank(object):
         return "%s%s%s" % (self.mode, self.symbol, self.order)
 
     def __lt__(self, other):
+        if other is None:
+            return False
+
         if isinstance(other, Rank):
             other = other.order
         return self.order > other
 
     def __gt__(self, other):
+        if other is None:
+            return True
+
         if isinstance(other, Rank):
             other = other.order
         return self.order < other
 
     def __le__(self, other):
+        if other is None:
+            return False
+
         if isinstance(other, Rank):
             other = other.order
         return self.order >= other
 
     def __ge__(self, other):
+        if other is None:
+            return True
+
         if isinstance(other, Rank):
             other = other.order
         return self.order <= other
