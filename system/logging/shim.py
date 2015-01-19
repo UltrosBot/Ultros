@@ -75,22 +75,25 @@ class OurLogger(Logger):
 
     def setLevel(self, level):
         """
-        Takes a level from the standard python logging module
+        Takes a level from the standard python logging module or a string name
         and translates it so this logger can use it.
         """
 
+        if isinstance(level, basestring):
+            self.level_name = reverse_level_names.get(level)
+
         if level == logging.CRITICAL:
-            self.level_name = logbook.base.CRITICAL
+            self.level_name = our_CRITICAL
         elif level == logging.WARNING:
-            self.level_name = logbook.base.WARNING
+            self.level_name = our_WARNING
         elif level == logging.ERROR:
-            self.level_name = logbook.base.ERROR
+            self.level_name = our_ERROR
         elif level == logging.INFO:
-            self.level_name = logbook.base.INFO
+            self.level_name = our_INFO
         elif level == logging.DEBUG:
-            self.level_name = logbook.base.DEBUG
+            self.level_name = our_DEBUG
         elif level == logging.NOTSET:
-            self.level_name = logbook.base.NOTSET
+            self.level_name = our_NOTSET
         else:
             self.level_name = level
 

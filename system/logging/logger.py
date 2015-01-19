@@ -16,12 +16,15 @@ up to you.
 
 import os
 
+# This does the magic - let's make logbook more suitable for us
 import system.logging.shim as shim
 
+# Handlers
 from logbook import NullHandler, NTEventLogHandler, SyslogHandler, \
     TimedRotatingFileHandler
-from logbook import TRACE, NOTSET, DEBUG, INFO, NOTICE, WARNING, ERROR, \
-    CRITICAL
+# Levels
+from logbook import NOTSET, INFO
+
 from system.logging.handlers.colours import ColourHandler
 
 
@@ -29,26 +32,9 @@ def get_level_from_name(name):
     if not isinstance(name, basestring):
         return name
 
-    name = name.lower()
+    name = name.upper()
 
-    if name == "critical":
-        return CRITICAL
-    elif name == "error":
-        return ERROR
-    elif name == "warning":
-        return WARNING
-    elif name == "notice":
-        return NOTICE
-    elif name == "info":
-        return INFO
-    elif name == "debug":
-        return DEBUG
-    elif name == "notset":
-        return NOTSET
-    elif name == "trace":
-        return TRACE
-
-    return None
+    return shim.reverse_level_names.get(name)
 
 
 def create_syshandler(*_, **__):
