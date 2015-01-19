@@ -29,7 +29,10 @@ level_names = {
 }
 
 # Swap the keys and values for reverse lookup
-reverse_level_names = {v: k for k, v in level_names.iteritems()}
+reverse_level_names = {}
+
+for k, v in level_names.iteritems():
+    reverse_level_names[v] = k
 
 # Set the logging levels on the logbook base
 setattr(logbook.base, "CRITICAL", our_CRITICAL)
@@ -78,8 +81,6 @@ class OurLogger(Logger):
 
         if level == logging.CRITICAL:
             self.level_name = logbook.base.CRITICAL
-        elif level == logging.ERROR:
-            self.level_name = logbook.base.ERROR
         elif level == logging.WARNING:
             self.level_name = logbook.base.WARNING
         elif level == logging.ERROR:

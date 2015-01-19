@@ -7,14 +7,48 @@ Logbook turned out to be fairly complicated. Who knew? Still, it adds a lot
 of things to the logging system that would have been a huge pain to do
 ourselves, and our new logging system allows plugins to modify various aspects
 of logging, as well as provide additional handlers.
+
+For custom handlers, you may either edit the `configuration` defined in this
+module with something loaded from your plugin's config, or you can require
+that your users do their configuration in the main **logging.yml** file. It's
+up to you.
 """
 
 import os
 
 import system.logging.shim as shim
 
-from logbook import INFO, NOTSET, NullHandler, NTEventLogHandler, SyslogHandler
+from logbook import NullHandler, NTEventLogHandler, SyslogHandler, \
+    TimedRotatingFileHandler
+from logbook import TRACE, NOTSET, DEBUG, INFO, NOTICE, WARNING, ERROR, \
+    CRITICAL
 from system.logging.handlers.colours import ColourHandler
+
+
+def get_level_from_name(name):
+    if not isinstance(name, basestring):
+        return name
+
+    name = name.lower()
+
+    if name == "critical":
+        return CRITICAL
+    elif name == "error":
+        return ERROR
+    elif name == "warning":
+        return WARNING
+    elif name == "notice":
+        return NOTICE
+    elif name == "info":
+        return INFO
+    elif name == "debug":
+        return DEBUG
+    elif name == "notset":
+        return NOTSET
+    elif name == "trace":
+        return TRACE
+
+    return None
 
 
 def create_syshandler(*_, **__):
@@ -36,7 +70,7 @@ def create_syshandler(*_, **__):
 #: Default handler list
 defaults = [
     "boxcar", "email", "redis", "system", "colour",
-    "growl", "libnotify", "twitter", "external", "null"
+    "growl", "libnotify", "twitter", "external", "file", "null"
 ]
 
 #: Storage for the configuration of each handler
@@ -54,8 +88,16 @@ configuration = {
         "system": False,
         "twitter": False,
 
-        # Constants
+        # Constants, these usually won't need to be changed or configured.
         "colour": True,
+        "file": [
+            "logs/output/Ultros.log", "a", "utf-8", INFO,
+            (
+                "{record.time:%b %d %Y - %H:%M:%S} | "
+                "{record.channel:<25} | {record.level_name:<8} | "
+                "{record.message}"
+            ), "%Y-%m-%d", 30, None, True
+        ],
         "null": [NOTSET]
     },
 
@@ -80,6 +122,7 @@ handlers = {
     # "twitter": False,
 
     "colour": ColourHandler,
+    "file": TimedRotatingFileHandler,
     "null": NullHandler,
     "system": create_syshandler
 }
@@ -87,7 +130,7 @@ handlers = {
 # The order handlers should be added to loggers
 handler_order = [
     "boxcar", "email", "redis", "colour", "growl",
-    "libnotify", "twitter", "external", "system", "null"
+    "libnotify", "twitter", "external", "system", "file", "null"
 ]
 
 
@@ -227,11 +270,17 @@ def configure(config):
         configuration["handlers"] = config.get(
             "handlers", configuration["handlers"]
         )
-        configuration["level"] = config.get("level", configuration["level"])
+        configuration["level"] = get_level_from_name(
+            config.get("level", configuration["level"])
+        )
 
         configuration["handlers"].update({
             # Constants
             "colour": True,
+            "file": [
+                "logs/output/Ultros.log", "a", "utf-8", configuration["level"],
+                configuration["format_string"], "%Y-%m-%d", 30, None, True
+            ],
             "null": [NOTSET]
         })
 
