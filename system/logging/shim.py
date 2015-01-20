@@ -84,10 +84,10 @@ class OurLogger(Logger):
 
         if level == logging.CRITICAL:
             self.level_name = our_CRITICAL
-        elif level == logging.WARNING:
-            self.level_name = our_WARNING
         elif level == logging.ERROR:
             self.level_name = our_ERROR
+        elif level == logging.WARNING:
+            self.level_name = our_WARNING
         elif level == logging.INFO:
             self.level_name = our_INFO
         elif level == logging.DEBUG:
