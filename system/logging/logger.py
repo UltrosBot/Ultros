@@ -15,14 +15,11 @@ up to you.
 __author__ = 'Gareth Coles'
 
 
-import os
-
 # This does the magic - let's make logbook more suitable for us
 import system.logging.shim as shim
 
 # Handlers
-from logbook import NullHandler, NTEventLogHandler, SyslogHandler, \
-    TimedRotatingFileHandler
+from logbook import NullHandler, TimedRotatingFileHandler
 # Levels
 from logbook import NOTSET, INFO
 
