@@ -1,5 +1,3 @@
-__author__ = 'Gareth Coles'
-
 """
 Logbook-based logging, modified a bit to suit our purposes.
 
@@ -14,6 +12,9 @@ that your users do their configuration in the main **logging.yml** file. It's
 up to you.
 """
 
+__author__ = 'Gareth Coles'
+
+
 import os
 
 # This does the magic - let's make logbook more suitable for us
@@ -25,6 +26,7 @@ from logbook import NullHandler, NTEventLogHandler, SyslogHandler, \
 # Levels
 from logbook import NOTSET, INFO
 
+from system.logging.handlers.builders import create_syshandler
 from system.logging.handlers.colours import ColourHandler
 
 
@@ -35,22 +37,6 @@ def get_level_from_name(name):
     name = name.upper()
 
     return shim.reverse_level_names.get(name)
-
-
-def create_syshandler(*_, **__):
-    """
-    Get yourself the correct system log handler.
-
-    You shouldn't need to use this directly.
-
-    :param _: Unused, ignored
-    :param __: Unused, ignored
-    :return: Logbook logger for logging to this OS's system logs
-    """
-
-    if os.name == 'nt':
-        return NTEventLogHandler("Ultros")
-    return SyslogHandler("Ultros")
 
 
 #: Default handler list
