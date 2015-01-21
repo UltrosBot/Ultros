@@ -49,7 +49,7 @@ defaults = [
 #: Storage for the configuration of each handler
 configuration = {
     "format_string": "{record.time:%b %d %Y - %H:%M:%S} | "
-                     "{record.channel:<25} | {record.level_name:<8} | "
+                     "{record.channel:>25} | {record.level_name:<8} | "
                      "{record.message}",
     "handlers": {
         "boxcar": False,
@@ -66,7 +66,7 @@ configuration = {
             "logs/output.log", "a", "utf-8", INFO,
             (
                 "{record.time:%b %d %Y - %H:%M:%S} | "
-                "{record.channel:<25} | {record.level_name:<8} | "
+                "{record.channel:>25} | {record.level_name:<8} | "
                 "{record.message}"
             ), "%Y-%m-%d", 30, None, True
         ],
@@ -102,8 +102,8 @@ handlers = {
 
 # The order handlers should be added to loggers
 handler_order = [
-    "boxcar", "notifo", "pushover", "email", "redis", "zeromq", "colour",
-    "notification", "twitter", "external", "system", "file", "null"
+    "boxcar", "notifo", "pushover", "email", "redis", "zeromq",
+    "notification", "twitter", "external", "system", "file", "colour", "null"
 ]
 
 
@@ -187,7 +187,8 @@ def add_all_handlers(logger):
             else:
                 logger.handlers.append(handler_obj(
                     level=configuration["level"],
-                    format_string=configuration["format_string"]
+                    format_string=configuration["format_string"],
+                    bubble=True
                 ))
         except Exception as e:
             print(

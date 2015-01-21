@@ -1,7 +1,7 @@
 # Logging configuration file
 
 # These are used for the default handlers that are always made - standard out, file handler, etc
-format_string: "{record.time:%b %d %Y - %H:%M:%S} | {record.channel:<25} | {record.level_name:<8} | {record.message}"
+format_string: "{record.time:%b %d %Y - %H:%M:%S} | {record.channel:>25} | {record.level_name:<8} | {record.message}"
 
 # Available levels: trace, debug, info, notice, warning, error, critical
 level: info
@@ -53,6 +53,11 @@ handlers:
 #        flush_time: 1
 #        password: no
 #        push_method: rpush
+
+    system: no  # System logger
+        # On windows, this goes to the event log, but it's buggy and requires
+        # Ultros to run as the administrator, which we don't really recommend.
+        # On linux/unix, this just goes to the syslog.
 
     twitter: no  # Send logs to Twitter
         # Requires the oauth2 module
