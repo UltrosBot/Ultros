@@ -7,7 +7,7 @@ from twisted.internet import reactor
 
 from system.singleton import Singleton
 from system.decorators import run_async
-from utils.log import getLogger
+from system.logging.logger import getLogger
 
 from system.translations import Translations
 _ = Translations().get()

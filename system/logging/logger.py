@@ -107,6 +107,30 @@ handler_order = [
 ]
 
 
+def shorten_name(name):
+    if len(name) > 25:
+        if "." in name:
+            parts = name.split(".")
+            last = parts.pop()
+
+            done = ""
+
+            for x in parts:
+                done += x[0]
+                done += "."
+
+            done += last
+
+            if len(done) > 25:
+                done = done[:24] + "~"
+
+            name = done
+        else:
+            name = name[:24] + "~"
+
+    return name
+
+
 def getLogger(name, add_handlers=True):
     """
     Get yourself a logger for normal use.
@@ -123,6 +147,7 @@ def getLogger(name, add_handlers=True):
 
     :return: A wrapped logger, suitable for use anywhere
     """
+    name = shorten_name(name)
 
     if name in loggers:
         return loggers[name]

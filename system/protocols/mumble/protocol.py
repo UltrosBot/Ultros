@@ -30,7 +30,7 @@ from system.protocols.mumble.user import User
 from system.protocols.mumble.channel import Channel
 
 from utils.html import html_to_text
-from utils.log import getLogger
+from system.logging.logger import getLogger
 from utils.switch import Switch
 
 from system.translations import Translations

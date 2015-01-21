@@ -6,7 +6,7 @@ import importlib
 from twisted.internet import protocol, reactor  # , reactor, ssl
 
 from system.protocols.generic.protocol import Protocol as GenericProtocol
-from utils.log import getLogger
+from system.logging.logger import getLogger
 
 from system.translations import Translations
 _ = Translations().get()

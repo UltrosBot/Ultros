@@ -14,7 +14,7 @@ from system.help.exceptions import UnknownTopicException, UnknownTypeException
 from system.help.topics.default import AliasListTopic, ComandListTopic
 from system.singleton import Singleton
 
-from utils.log import getLogger
+from system.logging.logger import getLogger
 
 
 class HelpManager(object):

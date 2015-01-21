@@ -19,7 +19,7 @@ from system.plugin import PluginObject
 from system.storage import formats
 from system.storage.manager import StorageManager
 
-from utils.log import getLogger
+from system.logging.logger import getLogger
 
 tmpdir = tempfile.mkdtemp()
 

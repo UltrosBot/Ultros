@@ -19,7 +19,7 @@ from system.protocols.irc.rank import Ranks
 from system.protocols.irc.user import User
 
 from utils.irc import IRCUtils
-from utils.log import getLogger
+from system.logging.logger import getLogger
 from utils.switch import Switch
 
 from system.translations import Translations

@@ -3,7 +3,7 @@ __author__ = 'Gareth Coles'
 import re
 
 from system.singleton import Singleton
-from utils.log import getLogger
+from system.logging.logger import getLogger
 
 
 class Tokens(object):

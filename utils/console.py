@@ -8,7 +8,7 @@ __author__ = 'Gareth Coles'
 import os
 import sys
 
-from utils.log import getLogger
+from system.logging.logger import getLogger
 
 from system.translations import Translations
 _ = Translations().get()

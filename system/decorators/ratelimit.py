@@ -11,7 +11,7 @@ from twisted.internet.defer import Deferred
 from twisted.internet.task import LoopingCall
 from twisted.python.failure import Failure
 
-from utils import log
+from system.logging import logger as log
 
 __author__ = 'Sean'
 

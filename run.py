@@ -89,7 +89,7 @@ def main():
     if os.path.dirname(sys.argv[0]):
         os.chdir(os.path.dirname(sys.argv[0]))
 
-    from utils.log import getLogger
+    from system.logging.logger import getLogger
     from system.factory_manager import Manager
     from system import constants
     from system.decorators import threads

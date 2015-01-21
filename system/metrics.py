@@ -18,7 +18,7 @@ from system.singleton import Singleton
 from system.storage.formats import JSON
 from system.storage.manager import StorageManager
 
-from utils.log import getLogger
+from system.logging.logger import getLogger
 from utils.packages.packages import Packages
 
 from system.translations import Translations

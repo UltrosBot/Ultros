@@ -3,9 +3,10 @@ __author__ = 'Gareth Coles'
 """
 Temporary forwarder module.
 
-See utils.logging.
+See system.logging
 """
 
-from system.logging.logger import getLogger as getLoggerNew
+from system.decorators.log import deprecated as __deprecated
+from system.logging import logger
 
-getLogger = getLoggerNew
+getLogger = __deprecated("Import from system.logging")(logger.getLogger)

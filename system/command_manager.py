@@ -10,7 +10,7 @@ from system.events import general as events
 from system.event_manager import EventManager
 from system.singleton import Singleton
 
-from utils.log import getLogger
+from system.logging.logger import getLogger
 
 from system.translations import Translations
 _ = Translations().get()
