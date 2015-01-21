@@ -35,16 +35,13 @@ from kitchen.text.converters import getwriter
 
 from system.translations import Translations
 from system.versions import VersionManager
-from utils import log
+from utils import log  # noqa
 
 
 DESC = "Ultros - that squidoctopus bot thing"
 
 p = argparse.ArgumentParser(description=DESC)
-p.add_argument("--debug", help="Enable debug output", action="store_true")
 p.add_argument("--no-console", help="Disable the console input",
-               action="store_true")
-p.add_argument("--trace", help="Enable debug and trace output",
                action="store_true")
 p.add_argument("-l", "--language", help="Specify which language to use for "
                                         "console and logging messages")
@@ -60,13 +57,6 @@ args = p.parse_args()
 trans = Translations(args.language, args.mlanguage)
 
 _ = trans.get()
-
-if args.debug:
-    log.set_debug()
-elif args.trace:
-    log.set_trace()
-
-log.set_level()
 
 
 def update():
@@ -99,7 +89,7 @@ def main():
     if os.path.dirname(sys.argv[0]):
         os.chdir(os.path.dirname(sys.argv[0]))
 
-    from utils.log import getLogger, open_log, close_log
+    from utils.log import getLogger
     from system.factory_manager import Manager
     from system import constants
     from system.decorators import threads
@@ -107,12 +97,14 @@ def main():
     sys.stdout = getwriter('utf-8')(sys.stdout)
     sys.stderr = getwriter('utf-8')(sys.stderr)
 
+    manager = Manager()
+
+    manager.setup_logging()
+
     versions = VersionManager()
 
     if not os.path.exists("logs"):
         os.mkdir("logs")
-
-    open_log("output.log")
 
     logger = getLogger("System")
 
@@ -130,11 +122,8 @@ def main():
 
     logger.info(_("PID: %s") % os.getpid())
 
-    manager = None
-
     try:
         logger.debug("Starting..")
-        manager = Manager()
         manager.setup()
         manager.run()
 
@@ -143,7 +132,6 @@ def main():
         logger.exception("")
     except SystemExit as e:
         logger.trace("SystemExit caught!")
-        close_log("output.log")
 
         logger.debug("Stopping threadpool..")
         threads.pool.stop()
@@ -158,8 +146,6 @@ def main():
 
             logger.debug("Stopping threadpool..")
             threads.pool.stop()
-
-            close_log("output.log")
 
             logger.debug("Removing pidfile..")
             os.remove("ultros.pid")

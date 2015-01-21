@@ -14,6 +14,7 @@ from system.enums import PluginState
 from system.event_manager import EventManager
 from system.events.general import PluginsLoadedEvent, ReactorStartedEvent
 from system.factory import Factory
+from system.logging import logger
 from system.metrics import Metrics
 from system.plugins.manager import PluginManager
 from system.singleton import Singleton
@@ -38,7 +39,7 @@ class Manager(object):
     __metaclass__ = Singleton
 
     #: Instance of the storage manager
-    storage = None
+    storage = StorageManager()
 
     #: Storage for all of our factories.
     factories = {}
@@ -72,13 +73,47 @@ class Manager(object):
     def loaded_plugins(self):
         return self.plugman.plugin_objects
 
+    def setup_logging(self):
+        """
+        Set up logging.
+        """
+
+        self.logging_config = self.storage.get_file(
+            self, "config", YAML, "logging.yml"
+        )
+
+        try:
+            if not self.logging_config.exists:
+                logger.configure(None)
+
+                self.logger.warn(
+                    "No logging config found - using defaults"
+                )
+                return False
+        except IOError:
+            logger.configure(None)
+
+            self.logger.error(
+                "Unable to load logging configuration at config/logging.yml "
+                "- using defaults"
+            )
+            self.logger.error("Please check that this file exists.")
+            return False
+        except Exception:
+            self.logger.exception(
+                "Unable to load logging configuration at config/logging.yml "
+                "- using defaults"
+            )
+            return False
+        return True
+        logger.configure(self.logging_config)
+
     def setup(self):
         signal.signal(signal.SIGINT, self.signal_callback)
 
         self.yapsy_logger.debug_ = self.yapsy_logger.debug
         self.yapsy_logger.debug = self.yapsy_logger.trace
 
-        self.storage = StorageManager()
         self.main_config = self.storage.get_file(self, "config", YAML,
                                                  "settings.yml")
 

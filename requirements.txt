@@ -18,3 +18,4 @@ redis
 enum34
 weakreflist
 logbook
+pytimeparse

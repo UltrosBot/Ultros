@@ -1,13 +1,71 @@
 # Logging configuration file
 
+# These are used for the default handlers that are always made - standard out, file handler, etc
 format_string: "{record.time:%b %d %Y - %H:%M:%S} | {record.channel:<25} | {record.level_name:<8} | {record.message}"
 
-handlers:  # TODO
-    boxcar: {}
-    email: {}
-    external: {}
-    growl: no
-    libnotify: no
-    redis: {}
-    system: no
-    twitter: {}
+# Available levels: trace, debug, info, notice, warning, error, critical
+level: info
+
+handlers:
+    boxcar: no  # Notifications via Boxcar
+#        email: "user@email.com"
+#        password: "password"
+
+        # This means "At most, one record every five minutes" - Delta syntax is the same for all handlers
+#        record_limit: 1
+#        record_delta: 5 minutes
+
+    external: no  # Send messages to an application
+#        args:
+#        - say  # As used on OSX to say text out loud
+#        - "{record.message}"
+
+    notifo: no  # Notifications via notifo
+#        username: ""
+#        secret: ""
+#        record_limit: 1
+#        record_delta: 5 minutes
+#        level: error
+#        hide_level: no
+
+    notification: no  # Linux (via LibNotify) or OSX (via Growl) notifications
+        # Requires pynotify on Linux or growl-py/py-Growl on OSX
+#        level: error
+
+    pushover: no  # Notifications via pushover
+#        apikey: ""
+#        userkey: ""
+#        device: ""
+#        priority: 0
+#        sound: None
+#        record_limit: 1
+#        record_delta: 5 minutes
+#        level: error
+
+    redis: no  # Log to a Redis database
+        # Requires the redis module
+#        level: info
+#        host: "127.0.0.1"
+#        port: 6379
+#        key: ultros
+#        extra_fields: {}
+#        flush_threshold: 128
+#        flush_time: 1
+#        password: no
+#        push_method: rpush
+
+    twitter: no  # Send logs to Twitter
+        # Requires the oauth2 module
+#        consumer_key: ""  # App's consumer key
+#        consumer_secret: ""  # App's consumer secret
+#        username: ""
+#        password: ""
+#        level: error
+#        format_string: "{record.level_name} | {record.message}"
+
+    zeromq: no  # Send logs to a ZeroMQ subscriber (see the docs about this one)
+        # Requires the pyzmq module
+#        uri: "tcp://127.0.0.1:5000"
+#        level: info
+#        multi: yes  # You almost always want this
+

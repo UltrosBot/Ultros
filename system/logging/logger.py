@@ -23,7 +23,11 @@ from logbook import NullHandler, TimedRotatingFileHandler
 # Levels
 from logbook import NOTSET, INFO
 
-from system.logging.handlers.builders import create_syshandler
+from system.logging.handlers.builders import create_syshandler, \
+    create_boxcar_handler, create_external_handler, \
+    create_notification_handler, create_notifo_handler, \
+    create_pushover_handler, create_twitter_handler, \
+    create_redis_handler, create_zeromq_handler
 from system.logging.handlers.colours import ColourHandler
 
 
@@ -38,8 +42,8 @@ def get_level_from_name(name):
 
 #: Default handler list
 defaults = [
-    "boxcar", "email", "redis", "system", "colour",
-    "growl", "libnotify", "twitter", "external", "file", "null"
+    "boxcar", "notifo", "pushover", "email", "redis", "system", "colour",
+    "zeromq", "notification", "twitter", "external", "file", "null"
 ]
 
 #: Storage for the configuration of each handler
@@ -49,10 +53,9 @@ configuration = {
                      "{record.message}",
     "handlers": {
         "boxcar": False,
-        "email": False,
+        # "email": False,
         "external": False,
-        "growl": False,
-        "libnotify": False,
+        "notification": False,
         "redis": False,
         "system": False,
         "twitter": False,
@@ -60,7 +63,7 @@ configuration = {
         # Constants, these usually won't need to be changed or configured.
         "colour": True,
         "file": [
-            "logs/output/Ultros.log", "a", "utf-8", INFO,
+            "logs/output.log", "a", "utf-8", INFO,
             (
                 "{record.time:%b %d %Y - %H:%M:%S} | "
                 "{record.channel:<25} | {record.level_name:<8} | "
@@ -81,14 +84,15 @@ loggers = {}
 handlers = {
     # Default handlers
 
-    # "boxcar": False,
+    "boxcar": create_boxcar_handler,
     # "email": False,
-    # "external": False,
-    # "growl": False,
-    # "libnotify": False,
-    # "redis": False,
-    # "system": False,
-    # "twitter": False,
+    "external": create_external_handler,
+    "notification": create_notification_handler,
+    "notifo": create_notifo_handler,
+    "pushover": create_pushover_handler,
+    "redis": create_redis_handler,
+    "twitter": create_twitter_handler,
+    "zeromq": create_zeromq_handler,
 
     "colour": ColourHandler,
     "file": TimedRotatingFileHandler,
@@ -98,8 +102,8 @@ handlers = {
 
 # The order handlers should be added to loggers
 handler_order = [
-    "boxcar", "email", "redis", "colour", "growl",
-    "libnotify", "twitter", "external", "system", "file", "null"
+    "boxcar", "notifo", "pushover", "email", "redis", "zeromq", "colour",
+    "notification", "twitter", "external", "system", "file", "null"
 ]
 
 
@@ -168,6 +172,9 @@ def add_all_handlers(logger):
                     "bubble": True
                 }
 
+                if "level" in config:
+                    config["level"] = get_level_from_name(config["name"])
+
                 default.update(config)
 
                 logger.handlers.append(handler_obj(
@@ -229,7 +236,7 @@ def configure(config):
     This is used internally - you shouldn't need this.
 
     :param config: Dict to load configuration from
-    :type config: dict
+    :type config: dict, Config, None
     """
 
     if config is not None:
@@ -247,7 +254,7 @@ def configure(config):
             # Constants
             "colour": True,
             "file": [
-                "logs/output/Ultros.log", "a", "utf-8", configuration["level"],
+                "logs/output.log", "a", "utf-8", configuration["level"],
                 configuration["format_string"], "%Y-%m-%d", 30, None, True
             ],
             "null": [NOTSET]
