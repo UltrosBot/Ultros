@@ -13,13 +13,15 @@ from datetime import timedelta
 
 from pytimeparse.timeparse import timeparse
 
-from logbook import NTEventLogHandler, SyslogHandler
+from logbook import NTEventLogHandler, SyslogHandler, MailHandler
 from logbook.queues import ZeroMQHandler, RedisHandler, ThreadedWrapperHandler
 from logbook.more import TwitterHandler, ExternalApplicationHandler
 from logbook.notifiers import BoxcarHandler, NotifoHandler, PushoverHandler
 
 from logbook.notifiers import create_notification_handler as \
     notification_handler
+
+from system.logging.handlers.exceptions import MetricsHandler
 
 
 def create_syshandler(*_, **__):
@@ -131,3 +133,25 @@ def create_redis_handler(host="127.0.0.1", port=6379, key="ultros",
         host, port, key, extra_fields, flush_threshold, flush_time, level,
         filter, password, bubble, context, push_method
     ))
+
+
+def create_metrics_handler(*_, **__):
+    return MetricsHandler()
+
+
+def create_mail_handler(from_addr=None, recipients=None,
+                        server_addr=None, credentials=None, secure=None,
+                        record_limit=None, record_delta=None, level=0,
+                        format_string=None, related_format_string=None,
+                        filter=None, bubble=True):
+    if None in [from_addr, recipients]:
+        raise ValueError("'From' address and recipients are required!")
+
+    if isinstance(record_delta, basestring):
+        record_delta = timedelta(seconds=timeparse(record_delta))
+
+    return MailHandler(
+        from_addr, recipients, "Ultros | {record.level_name}", server_addr,
+        credentials, secure, record_limit, record_delta, level, format_string,
+        related_format_string, filter, bubble
+    )

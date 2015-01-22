@@ -23,11 +23,13 @@ from logbook import NullHandler, TimedRotatingFileHandler
 # Levels
 from logbook import NOTSET, INFO
 
+# Moar handlers
 from system.logging.handlers.builders import create_syshandler, \
     create_boxcar_handler, create_external_handler, \
     create_notification_handler, create_notifo_handler, \
     create_pushover_handler, create_twitter_handler, \
-    create_redis_handler, create_zeromq_handler
+    create_redis_handler, create_zeromq_handler, create_metrics_handler, \
+    create_mail_handler
 from system.logging.handlers.colours import ColourHandler
 
 
@@ -43,7 +45,7 @@ def get_level_from_name(name):
 #: Default handler list
 defaults = [
     "boxcar", "notifo", "pushover", "email", "redis", "system", "colour",
-    "zeromq", "notification", "twitter", "external", "file", "null"
+    "zeromq", "notification", "twitter", "external", "file", "metrics", "null"
 ]
 
 #: Storage for the configuration of each handler
@@ -53,7 +55,7 @@ configuration = {
                      "{record.message}",
     "handlers": {
         "boxcar": False,
-        # "email": False,
+        "email": False,
         "external": False,
         "notification": False,
         "redis": False,
@@ -70,6 +72,7 @@ configuration = {
                 "{record.message}"
             ), "%Y-%m-%d", 30, None, True
         ],
+        "metrics": True,
         "null": [NOTSET]
     },
 
@@ -85,7 +88,7 @@ handlers = {
     # Default handlers
 
     "boxcar": create_boxcar_handler,
-    # "email": False,
+    "email": create_mail_handler,
     "external": create_external_handler,
     "notification": create_notification_handler,
     "notifo": create_notifo_handler,
@@ -97,13 +100,15 @@ handlers = {
     "colour": ColourHandler,
     "file": TimedRotatingFileHandler,
     "null": NullHandler,
-    "system": create_syshandler
+    "system": create_syshandler,
+    "metrics": create_metrics_handler
 }
 
 # The order handlers should be added to loggers
 handler_order = [
     "boxcar", "notifo", "pushover", "email", "redis", "zeromq",
-    "notification", "twitter", "external", "system", "file", "colour", "null"
+    "notification", "twitter", "external", "system", "file", "colour",
+    "metrics", "null"
 ]
 
 
@@ -283,6 +288,7 @@ def configure(config):
                 "logs/output.log", "a", "utf-8", configuration["level"],
                 configuration["format_string"], "%Y-%m-%d", 30, None, True
             ],
+            "metrics": True,
             "null": [NOTSET]
         })
 
@@ -290,6 +296,15 @@ def configure(config):
 
     for logger in loggers.values():
         add_all_handlers(logger)
+
+    getLogger("Logging").info("    ")
+    getLogger("Logging").info("    === Logging session opened ===")
+    getLogger("Logging").info("    ")
+
+    try:
+        int("derp")
+    except Exception:
+        getLogger("Logging").exception("An error!")
 
 # Handler ordering
 

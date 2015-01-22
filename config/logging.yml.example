@@ -15,6 +15,24 @@ handlers:
 #        record_limit: 1
 #        record_delta: 5 minutes
 
+    email: no  # Send emails on errors, etc
+        # This one is pretty complicated - ymmv
+#        from_addr: "me@me.me"
+#        recipients:
+#        - "person@person.person"
+#        server_addr: smtp.smtp.smtp
+#        credentials:
+#            user: ""
+#            password: ""
+#        secure: {}  # Can provide a keyfile and certfile, or leave out if needed
+#        record_limit: 1
+#        record_delta: 1 hour
+#        level: error
+
+        # Extra stuff you can provide if you want
+#        format_string: ""
+#        related_format_string: ""
+
     external: no  # Send messages to an application
 #        args:
 #        - say  # As used on OSX to say text out loud
