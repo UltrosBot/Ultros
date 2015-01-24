@@ -1,3 +1,7 @@
+"""
+Subclass of Logbook's ColorizedStderrHandler that provides better colours.
+"""
+
 __author__ = 'Gareth Coles'
 
 from logbook.base import CRITICAL, ERROR, WARNING, NOTICE, INFO, DEBUG, TRACE

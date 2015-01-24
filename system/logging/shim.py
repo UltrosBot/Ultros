@@ -1,3 +1,18 @@
+"""
+Semi-hacky stuff to make Logbook suitable for use with Ultros.
+
+Your all-access-pass to Logbookdom includes:
+
+* A trace logging level, which includes shifting the other levels up to make
+  room for it
+    * A small amount of duck-punching so TRACE can be imported from the logbook
+      packages
+* A custom logger that includes a .trace() method and simple handlers list, as
+  well as a .setLevel() that works with Python's standard logging levels
+* A logger forwarder so that loggers can be recreated without modules having
+  to grab the new instances
+"""
+
 __author__ = 'Gareth Coles'
 
 # So we can translate logging levels

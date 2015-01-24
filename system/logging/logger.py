@@ -34,6 +34,10 @@ from system.logging.handlers.colours import ColourHandler
 
 
 def get_level_from_name(name):
+    """
+    Get a logging level from a string - For example, "INFO".
+    """
+
     if not isinstance(name, basestring):
         return name
 
@@ -113,6 +117,18 @@ handler_order = [
 
 
 def shorten_name(name):
+    """
+    Shorten a name so that it fits within our standard 25-char limit.
+
+    If it contains dots, then it'll be collapsed around them as necessary
+    before possibly being truncated.
+
+    >>> shorten_name("ThisIsAVeryVeryVeryVeryVeryLongName")
+    'ThisIsAVeryVeryVeryVeryV~'
+    >>> shorten_name("this.is.also.a.pretty.long.name")
+    't.i.a.a.p.l.name'
+    """
+
     if len(name) > 25:
         if "." in name:
             parts = name.split(".")

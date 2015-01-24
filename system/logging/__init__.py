@@ -1,1 +1,5 @@
-__author__ = 'bw5'
+"""
+Contains all of Ultros' logging functionality.
+"""
+
+__author__ = 'Gareth Coles'

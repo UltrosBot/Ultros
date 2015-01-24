@@ -1,1 +1,5 @@
-__author__ = 'bw5'
+"""
+The standard custom handlers that ship with Ultros go here.
+"""
+
+__author__ = 'Gareth Coles'
