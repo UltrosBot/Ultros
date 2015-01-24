@@ -41,8 +41,6 @@ from utils import log  # noqa
 DESC = "Ultros - that squidoctopus bot thing"
 
 p = argparse.ArgumentParser(description=DESC)
-p.add_argument("--no-console", help="Disable the console input",
-               action="store_true")
 p.add_argument("-l", "--language", help="Specify which language to use for "
                                         "console and logging messages")
 p.add_argument("-ml", "--mlanguage", help="Specify which language to use for "
