@@ -7,7 +7,7 @@ from distutils.version import StrictVersion
 from system.constants import __release__ as current
 from system.singleton import Singleton
 
-from utils.log import getLogger
+from system.logging.logger import getLogger
 
 versions = {
     "1.0.0": "Default, this will never be shown",

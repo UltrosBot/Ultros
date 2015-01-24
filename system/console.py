@@ -10,7 +10,7 @@ from twisted.internet import reactor
 from threading import Thread
 
 from utils.console import getch, getTerminalSize
-from utils.log import getLogger
+from system.logging.logger import getLogger
 
 
 WIDTH = 0

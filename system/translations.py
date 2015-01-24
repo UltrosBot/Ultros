@@ -34,7 +34,7 @@ class Translations(object):
         self.get_known()
 
         if self.log and self.logger is None:
-            from utils.log import getLogger
+            from system.logging.logger import getLogger
 
             self.logger = getLogger("Translations")
 

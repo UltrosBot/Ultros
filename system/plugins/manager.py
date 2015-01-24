@@ -17,7 +17,7 @@ from system.enums import PluginState
 from system.plugins.info import Info
 from system.plugins.plugin import PluginObject
 from system.singleton import Singleton
-from utils.log import getLogger
+from system.logging.logger import getLogger
 
 
 class PluginManager(object):

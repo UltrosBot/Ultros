@@ -15,7 +15,7 @@ import system.storage.files as files
 
 from system.storage.exceptions import UnknownStorageTypeError
 from system.singleton import Singleton
-from utils.log import getLogger
+from system.logging.logger import getLogger
 
 from system.translations import Translations
 _ = Translations().get()

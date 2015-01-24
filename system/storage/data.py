@@ -27,7 +27,7 @@ from threading import Lock
 from twisted.enterprise import adbapi
 
 from system.storage import formats
-from utils.log import getLogger
+from system.logging.logger import getLogger
 
 from system.translations import Translations
 _ = Translations().get()

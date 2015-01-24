@@ -3,9 +3,9 @@ Logging-related decorators for wrapping functions. Also includes a way
 of deprecating things.
 """
 
-import logging
+import logbook as logging
 import traceback
-from utils import log
+from system.logging import logger as log
 
 __author__ = 'Sean'
 
@@ -70,7 +70,7 @@ def warn(message, *args, **kwargs):
     Args are as for `log_message`, except *level*.
     """
 
-    return log_message(message, logging.WARN, *args, **kwargs)
+    return log_message(message, logging.WARNING, *args, **kwargs)
 
 
 def error(message, *args, **kwargs):
