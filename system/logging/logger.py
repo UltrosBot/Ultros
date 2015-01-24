@@ -301,11 +301,6 @@ def configure(config):
     getLogger("Logging").info("    === Logging session opened ===")
     getLogger("Logging").info("    ")
 
-    try:
-        int("derp")
-    except Exception:
-        getLogger("Logging").exception("An error!")
-
 # Handler ordering
 
 
