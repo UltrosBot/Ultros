@@ -56,5 +56,5 @@ then
     echo "====== LATEST LOG ======"
     echo ""
 
-    tail -n20 logs/output.log
+    tail -n20 logs/ultros.out
 fi
