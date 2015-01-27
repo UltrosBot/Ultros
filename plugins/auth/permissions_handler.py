@@ -430,7 +430,7 @@ class permissionsHandler(object):
         :return: The value, or False or None
         :rtype: object, None
         """
-        #TODO: Saner returns
+        # TODO: Saner returns
 
         user = user.lower()
         option = option.lower()

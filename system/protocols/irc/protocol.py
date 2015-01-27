@@ -577,7 +577,9 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         instead.
         """
         self.log.info(_("%s sets mode %s: %s%s %s") % (
-            user, channel, "+" if action else "-", modes, args))
+            user, channel, "+" if action else "-", modes,
+            " ".join([str(x) for x in args if x is not None])
+        ))
 
         # Get user/channel objects
         try:
@@ -596,8 +598,9 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         # Handle the mode changes
         for x in xrange(len(modes)):
             if channel_obj is None:
-                # User mode (almost definitely always ourself)
+                # User mode (almost definitely always ourselves)
                 # TODO: Handle this (usermodes)
+                # Unsure how to handle this - is len(args) == len(modes)?
                 pass
             elif modes[x] in self.ranks.modes:
                 # Rank channel mode
@@ -1094,17 +1097,18 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             user.add_channel(channel)
             channel.add_user(user)
         for s in status:
-            if s in "HG":
-                # Here/Gone
-                # TODO: Handle H/G status?
-                pass
+            if s == "H":  # Here
+                user.set_away(False)
+            elif s == "G":  # Gone
+                # TODO: Away message?
+                user.set_away(True)
             elif s == "*":
                 user.is_oper = True
             elif s in self.ranks.symbols:
                 rank = self.ranks.by_symbol(s)
                 user.add_rank_in_channel(channel, rank)
             else:
-                # A bunch of ircd-specific stuff can appear here. We have no
+                # A bunch of IRCd-specific stuff can appear here. We have no
                 # need for it, but plugins could listen for WHO replies
                 # themselves if they really need, or we can add stuff if a
                 # proper use/specification is given.
@@ -1132,6 +1136,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             self._users.remove(user)
             user.is_tracked = False
             # TODO: Throw event: lost track of user
+            # Do we really need an event for this?
 
     # endregion
 
@@ -1265,6 +1270,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
     def channel_ban(self, user, channel=None, reason=None, force=False):
         # TODO: Event?
+        # TODO: Ban types
         if not force:
             if not self.ourselves.can_kick(user, channel):
                 self.log.trace("Tried to ban, but don't have permission")
@@ -1279,7 +1285,6 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
     def channel_kick(self, user, channel=None, reason=None, force=False):
         # TODO: Event?
-        # TODO: Ban types
         if not force:
             if not self.ourselves.can_kick(user, channel):
                 self.log.trace("Tried to kick, but don't have permission")
@@ -1294,14 +1299,27 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             self.sendLine(u"KICK %s %s" % (channel, user))
         return True
 
-    def global_ban(self, user, reason=None, force=False):
-        # TODO: Event?
-        # TODO: Oper detection?
+    def global_ban(self, user, reason=None, force=False, duration="1d"):
+        if reason is None:
+            reason = "Automated ban"
+
+        if force or self.ourselves.is_oper:
+            # TODO: Event?
+            # TODO: Ban types
+            self.sendLine(u"GLINE *@{} {} :{}".format(
+                user.host, duration, reason
+            ))
+            return True
         return False
 
     def global_kick(self, user, reason=None, force=False):
-        # TODO: Event?
-        # TODO: Oper detection?
+        if force or self.ourselves.is_oper:
+            # TODO: Event?
+            if reason:
+                self.sendLine(u"KILL {}".format(user))
+            else:
+                self.sendLine(u"KILL {} {}".format(user, reason))
+            return True
         return False
 
     def join_channel(self, channel, password=None):

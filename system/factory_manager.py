@@ -25,6 +25,8 @@ from system.logging.logger import getLogger
 from system.translations import Translations
 _ = Translations().get()
 
+from utils.misc import valid_path
+
 
 class Manager(object):
     """
@@ -293,8 +295,15 @@ class Manager(object):
 
         config = conf_location
         if not isinstance(conf_location, Config):
-            # TODO: Prevent upward directory traversal properly
-            conf_location = conf_location.replace("..", "")
+            if not valid_path(self.storage.conf_path + conf_location):
+                self.logger.error(
+                    "Invalid config location: {}{}".format(
+                        self.storage.conf_path, conf_location
+                    )
+                )
+
+                return
+
             try:
                 config = self.storage.get_file(self, "config", YAML,
                                                conf_location)

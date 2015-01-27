@@ -26,6 +26,9 @@ class User(user.User):
     def __str__(self):
         return str(self.nickname)
 
+    def set_away(self, away):
+        self.away = away
+
     def add_channel(self, channel):
         self.channels.add(channel)
 

@@ -7,9 +7,15 @@ These are used both by the main bot, and the package manager.
 
 __author__ = "Gareth Coles"
 
+import os
+import os.path
+
 import re
 from system.translations import Translations
 _ = Translations().get()
+
+
+current_location = os.path.abspath(os.curdir)
 
 
 def _output_error(logger, error, level):
@@ -20,6 +26,18 @@ def _output_error(logger, error, level):
                 logger.log(level, line)
     else:
         logger.log(level, error)
+
+
+def valid_path(path):
+    if os.name == "nt":
+        path = path.replace("/", "\\")
+
+    request = os.path.relpath(path, current_location)
+    request = os.path.abspath(request)
+
+    common = os.path.commonprefix([request, current_location])
+
+    return common.startswith(current_location)
 
 
 def dict_swap(d):

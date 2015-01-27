@@ -8,6 +8,7 @@ class User(object):
 
     authorized = False
     auth_name = ""
+    away = False
 
     def __init__(self, nickname, protocol=None, is_tracked=False):
         self.nickname = nickname

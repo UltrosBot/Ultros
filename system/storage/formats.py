@@ -2,16 +2,27 @@
 Storage file format definitions
 """
 
-# TODO: Replace this with an enum
-
 __author__ = 'Gareth Coles'
 
-YAML = "Yaml"
-JSON = "JSON"
-MEMORY = "Memory"
-DBAPI = "DBAPI"
-MONGO = "MongoDB"
-REDIS = "Redis"
+from enum import Enum
+
+
+class Formats(Enum):
+    YAML = "Yaml"
+    JSON = "JSON"
+    MEMORY = "Memory"
+    DBAPI = "DBAPI"
+    MONGO = "MongoDB"
+    REDIS = "Redis"
+
+# TODO: Remove enum references below
+
+YAML = Formats.YAML
+JSON = Formats.JSON
+MEMORY = Formats.MEMORY
+DBAPI = Formats.DBAPI
+MONGO = Formats.MONGO
+REDIS = Formats.REDIS
 
 DATA = [YAML, JSON, MEMORY, DBAPI, MONGO, REDIS]
 CONF = [YAML, JSON, MEMORY]
