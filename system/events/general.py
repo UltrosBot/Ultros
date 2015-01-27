@@ -227,7 +227,7 @@ class MessageSent(GeneralEvent):
     type = ""
     target = ""
     message = ""
-    printable = ""
+    printable = True
 
     def __init__(self, caller, typ, target, message, printable=True):
         """
@@ -282,6 +282,23 @@ class NameChanged(GeneralEvent):
         self.user = user
 
         super(NameChanged, self).__init__(caller)
+
+
+class UserConnected(GeneralEvent):
+    """
+    Thrown when a user connects. Not all protocols support this.
+    """
+
+    user = None
+
+    def __init__(self, caller, user):
+        """
+        Initialise the event object.
+        """
+
+        self.user = user
+
+        super(UserConnected, self).__init__(caller)
 
 
 class UserDisconnected(GeneralEvent):
@@ -389,7 +406,7 @@ class ActionSent(GeneralEvent):
 
     target = ""
     message = ""
-    printable = ""
+    printable = True
 
     def __init__(self, caller, target, message, printable=True):
         """
@@ -420,8 +437,9 @@ class ActionReceived(GeneralEvent):
     source = None
     target = None
     message = ""
+    printable = True
 
-    def __init__(self, caller, source, target, message):
+    def __init__(self, caller, source, target, message, printable=True):
         """
         Initialise the event object.
         """
@@ -429,6 +447,7 @@ class ActionReceived(GeneralEvent):
         self.source = source
         self.target = target
         self.message = message
+        self.printable = printable
 
         super(ActionReceived, self).__init__(caller)
 
