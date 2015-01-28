@@ -1,8 +1,0 @@
-CREATE TABLE IF NOT EXISTS {TABLE} (
-  id INT NOT NULL PRIMARY KEY auto_increment,
-  url TEXT NOT NULL,
-  submitted DATETIME NOT NULL,
-  username VARCHAR(256) NOT NULL,
-  target VARCHAR(256) NOT NULL,
-  protocol VARCHAR(256) NOT NULL
-)
