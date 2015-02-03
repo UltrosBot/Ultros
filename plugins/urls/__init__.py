@@ -16,6 +16,8 @@ import urlparse
 import urllib
 import urllib2
 
+from httplib import IncompleteRead
+
 from bs4 import BeautifulSoup
 from kitchen.text.converters import to_unicode
 from netaddr import all_matching_cidrs
@@ -576,6 +578,11 @@ class URLsPlugin(plugin.PluginObject):
                 return title, domain
             else:
                 return None, None
+        except IncompleteRead as e:
+            partial = e.partial
+            self.logger.exception(_("Error parsing title."))
+            self.logger.debug("Data: {}".format(partial))
+            return str(e), domain
         except Exception as e:
             if not str(e).lower() == "not viewing html":
                 self.logger.exception(_("Error parsing title."))
