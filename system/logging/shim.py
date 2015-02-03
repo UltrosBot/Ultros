@@ -15,6 +15,8 @@ Your all-access-pass to Logbookdom includes:
 
 __author__ = 'Gareth Coles'
 
+from kitchen.text.converters import to_bytes
+
 # So we can translate logging levels
 import logging
 
@@ -79,6 +81,12 @@ from logbook import Logger
 # This is our own Logger, which also has a .trace()
 class OurLogger(Logger):
     handlers = []
+
+    def _log(self, level, args, kwargs):
+        args = list(args)
+        args[0] = to_bytes(args[0])
+
+        super(OurLogger, self)._log(level, args, kwargs)
 
     def trace(self, *args, **kwargs):
         """
