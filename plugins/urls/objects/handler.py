@@ -113,4 +113,3 @@ class URLHandler(object):
                 return False
 
         return True
-
