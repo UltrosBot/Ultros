@@ -20,6 +20,8 @@ class URLsPlugin(PluginObject):
 
     config = None
 
+    handlers = []
+
     def setup(self):
         self.commands = CommandManager()
         self.events = EventManager()
@@ -44,3 +46,10 @@ class URLsPlugin(PluginObject):
 
     def reload(self):
         pass
+
+    def deactivate(self):
+        pass
+
+    def add_handler(self, handler):
+        handler.urls_plugin = self
+        self.handlers.append(handler)
