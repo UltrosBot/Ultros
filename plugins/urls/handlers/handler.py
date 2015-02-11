@@ -38,8 +38,11 @@ class URLHandler(object):
     # I've been told hasattr(obj, "match") would work too, but, well, this
     # feels like too much of a kludge, even for me. Plus, there are other
     # objects that have a "match" function.
-
     __REGEX_TYPE = type(re.compile(""))
+
+    # Remember to set this, so that plugins can register handlers that need
+    # to go before or after yours.
+    name = ""
 
     plugin = None
     urls_plugin = None

@@ -46,6 +46,7 @@ class URLsPlugin(PluginObject):
             return self._disable_self()
 
         self.config.add_callback(self.reload)
+        self.reload()
 
     def reload(self):
         pass
@@ -53,6 +54,38 @@ class URLsPlugin(PluginObject):
     def deactivate(self):
         self.handlers = []
 
-    def add_handler(self, handler):
-        handler.urls_plugin = self
-        self.handlers.insert(0, handler)
+    def add_handler(self, handler, position=None, which=None):
+        if not self.has_handler(handler.name):  # Only add if it's not there
+            handler.urls_plugin = self
+
+            if which is not None and position is not None:
+                # Needs to be before or after a specific handler
+                if position == "before":
+                    index = 0  # Start at the start
+
+                    for h in self.handlers:
+                        if which == h.name:
+                            self.handlers.insert(index, handler)
+                            return
+
+                        index += 1
+                elif position == "after":
+                    index = len(self.handlers)  # Start at the end
+
+                    for h in self.handlers[::-1]:
+                        if which == h.name:
+                            self.handlers.insert(index, handler)
+                            return
+
+                        index -= 1
+
+            # If we can't find the specified handler to be relative to, or
+            # the handler doesn't care where it is, then put it at the start.
+            self.handlers.insert(0, handler)
+
+    def has_handler(self, name):
+        for handler in self.handlers:
+            if name == handler.name:
+                return True
+
+        return False

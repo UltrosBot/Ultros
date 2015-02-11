@@ -9,6 +9,8 @@ from utils.misc import str_to_regex_flags
 
 class WebsiteHandler(URLHandler):
 
+    name = "website"
+
     criteria = {
         "protocol": re.compile(u"http|https", str_to_regex_flags("iu"))
     }
