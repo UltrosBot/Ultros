@@ -22,7 +22,7 @@ class URLHandler(object):
     >>> criteria = {
     ...     # No protocol here, since we don't care about it
     ...     "auth": lambda x: x is not None
-    ...     "domain": re.compile("[a-zA-Z]+"),
+    ...     "domain": re.compile(u"[a-zA-Z]+"),
     ...     "port": lambda x: x > 8080,
     ...     "path": lambda x: len(x) > 10
     ... }
@@ -61,10 +61,14 @@ class URLHandler(object):
 
         self.plugin = plugin
 
-    def call(self, url):
+    def call(self, url, context):
         """
         Called if the URL matches. Override this or there's basically no point
         in having a handler.
+
+        *context* here is a dict containing "protocol", "source", and "target"
+        keys, which you can use to respond to whoever sent the message which
+        contained the URL.
 
         Return True if this should cascade to any other handlers, or False
         if it should end here.
@@ -73,7 +77,14 @@ class URLHandler(object):
         next handler.
 
         :param url: The URL object that was matched
+        :param context: Dict containing protocol, source and target for
+                        the message that contained this URL
+
+        :type url: plugins.urls.url.URL
+        :type context: dict
+
         :return: True to cascade to other handlers, False otherwise
+        :rtype: bool
         """
 
         raise NotImplementedError()

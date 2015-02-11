@@ -11,6 +11,9 @@ from system.storage.formats import Formats
 # Plugin
 from system.plugins.plugin import PluginObject
 
+# Internals
+from plugins.urls.handlers.handler import URLHandler
+
 
 class URLsPlugin(PluginObject):
     # Managers
@@ -48,8 +51,8 @@ class URLsPlugin(PluginObject):
         pass
 
     def deactivate(self):
-        pass
+        self.handlers = []
 
     def add_handler(self, handler):
         handler.urls_plugin = self
-        self.handlers.append(handler)
+        self.handlers.insert(0, handler)
