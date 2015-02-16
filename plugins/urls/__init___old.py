@@ -397,8 +397,8 @@ class URLsPlugin(plugin.PluginObject):
         Shorten a URL with TinyURL. Don't use this directly.
         """
 
-        return urllib2.urlopen("http://tinyurl.com/api-create.php?url="
-                               + urllib.quote_plus(url)).read()
+        return urllib2.urlopen("http://tinyurl.com/api-create.php?url=" +
+                               urllib.quote_plus(url)).read()
 
     def parse_title(self, url, use_handler=True):
         """
