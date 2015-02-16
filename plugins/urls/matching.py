@@ -5,11 +5,11 @@ import re
 from utils.misc import str_to_regex_flags
 
 # Want to play with the regex?
-# See https://regex101.com/r/bD7xH7/1
+# See https://regex101.com/r/bD7xH7/2
 
 regex = """(?P<prefix>[^\w\s\\n]+|)
 (?P<protocol>[\w]+)
-://
+:/[/]{1,}
 (?P<basic>[\w]+:[\w]+|)(?:@|)
 (?P<domain>[^/:\\n\s]+|)
 (?P<port>:[0-9]+|)
