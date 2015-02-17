@@ -21,6 +21,13 @@
             "module": "proxy.socksipyhandler",
             "url": "https://gist.githubusercontent.com/e000/869791/raw/7d579998d384ba72711f2ce0caf78e8566da5864/socksipyhandler.py",
             "attrib": "[Gist, no license header] e000 <e@tr0ll.in>"
+        },
+        {
+            "name": "NewBase60",
+            "filename": "crypto/newbase60.py",
+            "module": "crypto.newbase60",
+            "url": "https://raw.githubusercontent.com/kevinmarks/newBase60py/master/newbase60.py",
+            "attrib": "[CC0 Public Domain] Kevin Marks <kevinmarks@gmail.com>"
         }
     ]
 }
