@@ -12,7 +12,7 @@ from system.storage.formats import Formats
 from system.plugins.plugin import PluginObject
 
 # Internals
-# from plugins.urls.handlers.handler import URLHandler
+from plugins.urls.handlers.website import WebsiteHandler
 
 
 class URLsPlugin(PluginObject):
@@ -47,6 +47,8 @@ class URLsPlugin(PluginObject):
 
         self.config.add_callback(self.reload)
         self.reload()
+
+        self.add_handler(WebsiteHandler(self))
 
     def reload(self):
         pass
