@@ -122,9 +122,9 @@ class URLsPlugin(PluginObject):
                     if _path[-1] == char:
                         _path = _path[:-1]
 
-            url = URL(self, _protocol, _basic, _domain, _port, _path)
+            _url = URL(self, _protocol, _basic, _domain, _port, _path)
 
-            return url  # TODO: Finish this function
+            return _url  # TODO: Finish this function
 
     def add_handler(self, handler, position=None, which=None):
         if not self.has_handler(handler.name):  # Only add if it's not there
