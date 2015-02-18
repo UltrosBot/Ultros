@@ -11,3 +11,4 @@ install:
 script:
   - flake8 .
   - "nosetests -v test/"
+sudo: false
