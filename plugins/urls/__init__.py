@@ -13,6 +13,12 @@ from system.plugins.plugin import PluginObject
 
 # Internals
 from plugins.urls.handlers.website import WebsiteHandler
+from plugins.urls.matching import extract_urls
+from plugins.urls.url import URL
+
+# Protocol objects
+from system.protocols.generic.channel import Channel
+from system.protocols.generic.user import User
 
 
 class URLsPlugin(PluginObject):
@@ -48,6 +54,17 @@ class URLsPlugin(PluginObject):
         self.config.add_callback(self.reload)
         self.reload()
 
+        def message_event_filter(event):
+            target = event.target
+            type_ = event.type
+
+            return type_ == "message" \
+                or isinstance(target, Channel) \
+                or isinstance(target, User)
+
+        self.events.add_callback("MessageReceived", self, self.message_handler,
+                                 1, message_event_filter)
+
         self.add_handler(WebsiteHandler(self))
 
     def reload(self):
@@ -55,6 +72,59 @@ class URLsPlugin(PluginObject):
 
     def deactivate(self):
         self.handlers = []
+
+    def message_handler(self, event):
+        """
+        Event handler for general messages
+        """
+
+        protocol = event.caller
+        source = event.source
+        target = event.target
+        message = event.message
+
+        allowed = self.commands.perm_handler.check("urls.title", source,
+                                                   target, protocol)
+
+        if not allowed:
+            return
+
+        matches = extract_urls(message)
+
+        for match in matches:
+            # Expand the match to make it easier to work with
+
+            # Input: ''http://x:y@tools.ietf.org:80/html/rfc1149''
+            # Match: '', http, x:y, tools.ietf.org, :80, /html/rfc1149''
+            _prefix, _protocol, _basic, _domain, _port, _path = match
+
+            _port = _port.lstrip(":")  # Remove this as the regex captures it
+
+            try:
+                _port = int(_port)
+            except ValueError:
+                self.logger.warn("Invalid port: {}".format(_port))
+                continue
+
+            # We translate some characters that are likely to be matched with
+            # different ones at the end of the path here, which is about the
+            # most we can do to fix this.
+
+            # TODO: More translations for the prefix
+
+            _translated = _prefix.replace("(", ")")
+            _translated = _translated.replace("[", "]")
+            _translated = _translated.replace("{", "}")
+
+            if len(_path) and len(_translated):
+                # Remove translated prefix chars.
+                for char in reversed(_translated):
+                    if _path[-1] == char:
+                        _path = _path[:-1]
+
+            url = URL(self, _protocol, _basic, _domain, _port, _path)
+
+            return url  # TODO: Finish this function
 
     def add_handler(self, handler, position=None, which=None):
         if not self.has_handler(handler.name):  # Only add if it's not there
