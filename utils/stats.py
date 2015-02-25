@@ -8,6 +8,14 @@ from itertools import ifilter
 import time
 
 
+def inc(value):
+    return value + 1
+
+
+def dec(value):
+    return value - 1
+
+
 class TimeDataAggregator(object):
 
     _TIME = 0
@@ -33,11 +41,11 @@ class TimeDataAggregator(object):
         self.initial_value = initial_value
 
         if increment_function is None:
-            increment_function = lambda value: value + 1
+            increment_function = inc
         self._increment_function = increment_function
 
         if decrement_function is None:
-            decrement_function = lambda value: value - 1
+            decrement_function = dec
         self._decrement_function = decrement_function
 
         self._records = [None] * self.SAVED_PERIODS

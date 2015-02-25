@@ -178,7 +178,7 @@ class test_commands:
         self.manager.set_auth_handler(auth)
         self.manager.set_permissions_handler(perms)
 
-        ### COMMAND WITH PERMISSION ###
+        # COMMAND WITH PERMISSION #
         auth.authorized.return_value = True
         perms.check.return_value = True
 
@@ -195,7 +195,7 @@ class test_commands:
         perms.check.reset_mock()
         self.plugin.handler.reset_mock()
 
-        ### ALIAS WITH PERMISSION ###
+        # ALIAS WITH PERMISSION #
 
         r = self.manager.run_command("test6", caller, source, protocol, "")
 
@@ -209,7 +209,7 @@ class test_commands:
         perms.check.return_value = False
         self.plugin.handler.reset_mock()
 
-        ### COMMAND WITHOUT PERMISSION ###
+        # COMMAND WITHOUT PERMISSION #
 
         r = self.manager.run_command("test5", caller, source, protocol, "")
 
@@ -222,7 +222,7 @@ class test_commands:
         perms.check.reset_mock()
         self.plugin.handler.reset_mock()
 
-        ### COMMAND WITH EXCEPTION ###
+        # COMMAND WITH EXCEPTION #
 
         self.plugin.handler = Mock(side_effect=Exception('Boom!'))
         self.manager.unregister_commands_for_owner(self.plugin)
@@ -240,7 +240,7 @@ class test_commands:
         perms.check.reset_mock()
         self.plugin.handler.reset_mock()
 
-        ### UNKNOWN COMMAND ###
+        # UNKNOWN COMMAND #
 
         r = self.manager.run_command("test7", caller, source, protocol, "")
         nosetools.assert_equals(r, (CommandState.Unknown, None))

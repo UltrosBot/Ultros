@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 A plugin to provide various URL-related tools and services.
 
@@ -411,8 +412,8 @@ class URLsPlugin(plugin.PluginObject):
         Shorten a URL with TinyURL. Don't use this directly.
         """
 
-        return urllib2.urlopen("http://tinyurl.com/api-create.php?url="
-                               + urllib.quote_plus(url)).read()
+        return urllib2.urlopen("http://tinyurl.com/api-create.php?url=" +
+                               urllib.quote_plus(url)).read()
 
     def parse_title(self, url, use_handler=True):
         """
@@ -570,6 +571,12 @@ class URLsPlugin(plugin.PluginObject):
 
             page = response.read()
             soup = BeautifulSoup(page)
+
+            if soup.title is None:
+                soup = BeautifulSoup(
+                    page.replace("<!–[if IE]><![endif]–>", "")
+                )
+
             if soup.title and soup.title.string:
                 title = soup.title.string.strip()
                 title = re.sub("\s+", " ", title)
