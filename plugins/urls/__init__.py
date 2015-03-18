@@ -1,4 +1,7 @@
+# coding=utf-8
 __author__ = 'Gareth Coles'
+
+from kitchen.text.converters import to_unicode
 
 # Managers
 from system.command_manager import CommandManager
@@ -12,6 +15,7 @@ from system.storage.formats import Formats
 from system.plugins.plugin import PluginObject
 
 # Internals
+from plugins.urls.constants import PREFIX_TRANSLATIONS
 from plugins.urls.handlers.website import WebsiteHandler
 from plugins.urls.matching import extract_urls
 from plugins.urls.url import URL
@@ -106,15 +110,7 @@ class URLsPlugin(PluginObject):
                 self.logger.warn("Invalid port: {}".format(_port))
                 continue
 
-            # We translate some characters that are likely to be matched with
-            # different ones at the end of the path here, which is about the
-            # most we can do to fix this.
-
-            # TODO: More translations for the prefix
-
-            _translated = _prefix.replace("(", ")")
-            _translated = _translated.replace("[", "]")
-            _translated = _translated.replace("{", "}")
+            _translated = self.translate_prefix(_prefix)
 
             if len(_path) and len(_translated):
                 # Remove translated prefix chars.
@@ -161,3 +157,16 @@ class URLsPlugin(PluginObject):
                 return True
 
         return False
+
+    def translate_prefix(self, prefix):
+        # We translate some characters that are likely to be matched with
+        # different ones at the end of the path here, which is about the
+        # most we can do to fix this.
+        # TODO: More translations for the prefix?
+
+        prefix = to_unicode(prefix)
+
+        for key, value in PREFIX_TRANSLATIONS.iteritems():
+            prefix = prefix.replace(key, value)
+
+        return prefix
