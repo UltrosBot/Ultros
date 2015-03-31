@@ -151,9 +151,14 @@ class Packages(object):
             raise ValueError("Package '%s' is already installed"
                              % package)
         info = self.get_package_info(package)
-        files = info["files"]
 
         conflicts = {"files": [], "folders": []}
+
+        if info is None:
+            print ">> No such package: %s" % package
+            return None
+
+        files = info["files"]
 
         total_files = 0
         total_folders = 0

@@ -240,6 +240,10 @@ def install(args, packages, overwrite=False):
         print "==============================="
         print " ".join(data)
         return exit(1)
+
+    if conflicts is None:
+        return
+
     print (_(">> Version %s installed successfully.")
            % packages.config["installed"][package])
     files = conflicts["files"]
