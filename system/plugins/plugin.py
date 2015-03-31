@@ -19,12 +19,13 @@ class PluginObject(object):
     concise!
     """
 
-    factory_manager = None  # Instance of the factory manager
     commands = None  # Command manager singleton
     events = None  # Event manager singleton
+    factory_manager = None  # Instance of the factory manager
     info = None  # Plugin info object
     logger = None  # Standard python Logger named appropriately
     module = ""  # Module the plugin exists in
+    plugins = None  # Plugin manager singleton
 
     def add_variables(self, info, factory_manager):
         """
@@ -40,11 +41,14 @@ class PluginObject(object):
         :type factory_manager: Manager instance
         """
 
-        self.info = info
-        self.module = self.info.module
-        self.factory_manager = factory_manager
+        from system.plugins.manager import PluginManager
+
         self.commands = CommandManager()
         self.events = EventManager()
+        self.factory_manager = factory_manager
+        self.info = info
+        self.module = self.info.module
+        self.plugins = PluginManager()
 
     def deactivate(self):
         """
@@ -74,8 +78,9 @@ class PluginObject(object):
         This is used for setting up the plugin.
         Remember to override this function!
 
-        Remember, **self.info**, **self.events**, **self.commands** and
-        **self.factory** are available here, but not in **__init__**.
+        Remember, **self.info**, **self.events**, **self.commands**,
+        **self.plugins** and **self.factory** are available here, but not in
+        **__init__**.
         """
 
         self.logger.warn(_("Setup method not defined!"))
