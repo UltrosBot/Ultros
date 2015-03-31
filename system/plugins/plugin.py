@@ -1,6 +1,9 @@
 # coding=utf-8
 __author__ = "Gareth Coles"
 
+
+from system.command_manager import CommandManager
+from system.event_manager import EventManager
 from system.translations import Translations
 _ = Translations().get()
 
@@ -17,6 +20,8 @@ class PluginObject(object):
     """
 
     factory_manager = None  # Instance of the factory manager
+    commands = None  # Command manager singleton
+    events = None  # Event manager singleton
     info = None  # Plugin info object
     logger = None  # Standard python Logger named appropriately
     module = ""  # Module the plugin exists in
@@ -38,6 +43,8 @@ class PluginObject(object):
         self.info = info
         self.module = self.info.module
         self.factory_manager = factory_manager
+        self.commands = CommandManager()
+        self.events = EventManager()
 
     def deactivate(self):
         """
@@ -67,11 +74,15 @@ class PluginObject(object):
         This is used for setting up the plugin.
         Remember to override this function!
 
-        Remember, **self.info** and **self.factory** are only available once
-        this method is called.
+        Remember, **self.info**, **self.events**, **self.commands** and
+        **self.factory** are available here, but not in **__init__**.
         """
 
         self.logger.warn(_("Setup method not defined!"))
 
     def _disable_self(self):
+        """
+        Convenience method for disabling the current plugin.
+        """
+
         self.factory_manager.plugman.unload_plugin(self.info.name)
