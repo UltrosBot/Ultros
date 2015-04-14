@@ -43,17 +43,17 @@ To install on Windows, you'll need to set up a few extra things.
 * Install Twisted from `the Twisted site`_, making sure you pick the 32-bit or 64-bit version as appropriate.
 * Download and install OpenSSL for Windows `from this site`_, making sure to pick the latest full release - **not** the "Light" version.
 * Download and install PyOpenSSL `from here`_, making sure you pick the 32-bit or 64-bit version as appropriate.
-* Install the `latest version`_ of MSysGit, **allowing it to install to System32**.
+* Install the `latest version`_ of MSysGit, either allowing it to install to System32, or adding the install location to your PATH like you did for Python.
 
 Once you've done the above, open a command prompt (**cmd.exe** if you're using the run box), and do the
 following.
 
-* First, **cd** to the location you're installing Ultros to.
-* Secondly, **clone the respository** from https://github.com/UltrosBot/Ultros.git
-* Next, **cd** to the newly-created **Ultros/** folder.
-* Next up, **python -m ensurepip** to ensure that pip is installed.
-* If you're using Virtualenv, this is a good time to set it up, according to the `Virtualenv docs`_.
-* Finally, run **pip install -r requirements.txt**.
+1. **cd** to the location you're installing Ultros to.
+2. **Clone the respository** from https://github.com/UltrosBot/Ultros.git
+3. **cd** to the newly-created **Ultros/** folder.
+4. **python -m ensurepip** to ensure that pip is installed.
+5. If you're using Virtualenv, this is a good time to set it up, according to the `Virtualenv docs`_.
+6. Run **pip install -r requirements.txt**.
 
 Assuming all of the above completed successfully, you should now be ready to configure Ultros -
 see the :ref:`configuration` page for more information on this. The above steps may be summarized
@@ -87,18 +87,13 @@ Linux
 Linux is our preferred operating system, and we highly recommend that you use it to host
 your bot. To do so, you'll need the following.
 
-* From your package manager:
-    * Git
-    * Python 2.7
-        * Most distributions will install Python 2 by default when you specify **python**,
-          however some distributions (such as Arch) will install Python 3. Ultros does not
-          support Python 3 and will not be able to until Twisted does, so be careful of
-          this.
-        * You'll also need the development headers, usually from the corresponding **-dev**
-          package, as well as pip, often from the corresponding **-pip** package.
-    * **libffi** and **libffi-dev**
-    * The latest version of OpenSSL
-    * Your distro's equivalent of build-essential (A C compiler and headers)
+* Git
+* Python 2.7
+    * Most distributions will install Python 2 by default when you specify **python**, however some distributions (such as Arch) will install Python 3. Ultros does not support Python 3 and will not be able to until Twisted does, so be careful of this.
+    * You'll also need the development headers, usually from the corresponding **-dev** package, as well as pip, often from the corresponding **-pip** package.
+* **libffi** and **libffi-dev**
+* The latest version of OpenSSL
+* Your distro's equivalent of build-essential (A C compiler and headers)
 
 Once you have all of the above installed, you may proceed to download and set up Ultros as follows::
 
@@ -134,9 +129,9 @@ Mac OSX
 
 You'll need to do a few things before you can set up Ultros.
 
-* Firstly, install Homebrew_, if you haven't already.
-* Next, set up your environment `as shown here`_.
-* Open Terminal.app and run the following ::
+1. Install Homebrew_, if you haven't already.
+2. Set up your environment `as shown here`_.
+3. Open Terminal.app and run the following ::
 
     brew install git
     brew install python
