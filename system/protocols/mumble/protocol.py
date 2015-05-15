@@ -82,7 +82,8 @@ class Protocol(SingleChannelProtocol):
         Mumble_pb2.CodecVersion,
         Mumble_pb2.UserStats,
         Mumble_pb2.RequestBlob,
-        Mumble_pb2.ServerConfig
+        Mumble_pb2.ServerConfig,
+        Mumble_pb2.SuggestConfig
     ]
 
     # Reversing the IDs, so we are able to backreference.
