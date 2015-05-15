@@ -14,6 +14,7 @@ up to you.
 
 __author__ = 'Gareth Coles'
 
+from kitchen.text.converters import to_unicode
 
 # This does the magic - let's make logbook more suitable for us
 import system.logging.shim as shim
@@ -54,9 +55,9 @@ defaults = [
 
 #: Storage for the configuration of each handler
 configuration = {
-    "format_string": "{record.time:%b %d %Y - %H:%M:%S} | "
-                     "{record.channel:>25} | {record.level_name:<8} | "
-                     "{record.message}",
+    "format_string": u"{record.time:%b %d %Y - %H:%M:%S} | "
+                     u"{record.channel:>25} | {record.level_name:<8} | "
+                     u"{record.message}",
     "handlers": {
         "boxcar": False,
         "email": False,
@@ -71,9 +72,9 @@ configuration = {
         "file": [
             "logs/output.log", "a", "utf-8", INFO,
             (
-                "{record.time:%b %d %Y - %H:%M:%S} | "
-                "{record.channel:>25} | {record.level_name:<8} | "
-                "{record.message}"
+                u"{record.time:%b %d %Y - %H:%M:%S} | "
+                u"{record.channel:>25} | {record.level_name:<8} | "
+                u"{record.message}"
             ), "%Y-%m-%d", 30, None, True
         ],
         "metrics": True,
@@ -288,7 +289,7 @@ def configure(config):
 
     if config is not None:
         configuration["format_string"] = config.get(
-            "format_string", configuration["format_string"]
+            "format_string", to_unicode(configuration["format_string"])
         )
         configuration["handlers"] = config.get(
             "handlers", configuration["handlers"]
