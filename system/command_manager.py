@@ -110,7 +110,7 @@ class CommandManager(object):
 
         if command in self.commands:
             self.logger.warn(_("Object '%s' tried to register command '%s' but"
-                               "it's already been registered by object '%s'.")
+                               " it's already been registered by object '%s'.")
                              % (owner,
                                 command,
                                 self.commands[command]["owner"])
