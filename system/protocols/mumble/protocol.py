@@ -105,6 +105,8 @@ class Protocol(SingleChannelProtocol):
 
     ourselves = None
 
+    use_cgi = True
+
     def __init__(self, name, factory, config):
         self.name = name
         self.factory = factory
@@ -929,7 +931,8 @@ class Protocol(SingleChannelProtocol):
 
         self.log.trace(_("Sending text message: %s") % message)
 
-        message = cgi.escape(message)
+        if self.use_cgi:
+            message = cgi.escape(message)
 
         msg = Mumble_pb2.TextMessage()  # session, channel_id, tree_id, message
         msg.message = message
