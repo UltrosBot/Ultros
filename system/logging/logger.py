@@ -277,7 +277,7 @@ def redo_all_handlers():
         redo_handlers(logger)
 
 
-def configure(config):
+def configure(config, args):
     """
     For internal use, loads the configuration from a dict.
 
@@ -294,9 +294,15 @@ def configure(config):
         configuration["handlers"] = config.get(
             "handlers", configuration["handlers"]
         )
-        configuration["level"] = get_level_from_name(
-            config.get("level", configuration["level"])
-        )
+
+        if args.trace:
+            configuration["level"] = get_level_from_name("trace")
+        elif args.debug:
+            configuration["level"] = get_level_from_name("debug")
+        else:
+            configuration["level"] = get_level_from_name(
+                config.get("level", configuration["level"])
+            )
 
         configuration["handlers"].update({
             # Constants

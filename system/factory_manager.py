@@ -73,7 +73,7 @@ class Manager(object):
     def loaded_plugins(self):
         return self.plugman.plugin_objects
 
-    def setup_logging(self):
+    def setup_logging(self, args):
         """
         Set up logging.
         """
@@ -106,7 +106,7 @@ class Manager(object):
             )
             return False
 
-        logger.configure(self.logging_config)
+        logger.configure(self.logging_config, args)
 
         return True
 
