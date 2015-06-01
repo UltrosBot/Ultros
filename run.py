@@ -37,9 +37,9 @@ from system.translations import Translations
 from system.versions import VersionManager
 from utils import log  # noqa
 
-from twisted.python import log
+from twisted.python import log as twisted_log
 
-observer = log.PythonLoggingObserver(loggerName='Twisted')
+observer = twisted_log.PythonLoggingObserver(loggerName='Twisted')
 observer.start()
 
 
