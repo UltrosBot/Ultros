@@ -5,6 +5,7 @@ __author__ = "Gareth Coles"
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
 from system.translations import Translations
+from system.storage.manager import StorageManager
 _ = Translations().get()
 
 
@@ -19,13 +20,24 @@ class PluginObject(object):
     concise!
     """
 
+    #: :type: CommandManager
     commands = None  # Command manager singleton
+
+    #: :type: EventManager
     events = None  # Event manager singleton
+
+    #: :type: FactoryManager
     factory_manager = None  # Instance of the factory manager
+
     info = None  # Plugin info object
     logger = None  # Standard python Logger named appropriately
     module = ""  # Module the plugin exists in
+
+    #: :type: system.plugins.manager.PluginManager
     plugins = None  # Plugin manager singleton
+
+    #: :type: StorageManager
+    storage = None  # Storage manager
 
     def add_variables(self, info, factory_manager):
         """
@@ -49,6 +61,7 @@ class PluginObject(object):
         self.info = info
         self.module = self.info.module
         self.plugins = PluginManager()
+        self.storage = StorageManager()
 
     def deactivate(self):
         """
