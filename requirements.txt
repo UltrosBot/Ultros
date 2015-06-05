@@ -19,3 +19,5 @@ enum34
 weakreflist
 logbook
 pytimeparse
+service_identity
+treq
