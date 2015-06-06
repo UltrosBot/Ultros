@@ -21,3 +21,4 @@ logbook
 pytimeparse
 service_identity
 treq
+idna

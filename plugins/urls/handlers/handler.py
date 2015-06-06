@@ -80,8 +80,9 @@ class URLHandler(object):
         next handler.
 
         :param url: The URL object that was matched
-        :param context: Dict containing protocol, source and target for
-                        the message that contained this URL
+        :param context: Dictionary with the current context, contains
+                        the MessageReceived event under "event" in normal
+                        circumstances
 
         :type url: plugins.urls.url.URL
         :type context: dict
@@ -92,7 +93,7 @@ class URLHandler(object):
 
         raise NotImplementedError()
 
-    def match(self, url):
+    def match(self, url, context):
         """
         Decide whether to handle this URL.
 
@@ -103,6 +104,8 @@ class URLHandler(object):
         the built-in handling doesn't cover your needs for some reason.
 
         :param url: The URL object to match
+        :param context: Dictionary with the current context
+
         :return: True if this handler should handle the URL, False otherwise
         """
 

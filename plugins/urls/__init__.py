@@ -17,7 +17,7 @@ from system.plugins.plugin import PluginObject
 # Internals
 from plugins.urls.constants import PREFIX_TRANSLATIONS
 from plugins.urls.handlers.website import WebsiteHandler
-from plugins.urls.matching import extract_urls
+from plugins.urls.matching import extract_urls, regex_type
 from plugins.urls.url import URL
 
 # Protocol objects
@@ -96,6 +96,7 @@ class URLsPlugin(PluginObject):
         matches = extract_urls(message)
 
         for match in matches:
+            self.logger.trace("match: {0}", match)
             # Expand the match to make it easier to work with
 
             # Input: ''http://x:y@tools.ietf.org:80/html/rfc1149''
@@ -105,7 +106,8 @@ class URLsPlugin(PluginObject):
             _port = _port.lstrip(":")  # Remove this as the regex captures it
 
             try:
-                _port = int(_port)
+                if _port:
+                    _port = int(_port)
             except ValueError:
                 self.logger.warn("Invalid port: {}".format(_port))
                 continue
@@ -120,7 +122,15 @@ class URLsPlugin(PluginObject):
 
             _url = URL(self, _protocol, _basic, _domain, _port, _path)
 
-            return _url  # TODO: Finish this function
+            self.run_handlers(_url, {
+                "event": event
+            })
+
+    def run_handlers(self, _url, context):
+        for handler in self.handlers:
+            if handler.match(_url, context):
+                if not handler.call(_url, context):
+                    return
 
     def add_handler(self, handler, position=None, which=None):
         if not self.has_handler(handler.name):  # Only add if it's not there

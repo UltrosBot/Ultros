@@ -20,3 +20,6 @@ r = re.compile(regex, str_to_regex_flags("iux"))
 
 def extract_urls(text):
     return re.findall(r, text)
+
+
+regex_type = type(r)
