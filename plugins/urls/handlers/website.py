@@ -1,16 +1,14 @@
-import socket
-import traceback
-from bs4 import BeautifulSoup
-from kitchen.text.converters import to_unicode, to_bytes
-from netaddr import all_matching_cidrs
-from twisted.internet.defer import inlineCallbacks
-
 __author__ = 'Gareth Coles'
 
 import idna
 import re
+import socket
 import treq
 
+from bs4 import BeautifulSoup
+from kitchen.text.converters import to_unicode, to_bytes
+from netaddr import IPAddress
+from twisted.internet.defer import inlineCallbacks
 from twisted.web.http_headers import Headers
 
 from plugins.urls.handlers.handler import URLHandler
@@ -21,7 +19,7 @@ class WebsiteHandler(URLHandler):
     name = "website"
 
     criteria = {
-        "protocol": re.compile(u"http|https", str_to_regex_flags("iu"))
+        "protocol": re.compile(r"http|https", str_to_regex_flags("iu"))
     }
 
     content_types = ["text/html", "text/webviewhtml", "message/rfc822",
@@ -38,23 +36,20 @@ class WebsiteHandler(URLHandler):
             domain = idna.encode(to_unicode(url.domain), uts46=True)
 
             self.urls_plugin.logger.debug(
-                "Domain: {0} -> {1}".format(domain, url.domain)
+                "Domain: {0} -> {1}", domain, url.domain
             )
 
-            ip = socket.gethostbyname(domain)
-            matches = all_matching_cidrs(ip, ["10.0.0.0/8", "0.0.0.0/8",
-                                              "172.16.0.0/12",
-                                              "192.168.0.0/16", "127.0.0.0/8"])
+            ip = IPAddress(socket.gethostbyname(domain))
         except Exception as e:
             context["event"].target.respond(
-                "\"{0}\" at {1}".format(e, url.domain)
+                '"{0}" at {1}'.format(e, url.domain)
             )
 
             self.plugin.logger.warn(str(e))
             return False
 
-        if matches:
-            self.plugin.logger.warn(_("Prevented a portscan"))
+        if ip.is_loopback() or ip.is_private() or ip.is_link_local():
+            self.plugin.logger.warn("Prevented a portscan")
             return False
 
         _format = "{url.protocol}://"
@@ -91,20 +86,20 @@ class WebsiteHandler(URLHandler):
         soup = BeautifulSoup(content)
 
         self.plugin.logger.debug(
-            "Headers: {0}".format(list(response.headers.getAllRawHeaders()))
+            "Headers: {0}", list(response.headers.getAllRawHeaders())
         )
-        self.plugin.logger.debug("Code: {0}".format(response.code))
+        self.plugin.logger.debug("Code: {0}", response.code)
         self.plugin.logger.trace(
-            "==   HTML   ==\n\n{0}\n\n== END HTML ==".format(content)
+            "==   HTML   ==\n\n{0}\n\n== END HTML ==", content
         )
 
         if soup.title and soup.title.string:
             title = soup.title.string.strip()
             title = re.sub("\s+", " ", title)
-            title = to_unicode(title)
+            title = title
 
             context["event"].target.respond(
-                to_unicode("\"{0}\" at {1}".format(
+                to_unicode('{0} at {1}'.format(
                     to_bytes(title), to_bytes(url.domain)
                 ))
             )
@@ -113,7 +108,7 @@ class WebsiteHandler(URLHandler):
 
     def errback(self, error, url, context):
         context["event"].target.respond(
-            "\"{0}\" at {1}".format(error.getErrorMessage(), url.domain)
+            '{0} at {1}'.format(error.getErrorMessage(), url.domain)
         )
 
         self.plugin.logger.error("Error parsing URL")

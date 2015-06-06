@@ -47,7 +47,7 @@ class URLsPlugin(PluginObject):
                 self, "config", Formats.YAML, "plugins/urls.yml"
             )
         except Exception as e:
-            self.logger.error("Error loading configuration: {}".format(e))
+            self.logger.error("Error loading configuration: {}", e)
             return self._disable_self()
 
         if not self.config.exists:
@@ -59,12 +59,7 @@ class URLsPlugin(PluginObject):
         self.reload()
 
         def message_event_filter(event):
-            target = event.target
-            type_ = event.type
-
-            return type_ == "message" \
-                or isinstance(target, Channel) \
-                or isinstance(target, User)
+            return event.type == "message"
 
         self.events.add_callback("MessageReceived", self, self.message_handler,
                                  1, message_event_filter)
@@ -109,7 +104,7 @@ class URLsPlugin(PluginObject):
                 if _port:
                     _port = int(_port)
             except ValueError:
-                self.logger.warn("Invalid port: {}".format(_port))
+                self.logger.warn("Invalid port: {0}", _port)
                 continue
 
             _translated = self.translate_prefix(_prefix)
@@ -133,6 +128,7 @@ class URLsPlugin(PluginObject):
                     return
 
     def add_handler(self, handler, position=None, which=None):
+        # TODO: Priority instead of.. this
         if not self.has_handler(handler.name):  # Only add if it's not there
             handler.urls_plugin = self
 
