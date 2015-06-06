@@ -10,6 +10,7 @@ from kitchen.text.converters import to_unicode, to_bytes
 from netaddr import IPAddress
 from twisted.internet.defer import inlineCallbacks
 from twisted.web.http_headers import Headers
+from twisted.web._newclient import ResponseNeverReceived
 
 from plugins.urls.handlers.handler import URLHandler
 from utils.misc import str_to_regex_flags
@@ -88,10 +89,7 @@ class WebsiteHandler(URLHandler):
         self.plugin.logger.debug(
             "Headers: {0}", list(response.headers.getAllRawHeaders())
         )
-        self.plugin.logger.debug("Code: {0}", response.code)
-        self.plugin.logger.trace(
-            "==   HTML   ==\n\n{0}\n\n== END HTML ==", content
-        )
+        self.plugin.logger.debug("HTTP code: {0}", response.code)
 
         if soup.title and soup.title.string:
             title = soup.title.string.strip()
@@ -107,9 +105,16 @@ class WebsiteHandler(URLHandler):
             self.plugin.logger.debug("No title")
 
     def errback(self, error, url, context):
-        context["event"].target.respond(
-            '{0} at {1}'.format(error.getErrorMessage(), url.domain)
-        )
+        if isinstance(error.value, ResponseNeverReceived):
+            for f in error.value.reasons:
+                f.printDetailedTraceback()
+                context["event"].target.respond(
+                    '{0} at {1}'.format(f.getErrorMessage(), url.domain)
+                )
+        else:
+            context["event"].target.respond(
+                '{0} at {1}'.format(error.getErrorMessage(), url.domain)
+            )
 
         self.plugin.logger.error("Error parsing URL")
         error.printDetailedTraceback()
