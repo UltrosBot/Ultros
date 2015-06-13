@@ -105,6 +105,8 @@ class WebsiteHandler(URLHandler):
             self.plugin.logger.debug("No title")
 
     def errback(self, error, url, context):
+        self.plugin.logger.error("Error parsing URL")
+
         if isinstance(error.value, ResponseNeverReceived):
             for f in error.value.reasons:
                 f.printDetailedTraceback()
@@ -115,6 +117,4 @@ class WebsiteHandler(URLHandler):
             context["event"].target.respond(
                 '{0} at {1}'.format(error.getErrorMessage(), url.domain)
             )
-
-        self.plugin.logger.error("Error parsing URL")
-        error.printDetailedTraceback()
+            error.printDetailedTraceback()
