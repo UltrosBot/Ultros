@@ -550,7 +550,9 @@ class URLsPlugin(plugin.PluginObject):
             headers_dict = {}
 
             for x in headers:
-                k, v = x.split(": ", 1)
+                _split_header = x.split(": ", 1)
+                k = _split_header[0]
+                v = _split_header[1] if len(_split_header) > 1 else ""
 
                 headers_dict[k.lower()] = v.strip("\r\n")
 
