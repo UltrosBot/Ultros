@@ -3,14 +3,12 @@ __author__ = 'Gareth Coles'
 import idna
 import re
 import socket
-import treq
 
 from bs4 import BeautifulSoup
 from kitchen.text.converters import to_unicode, to_bytes
 from netaddr import IPAddress
-from twisted.internet.defer import inlineCallbacks
-from twisted.web.http_headers import Headers
 from twisted.web._newclient import ResponseNeverReceived
+from txrequests import Session
 
 from plugins.urls.handlers.handler import URLHandler
 from utils.misc import str_to_regex_flags
@@ -66,30 +64,32 @@ class WebsiteHandler(URLHandler):
         _format += "{url.path}"
         target = _format.format(url=url, domain=domain)
 
-        headers = Headers()
+        headers = {"User-Agent": ("Mozilla/5.0 (X11; U; Linux i686; "
+                                  "en-US; rv:1.9.0.1) Gecko/20080716"
+                                  "15 Fedora/3.0.1-1.fc9-1.fc9 "
+                                  "Firefox/3.0.1")}
 
-        headers.addRawHeader("User-Agent", "Mozilla/5.0 (X11; U; Linux i686; "
-                                           "en-US; rv:1.9.0.1) Gecko/20080716"
-                                           "15 Fedora/3.0.1-1.fc9-1.fc9 "
-                                           "Firefox/3.0.1")
-
-        treq.get(target, headers=headers) \
-            .addCallback(self.callback, url, context) \
+        session = Session()
+        session.get(target, headers=headers)\
+            .addCallback(self.callback, url, context)\
             .addErrback(self.errback, url, context)
+
+        # treq.get(target, headers=headers) \
+        #     .addCallback(self.callback, url, context) \
+        #     .addErrback(self.errback, url, context)
 
         return False
 
-    @inlineCallbacks
     def callback(self, response, url, context):
         # TODO: Content-Type
 
-        content = yield treq.content(response)
+        content = response.text
         soup = BeautifulSoup(content)
 
         self.plugin.logger.debug(
-            "Headers: {0}", list(response.headers.getAllRawHeaders())
+            "Headers: {0}", list(response.headers)
         )
-        self.plugin.logger.debug("HTTP code: {0}", response.code)
+        self.plugin.logger.debug("HTTP code: {0}", response.status_code)
 
         if soup.title and soup.title.string:
             title = soup.title.string.strip()
@@ -97,7 +97,7 @@ class WebsiteHandler(URLHandler):
             title = title
 
             context["event"].target.respond(
-                to_unicode('{0} at {1}'.format(
+                to_unicode('"{0}" at {1}'.format(
                     to_bytes(title), to_bytes(url.domain)
                 ))
             )
@@ -111,10 +111,10 @@ class WebsiteHandler(URLHandler):
             for f in error.value.reasons:
                 f.printDetailedTraceback()
                 context["event"].target.respond(
-                    '{0} at {1}'.format(f.getErrorMessage(), url.domain)
+                    '"{0}" at {1}'.format(f.getErrorMessage(), url.domain)
                 )
         else:
             context["event"].target.respond(
-                '{0} at {1}'.format(error.getErrorMessage(), url.domain)
+                '"{0}" at {1}'.format(error.getErrorMessage(), url.domain)
             )
             error.printDetailedTraceback()
