@@ -25,7 +25,7 @@ class WebsiteHandler(URLHandler):
                      "text/x-server-parsed-html", "application/xhtml+xml"]
 
     def call(self, url, context):
-        # TODO: Blacklisted domains
+        # TODO: Blacklist
         # TODO: Channel settings
         # TODO: Custom spoofing
         # TODO: Accept-Language
@@ -81,15 +81,19 @@ class WebsiteHandler(URLHandler):
         return False
 
     def callback(self, response, url, context):
-        # TODO: Content-Type
-
-        content = response.text
-        soup = BeautifulSoup(content)
-
-        self.plugin.logger.debug(
+        self.plugin.logger.trace(
             "Headers: {0}", list(response.headers)
         )
-        self.plugin.logger.debug("HTTP code: {0}", response.status_code)
+        self.plugin.logger.trace("HTTP code: {0}", response.status_code)
+
+        if response.headers["content-type"].lower() not in self.content_types:
+            self.plugin.logger.debug(
+                "Unsupported Content-Type: %s"
+                % response.headers["content-type"]
+            )
+            return  # Not a supported content-type
+
+        soup = BeautifulSoup(response.text)
 
         if soup.title and soup.title.string:
             title = soup.title.string.strip()
