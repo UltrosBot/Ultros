@@ -73,7 +73,7 @@ class WebsiteHandler(URLHandler):
                                            "15 Fedora/3.0.1-1.fc9-1.fc9 "
                                            "Firefox/3.0.1")
 
-        treq.get(target) \
+        treq.get(target, headers=headers) \
             .addCallback(self.callback, url, context) \
             .addErrback(self.errback, url, context)
 
