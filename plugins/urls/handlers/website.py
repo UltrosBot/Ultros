@@ -72,7 +72,7 @@ class WebsiteHandler(URLHandler):
                 .get("accept_language", {}) \
                 .get("default", "en")
 
-        session = Session()
+        session = self.get_session(url, context)
         session.get(url.text, headers=headers) \
             .addCallback(self.callback, url, context) \
             .addErrback(self.errback, url, context)
