@@ -98,7 +98,9 @@ class URLsPlugin(PluginObject):
 
             # Input: ''http://x:y@tools.ietf.org:80/html/rfc1149''
             # Match: '', http, x:y, tools.ietf.org, :80, /html/rfc1149''
-            _prefix, _protocol, _basic, _domain, _port, _path = match
+            _prefix, _protocol, _basic, _domain, _port, _path = (
+                to_unicode(x) for x in match
+            )
 
             _port = _port.lstrip(":")  # Remove this as the regex captures it
 
@@ -111,11 +113,16 @@ class URLsPlugin(PluginObject):
 
             _translated = self.translate_prefix(_prefix)
 
-            if len(_path) and len(_translated):
+            if len(_path) > 0 and len(_translated) > 0:
                 # Remove translated prefix chars.
                 for char in reversed(_translated):
                     if _path[-1] == char:
                         _path = _path[:-1]
+            elif len(_domain) > 0 and len(_translated) > 0:
+                # Remove translated prefix chars.
+                for char in reversed(_translated):
+                    if _domain[-1] == char:
+                        _domain = _domain[:-1]
 
             _url = URL(self, _protocol, _basic, _domain, _port, _path)
 
@@ -185,7 +192,6 @@ class URLsPlugin(PluginObject):
         # We translate some characters that are likely to be matched with
         # different ones at the end of the path here, which is about the
         # most we can do to fix this.
-        # TODO: More translations for the prefix?
 
         prefix = to_unicode(prefix)
 

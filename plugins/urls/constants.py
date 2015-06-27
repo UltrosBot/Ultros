@@ -4,7 +4,7 @@ __author__ = "Gareth Coles"
 PREFIX_TRANSLATIONS = {
     # "Normal" bracket types
 
-    u"(": u",",
+    u"(": u")",
     u"[": u"]",
     u"{": u"}",
     u"<": u">",

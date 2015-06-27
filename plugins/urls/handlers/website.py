@@ -26,6 +26,7 @@ class WebsiteHandler(URLHandler):
 
     def call(self, url, context):
         # TODO: Channel settings
+        # TODO: Decide what to do on missing content-type
 
         if self.check_blacklist(url, context):
             self.urls_plugin.logger.warn(
@@ -87,8 +88,12 @@ class WebsiteHandler(URLHandler):
         if "content-type" not in response.headers:
             return  # TODO: Decide what to do here
 
-        if response.headers["content-type"].lower() \
-           not in context["config"]["content_types"]:
+        content_type = response.headers["content-type"].lower()
+
+        if ";" in content_type:
+            content_type = content_type.split(";")[0]
+
+        if content_type not in context["config"]["content_types"]:
             self.plugin.logger.debug(
                 "Unsupported Content-Type: %s"
                 % response.headers["content-type"]
