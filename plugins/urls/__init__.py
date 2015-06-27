@@ -2,6 +2,7 @@
 __author__ = 'Gareth Coles'
 
 from kitchen.text.converters import to_unicode
+from twisted.internet.defer import Deferred, inlineCallbacks
 
 # Managers
 from system.command_manager import CommandManager
@@ -72,6 +73,7 @@ class URLsPlugin(PluginObject):
     def deactivate(self):
         self.handlers = []
 
+    @inlineCallbacks
     def message_handler(self, event):
         """
         Event handler for general messages
@@ -117,14 +119,29 @@ class URLsPlugin(PluginObject):
 
             _url = URL(self, _protocol, _basic, _domain, _port, _path)
 
-            self.run_handlers(_url, {
-                "event": event
+            yield self.run_handlers(_url, {
+                "event": event,
+                "config": self.config
             })
 
+    @inlineCallbacks
     def run_handlers(self, _url, context):
         for handler in self.handlers:
-            if handler.match(_url, context):
-                if not handler.call(_url, context):
+            d = handler.match(_url, context)
+
+            if isinstance(d, Deferred):
+                r = yield d
+            else:
+                r = d
+
+            if r:
+                d = handler.call(_url, context)
+
+                if isinstance(d, Deferred):
+                    r = yield d
+                else:
+                    r = d
+                if not r:
                     return
 
     def add_handler(self, handler, position=None, which=None):

@@ -16,44 +16,30 @@ blacklist: []  # List of patterns to match against URLs; if matched then the URL
 # - '.*\/\/vimeo\.com\/.*\/staffpicks\/[^\/]'  # Vimeo staff picks
 # - '.*\/\/bad-site\.com\/.{5,}\/.*'  # Dirs that are 5 chars long have massive titles
 
-catcher:
-  # This is an advanced feature for people that run websites.
-  # If you don't need /every URL in a database/ or are technically challenged, then don't enable this.
-  use: no
-
-  table_prefix: "bot"  # All tables created will be prefixed with this.
-  dialect: "mysql"  # mysql or postgresql by default; you can define your own too if you want.
-
-  # Which database adapter to use for your database.
-  # We recommend PyMySQL for MySQL databases and Psychopg for PostgreSQL.
-  # You should install these separately with pip.
-  adapter: "pymysql"
-
-  params:  # These will be passed directly into the database connection contructor
-    # These params serve as an example for PyMySQL..
-    host: "127.0.0.1"
-    port: 3306
-    user: "ultros"
-    passwd: "password"
-    db: "ultros"
-    # And these params are an example for Psychopg..
-    ### host: "127.0.0.1"
-    ### port: 5432
-    ### user: "ultros"
-    ### password: "password"
-    ### database: "ultros"
-
-  # The desciptor is used to refer to the file internally, but is also used for logging.
-  # This should be in the form "user@host/database". We would love to generate this for you
-  # but each database adapter takes different params!
-  descriptor: "ultros@127.0.0.1/ultros"
-
-  ignored:  # A list of channels to ignore links from
-            # Channels are in the format "protocol:channel"
-  - "irc-esper:#staff"
-
 accept_language:
   # This section is entirely optional
   # default: "en"  # Sent for any site not in the list below
   domains:  # Leave out the starting "www."
     "example.com": "en-GB,en;q=0.9"
+
+sessions:  # Sessions allow cookies to be stored during requests and retrieved later on
+           # All matching is done using regular expressions - https://docs.python.org/2/library/re.html
+           # This sessions config doesn't apply to extra URL handlers - they're in charge of their own.
+  enable: True  # The global switch - Set to Fale to disable session support entirely
+
+  never: []  # Domains that should never store their sessions
+             # These are checked first, before the rest
+#  - 'facebook\.com'
+#  - '*\.facebook\.com'
+
+  single: []  # Domains that should always use their own session store and never the global store
+              # These are checked after blacklisted domains
+#  - 'last\.fm'
+#  - '*\.last\.fm'
+  group: {}  # Groups of domains that should share session stores and never use the global store
+             # These are checked after domains that should have their own session stores
+#    example_group:
+#    - 'soundcloud\.com'
+#    - '*\.soundcloud\.com'
+#    - 'youtube\.com'
+#    - '*\.youtube\.com'
