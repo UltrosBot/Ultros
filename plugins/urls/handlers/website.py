@@ -22,7 +22,6 @@ class WebsiteHandler(URLHandler):
         "protocol": re.compile(r"http|https", str_to_regex_flags("iu"))
     }
 
-    single_sessions = {}
     group_sessions = {}
     global_session = None
 
@@ -33,9 +32,6 @@ class WebsiteHandler(URLHandler):
 
         if not os.path.exists(self.cookies_base_path):
             os.makedirs(self.cookies_base_path)
-
-        if not os.path.exists(self.cookies_base_path + "/domains"):
-            os.makedirs(self.cookies_base_path + "/domains")
 
         if not os.path.exists(self.cookies_base_path + "/groups"):
             os.makedirs(self.cookies_base_path + "/groups")
@@ -139,10 +135,14 @@ class WebsiteHandler(URLHandler):
             st = session.session_type
             if context["config"]["cookies"][st] == "save":
                 session.cookies.save(ignore_discard=True)
+
+                if len(session.cookies):
+                    session.cookies.file_exists = True
             elif context["config"]["cookies"][st] == "update":
                 pass  # TODO: Not implemented
             elif context["config"]["cookies"][st] == "discard":
-                session.cookies.load()
+                if session.cookies.file_exists:
+                    session.cookies.load()
 
     def errback(self, error, url, context, session):
         self.plugin.logger.error("Error parsing URL")
@@ -159,7 +159,18 @@ class WebsiteHandler(URLHandler):
             )
             error.printDetailedTraceback()
 
-        session.cookies.save(ignore_discard=True)
+        if session.session_type:
+            st = session.session_type
+            if context["config"]["cookies"][st] == "save":
+                session.cookies.save(ignore_discard=True)
+
+                if len(session.cookies):
+                    session.cookies.file_exists = True
+            elif context["config"]["cookies"][st] == "update":
+                pass  # TODO: Not implemented
+            elif context["config"]["cookies"][st] == "discard":
+                if session.cookies.file_exists:
+                    session.cookies.load()
 
     def check_blacklist(self, url, context):
         for entry in context["config"]["blacklist"]:
@@ -186,7 +197,11 @@ class WebsiteHandler(URLHandler):
             self.plugin.logger.debug(
                 "Failed to load cookie jar {0}: {1}".format(filename, e)
             )
-            pass  # Cookie jar just doesn't exist
+
+        if len(cj):
+            cj.file_exists = True
+        else:
+            cj.file_exists = False
 
         return cj
 
@@ -211,25 +226,6 @@ class WebsiteHandler(URLHandler):
                 s.session_type = None
 
                 return s
-
-        for entry in sessions["single"]:
-            if re.match(entry, url.domain, flags=str_to_regex_flags("i")):
-                self.urls_plugin.logger.debug(
-                    "Domain {0} has its own session storage.".format(
-                        url.domain
-                    )
-                )
-
-                if entry not in self.single_sessions:
-                    self.single_sessions[entry] = Session()
-                    self.single_sessions[entry].cookies = self.get_cookie_jar(
-                        "/domains/{0}.txt".format(
-                            entry
-                        )
-                    )
-                    self.single_sessions[entry].session_type = "single"
-
-                return self.single_sessions[entry]
 
         for group, entries in sessions["group"].iteritems():
             for entry in entries:
@@ -266,10 +262,6 @@ class WebsiteHandler(URLHandler):
         # Save all our cookie stores
         self.global_session.cookies.save(ignore_discard=True)
         self.global_session.close()
-
-        for session in self.single_sessions.itervalues():
-            session.cookies.save(ignore_discard=True)
-            session.close()
 
         for session in self.group_sessions.itervalues():
             session.cookies.save(ignore_discard=True)

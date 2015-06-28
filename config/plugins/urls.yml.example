@@ -33,7 +33,6 @@ sessions:  # Sessions allow cookies to be stored during requests and retrieved l
             #         | This is currently not implemented
             # discard | Discard all new cookies, don't save anything
             #         | The cookie jar is reloaded from file after every request
-    single: save
     group: save
     global: discard
 
@@ -42,12 +41,8 @@ sessions:  # Sessions allow cookies to be stored during requests and retrieved l
 #  - 'facebook\.com'
 #  - '*\.facebook\.com'
 
-  single: []  # Domains that should always use their own session store and never the global store
-              # These are checked after blacklisted domains
-#  - 'last\.fm'
-#  - '*\.last\.fm'
   group: {}  # Groups of domains that should share session stores and never use the global store
-             # These are checked after domains that should have their own session stores
+             # These are checked after grouped domains - Any not matched after this stage use the global store
 #    example_group:
 #    - 'soundcloud\.com'
 #    - '*\.soundcloud\.com'
