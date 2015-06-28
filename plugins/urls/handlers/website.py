@@ -42,10 +42,11 @@ class WebsiteHandler(URLHandler):
 
         self.global_session = Session()
         self.global_session.cookies = self.get_cookie_jar("/global.txt")
+        self.global_session.session_type = "global"
 
     def call(self, url, context):
         # TODO: Channel settings
-        # TODO: Decide what to do on missing content-type
+        # TODO: Allow cookies to be updated but not added
 
         if self.check_blacklist(url, context):
             self.urls_plugin.logger.warn(
@@ -105,7 +106,7 @@ class WebsiteHandler(URLHandler):
         self.plugin.logger.trace("HTTP code: {0}", response.status_code)
 
         if "content-type" not in response.headers:
-            return  # TODO: Decide what to do here
+            response.headers["Content-Type"] = ""
 
         content_type = response.headers["content-type"].lower()
 
@@ -134,7 +135,14 @@ class WebsiteHandler(URLHandler):
         else:
             self.plugin.logger.debug("No title")
 
-        session.cookies.save(ignore_discard=True)
+        if session.session_type:
+            st = session.session_type
+            if context["config"]["cookies"][st] == "save":
+                session.cookies.save(ignore_discard=True)
+            elif context["config"]["cookies"][st] == "update":
+                pass  # TODO: Not implemented
+            elif context["config"]["cookies"][st] == "discard":
+                session.cookies.load()
 
     def errback(self, error, url, context, session):
         self.plugin.logger.error("Error parsing URL")
@@ -187,7 +195,10 @@ class WebsiteHandler(URLHandler):
 
         if not sessions["enable"]:
             self.urls_plugin.logger.debug("Sessions are disabled.")
-            return Session()
+            s = Session()
+            s.session_type = None
+
+            return s
 
         for entry in sessions["never"]:
             if re.match(entry, url.domain, flags=str_to_regex_flags("i")):
@@ -196,7 +207,10 @@ class WebsiteHandler(URLHandler):
                         url.domain
                     )
                 )
-                return Session()
+                s = Session()
+                s.session_type = None
+
+                return s
 
         for entry in sessions["single"]:
             if re.match(entry, url.domain, flags=str_to_regex_flags("i")):
@@ -213,6 +227,7 @@ class WebsiteHandler(URLHandler):
                             entry
                         )
                     )
+                    self.single_sessions[entry].session_type = "single"
 
                 return self.single_sessions[entry]
 
@@ -234,6 +249,8 @@ class WebsiteHandler(URLHandler):
                                 )
                             )
                         )
+
+                        self.group_sessions[group].session_type = "group"
 
                     return self.group_sessions[group]
 
