@@ -72,10 +72,8 @@ class WebsiteHandler(URLHandler):
             if user_agent:
                 headers["User-Agent"] = user_agent
         else:
-            headers["User-Agent"] = ("Mozilla/5.0 (X11; U; Linux i686; "
-                                     "en-US; rv:1.9.0.1) Gecko/20080716"
-                                     "15 Fedora/3.0.1-1.fc9-1.fc9 "
-                                     "Firefox/3.0.1")
+            headers["User-Agent"] = ("Mozilla/5.0 (Windows NT 6.3; rv:36.0) "
+                                     "Gecko/20100101 Firefox/36.0")
 
         domain_langs = context.get("config") \
             .get("accept_language", {}) \
