@@ -27,7 +27,7 @@ sessions:  # Sessions allow cookies to be stored during requests and retrieved l
            # This sessions config doesn't apply to extra URL handlers - they're in charge of their own.
   enable: True  # The global switch - Set to False to disable session support entirely
 
-  cookies:  # What to do with cookies in each group
+  cookies:  # What to do with cookies in each session type
             # save    | Save any cookies set by websites to the cookie jar
             # update  | Discard any new cookies, but update any old ones that already exist
             #         | This is currently not implemented
