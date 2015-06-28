@@ -68,6 +68,15 @@ class URLsPlugin(PluginObject):
         pass
 
     def deactivate(self):
+        for handler_list in self.handlers.itervalues():
+            for handler in handler_list:
+                try:
+                    handler.teardown()
+                except Exception as e:
+                    self.logger.exception(
+                        "Error tearing down handler {0}".format(handler.name)
+                    )
+
         self.handlers = defaultdict(list)
 
     @inlineCallbacks
@@ -132,7 +141,17 @@ class URLsPlugin(PluginObject):
     def run_handlers(self, _url, context):
         for priority in reversed(sorted(self.handlers.iterkeys())):
             for handler in self.handlers[priority]:
-                d = handler.match(_url, context)
+                try:
+                    d = handler.match(_url, context)
+                except Exception as e:
+                    self.logger.exception(
+                        "Error caught while attempting to match "
+                        "handler {0}".format(
+                            handler.name
+                        )
+                    )
+
+                    continue
 
                 if isinstance(d, Deferred):
                     r = yield d
@@ -140,7 +159,17 @@ class URLsPlugin(PluginObject):
                     r = d
 
                 if r:
-                    d = handler.call(_url, context)
+                    try:
+                        d = handler.call(_url, context)
+                    except Exception as e:
+                        self.logger.exception(
+                            "Error caught while attempting to call "
+                            "handler {0}".format(
+                                handler.name
+                            )
+                        )
+
+                        continue
 
                     if isinstance(d, Deferred):
                         r = yield d

@@ -1,9 +1,11 @@
 __author__ = 'Gareth Coles'
 
+import os
 import re
 import socket
 
 from bs4 import BeautifulSoup
+from cookielib import LWPCookieJar, LoadError
 from kitchen.text.converters import to_unicode, to_bytes
 from netaddr import IPAddress
 from twisted.web._newclient import ResponseNeverReceived
@@ -22,7 +24,24 @@ class WebsiteHandler(URLHandler):
 
     single_sessions = {}
     group_sessions = {}
-    global_session = Session()
+    global_session = None
+
+    cookies_base_path = "data/plugins/urls/cookies"
+
+    def __init__(self, plugin):
+        super(WebsiteHandler, self).__init__(plugin)
+
+        if not os.path.exists(self.cookies_base_path):
+            os.makedirs(self.cookies_base_path)
+
+        if not os.path.exists(self.cookies_base_path + "/domains"):
+            os.makedirs(self.cookies_base_path + "/domains")
+
+        if not os.path.exists(self.cookies_base_path + "/groups"):
+            os.makedirs(self.cookies_base_path + "/groups")
+
+        self.global_session = Session()
+        self.global_session.cookies = self.get_cookie_jar("/global.txt")
 
     def call(self, url, context):
         # TODO: Channel settings
@@ -74,12 +93,12 @@ class WebsiteHandler(URLHandler):
 
         session = self.get_session(url, context)
         session.get(url.text, headers=headers) \
-            .addCallback(self.callback, url, context) \
-            .addErrback(self.errback, url, context)
+            .addCallback(self.callback, url, context, session) \
+            .addErrback(self.errback, url, context, session)
 
         return False
 
-    def callback(self, response, url, context):
+    def callback(self, response, url, context, session):
         self.plugin.logger.trace(
             "Headers: {0}", list(response.headers)
         )
@@ -115,7 +134,9 @@ class WebsiteHandler(URLHandler):
         else:
             self.plugin.logger.debug("No title")
 
-    def errback(self, error, url, context):
+        session.cookies.save(ignore_discard=True)
+
+    def errback(self, error, url, context, session):
         self.plugin.logger.error("Error parsing URL")
 
         if isinstance(error.value, ResponseNeverReceived):
@@ -130,6 +151,8 @@ class WebsiteHandler(URLHandler):
             )
             error.printDetailedTraceback()
 
+        session.cookies.save(ignore_discard=True)
+
     def check_blacklist(self, url, context):
         for entry in context["config"]["blacklist"]:
             r = re.compile(entry, flags=str_to_regex_flags("i"))
@@ -142,29 +165,95 @@ class WebsiteHandler(URLHandler):
 
         return False
 
+    def get_cookie_jar(self, filename):
+        cj = LWPCookieJar(self.cookies_base_path + filename)
+
+        try:
+            cj.load()
+        except LoadError as e:
+            self.plugin.logger.exception(
+                "Failed to load cookie jar {0}".format(filename)
+            )
+        except IOError as e:
+            self.plugin.logger.debug(
+                "Failed to load cookie jar {0}: {1}".format(filename, e)
+            )
+            pass  # Cookie jar just doesn't exist
+
+        return cj
+
     def get_session(self, url, context):
         sessions = context["config"]["sessions"]
 
-        if not sessions["enabled"]:
+        if not sessions["enable"]:
+            self.urls_plugin.logger.debug("Sessions are disabled.")
             return Session()
 
         for entry in sessions["never"]:
             if re.match(entry, url.domain, flags=str_to_regex_flags("i")):
+                self.urls_plugin.logger.debug(
+                    "Domain {0} is blacklisted for sessions.".format(
+                        url.domain
+                    )
+                )
                 return Session()
 
         for entry in sessions["single"]:
             if re.match(entry, url.domain, flags=str_to_regex_flags("i")):
+                self.urls_plugin.logger.debug(
+                    "Domain {0} has its own session storage.".format(
+                        url.domain
+                    )
+                )
+
                 if entry not in self.single_sessions:
                     self.single_sessions[entry] = Session()
+                    self.single_sessions[entry].cookies = self.get_cookie_jar(
+                        "/domains/{0}.txt".format(
+                            entry
+                        )
+                    )
 
                 return self.single_sessions[entry]
 
         for group, entries in sessions["group"].iteritems():
             for entry in entries:
                 if re.match(entry, url.domain, flags=str_to_regex_flags("i")):
+                    self.urls_plugin.logger.debug(
+                        "Domain {0} uses the '{1}' group sessions.".format(
+                            url.domain, group
+                        )
+                    )
+
                     if group not in self.group_sessions:
                         self.group_sessions[group] = Session()
+                        self.group_sessions[group].cookies = (
+                            self.get_cookie_jar(
+                                "/groups/{0}.txt".format(
+                                    group
+                                )
+                            )
+                        )
 
                     return self.group_sessions[group]
 
+        self.urls_plugin.logger.debug(
+            "Domain {0} uses the global session storage.".format(
+                url.domain
+            )
+        )
+
         return self.global_session
+
+    def teardown(self):
+        # Save all our cookie stores
+        self.global_session.cookies.save(ignore_discard=True)
+        self.global_session.close()
+
+        for session in self.single_sessions.itervalues():
+            session.cookies.save(ignore_discard=True)
+            session.close()
+
+        for session in self.group_sessions.itervalues():
+            session.cookies.save(ignore_discard=True)
+            session.close()

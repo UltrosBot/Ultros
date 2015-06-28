@@ -131,3 +131,10 @@ class URLHandler(object):
                 return False
 
         return True
+
+    def teardown(self):
+        """
+        Called when the URLs plugin unloads - Do any saving or cleanup you
+        need to do here
+        """
+        pass
