@@ -133,14 +133,14 @@ class WebsiteHandler(URLHandler):
 
         if session.session_type:
             st = session.session_type
-            if context["config"]["cookies"][st] == "save":
+            if context["config"]["sessions"]["cookies"][st] == "save":
                 session.cookies.save(ignore_discard=True)
 
                 if len(session.cookies):
                     session.cookies.file_exists = True
-            elif context["config"]["cookies"][st] == "update":
+            elif context["config"]["sessions"]["cookies"][st] == "update":
                 pass  # TODO: Not implemented
-            elif context["config"]["cookies"][st] == "discard":
+            elif context["config"]["sessions"]["cookies"][st] == "discard":
                 if session.cookies.file_exists:
                     session.cookies.load()
 
@@ -161,14 +161,14 @@ class WebsiteHandler(URLHandler):
 
         if session.session_type:
             st = session.session_type
-            if context["config"]["cookies"][st] == "save":
+            if context["config"]["sessions"]["cookies"][st] == "save":
                 session.cookies.save(ignore_discard=True)
 
                 if len(session.cookies):
                     session.cookies.file_exists = True
-            elif context["config"]["cookies"][st] == "update":
+            elif context["config"]["sessions"]["cookies"][st] == "update":
                 pass  # TODO: Not implemented
-            elif context["config"]["cookies"][st] == "discard":
+            elif context["config"]["sessions"]["cookies"][st] == "discard":
                 if session.cookies.file_exists:
                     session.cookies.load()
 
