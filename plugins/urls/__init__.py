@@ -1,6 +1,7 @@
 # coding=utf-8
 __author__ = 'Gareth Coles'
 
+from collections import defaultdict
 from kitchen.text.converters import to_unicode
 from twisted.internet.defer import Deferred, inlineCallbacks
 
@@ -21,10 +22,6 @@ from plugins.urls.handlers.website import WebsiteHandler
 from plugins.urls.matching import extract_urls, regex_type
 from plugins.urls.url import URL
 
-# Protocol objects
-from system.protocols.generic.channel import Channel
-from system.protocols.generic.user import User
-
 
 class URLsPlugin(PluginObject):
     # Managers
@@ -34,7 +31,7 @@ class URLsPlugin(PluginObject):
 
     config = None
 
-    handlers = []
+    handlers = defaultdict(list)
 
     def setup(self):
         self.commands = CommandManager()
@@ -65,13 +62,13 @@ class URLsPlugin(PluginObject):
         self.events.add_callback("MessageReceived", self, self.message_handler,
                                  1, message_event_filter)
 
-        self.add_handler(WebsiteHandler(self))
+        self.add_handler(WebsiteHandler(self), -100)
 
     def reload(self):
         pass
 
     def deactivate(self):
-        self.handlers = []
+        self.handlers = defaultdict(list)
 
     @inlineCallbacks
     def message_handler(self, event):
@@ -133,58 +130,36 @@ class URLsPlugin(PluginObject):
 
     @inlineCallbacks
     def run_handlers(self, _url, context):
-        for handler in self.handlers:
-            d = handler.match(_url, context)
-
-            if isinstance(d, Deferred):
-                r = yield d
-            else:
-                r = d
-
-            if r:
-                d = handler.call(_url, context)
+        for priority in reversed(sorted(self.handlers.iterkeys())):
+            for handler in self.handlers[priority]:
+                d = handler.match(_url, context)
 
                 if isinstance(d, Deferred):
                     r = yield d
                 else:
                     r = d
-                if not r:
-                    return
 
-    def add_handler(self, handler, position=None, which=None):
-        # TODO: Priority instead of.. this
+                if r:
+                    d = handler.call(_url, context)
+
+                    if isinstance(d, Deferred):
+                        r = yield d
+                    else:
+                        r = d
+                    if not r:
+                        return
+
+    def add_handler(self, handler, priority=0):
         if not self.has_handler(handler.name):  # Only add if it's not there
             handler.urls_plugin = self
 
-            if which is not None and position is not None:
-                # Needs to be before or after a specific handler
-                if position == "before":
-                    index = 0  # Start at the start
-
-                    for h in self.handlers:
-                        if which == h.name:
-                            self.handlers.insert(index, handler)
-                            return
-
-                        index += 1
-                elif position == "after":
-                    index = len(self.handlers)  # Start at the end
-
-                    for h in self.handlers[::-1]:
-                        if which == h.name:
-                            self.handlers.insert(index, handler)
-                            return
-
-                        index -= 1
-
-            # If we can't find the specified handler to be relative to, or
-            # the handler doesn't care where it is, then put it at the start.
-            self.handlers.insert(0, handler)
+            self.handlers[priority].append(handler)
 
     def has_handler(self, name):
-        for handler in self.handlers:
-            if name == handler.name:
-                return True
+        for priority in self.handlers.iterkeys():
+            for handler in self.handlers[priority]:
+                if name == handler.name:
+                    return True
 
         return False
 
