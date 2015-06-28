@@ -25,7 +25,7 @@ accept_language:
 sessions:  # Sessions allow cookies to be stored during requests and retrieved later on
            # All matching is done using regular expressions - https://docs.python.org/2/library/re.html
            # This sessions config doesn't apply to extra URL handlers - they're in charge of their own.
-  enable: True  # The global switch - Set to Fale to disable session support entirely
+  enable: True  # The global switch - Set to False to disable session support entirely
 
   never: []  # Domains that should never store their sessions
              # These are checked first, before the rest
