@@ -1,8 +1,11 @@
 # coding=utf-8
+from plugins.urls.events import URLsPluginLoaded
+
 __author__ = 'Gareth Coles'
 
 from collections import defaultdict
 from kitchen.text.converters import to_unicode
+from twisted.internet import reactor
 from twisted.internet.defer import Deferred, inlineCallbacks
 
 # Managers
@@ -34,7 +37,6 @@ class URLsPlugin(PluginObject):
     handlers = defaultdict(list)
 
     def setup(self):
-        # TODO: Loading event
         # TODO: Channel config/commands
         # TODO: Shorteners
         self.commands = CommandManager()
@@ -66,6 +68,16 @@ class URLsPlugin(PluginObject):
                                  1, message_event_filter)
 
         self.add_handler(WebsiteHandler(self), -100)
+
+        if not self.factory_manager.running:
+            self.events.add_callback(
+                "ReactorStarted", self, self.send_event, 0
+            )
+        else:
+            self.send_event()
+
+    def send_event(self, _=None):
+        self.events.run_callback("URLs/PluginLoaded", URLsPluginLoaded(self))
 
     def reload(self):
         pass

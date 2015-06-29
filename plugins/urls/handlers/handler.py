@@ -137,4 +137,13 @@ class URLHandler(object):
         Called when the URLs plugin unloads - Do any saving or cleanup you
         need to do here
         """
+
+        pass
+
+    def reload(self):
+        """
+        Called when the URLs plugin has its configuration reloaded - You are
+        free to leave this as it is if it isn't relevant to your plugin
+        """
+
         pass

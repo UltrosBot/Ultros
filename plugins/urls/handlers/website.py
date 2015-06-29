@@ -37,12 +37,7 @@ class WebsiteHandler(URLHandler):
         if not os.path.exists(self.cookies_base_path + "/groups"):
             os.makedirs(self.cookies_base_path + "/groups")
 
-        self.global_session = Session()
-        self.global_session.cookies = self.get_cookie_jar("/global.txt")
-        self.global_session.session_type = "global"
-        self.global_session.cookies.set_mode(
-            self.plugin.config["sessions"]["cookies"]["global"]
-        )
+        self.reload()
 
     def call(self, url, context):
         # TODO: Channel settings
@@ -95,6 +90,27 @@ class WebsiteHandler(URLHandler):
             .addErrback(self.errback, url, context, session)
 
         return False
+
+    def teardown(self):
+        # Save all our cookie stores
+        if self.global_session is not None:
+            self.global_session.cookies.save(ignore_discard=True)
+            self.global_session.close()
+
+        for session in self.group_sessions.itervalues():
+            session.cookies.save(ignore_discard=True)
+            session.close()
+
+    def reload(self):
+        self.teardown()
+        self.group_sessions = {}
+
+        self.global_session = Session()
+        self.global_session.cookies = self.get_cookie_jar("/global.txt")
+        self.global_session.session_type = "global"
+        self.global_session.cookies.set_mode(
+            self.plugin.config["sessions"]["cookies"]["global"]
+        )
 
     def callback(self, response, url, context, session):
         self.plugin.logger.trace(
@@ -255,12 +271,3 @@ class WebsiteHandler(URLHandler):
         )
 
         return self.global_session
-
-    def teardown(self):
-        # Save all our cookie stores
-        self.global_session.cookies.save(ignore_discard=True)
-        self.global_session.close()
-
-        for session in self.group_sessions.itervalues():
-            session.cookies.save(ignore_discard=True)
-            session.close()
