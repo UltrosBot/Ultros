@@ -34,6 +34,9 @@ class URLsPlugin(PluginObject):
     handlers = defaultdict(list)
 
     def setup(self):
+        # TODO: Loading event
+        # TODO: Channel config/commands
+        # TODO: Shorteners
         self.commands = CommandManager()
         self.events = EventManager()
         self.storage = StorageManager()

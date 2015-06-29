@@ -5,13 +5,14 @@ import re
 import socket
 
 from bs4 import BeautifulSoup
-from cookielib import LWPCookieJar, LoadError
+from cookielib import LoadError
 from kitchen.text.converters import to_unicode, to_bytes
 from netaddr import IPAddress
 from twisted.web._newclient import ResponseNeverReceived
 from txrequests import Session
 
 from plugins.urls.handlers.handler import URLHandler
+from plugins.urls.cookiejar import ChocolateCookieJar
 from utils.misc import str_to_regex_flags
 
 
@@ -39,10 +40,12 @@ class WebsiteHandler(URLHandler):
         self.global_session = Session()
         self.global_session.cookies = self.get_cookie_jar("/global.txt")
         self.global_session.session_type = "global"
+        self.global_session.cookies.set_mode(
+            self.plugin.config["sessions"]["cookies"]["global"]
+        )
 
     def call(self, url, context):
         # TODO: Channel settings
-        # TODO: Allow cookies to be updated but not added
 
         if self.check_blacklist(url, context):
             self.urls_plugin.logger.warn(
@@ -130,17 +133,11 @@ class WebsiteHandler(URLHandler):
             self.plugin.logger.debug("No title")
 
         if session.session_type:
-            st = session.session_type
-            if context["config"]["sessions"]["cookies"][st] == "save":
-                session.cookies.save(ignore_discard=True)
+            session.cookies.save(ignore_discard=True)
 
-                if len(session.cookies):
-                    session.cookies.file_exists = True
-            elif context["config"]["sessions"]["cookies"][st] == "update":
-                pass  # TODO: Not implemented
-            elif context["config"]["sessions"]["cookies"][st] == "discard":
-                if session.cookies.file_exists:
-                    session.cookies.load()
+            if len(session.cookies):
+                session.cookies.file_exists = True
+                session.cookies.load()
 
     def errback(self, error, url, context, session):
         self.plugin.logger.error("Error parsing URL")
@@ -183,7 +180,7 @@ class WebsiteHandler(URLHandler):
         return False
 
     def get_cookie_jar(self, filename):
-        cj = LWPCookieJar(self.cookies_base_path + filename)
+        cj = ChocolateCookieJar(self.cookies_base_path + filename)
 
         try:
             cj.load()
@@ -245,6 +242,9 @@ class WebsiteHandler(URLHandler):
                         )
 
                         self.group_sessions[group].session_type = "group"
+                        self.group_sessions[group].cookies.set_mode(
+                            context["config"]["sessions"]["cookies"]["group"]
+                        )
 
                     return self.group_sessions[group]
 
