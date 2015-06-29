@@ -22,9 +22,12 @@ GOTO :START
 echo "** Activating virtualenv.. **"
 Ultros/Scripts/activate
 
-GOTO :INSTALLED
+GOTO :START
 
 :START
+
+pip install --upgrade certifi
+for /f %i in ('python -m certifi') do set SSL_CERT_FILE=%i
 
 echo "** Starting Ultros.. **"
 python run.py %*
