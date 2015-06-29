@@ -40,8 +40,8 @@ class URLHandler(object):
     # objects that have a "match" function.
     __REGEX_TYPE = type(re.compile(""))
 
-    # Remember to set this, so that plugins can register handlers that need
-    # to go before or after yours.
+    # Remember to set this, so that there are no conflicting handlers - only
+    # one handler per name!
     name = ""
 
     plugin = None

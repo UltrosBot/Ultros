@@ -1,12 +1,13 @@
 # coding=utf-8
-from plugins.urls.events import URLsPluginLoaded
+from twisted.python.failure import Failure
+from plugins.urls.shorteners.tinyurl import TinyURLShortener
+from system.protocols.generic.channel import Channel
 
 __author__ = 'Gareth Coles'
 
 from collections import defaultdict
 from kitchen.text.converters import to_unicode
-from twisted.internet import reactor
-from twisted.internet.defer import Deferred, inlineCallbacks
+from twisted.internet.defer import Deferred, inlineCallbacks, returnValue
 
 # Managers
 from system.command_manager import CommandManager
@@ -21,6 +22,7 @@ from system.plugins.plugin import PluginObject
 
 # Internals
 from plugins.urls.constants import PREFIX_TRANSLATIONS
+from plugins.urls.events import URLsPluginLoaded
 from plugins.urls.handlers.website import WebsiteHandler
 from plugins.urls.matching import extract_urls, regex_type
 from plugins.urls.url import URL
@@ -32,8 +34,11 @@ class URLsPlugin(PluginObject):
     events = None
     storage = None
 
+    channels = None
     config = None
+    shortened = None
 
+    shorteners = {}
     handlers = defaultdict(list)
 
     def setup(self):
@@ -58,6 +63,19 @@ class URLsPlugin(PluginObject):
             self.logger.error("Did you fill out `config/plugins/urls.yml`?")
             return self._disable_self()
 
+        self.channels = self.storage.get_file(
+            self, "data", Formats.YAML, "plugins/urls/channels.yml"
+        )
+
+        self.shortened = self.storage.get_file(
+            self,
+            "data",
+            Formats.DBAPI,
+            "sqlite3:data/plugins/urls/shortened.sqlite",
+            "data/plugins/urls/shortened.sqlite",
+            check_same_thread=False
+        )
+
         self.config.add_callback(self.reload)
         self.reload()
 
@@ -68,6 +86,12 @@ class URLsPlugin(PluginObject):
                                  1, message_event_filter)
 
         self.add_handler(WebsiteHandler(self), -100)
+        self.add_shortener(TinyURLShortener(self))
+
+        self.commands.register_command("urls", self.urls_command, self,
+                                       "urls.manage")
+        self.commands.register_command("shorten", self.shorten_command, self,
+                                       "urls.shorten", default=True)
 
         if not self.factory_manager.running:
             self.events.add_callback(
@@ -80,14 +104,107 @@ class URLsPlugin(PluginObject):
         self.events.run_callback("URLs/PluginLoaded", URLsPluginLoaded(self))
 
     def reload(self):
-        pass
+        self.shortened.runQuery("CREATE TABLE IF NOT EXISTS urls ("
+                                "url TEXT, "
+                                "shortener TEXT, "
+                                "result TEXT)")
+
+        for handler_list in self.handlers.itervalues():
+            for handler in handler_list:
+                handler.reload()
+
+    def shorten(self, _url, shortener=None, target=None):
+        if isinstance(_url, basestring):
+            match = extract_urls(_url)
+
+            if len(match) < 1:
+                return
+
+            match = match[0]
+
+            self.logger.trace("match: {0}", match)
+            # Expand the match to make it easier to work with
+
+            # Input: ''http://x:y@tools.ietf.org:80/html/rfc1149''
+            # Match: '', http, x:y, tools.ietf.org, :80, /html/rfc1149''
+            _prefix, _protocol, _basic, _domain, _port, _path = (
+                to_unicode(x) for x in match
+            )
+
+            _port = _port.lstrip(":")
+
+            try:
+                if _port:
+                    _port = int(_port)
+            except ValueError:
+                self.logger.warn("Invalid port: {0}", _port)
+                return
+
+            _url = URL(self, _protocol, _basic, _domain, _port, _path)
+
+        if target is not None:
+            shortener = self.get_shortener(target)
+
+        if shortener is None:
+            shortener = "tinyurl"
+
+        context = {"url": _url}
+
+        return self.shortened.runInteraction(
+            self._shorten, context, shortener
+        )
+
+    @inlineCallbacks
+    def _shorten(self, txn, context, handler):
+        """
+        Shorten a URL, checking the database in case it's already been
+        done. This is a database interaction and uses Deferreds.
+        """
+
+        txn.execute(
+            "SELECT * FROM urls WHERE url=? AND shortener=?",
+            (context["url"].text, handler.lower())
+        )
+
+        r = txn.fetchone()
+
+        self.logger.trace("Result (SQL): %s" % repr(r))
+
+        if r is not None:
+            returnValue(r[2])
+
+        if handler in self.shorteners:
+            d = self.shorteners[handler].do_shorten(context)
+
+            result = yield d
+
+            if not isinstance(result, Failure):
+                txn.execute(
+                    "INSERT INTO urls VALUES (?, ?, ?)",
+                    (context["url"].text, handler.lower(), result)
+                )
+                returnValue(result)
+
+        returnValue(None)
+
+    def get_shortener(self, target):
+        shortener = (
+            self.channels.get(target.protocol.name, {})
+                .get(target.name, {})
+                .get("shortener", "tinyurl")
+        )
+
+        if self.has_shortener(shortener):
+            return shortener
+
+        return "tinyurl"
 
     def deactivate(self):
         for handler_list in self.handlers.itervalues():
             for handler in handler_list:
                 try:
                     handler.teardown()
-                except Exception as e:
+                except Exception:
                     self.logger.exception(
                         "Error tearing down handler {0}".format(handler.name)
                     )
@@ -109,6 +226,11 @@ class URLsPlugin(PluginObject):
                                                    target, protocol)
 
         if not allowed:
+            return
+
+        if self.channels.get(protocol.name,
+                             {}).get(target.name,
+                                     {}).get("status", "on") == "off":
             return
 
         matches = extract_urls(message)
@@ -147,10 +269,145 @@ class URLsPlugin(PluginObject):
 
             _url = URL(self, _protocol, _basic, _domain, _port, _path)
 
+            self.channels.get(protocol.name, {}) \
+                .get(source.name, {})["last"] = _url.text
+
             yield self.run_handlers(_url, {
                 "event": event,
                 "config": self.config
             })
+
+    def urls_command(self, protocol, caller, source, command, raw_args,
+                     args):
+        """
+        Command handler for the urls command
+        """
+
+        if not isinstance(source, Channel):
+            caller.respond("This command can only be used in a channel.")
+            return
+        if len(args) < 2:
+            caller.respond("Usage: {CHARS}%s <setting> <value>" % command)
+            caller.respond("Operations: set <on/off> - Enable or disable "
+                           "title parsing for the current channel")
+            caller.respond("            %s" % "shortener <name> - Set "
+                                              "which URL shortener to use "
+                                              "for the current channel")
+            caller.respond("            %s" % "Shorteners: %s" % ", ".join(
+                self.shorteners.keys()
+            ))
+            return
+
+        operation = args[0].lower()
+        value = args[1].lower()
+
+        if protocol.name not in self.channels:
+            with self.channels:
+                self.channels[protocol.name] = {
+                    source.name: {
+                        "status": "on",
+                        "last": "",
+                        "shortener": "tinyurl"
+                    }
+                }
+        if source.name not in self.channels[protocol.name]:
+            with self.channels:
+                self.channels[protocol.name][source.name] = {
+                    "status": "on",
+                    "last": "",
+                    "shortener": "tinyurl"
+                }
+
+        if operation == "set":
+            if value not in ["on", "off"]:
+                caller.respond("Usage: {CHARS}urls set <on|off>")
+            else:
+                with self.channels:
+                    self.channels[protocol.name][source.name]["status"] = value
+                caller.respond("Title passing for %s turned %s."
+                               % (source.name, value))
+        elif operation == "shortener":
+            if value.lower() in self.shorteners:
+                with self.channels:
+                    self.channels[protocol.name][source.name]["shortener"] \
+                        = value.lower()
+                caller.respond("URL shortener for %s set to %s."
+                               % (source.name, value))
+            else:
+                caller.respond("Unknown shortener: %s" % value)
+        else:
+            caller.respond("Unknown operation: '%s'." % operation)
+
+    def _respond_shorten(self, result, source, handler):
+        """
+        Respond to a shorten command, after a successful Deferred
+        """
+
+        if result is not None:
+            return source.respond(result)
+
+        source.respond("Unable to shorten using handler %s. Poke the bot "
+                       "owner!" % handler)
+
+    def _respond_shorten_fail(self, failure, source, handler):
+        """
+        Respond to a shorten command, after a failed Deferred
+        """
+
+        source.respond("Error shortening url with handler %s: %s" % (
+            handler, failure
+        ))
+
+    def shorten_command(self, protocol, caller, source, command, raw_args,
+                        args):
+        """
+        Command handler for the shorten command
+        """
+
+        if not isinstance(source, Channel):
+            if len(args) == 0:
+                caller.respond("Usage: {CHARS}shorten [url]")
+                return
+            else:
+                handler = "tinyurl"
+                _url = args[0]
+                try:
+                    d = self.shorten(_url, handler)
+                    d.addCallbacks(self._respond_shorten,
+                                   self._respond_shorten_fail,
+                                   callbackArgs=(source, handler),
+                                   errbackArgs=(source, handler))
+                except Exception as e:
+                    self.logger.exception("Error fetching short URL.")
+                    caller.respond("Error: %s" % e)
+        else:
+            if protocol.name not in self.channels \
+               or source.name not in self.channels[protocol.name] \
+               or not len(self.channels[protocol.name][source.name]["last"]):
+                caller.respond("Nobody's pasted a URL here yet!")
+                return
+
+            handler = self.get_shortener(source)
+
+            if not self.has_shortener(handler):  # Shouldn't happen
+                caller.respond("Shortener '%s' not found - please set a "
+                               "new one!" % handler)
+                return
+
+            _url = self.channels[protocol.name][source.name]["last"]
+
+            if len(args) > 0:
+                _url = args[0]
+
+            try:
+                d = self.shorten(_url, handler)
+                d.addCallbacks(self._respond_shorten,
+                               self._respond_shorten_fail,
+                               callbackArgs=(source, handler),
+                               errbackArgs=(source, handler))
+            except Exception as e:
+                self.logger.exception("Error fetching short URL.")
+                caller.respond("Error: %s" % e)
 
     @inlineCallbacks
     def run_handlers(self, _url, context):
@@ -206,6 +463,14 @@ class URLsPlugin(PluginObject):
                     return True
 
         return False
+
+    def add_shortener(self, shortener):
+        if not self.has_handler(shortener.name):
+            shortener.urls_plugin = self
+            self.shorteners[shortener.name] = shortener
+
+    def has_shortener(self, shortener):
+        return shortener in self.shorteners
 
     def translate_prefix(self, prefix):
         # We translate some characters that are likely to be matched with
