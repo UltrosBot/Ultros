@@ -1,4 +1,5 @@
 # coding=utf-8
+from copy import copy
 from twisted.python.failure import Failure
 from plugins.urls.shorteners.tinyurl import TinyURLShortener
 from system.protocols.generic.channel import Channel
@@ -455,6 +456,12 @@ class URLsPlugin(PluginObject):
 
         return False
 
+    def remove_handler(self, handler):
+        for handler_list in self.handlers.itervalues():
+            for _handler in copy(handler_list):
+                if handler.name == _handler.name:
+                    handler_list.remove(_handler)
+
     def add_shortener(self, shortener):
         if not self.has_handler(shortener.name):
             shortener.urls_plugin = self
@@ -462,6 +469,10 @@ class URLsPlugin(PluginObject):
 
     def has_shortener(self, shortener):
         return shortener in self.shorteners
+
+    def remove_shortener(self, shortener):
+        if self.has_shortener(shortener):
+            del self.shorteners[shortener]
 
     def translate_prefix(self, prefix):
         # We translate some characters that are likely to be matched with
