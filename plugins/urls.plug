@@ -5,6 +5,6 @@ core:
 info:
   description: URL handler for working with URLs and page titles
   author: Gareth Coles
-  version: 0.1.0
+  version: 1.0.0
   website: https://github.com/McBlockitHelpbot/Ultros/tree/master/plugins/urls
   copyright: See Ultros' license
