@@ -25,7 +25,7 @@ from system.plugins.plugin import PluginObject
 from plugins.urls.constants import PREFIX_TRANSLATIONS
 from plugins.urls.events import URLsPluginLoaded
 from plugins.urls.handlers.website import WebsiteHandler
-from plugins.urls.matching import extract_urls, regex_type
+from plugins.urls.matching import extract_urls
 from plugins.urls.url import URL
 
 
