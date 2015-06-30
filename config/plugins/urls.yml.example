@@ -16,6 +16,9 @@ blacklist: []  # List of patterns to match against URLs; if matched then the URL
 # - '.*\/\/vimeo\.com\/.*\/staffpicks\/[^\/]'  # Vimeo staff picks
 # - '.*\/\/bad-site\.com\/.{5,}\/.*'  # Dirs that are 5 chars long have massive titles
 
+default_shortener: tinyurl  # The default shortener for channels without one set
+                            # This will revert to tinyurl if the shortener doesn't exist
+
 accept_language:
   # This section is entirely optional
   # default: "en"  # Sent for any site not in the list below

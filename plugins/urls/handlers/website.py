@@ -40,8 +40,6 @@ class WebsiteHandler(URLHandler):
         self.reload()
 
     def call(self, url, context):
-        # TODO: Channel settings
-
         if self.check_blacklist(url, context):
             self.urls_plugin.logger.warn(
                 "URL %s is blacklisted, ignoring.." % url.text

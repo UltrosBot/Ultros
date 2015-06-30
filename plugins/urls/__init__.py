@@ -42,8 +42,6 @@ class URLsPlugin(PluginObject):
     handlers = defaultdict(list)
 
     def setup(self):
-        # TODO: Channel config/commands
-        # TODO: Shorteners
         self.commands = CommandManager()
         self.events = EventManager()
         self.storage = StorageManager()
@@ -100,6 +98,12 @@ class URLsPlugin(PluginObject):
         else:
             self.send_event()
 
+    @property
+    def default_shortener(self):
+        shortener = self.config["default_shortener"]
+
+        return shortener if self.has_shortener(shortener) else "tinyurl"
+
     def send_event(self, _=None):
         self.events.run_callback("URLs/PluginLoaded", URLsPluginLoaded(self))
 
@@ -147,7 +151,7 @@ class URLsPlugin(PluginObject):
             shortener = self.get_shortener(target)
 
         if shortener is None:
-            shortener = "tinyurl"
+            shortener = self.default_shortener
 
         context = {"url": _url}
 
@@ -178,13 +182,13 @@ class URLsPlugin(PluginObject):
         shortener = (
             self.channels.get(target.protocol.name, {})
                 .get(target.name, {})
-                .get("shortener", "tinyurl")
+                .get("shortener", self.default_shortener)
         )
 
         if self.has_shortener(shortener):
             return shortener
 
-        return "tinyurl"
+        return self.default_shortener
 
     def deactivate(self):
         for handler_list in self.handlers.itervalues():
@@ -294,7 +298,7 @@ class URLsPlugin(PluginObject):
                     source.name: {
                         "status": "on",
                         "last": "",
-                        "shortener": "tinyurl"
+                        "shortener": self.default_shortener
                     }
                 }
         if source.name not in self.channels[protocol.name]:
@@ -302,7 +306,7 @@ class URLsPlugin(PluginObject):
                 self.channels[protocol.name][source.name] = {
                     "status": "on",
                     "last": "",
-                    "shortener": "tinyurl"
+                    "shortener": self.default_shortener
                 }
 
         if operation == "set":
@@ -356,7 +360,7 @@ class URLsPlugin(PluginObject):
                 caller.respond("Usage: {CHARS}shorten [url]")
                 return
             else:
-                handler = "tinyurl"
+                handler = self.default_shortener
                 _url = args[0]
                 try:
                     d = self.shorten(_url, handler)
