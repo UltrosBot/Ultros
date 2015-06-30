@@ -113,6 +113,7 @@ class URLsPlugin(PluginObject):
             for handler in handler_list:
                 handler.reload()
 
+    @inlineCallbacks
     def shorten(self, _url, shortener=None, target=None):
         if isinstance(_url, basestring):
             match = extract_urls(_url)
@@ -150,42 +151,28 @@ class URLsPlugin(PluginObject):
 
         context = {"url": _url}
 
-        return self.shortened.runInteraction(
-            self._shorten, context, shortener
-        )
-
-    @inlineCallbacks
-    def _shorten(self, txn, context, handler):
-        """
-        Shorten a URL, checking the database in case it's already been
-        done. This is a database interaction and uses Deferreds.
-        """
-
-        txn.execute(
+        r = yield self.shortened.runQuery(
             "SELECT * FROM urls WHERE url=? AND shortener=?",
-            (context["url"].text, handler.lower())
+            (_url.text, shortener.lower())
         )
 
-        r = txn.fetchone()
+        if isinstance(r, Failure):
+            returnValue(r)
+        elif len(r):
+            returnValue(r[0][2])
+        else:
+            if shortener in self.shorteners:
+                result = yield self.shorteners[shortener].do_shorten(context)
 
-        self.logger.trace("Result (SQL): %s" % repr(r))
+                if isinstance(result, Failure):
+                    returnValue(result)
+                else:
+                    self.shortened.runQuery(
+                        "INSERT INTO urls VALUES (?, ?, ?)",
+                        (_url.text, shortener.lower(), result)
+                    )
 
-        if r is not None:
-            returnValue(r[2])
-
-        if handler in self.shorteners:
-            d = self.shorteners[handler].do_shorten(context)
-
-            result = yield d
-
-            if not isinstance(result, Failure):
-                txn.execute(
-                    "INSERT INTO urls VALUES (?, ?, ?)",
-                    (context["url"].text, handler.lower(), result)
-                )
-                returnValue(result)
-
-        returnValue(None)
+                    returnValue(result)
 
     def get_shortener(self, target):
         shortener = (
