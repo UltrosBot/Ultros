@@ -107,7 +107,10 @@ class WebsiteHandler(URLHandler):
         self.global_session.cookies = self.get_cookie_jar("/global.txt")
         self.global_session.session_type = "global"
         self.global_session.cookies.set_mode(
-            self.plugin.config["sessions"]["cookies"]["global"]
+            # self.plugin.config["sessions"]["cookies"]["global"]
+            self.plugin.config.get("sessions", {})
+                .get("cookies", {})
+                .get("global", "discard")
         )
 
     def callback(self, response, url, context, session):
@@ -169,23 +172,15 @@ class WebsiteHandler(URLHandler):
             error.printDetailedTraceback()
 
         if session.session_type:
-            st = session.session_type
-            if context["config"]["sessions"]["cookies"][st] == "save":
-                session.cookies.save(ignore_discard=True)
+            session.cookies.save(ignore_discard=True)
 
-                if len(session.cookies):
-                    session.cookies.file_exists = True
-            elif context["config"]["sessions"]["cookies"][st] == "update":
-                pass  # TODO: Not implemented
-            elif context["config"]["sessions"]["cookies"][st] == "discard":
-                if session.cookies.file_exists:
-                    session.cookies.load()
+            if len(session.cookies):
+                session.cookies.file_exists = True
+                session.cookies.load()
 
     def check_blacklist(self, url, context):
         for entry in context["config"]["blacklist"]:
-            r = re.compile(entry, flags=str_to_regex_flags("i"))
-
-            if r.match(url):
+            if re.match(entry, url, flags=str_to_regex_flags("ui")):
                 self.urls_plugin.logger.debug(
                     "Matched blacklist regex: %s" % entry
                 )
@@ -215,9 +210,9 @@ class WebsiteHandler(URLHandler):
         return cj
 
     def get_session(self, url, context):
-        sessions = context["config"]["sessions"]
+        sessions = context.get("config", {}).get("sessions", {})
 
-        if not sessions["enable"]:
+        if not sessions.get("enable", False):
             self.urls_plugin.logger.debug("Sessions are disabled.")
             s = Session()
             s.session_type = None
@@ -225,7 +220,7 @@ class WebsiteHandler(URLHandler):
             return s
 
         for entry in sessions["never"]:
-            if re.match(entry, url.domain, flags=str_to_regex_flags("i")):
+            if re.match(entry, url.domain, flags=str_to_regex_flags("ui")):
                 self.urls_plugin.logger.debug(
                     "Domain {0} is blacklisted for sessions.".format(
                         url.domain
@@ -238,7 +233,7 @@ class WebsiteHandler(URLHandler):
 
         for group, entries in sessions["group"].iteritems():
             for entry in entries:
-                if re.match(entry, url.domain, flags=str_to_regex_flags("i")):
+                if re.match(entry, url.domain, flags=str_to_regex_flags("ui")):
                     self.urls_plugin.logger.debug(
                         "Domain {0} uses the '{1}' group sessions.".format(
                             url.domain, group

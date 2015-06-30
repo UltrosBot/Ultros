@@ -62,6 +62,24 @@ class URLsPlugin(PluginObject):
             self.logger.error("Did you fill out `config/plugins/urls.yml`?")
             return self._disable_self()
 
+        if "catcher" in self.config:
+            self.logger.warn(
+                "========================================================="
+            )
+            self.logger.warn(
+                " It appears that you haven't updated your configuration."
+            )
+            self.logger.warn("")
+            self.logger.warn(
+                " Please check the example configuration and update your"
+            )
+            self.logger.warn(
+                " file to match."
+            )
+            self.logger.warn(
+                "========================================================="
+            )
+
         self.channels = self.storage.get_file(
             self, "data", Formats.YAML, "plugins/urls/channels.yml"
         )
@@ -101,7 +119,7 @@ class URLsPlugin(PluginObject):
 
     @property
     def default_shortener(self):
-        shortener = self.config["default_shortener"]
+        shortener = self.config.get("default_shortener", "tinyurl")
 
         return shortener if self.has_shortener(shortener) else "tinyurl"
 
