@@ -1,32 +1,26 @@
 # coding=utf-8
 from copy import copy
-from twisted.python.failure import Failure
-from plugins.urls.shorteners.tinyurl import TinyURLShortener
-from system.protocols.generic.channel import Channel
-
-__author__ = 'Gareth Coles'
-
 from collections import defaultdict
+
 from kitchen.text.converters import to_unicode
 from twisted.internet.defer import Deferred, inlineCallbacks, returnValue
 
-# Managers
+from twisted.python.failure import Failure
+
+from system.protocols.generic.channel import Channel
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
 from system.storage.manager import StorageManager
-
-# Storage formats
 from system.storage.formats import Formats
-
-# Plugin
 from system.plugins.plugin import PluginObject
-
-# Internals
 from plugins.urls.constants import PREFIX_TRANSLATIONS
 from plugins.urls.events import URLsPluginLoaded
 from plugins.urls.handlers.website import WebsiteHandler
 from plugins.urls.matching import extract_urls
+from plugins.urls.shorteners.tinyurl import TinyURLShortener
 from plugins.urls.url import URL
+
+__author__ = 'Gareth Coles'
 
 
 class URLsPlugin(PluginObject):
@@ -62,22 +56,13 @@ class URLsPlugin(PluginObject):
             self.logger.error("Did you fill out `config/plugins/urls.yml`?")
             return self._disable_self()
 
-        if "catcher" in self.config:
+        if self.config.get("version", 1) < 2:
             self.logger.warn(
-                "========================================================="
-            )
-            self.logger.warn(
-                " It appears that you haven't updated your configuration."
-            )
-            self.logger.warn("")
-            self.logger.warn(
-                " Please check the example configuration and update your"
-            )
-            self.logger.warn(
-                " file to match."
-            )
-            self.logger.warn(
-                "========================================================="
+                "========================================================= \n"
+                " It appears that you haven't updated your configuration.  \n"
+                " Please check the example configuration and update your   \n"
+                " file to match.                                           \n"
+                "========================================================= \n"
             )
 
         self.channels = self.storage.get_file(
@@ -392,8 +377,9 @@ class URLsPlugin(PluginObject):
                     caller.respond("Error: %s" % e)
         else:
             if protocol.name not in self.channels \
-               or source.name not in self.channels[protocol.name] \
-               or not len(self.channels[protocol.name][source.name]["last"]):
+                    or source.name not in self.channels[protocol.name] \
+                    or not len(
+                        self.channels[protocol.name][source.name]["last"]):
                 caller.respond("Nobody's pasted a URL here yet!")
                 return
 

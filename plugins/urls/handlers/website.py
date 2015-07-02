@@ -1,19 +1,22 @@
-__author__ = 'Gareth Coles'
-
+import urlparse
 import os
 import re
 import socket
-
-from bs4 import BeautifulSoup
 from cookielib import LoadError
+
+import requests
+from bs4 import BeautifulSoup
 from kitchen.text.converters import to_unicode, to_bytes
 from netaddr import IPAddress
 from twisted.web._newclient import ResponseNeverReceived
 from txrequests import Session
 
+from plugins.urls.constants import STATUS_CODES
 from plugins.urls.handlers.handler import URLHandler
 from plugins.urls.cookiejar import ChocolateCookieJar
 from utils.misc import str_to_regex_flags
+
+__author__ = 'Gareth Coles'
 
 
 class WebsiteHandler(URLHandler):
@@ -141,13 +144,33 @@ class WebsiteHandler(URLHandler):
             title = re.sub("\s+", " ", title)
             title = title
 
-            context["event"].target.respond(
-                to_unicode('"{0}" at {1}'.format(
-                    to_bytes(title), to_bytes(url.domain)
-                ))
-            )
+            if response.status_code == requests.codes.ok:
+                context["event"].target.respond(
+                    to_unicode('"{0}" at {1}'.format(
+                        to_bytes(title),
+                        to_bytes(urlparse.urlparse(response.url).hostname)
+                    ))
+                )
+            else:
+                context["event"].target.respond(
+                    to_unicode('[HTTP {0}] "{1}" at {2}'.format(
+                        response.status_code,
+                        to_bytes(title),
+                        to_bytes(urlparse.urlparse(response.url).hostname)
+                    ))
+                )
+
         else:
-            self.plugin.logger.debug("No title")
+            if response.status_code != requests.codes.ok:
+                context["event"].target.respond(
+                    to_unicode('HTTP Error {0}: {1} at {2}'.format(
+                        response.status_code,
+                        STATUS_CODES.get(response.status_code, "Unknown"),
+                        to_bytes(urlparse.urlparse(response.url).hostname)
+                    ))
+                )
+            else:
+                self.plugin.logger.debug("No title")
 
         if session.session_type:
             session.cookies.save(ignore_discard=True)

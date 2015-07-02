@@ -50,3 +50,5 @@ sessions:  # Sessions allow cookies to be stored during requests and retrieved l
 #    - '*\.soundcloud\.com'
 #    - 'youtube\.com'
 #    - '*\.youtube\.com'
+
+version: 2  # This is used to detect whether your configuration is up-to-date. Change at your own risk.

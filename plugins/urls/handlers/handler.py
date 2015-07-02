@@ -1,6 +1,6 @@
-__author__ = 'Gareth Coles'
-
 import re
+
+__author__ = 'Gareth Coles'
 
 
 class URLHandler(object):
