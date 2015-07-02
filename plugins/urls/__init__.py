@@ -420,6 +420,9 @@ class URLsPlugin(PluginObject):
     @inlineCallbacks
     def run_handlers(self, _url, context):
         if self.check_blacklist(_url, context):
+            self.logger.warn(
+                "URL {0} is blacklisted; ignoring...".format(_url)
+            )
             return
 
         for priority in reversed(sorted(self.handlers.iterkeys())):
