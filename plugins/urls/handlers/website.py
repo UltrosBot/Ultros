@@ -45,7 +45,7 @@ class WebsiteHandler(URLHandler):
     def call(self, url, context):
         if self.check_blacklist(url, context):
             self.urls_plugin.logger.warn(
-                "URL %s is blacklisted, ignoring.." % url.text
+                "URL %s is blacklisted, ignoring.." % url
             )
             return
 
@@ -86,7 +86,7 @@ class WebsiteHandler(URLHandler):
                 .get("default", "en")
 
         session = self.get_session(url, context)
-        session.get(url.text, headers=headers) \
+        session.get(str(url), headers=headers) \
             .addCallback(self.callback, url, context, session) \
             .addErrback(self.errback, url, context, session)
 

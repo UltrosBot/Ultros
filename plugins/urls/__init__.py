@@ -8,9 +8,6 @@ from twisted.internet.defer import Deferred, inlineCallbacks, returnValue
 from twisted.python.failure import Failure
 
 from system.protocols.generic.channel import Channel
-from system.command_manager import CommandManager
-from system.event_manager import EventManager
-from system.storage.manager import StorageManager
 from system.storage.formats import Formats
 from system.plugins.plugin import PluginObject
 from plugins.urls.constants import PREFIX_TRANSLATIONS
@@ -33,13 +30,12 @@ class URLsPlugin(PluginObject):
     config = None
     shortened = None
 
-    shorteners = {}
-    handlers = defaultdict(list)
+    shorteners = None
+    handlers = None
 
     def setup(self):
-        self.commands = CommandManager()
-        self.events = EventManager()
-        self.storage = StorageManager()
+        self.shorteners = {}
+        self.handlers = defaultdict(list)
 
         # Load up the configuration
 
@@ -161,7 +157,7 @@ class URLsPlugin(PluginObject):
 
         r = yield self.shortened.runQuery(
             "SELECT * FROM urls WHERE url=? AND shortener=?",
-            (_url.text, shortener.lower())
+            (str(_url), shortener.lower())
         )
 
         if isinstance(r, Failure):
@@ -177,7 +173,7 @@ class URLsPlugin(PluginObject):
                 else:
                     self.shortened.runQuery(
                         "INSERT INTO urls VALUES (?, ?, ?)",
-                        (_url.text, shortener.lower(), result)
+                        (str(_url), shortener.lower(), result)
                     )
 
                     returnValue(result)
@@ -265,7 +261,7 @@ class URLsPlugin(PluginObject):
             _url = URL(self, _protocol, _basic, _domain, _port, _path)
 
             self.channels.get(protocol.name, {}) \
-                .get(source.name, {})["last"] = _url.text
+                .get(source.name, {})["last"] = str(_url)
 
             yield self.run_handlers(_url, {
                 "event": event,

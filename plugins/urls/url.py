@@ -13,8 +13,28 @@ class URL(object):
     port = None
     path = None
 
-    @property
-    def text(self):
+    def __init__(self, plugin=None, protocol=None, auth=None, domain=None,
+                 port=None, path=None):
+        self.plugin = plugin
+
+        self.protocol = protocol
+        self.auth = auth
+        self.domain = idna.encode(to_unicode(domain))
+        self.port = port
+        self.path = path
+
+    def shorten(self, shortener=None, shorten_for=None):
+        pass
+
+    def __repr__(self):
+        return "<{u.__class__.__name__} at {addr} | " \
+               "{u.protocol} :// " \
+               "{u.auth} @ " \
+               "{u.domain} : " \
+               "{u.port} / {u.path}" \
+               ">".format(addr=id(self), u=self)
+
+    def __str__(self):
         _format = "{url.protocol}://"
 
         if self.auth:
@@ -28,16 +48,3 @@ class URL(object):
         _format += "{url.path}"
 
         return _format.format(url=self)
-
-    def __init__(self, plugin=None, protocol=None, auth=None, domain=None,
-                 port=None, path=None):
-        self.plugin = plugin
-
-        self.protocol = protocol
-        self.auth = auth
-        self.domain = idna.encode(to_unicode(domain))
-        self.port = port
-        self.path = path
-
-    def shorten(self, shortener=None, shorten_for=None):
-        pass

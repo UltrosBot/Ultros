@@ -12,7 +12,7 @@ class TinyURLShortener(Shortener):
     def do_shorten(self, context):
         session = Session()
 
-        params = {"url": context["url"].text}
+        params = {"url": str(context["url"])}
 
         d = session.get(self.base_url, params=params)
 
