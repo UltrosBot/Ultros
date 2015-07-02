@@ -4,12 +4,14 @@ from collections import defaultdict
 
 from kitchen.text.converters import to_unicode
 from twisted.internet.defer import Deferred, inlineCallbacks, returnValue
-
 from twisted.python.failure import Failure
 
+from system.command_manager import CommandManager
+from system.event_manager import EventManager
 from system.protocols.generic.channel import Channel
 from system.storage.formats import Formats
 from system.plugins.plugin import PluginObject
+from system.storage.manager import StorageManager
 from plugins.urls.constants import PREFIX_TRANSLATIONS
 from plugins.urls.events import URLsPluginLoaded
 from plugins.urls.handlers.website import WebsiteHandler
@@ -34,6 +36,10 @@ class URLsPlugin(PluginObject):
     handlers = None
 
     def setup(self):
+        self.storage = StorageManager()
+        self.events = EventManager()
+        self.commands = CommandManager()
+
         self.shorteners = {}
         self.handlers = defaultdict(list)
 
@@ -43,8 +49,8 @@ class URLsPlugin(PluginObject):
             self.config = self.storage.get_file(
                 self, "config", Formats.YAML, "plugins/urls.yml"
             )
-        except Exception as e:
-            self.logger.error("Error loading configuration: {}", e)
+        except Exception:
+            self.logger.exception("Error loading configuration")
             return self._disable_self()
 
         if not self.config.exists:
@@ -156,14 +162,14 @@ class URLsPlugin(PluginObject):
         context = {"url": _url}
 
         r = yield self.shortened.runQuery(
-            "SELECT * FROM urls WHERE url=? AND shortener=?",
+            "SELECT result FROM urls WHERE url=? AND shortener=?",
             (str(_url), shortener.lower())
         )
 
         if isinstance(r, Failure):
             returnValue(r)
         elif len(r):
-            returnValue(r[0][2])
+            returnValue(r[0][0])
         else:
             if shortener in self.shorteners:
                 result = yield self.shorteners[shortener].do_shorten(context)
