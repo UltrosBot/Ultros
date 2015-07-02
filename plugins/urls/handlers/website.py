@@ -43,12 +43,6 @@ class WebsiteHandler(URLHandler):
         self.reload()
 
     def call(self, url, context):
-        if self.check_blacklist(url, context):
-            self.urls_plugin.logger.warn(
-                "URL %s is blacklisted, ignoring.." % url
-            )
-            return
-
         try:
             ip = IPAddress(socket.gethostbyname(url.domain))
         except Exception as e:
@@ -200,16 +194,6 @@ class WebsiteHandler(URLHandler):
             if len(session.cookies):
                 session.cookies.file_exists = True
                 session.cookies.load()
-
-    def check_blacklist(self, url, context):
-        for entry in context["config"]["blacklist"]:
-            if re.match(entry, url, flags=str_to_regex_flags("ui")):
-                self.urls_plugin.logger.debug(
-                    "Matched blacklist regex: %s" % entry
-                )
-                return True
-
-        return False
 
     def get_cookie_jar(self, filename):
         cj = ChocolateCookieJar(self.cookies_base_path + filename)

@@ -3,6 +3,7 @@ from copy import copy
 from collections import defaultdict
 
 from kitchen.text.converters import to_unicode
+import re
 from twisted.internet.defer import Deferred, inlineCallbacks, returnValue
 from twisted.python.failure import Failure
 
@@ -18,6 +19,7 @@ from plugins.urls.handlers.website import WebsiteHandler
 from plugins.urls.matching import extract_urls
 from plugins.urls.shorteners.tinyurl import TinyURLShortener
 from plugins.urls.url import URL
+from utils.misc import str_to_regex_flags
 
 __author__ = 'Gareth Coles'
 
@@ -225,9 +227,9 @@ class URLsPlugin(PluginObject):
         if not allowed:
             return
 
-        if self.channels.get(protocol.name,
-                             {}).get(target.name,
-                                     {}).get("status", "on") == "off":
+        if self.channels.get(protocol.name, {}) \
+                .get(target.name, {}) \
+                .get("status", "on") == "off":
             return
 
         matches = extract_urls(message)
@@ -274,8 +276,7 @@ class URLsPlugin(PluginObject):
                 "config": self.config
             })
 
-    def urls_command(self, protocol, caller, source, command, raw_args,
-                     args):
+    def urls_command(self, protocol, caller, source, command, raw_args, args):
         """
         Command handler for the urls command
         """
@@ -287,12 +288,11 @@ class URLsPlugin(PluginObject):
             caller.respond("Usage: {CHARS}%s <setting> <value>" % command)
             caller.respond("Operations: set <on/off> - Enable or disable "
                            "title parsing for the current channel")
-            caller.respond("            %s" % "shortener <name> - Set "
-                                              "which URL shortener to use "
-                                              "for the current channel")
-            caller.respond("            %s" % "Shorteners: %s" % ", ".join(
+            caller.respond("  shortener <name> - Set which URL shortener to "
+                           "use for the current channel")
+            caller.respond("  Shorteners: {0}".format(", ".join(
                 self.shorteners.keys()
-            ))
+            )))
             return
 
         operation = args[0].lower()
@@ -307,7 +307,7 @@ class URLsPlugin(PluginObject):
                         "shortener": self.default_shortener
                     }
                 }
-        if source.name not in self.channels[protocol.name]:
+        elif source.name not in self.channels[protocol.name]:
             with self.channels:
                 self.channels[protocol.name][source.name] = {
                     "status": "on",
@@ -331,7 +331,7 @@ class URLsPlugin(PluginObject):
                 caller.respond("URL shortener for %s set to %s."
                                % (source.name, value))
             else:
-                caller.respond("Unknown shortener: %s" % value)
+                caller.respond("Unknown shortener: %s." % value)
         else:
             caller.respond("Unknown operation: '%s'." % operation)
 
@@ -376,7 +376,7 @@ class URLsPlugin(PluginObject):
                                    errbackArgs=(source, handler))
                 except Exception as e:
                     self.logger.exception("Error fetching short URL.")
-                    caller.respond("Error: %s" % e)
+                    caller.respond("Error fetching short URL.")
         else:
             if protocol.name not in self.channels \
                     or source.name not in self.channels[protocol.name] \
@@ -405,15 +405,28 @@ class URLsPlugin(PluginObject):
                                errbackArgs=(source, handler))
             except Exception as e:
                 self.logger.exception("Error fetching short URL.")
-                caller.respond("Error: %s" % e)
+                caller.respond("Error fetching short URL.")
+
+    def check_blacklist(self, _url, context):
+        for entry in context["config"]["blacklist"]:
+            if re.match(entry, _url, flags=str_to_regex_flags("ui")):
+                self.logger.debug(
+                    "Matched blacklist regex: %s" % entry
+                )
+                return True
+
+        return False
 
     @inlineCallbacks
     def run_handlers(self, _url, context):
+        if self.check_blacklist(_url, context):
+            return
+
         for priority in reversed(sorted(self.handlers.iterkeys())):
             for handler in self.handlers[priority]:
                 try:
                     d = handler.match(_url, context)
-                except Exception as e:
+                except Exception:
                     self.logger.exception(
                         "Error caught while attempting to match "
                         "handler {0}".format(
@@ -428,10 +441,21 @@ class URLsPlugin(PluginObject):
                 else:
                     r = d
 
+                if isinstance(r, Failure):
+                    self.logger.error(
+                        "Error caught while attempting to match "
+                        "handler {0}".format(
+                            handler.name
+                        )
+                    )
+
+                    r.printTraceback()
+                    continue
+
                 if r:
                     try:
                         d = handler.call(_url, context)
-                    except Exception as e:
+                    except Exception:
                         self.logger.exception(
                             "Error caught while attempting to call "
                             "handler {0}".format(
@@ -445,7 +469,17 @@ class URLsPlugin(PluginObject):
                         r = yield d
                     else:
                         r = d
-                    if not r:
+                    if isinstance(r, Failure):
+                        self.logger.error(
+                            "Error caught while attempting to call "
+                            "handler {0}".format(
+                                handler.name
+                            )
+                        )
+
+                        r.printTraceback()
+                        continue
+                    elif not r:
                         return
 
     def add_handler(self, handler, priority=0):
