@@ -6,6 +6,7 @@ from kitchen.text.converters import to_unicode
 import re
 from twisted.internet.defer import Deferred, inlineCallbacks, returnValue
 from twisted.python.failure import Failure
+from plugins.urls.priority import Priority
 
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
@@ -91,7 +92,7 @@ class URLsPlugin(PluginObject):
         self.events.add_callback("MessageReceived", self, self.message_handler,
                                  1, message_event_filter)
 
-        self.add_handler(WebsiteHandler(self), -100)
+        self.add_handler(WebsiteHandler(self), Priority.MONITOR)
         self.add_shortener(TinyURLShortener(self))
 
         self.commands.register_command("urls", self.urls_command, self,
