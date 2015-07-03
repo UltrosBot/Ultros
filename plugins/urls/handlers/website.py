@@ -1,19 +1,22 @@
 import urlparse
 import os
 import re
-import socket
 from cookielib import LoadError
 
 import requests
 from bs4 import BeautifulSoup
-from kitchen.text.converters import to_unicode, to_bytes
+from kitchen.text.converters import to_unicode
 from netaddr import IPAddress
+from twisted.internet.defer import inlineCallbacks, returnValue
+from twisted.names.client import getHostByName
+from twisted.python.failure import Failure
 from twisted.web._newclient import ResponseNeverReceived
 from txrequests import Session
 
 from plugins.urls.constants import STATUS_CODES
 from plugins.urls.handlers.handler import URLHandler
 from plugins.urls.cookiejar import ChocolateCookieJar
+from plugins.urls.resolver import AddressResolver
 from utils.misc import str_to_regex_flags
 
 __author__ = 'Gareth Coles'
@@ -27,11 +30,13 @@ class WebsiteHandler(URLHandler):
     }
 
     global_session = None
+    resolver = None
 
     cookies_base_path = "data/plugins/urls/cookies"
 
     def __init__(self, plugin):
         self.group_sessions = {}
+        self.resolver = AddressResolver()
 
         super(WebsiteHandler, self).__init__(plugin)
 
@@ -43,21 +48,31 @@ class WebsiteHandler(URLHandler):
 
         self.reload()
 
+    @inlineCallbacks
     def call(self, url, context):
         try:
-            ip = IPAddress(socket.gethostbyname(url.domain))
+            ip = yield self.resolver.get_host_by_name(url.domain)
+
+            if isinstance(ip, Failure):
+                self.plugin.logger.error("Error while checking DNS")
+                ip.printDetailedTraceback()
+                return
+
+            ip = IPAddress(ip)
         except Exception as e:
             context["event"].target.respond(
-                '"{0}" at {1}'.format(e, url.domain)
+                'DNS failure: "{0}" at {1}'.format(e, url.domain)
             )
 
-            self.plugin.logger.warn(str(e))
-            return False
+            self.plugin.logger.exception("Error while checking DNS")
+            returnValue(False)
+            return
 
         if ip.is_loopback() or ip.is_private() or ip.is_link_local() \
                 or ip.is_multicast():
             self.plugin.logger.warn("Prevented a port-scan")
-            return False
+            returnValue(False)
+            return
 
         headers = {}
 
@@ -89,7 +104,7 @@ class WebsiteHandler(URLHandler):
             .addCallback(self.callback, url, context, session) \
             .addErrback(self.errback, url, context, session)
 
-        return False
+        returnValue(False)
 
     def teardown(self):
         # Save all our cookie stores
@@ -134,8 +149,19 @@ class WebsiteHandler(URLHandler):
 
         content_type = response.headers["content-type"].lower()
 
+        text = response.content
+
         if ";" in content_type:
-            content_type = content_type.split(";")[0]
+            parts = content_type.split(";")
+            content_type = parts[0]
+
+            if len(parts) > 1:
+                for x in parts[1:]:
+                    split = x.strip().split("=")
+                    if len(split) > 1:
+                        if split[0].lower() == "charset":
+                            text = response.text
+                            break
 
         if content_type not in context["config"]["content_types"]:
             self.plugin.logger.debug(
@@ -144,7 +170,7 @@ class WebsiteHandler(URLHandler):
             )
             return  # Not a supported content-type
 
-        soup = BeautifulSoup(response.text)
+        soup = BeautifulSoup(text)
 
         if soup.title and soup.title.string:
             title = soup.title.string.strip()
