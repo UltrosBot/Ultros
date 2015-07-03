@@ -36,7 +36,6 @@ class WebsiteHandler(URLHandler):
 
     def __init__(self, plugin):
         self.group_sessions = {}
-        self.resolver = AddressResolver()
 
         super(WebsiteHandler, self).__init__(plugin)
 
@@ -116,9 +115,13 @@ class WebsiteHandler(URLHandler):
             session.cookies.save(ignore_discard=True)
             session.close()
 
+        if self.resolver is not None:
+            self.resolver.close()
+
     def reload(self):
         self.teardown()
         self.group_sessions = {}
+        self.resolver = AddressResolver()
 
         self.global_session = Session()
         try:
