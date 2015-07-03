@@ -26,12 +26,13 @@ class WebsiteHandler(URLHandler):
         "protocol": re.compile(r"http|https", str_to_regex_flags("iu"))
     }
 
-    group_sessions = {}
     global_session = None
 
     cookies_base_path = "data/plugins/urls/cookies"
 
     def __init__(self, plugin):
+        self.group_sessions = {}
+
         super(WebsiteHandler, self).__init__(plugin)
 
         if not os.path.exists(self.cookies_base_path):
@@ -53,7 +54,8 @@ class WebsiteHandler(URLHandler):
             self.plugin.logger.warn(str(e))
             return False
 
-        if ip.is_loopback() or ip.is_private() or ip.is_link_local():
+        if ip.is_loopback() or ip.is_private() or ip.is_link_local() \
+                or ip.is_multicast():
             self.plugin.logger.warn("Prevented a port-scan")
             return False
 
@@ -65,8 +67,11 @@ class WebsiteHandler(URLHandler):
             if user_agent:
                 headers["User-Agent"] = user_agent
         else:
-            headers["User-Agent"] = ("Mozilla/5.0 (Windows NT 6.3; rv:36.0) "
-                                     "Gecko/20100101 Firefox/36.0")
+            headers["User-Agent"] = context["config"].get(
+                "default_user_agent",
+                "Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 "
+                "Firefox/36.0"
+            )
 
         domain_langs = context.get("config") \
             .get("accept_language", {}) \
@@ -101,14 +106,22 @@ class WebsiteHandler(URLHandler):
         self.group_sessions = {}
 
         self.global_session = Session()
-        self.global_session.cookies = self.get_cookie_jar("/global.txt")
-        self.global_session.session_type = "global"
-        self.global_session.cookies.set_mode(
-            # self.plugin.config["sessions"]["cookies"]["global"]
-            self.plugin.config.get("sessions", {})
-                .get("cookies", {})
-                .get("global", "discard")
-        )
+        try:
+            self.global_session.cookies = self.get_cookie_jar("/global.txt")
+            self.global_session.session_type = "global"
+            self.global_session.cookies.set_mode(
+                self.plugin.config.get("sessions", {})
+                    .get("cookies", {})
+                    .get("global", "discard")
+            )
+        except ValueError as e:
+            self.urls_plugin.logger.error(
+                "Failed to create global cookie jar: {0}".format(e)
+            )
+
+    def save_session(self, session):
+        if session.session_type:
+            session.cookies.save(ignore_discard=True)
 
     def callback(self, response, url, context, session):
         self.plugin.logger.trace(
@@ -136,42 +149,36 @@ class WebsiteHandler(URLHandler):
         if soup.title and soup.title.string:
             title = soup.title.string.strip()
             title = re.sub("\s+", " ", title)
-            title = title
+            title = to_unicode(title)
 
             if response.status_code == requests.codes.ok:
                 context["event"].target.respond(
-                    to_unicode('"{0}" at {1}'.format(
-                        to_bytes(title),
-                        to_bytes(urlparse.urlparse(response.url).hostname)
-                    ))
+                    u'"{0}" at {1}'.format(
+                        title, urlparse.urlparse(response.url).hostname
+                    )
                 )
             else:
                 context["event"].target.respond(
-                    to_unicode('[HTTP {0}] "{1}" at {2}'.format(
+                    u'[HTTP {0}] "{1}" at {2}'.format(
                         response.status_code,
-                        to_bytes(title),
-                        to_bytes(urlparse.urlparse(response.url).hostname)
-                    ))
+                        title,
+                        urlparse.urlparse(response.url).hostname
+                    )
                 )
 
         else:
             if response.status_code != requests.codes.ok:
                 context["event"].target.respond(
-                    to_unicode('HTTP Error {0}: {1} at {2}'.format(
+                    u'HTTP Error {0}: {1} at {2}'.format(
                         response.status_code,
                         STATUS_CODES.get(response.status_code, "Unknown"),
-                        to_bytes(urlparse.urlparse(response.url).hostname)
-                    ))
+                        urlparse.urlparse(response.url).hostname
+                    )
                 )
             else:
                 self.plugin.logger.debug("No title")
 
-        if session.session_type:
-            session.cookies.save(ignore_discard=True)
-
-            if len(session.cookies):
-                session.cookies.file_exists = True
-                session.cookies.load()
+        self.save_session(session)
 
     def errback(self, error, url, context, session):
         self.plugin.logger.error("Error parsing URL")
@@ -180,27 +187,28 @@ class WebsiteHandler(URLHandler):
             for f in error.value.reasons:
                 f.printDetailedTraceback()
                 context["event"].target.respond(
-                    '"{0}" at {1}'.format(f.getErrorMessage(), url.domain)
+                    u'"{0}" at {1}'.format(
+                        to_unicode(f.getErrorMessage()),
+                        url.domain
+                    )
                 )
         else:
             context["event"].target.respond(
-                '"{0}" at {1}'.format(error.getErrorMessage(), url.domain)
+                u'"{0}" at {1}'.format(
+                    to_unicode(error.getErrorMessage()),
+                    url.domain
+                )
             )
             error.printDetailedTraceback()
 
-        if session.session_type:
-            session.cookies.save(ignore_discard=True)
-
-            if len(session.cookies):
-                session.cookies.file_exists = True
-                session.cookies.load()
+        self.save_session(session)
 
     def get_cookie_jar(self, filename):
         cj = ChocolateCookieJar(self.cookies_base_path + filename)
 
         try:
             cj.load()
-        except LoadError as e:
+        except LoadError:
             self.plugin.logger.exception(
                 "Failed to load cookie jar {0}".format(filename)
             )
@@ -208,11 +216,6 @@ class WebsiteHandler(URLHandler):
             self.plugin.logger.debug(
                 "Failed to load cookie jar {0}: {1}".format(filename, e)
             )
-
-        if len(cj):
-            cj.file_exists = True
-        else:
-            cj.file_exists = False
 
         return cj
 
@@ -240,29 +243,40 @@ class WebsiteHandler(URLHandler):
 
         for group, entries in sessions["group"].iteritems():
             for entry in entries:
-                if re.match(entry, url.domain, flags=str_to_regex_flags("ui")):
-                    self.urls_plugin.logger.debug(
-                        "Domain {0} uses the '{1}' group sessions.".format(
-                            url.domain, group
-                        )
-                    )
-
-                    if group not in self.group_sessions:
-                        self.group_sessions[group] = Session()
-                        self.group_sessions[group].cookies = (
-                            self.get_cookie_jar(
-                                "/groups/{0}.txt".format(
-                                    group
-                                )
+                try:
+                    if re.match(
+                            entry, url.domain, flags=str_to_regex_flags("ui")
+                    ):
+                        self.urls_plugin.logger.debug(
+                            "Domain {0} uses the '{1}' group sessions.".format(
+                                url.domain, group
                             )
                         )
 
-                        self.group_sessions[group].session_type = "group"
-                        self.group_sessions[group].cookies.set_mode(
-                            context["config"]["sessions"]["cookies"]["group"]
-                        )
+                        if group not in self.group_sessions:
+                            self.group_sessions[group] = Session()
+                            self.group_sessions[group].cookies = (
+                                self.get_cookie_jar(
+                                    "/groups/{0}.txt".format(
+                                        group
+                                    )
+                                )
+                            )
 
-                    return self.group_sessions[group]
+                            self.group_sessions[group].session_type = "group"
+                            self.group_sessions[group].cookies.set_mode(
+                                context.get("config")
+                                .get("sessions")
+                                .get("cookies")
+                                .get("group")
+                            )
+
+                        return self.group_sessions[group]
+                except ValueError as e:
+                    self.urls_plugin.logger.error(
+                        "Failed to create cookie jar: {0}".format(e)
+                    )
+                    continue
 
         self.urls_plugin.logger.debug(
             "Domain {0} uses the global session storage.".format(

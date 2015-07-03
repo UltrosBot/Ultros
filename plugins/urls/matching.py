@@ -22,4 +22,4 @@ def extract_urls(text):
     return re.findall(_r, text)
 
 
-regex_type = type(_r)
+REGEX_TYPE = type(_r)

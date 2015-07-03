@@ -1,5 +1,9 @@
 spoofing:  # Sites to spoof differently. Normally we spoof Firefox, you can set an alternative string for user-agent spoofing, or disable it entirely with False.
   soundcloud.com: False
+
+# The default user-agent to use for all domains that don't have custom spoofing
+default_user_agent: "Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0"
+
 content_types:  # Content-types to parse the title from. Be careful when modifying this!
   - text/html
   - text/webviewhtml

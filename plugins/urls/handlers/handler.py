@@ -1,5 +1,8 @@
 import re
 
+from kitchen.text.converters import to_unicode
+from plugins.urls.matching import REGEX_TYPE
+
 __author__ = 'Gareth Coles'
 
 
@@ -32,13 +35,6 @@ class URLHandler(object):
     Additionally, if the above matching is somehow not good enough for you, you
     may override the `match` function.
     """
-
-    # Apparently, different implementations use different base classes,
-    # so this is how we should do this.
-    # I've been told hasattr(obj, "match") would work too, but, well, this
-    # feels like too much of a kludge, even for me. Plus, there are other
-    # objects that have a "match" function.
-    __REGEX_TYPE = type(re.compile(""))
 
     # Remember to set this, so that there are no conflicting handlers - only
     # one handler per name!
@@ -118,9 +114,9 @@ class URLHandler(object):
                 else:
                     return False
 
-            elif isinstance(value, self.__REGEX_TYPE):  # Compiled regex
+            elif isinstance(value, REGEX_TYPE):  # Compiled regex
                 # Casting due to port, None, etc
-                if value.match(unicode(getattr(url, key))):
+                if value.match(to_unicode(getattr(url, key))):
                     continue
                 else:
                     return False

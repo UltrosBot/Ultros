@@ -7,16 +7,25 @@ class ChocolateCookieJar(LWPCookieJar):
     mode = "save"  # Save, update, discard?
 
     def set_mode(self, mode):
+        if mode not in ["discard", "save", "session", "update"]:
+            raise ValueError(
+                'Cookie jar mode should be one of: "discard", "save", '
+                '"session", or "update"'
+            )
+
         self.mode = mode
 
     def set_cookie(self, cookie):
-        """Set a cookie, without checking whether or not it should be set."""
+        """
+        Set a cookie, checking whether or not it should be set.
+        """
+
         if self.mode == "discard":
             return
 
         c = self._cookies
-        self._cookies_lock.acquire()
-        try:
+
+        with self._cookies_lock:
             if self.mode in ("save", "session"):
                 if cookie.domain not in c:
                     c[cookie.domain] = {}
@@ -28,7 +37,7 @@ class ChocolateCookieJar(LWPCookieJar):
 
                 c3 = c2[cookie.path]
                 c3[cookie.name] = cookie
-            else:
+            elif self.mode == "update":
                 if cookie.domain not in c:
                     return
 
@@ -43,8 +52,11 @@ class ChocolateCookieJar(LWPCookieJar):
                     return
 
                 c3[cookie.name] = cookie
-        finally:
-            self._cookies_lock.release()
+            else:
+                raise ValueError(
+                    'Cookie jar mode should be one of: "discard", "save", '
+                    '"session", or "update"'
+                )
 
     def save(self, filename=None, ignore_discard=False, ignore_expires=False):
         if self.mode not in ("discard", "session"):
