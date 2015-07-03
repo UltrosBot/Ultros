@@ -169,7 +169,7 @@ class WebsiteHandler(URLHandler):
         else:
             if response.status_code != requests.codes.ok:
                 context["event"].target.respond(
-                    u'HTTP Error {0}: {1} at {2}'.format(
+                    u'HTTP Error {0}: "{1}" at {2}'.format(
                         response.status_code,
                         STATUS_CODES.get(response.status_code, "Unknown"),
                         urlparse.urlparse(response.url).hostname
