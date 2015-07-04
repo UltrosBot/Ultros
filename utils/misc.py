@@ -121,6 +121,18 @@ class AttrDict(dict):
         self.__dict__ = self
 
 
+class AutoVivificationDict(dict):
+    """Auto-vivification, like Perl. Any time a value is missing, a new
+    AutoVivificationDict is created and added in place.
+
+    Using defaultdict would make more sense in most circumstances, but
+    sometimes you just want dicts in dicts in dicts.
+    """
+    def __missing__(self, key):
+        value = self[key] = type(self)()
+        return value
+
+
 flags = {
     "d": re.DEBUG,
     "i": re.IGNORECASE,
