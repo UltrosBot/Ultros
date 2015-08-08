@@ -49,6 +49,9 @@ class Data(object):
     #: :type: list
     callbacks = None
 
+    #: Whether the file exists
+    exists = True
+
     @property
     def mtime(self):
         """
