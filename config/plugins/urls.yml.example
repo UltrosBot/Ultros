@@ -11,6 +11,15 @@ content_types:  # Content-types to parse the title from. Be careful when modifyi
   - text/x-server-parsed-html
   - application/xhtml+xml
 
+# TODO: Pre-handler redirects
+redirects:
+  max: 15
+
+  domains:  # Only these domains will be allowed for pre-handler redirects
+  # TODO: More!
+  - "is.gd"
+
+
 blacklist: []  # List of patterns to match against URLs; if matched then the URL will be ignored.
 # This uses regex! You've been warned!
 # Use 'single quotes' - if you use "double quotes" then YAML will try to validate your regex escapes.

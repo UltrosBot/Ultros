@@ -8,7 +8,6 @@ from bs4 import BeautifulSoup
 from kitchen.text.converters import to_unicode
 from netaddr import IPAddress
 from twisted.internet.defer import inlineCallbacks, returnValue
-from twisted.names.client import getHostByName
 from twisted.python.failure import Failure
 from twisted.web._newclient import ResponseNeverReceived
 from txrequests import Session
