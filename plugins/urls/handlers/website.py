@@ -1,9 +1,9 @@
-import urlparse
 import os
 import re
-from cookielib import LoadError
-
 import requests
+import urlparse
+
+from cookielib import LoadError
 from bs4 import BeautifulSoup
 from kitchen.text.converters import to_unicode
 from netaddr import IPAddress

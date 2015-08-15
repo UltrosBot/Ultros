@@ -1,11 +1,14 @@
 # coding=utf-8
+import re
+
 from copy import copy
 from collections import defaultdict
 
 from kitchen.text.converters import to_unicode
-import re
 from twisted.internet.defer import Deferred, inlineCallbacks, returnValue
 from twisted.python.failure import Failure
+from txrequests import Session
+from plugins.urls.lazy import LazyRequest
 from plugins.urls.priority import Priority
 
 from system.command_manager import CommandManager
@@ -237,45 +240,88 @@ class URLsPlugin(PluginObject):
 
         for match in matches:
             self.logger.trace("match: {0}", match)
-            # Expand the match to make it easier to work with
 
-            # Input: ''http://x:y@tools.ietf.org:80/html/rfc1149''
-            # Match: '', http, x:y, tools.ietf.org, :80, /html/rfc1149''
-            _prefix, _protocol, _basic, _domain, _port, _path = (
-                to_unicode(x) for x in match
-            )
+            _url = self.match_to_url(match)
 
-            _port = _port.lstrip(":")  # Remove this as the regex captures it
-
-            try:
-                if _port:
-                    _port = int(_port)
-            except ValueError:
-                self.logger.warn("Invalid port: {0}", _port)
+            if _url is None:
                 continue
 
-            _translated = self.translate_prefix(_prefix)
+            # Check redirects, following as necessary
 
-            if len(_path) > 0 and len(_translated) > 0:
-                # Remove translated prefix chars.
-                for char in reversed(_translated):
-                    if _path[-1] == char:
-                        _path = _path[:-1]
-            elif len(_domain) > 0 and len(_translated) > 0:
-                # Remove translated prefix chars.
-                for char in reversed(_translated):
-                    if _domain[-1] == char:
-                        _domain = _domain[:-1]
+            redirects = 0
+            max_redirects = self.config.get("redirects", {}).get("max", 15)
+            domains = self.config.get("redirects", {}).get("domains", [])
 
-            _url = URL(self, _protocol, _basic, _domain, _port, _path)
+            self.logger.debug("Checking redirects...")
+
+            while _url.domain in domains and redirects < max_redirects:
+                redirects += 1
+
+                session = Session()
+
+                #: :type: requests.Response
+                r = yield session.get(str(_url), allow_redirects=False)
+
+                if r.is_redirect:
+                    # This only ever happens when we have a well-formed
+                    # redirect that could have been handled automatically
+
+                    redirect_url = r.headers["location"]
+
+                    self.logger.debug(
+                        "Redirect [{0:03d}] {1}".format(
+                            redirects, redirect_url
+                        )
+                    )
+
+                    _url = self.match_to_url(extract_urls(redirect_url)[0])
+
+            lazy_request = LazyRequest(req_args=[str(_url)])
 
             self.channels.get(protocol.name, {}) \
                 .get(source.name, {})["last"] = str(_url)
 
             yield self.run_handlers(_url, {
                 "event": event,
-                "config": self.config
+                "config": self.config,
+                "get_request": lazy_request,
+                "redirects": redirects,
+                "max_redirects": max_redirects
             })
+
+    def match_to_url(self, match):
+        # Expand the match to make it easier to work with
+
+        # Input: ''http://x:y@tools.ietf.org:80/html/rfc1149''
+        # Match: '', http, x:y, tools.ietf.org, :80, /html/rfc1149''
+
+        _prefix, _protocol, _basic, _domain, _port, _path = (
+            to_unicode(x) for x in match
+        )
+
+        _port = _port.lstrip(":")  # Remove this as the regex captures it
+
+        try:
+            if _port:
+                _port = int(_port)
+        except ValueError:
+            self.logger.warn("Invalid port: {0}", _port)
+            return None
+
+        _translated = self.translate_prefix(_prefix)
+
+        if len(_path) > 0 and len(_translated) > 0:
+            # Remove translated prefix chars.
+            for char in reversed(_translated):
+                if _path[-1] == char:
+                    _path = _path[:-1]
+        elif len(_domain) > 0 and len(_translated) > 0:
+            # Remove translated prefix chars.
+            for char in reversed(_translated):
+                if _domain[-1] == char:
+                    _domain = _domain[:-1]
+
+        return URL(self, _protocol, _basic, _domain, _port, _path)
 
     def urls_command(self, protocol, caller, source, command, raw_args, args):
         """

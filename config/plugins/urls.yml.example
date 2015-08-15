@@ -11,13 +11,31 @@ content_types:  # Content-types to parse the title from. Be careful when modifyi
   - text/x-server-parsed-html
   - application/xhtml+xml
 
-# TODO: Pre-handler redirects
+
 redirects:
   max: 15
 
   domains:  # Only these domains will be allowed for pre-handler redirects
-  # TODO: More!
+  - "bit.ly"
+  - "cli.gs"
+  - "db.tt"
+  - "deck.ly"
+  - "fb.me"
+  - "fur.ly"
+  - "git.io"
+  - "goo.gl"
   - "is.gd"
+  - "mcaf.ee"
+  - "nazr.in"
+  - "owl.ly"
+  - "redd.it"
+  - "su.pr"
+  - "t.co"
+  - "tinyurl.com"
+  - "turl.ca"
+  - "vurl.com"
+  - "waa.ai"  # Pssh
+  - "youtu.be"
 
 
 blacklist: []  # List of patterns to match against URLs; if matched then the URL will be ignored.
