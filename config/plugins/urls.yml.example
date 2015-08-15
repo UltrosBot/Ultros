@@ -16,12 +16,15 @@ redirects:
   max: 15
 
   domains:  # Only these domains will be allowed for pre-handler redirects
+  - "5z8.info"  # shadyurl.com
   - "bit.ly"
   - "cli.gs"
   - "db.tt"
   - "deck.ly"
+  - "dickensurl.com"
   - "fb.me"
   - "fur.ly"
+  - "gg.gg"
   - "git.io"
   - "goo.gl"
   - "is.gd"
