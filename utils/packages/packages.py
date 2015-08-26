@@ -62,7 +62,10 @@ class Packages(object):
             if "etags" not in self.config:
                 self.config["etags"] = {}
 
-    def _get_file(self, base_path, path, overwrite=False):
+    def _get_file(self, base_path, path, overwrite=False, dont_skip=None):
+        if dont_skip is not None and path not in dont_skip:
+            return
+
         if os.path.exists(path) and not overwrite:
             raise ValueError("A file at `%s` already exists" % path)
 
@@ -159,6 +162,7 @@ class Packages(object):
             return None
 
         files = info["files"]
+        dont_skip = info.get("dont_skip", None)
 
         total_files = 0
         total_folders = 0
@@ -190,7 +194,9 @@ class Packages(object):
             else:
                 if not os.path.exists(_file) or overwrite:
                     try:
-                        self._get_file(package + "/", _file, overwrite)
+                        self._get_file(
+                            package + "/", _file, overwrite, dont_skip
+                        )
                         print ">>   File | Downloaded (%s/%s): %s" % \
                             (current_file, total_files, _file)
                     except urllib2.HTTPError as e:
