@@ -60,20 +60,20 @@ see the :ref:`configuration` page for more information on this. The above steps 
 within this simple batch script ::
 
     @ECHO off
-    REM Download Ultros
+    :: Download Ultros
     cd C:\path\to\install\ultros\to
     git clone https://github.com/UltrosBot/Ultros.git
     cd Ultros
 
-    REM Install pip
+    :: Install pip
     python -m ensurepip
 
-    REM If you're not using Virtualenv, you can skip this section
+    :: If you're not using Virtualenv, you can skip this section
     pip install virtualenv
     virtualenv venv
     venv\Scripts\activate
 
-    REM Finally, set up requirements
+    :: Finally, set up requirements
     pip install -r requirements.txt
 
 .. _installation_linux:
