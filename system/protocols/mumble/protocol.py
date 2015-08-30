@@ -799,33 +799,6 @@ class Protocol(SingleChannelProtocol):
                     "MessageReceived", second_event
                 )
 
-            # TODO: Remove this before proper release. An admin plugin with the
-            #       same functionality should be created.
-            # if msg.startswith('!'):
-            #     cmd = msg[1:].lower().split(" ")[0]
-            #     if cmd == "users":
-            #         self.print_users()
-            #     elif cmd == "channels":
-            #         self.print_channels()
-            #     elif cmd == "msgme":
-            #         self.msg_user("msg_user() test using id", message.actor)
-            #         self.msg_user("msg_user() test using User object",
-            #                       self.users[message.actor])
-            #     elif cmd == "join":
-            #         channame = msg[6:]
-            #         chan = None
-            #         for _id, channel in self.channels.iteritems():
-            #             if channel.name.lower() == channame.lower():
-            #                 chan = _id
-            #                 break
-            #         if chan is None:
-            #             self.msg_user("Could not find channel",
-            #                           message.actor)
-            # NOTE: The weird indent is because of the stupid line length limit
-            #         else:
-            #             self.msg_user("Joining channel", message.actor)
-            #             self.join_channel(chan)
-
     def send_msg(self, target, message, target_type=None, use_event=True):
         if isinstance(target, int) or isinstance(target, str):
             if target_type == "user":
