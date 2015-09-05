@@ -73,3 +73,7 @@ class User(user.User):
         return self.protocol.has_permission(0, Perms.BAN)
 
     # endregion
+
+    @property
+    def is_registered(self):
+        return self.user_id >= 0
