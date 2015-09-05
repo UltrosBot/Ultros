@@ -615,8 +615,7 @@ class Protocol(SingleChannelProtocol):
             user = User(self,
                         message.session,
                         message.name,
-                        self.channels[
-                            message.channel_id],
+                        self.channels[message.channel_id],
                         message.mute,
                         message.deaf,
                         message.suppress,
