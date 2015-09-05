@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 from system.protocols.mumble.acl import Perms
+from system.protocols.mumble.structs import Version
 from utils.protobuf import decode_varint
 
 __author__ = 'Gareth Coles'
@@ -17,7 +18,7 @@ import os
 import platform
 import struct
 
-from twisted.internet import reactor, ssl
+from twisted.internet import reactor, ssl, task
 
 from system.command_manager import CommandManager
 from system.enums import CommandState
@@ -130,6 +131,8 @@ class Protocol(SingleChannelProtocol):
         self.should_mute_self = audio_conf.get("should_mute_self", True)
         self.should_deafen_self = audio_conf.get("should_deafen_self", True)
 
+        self.userstats_request_rate = config.get("userstats_request_rate", 60)
+
         event = general_events.PreConnectEvent(self, config)
         self.event_manager.run_callback("PreConnect", event)
 
@@ -231,6 +234,7 @@ class Protocol(SingleChannelProtocol):
 
     def shutdown(self):
         self.msg(_("Disconnecting: Protocol shutdown"))
+        self.stop_userstats_requests()
         self.transport.loseConnection()
 
     def connectionMade(self):
@@ -265,8 +269,9 @@ class Protocol(SingleChannelProtocol):
         event = general_events.PreSetupEvent(self, self.config)
         self.event_manager.run_callback("PreSetup", event)
 
-        # Then we initialize our ping handler
+        # Then we initialize our looping handlers
         self.init_ping()
+        self.start_userstats_requests()
 
         # Mute/deafen ourselves if wanted (saves processing UDP packets if not
         # needed)
@@ -277,6 +282,10 @@ class Protocol(SingleChannelProtocol):
         self.sendProtobuf(message)
 
         self.factory.clientConnected()
+
+    def connectionLost(self, reason=None):
+        self.pinging = False
+        self.stop_userstats_requests()
 
     def dataReceived(self, recv):
         # Append our received data
@@ -476,6 +485,8 @@ class Protocol(SingleChannelProtocol):
         elif isinstance(message, Mumble_pb2.TextMessage):
             # actor, channel_id, message
             self.handle_msg_textmessage(message)
+        elif isinstance(message, Mumble_pb2.UserStats):
+            self.handle_msg_userstats(message)
         else:
             self.log.trace(_("Unknown message type: %s") % message.__class__)
             self.log.trace(_("Received message '%s' (%d):\n%s")
@@ -532,6 +543,24 @@ class Protocol(SingleChannelProtocol):
 
         self.init_ping()
 
+    def start_userstats_requests(self):
+        self._userstats_requests_task = task.LoopingCall(
+            self.userstats_request_handler
+        )
+        self._userstats_requests_task.start(self.userstats_request_rate, False)
+
+    def stop_userstats_requests(self):
+        if self._userstats_requests_task and \
+                self._userstats_requests_task.running:
+            self._userstats_requests_task.stop()
+
+    def userstats_request_handler(self):
+        try:
+            for user in self.users.itervalues():
+                self.request_userstats(user, True)
+        except Exception:
+            self.log.exception("Error in UserStats request loop")
+
     def handle_msg_channelstate(self, message):
         if message.channel_id not in self.channels:
             parent = None
@@ -582,37 +611,74 @@ class Protocol(SingleChannelProtocol):
         if message.name and message.session not in self.users:
             # Note: I'm not sure if message.name should ever be empty and
             # not in self.users - rakiru
-            self.users[message.session] = User(self,
-                                               message.session,
-                                               message.name,
-                                               self.channels[
-                                                   message.channel_id],
-                                               message.mute,
-                                               message.deaf,
-                                               message.suppress,
-                                               message.self_mute,
-                                               message.self_deaf,
-                                               message.priority_speaker,
-                                               message.recording)
+            # Note: RE: above note - Mumble desktop client source suggests not.
+            user = User(self,
+                        message.session,
+                        message.name,
+                        self.channels[message.channel_id],
+                        message.mute,
+                        message.deaf,
+                        message.suppress,
+                        message.self_mute,
+                        message.self_deaf,
+                        message.priority_speaker,
+                        message.recording)
+            self.users[message.session] = user
+
+            # TODO: plugin_identity and plugin_context
+            # TODO: Handle comments and avatars properly
+            if message.HasField("comment_hash"):
+                user.comment_hash = message.comment_hash
+            if message.HasField("comment"):
+                user.comment = message.comment
+            if message.HasField("texture_hash"):
+                user.avatar_hash = message.texture_hash
+            if message.HasField("texture"):
+                user.avatar = message.texture
+
+            if message.HasField("user_id"):
+                user_id = message.user_id
+                if user_id == 4294967295:
+                    # This should never happen, but things will break if it
+                    # does. See comment below for explanation of 4294967295.
+                    user_id = -1
+                user.user_id = user_id
+
+            if message.HasField("hash"):
+                user.certificate_hash = message.hash
+
             self.log.info(_("User joined: %s") % message.name)
+
             # We can't just flow into the next section to deal with this, as
             # that would count as a channel change, and it doesn't always work
             # as expected anyway.
-            self.channels[message.channel_id].add_user(
-                self.users[message.session])
+            self.channels[message.channel_id].add_user(user)
+
             # Store our User object
             if message.name == self.username:
-                self.ourselves = self.users[message.session]
+                self.ourselves = user
                 # User connection messages come after all channels have been
                 # given, so now is a safe time to attempt to join a channel.
                 try:
                     conf = self.config["channel"]
-                    if "id" in conf and conf["id"]:
-                        if conf["id"] in self.channels:
-                            self.join_channel(self.channels[conf["id"]])
+                    if "id" in conf and conf["id"] is not None:
+                        cid = conf["id"]
+                        if not isinstance(cid, int):
+                            try:
+                                cid = int(cid)
+                            except ValueError:
+                                self.log.error(
+                                    "Channel ID in config must be a number."
+                                )
+                            else:
+                                self.log.warning(
+                                    "Channel ID in config should be a number."
+                                )
+                        if cid in self.channels:
+                            self.join_channel(self.channels[cid])
                         else:
                             self.log.warning(_("No channel with id '%s'") %
-                                             conf["id"])
+                                             cid)
                     elif "name" in conf and conf["name"]:
                         chan = self.get_channel(conf["name"])
                         if chan is not None:
@@ -625,14 +691,19 @@ class Protocol(SingleChannelProtocol):
                 except Exception:
                     self.log.warning(_("Config is missing 'channel' section"))
             else:
-                event = mumble_events.UserJoined(self,
-                                                 self.users[message.session])
+                event = mumble_events.UserJoined(self, user)
                 self.event_manager.run_callback("Mumble/UserJoined", event)
+
+            # Request initial UserStats
+            self.request_userstats(user, False)
         else:
             # Note: More than one state change can happen at once
             user = self.users[message.session]
-            if message.HasField('channel_id'):
+            if message.HasField("actor"):
                 actor = self.users[message.actor]
+            else:
+                actor = None
+            if message.HasField('channel_id'):
                 self.log.info(_("User moved channel: %s from %s to %s by %s") %
                               (user,
                                user.channel,
@@ -646,7 +717,6 @@ class Protocol(SingleChannelProtocol):
                 event = mumble_events.UserMoved(self, user, user.channel, old)
                 self.event_manager.run_callback("Mumble/UserMoved", event)
             if message.HasField('mute'):
-                actor = self.users[message.actor]
                 if message.mute:
                     self.log.info(_("User was muted: %s by %s")
                                   % (user, actor))
@@ -659,7 +729,6 @@ class Protocol(SingleChannelProtocol):
                                                      actor)
                 self.event_manager.run_callback("Mumble/UserMuteToggle", event)
             if message.HasField('deaf'):
-                actor = self.users[message.actor]
                 if message.deaf:
                     self.log.info(_("User was deafened: %s by %s") % (user,
                                                                       actor))
@@ -705,7 +774,6 @@ class Protocol(SingleChannelProtocol):
                 self.event_manager.run_callback("Mumble/UserSelfDeafToggle",
                                                 event)
             if message.HasField('priority_speaker'):
-                actor = self.users[message.actor]
                 if message.priority_speaker:
                     self.log.info(_("User was given priority speaker: %s by "
                                     "%s")
@@ -731,6 +799,40 @@ class Protocol(SingleChannelProtocol):
                                                           user.recording)
                 self.event_manager.run_callback("Mumble/UserRecordingToggle",
                                                 event)
+            # TODO: Events
+            # - Comments/avatars may want higher level events. For example, we
+            # - may want to automatically request the full comment/avatar if we
+            # - get a hash, and only provide an API for the full thing.
+            if message.HasField("comment_hash"):
+                user.comment_hash = message.comment_hash
+            if message.HasField("comment"):
+                user.comment = message.comment
+            if message.HasField("texture_hash"):
+                user.avatar_hash = message.texture_hash
+            if message.HasField("texture"):
+                user.avatar = message.texture
+
+            if message.HasField("user_id"):
+                user_id = message.user_id
+                if user_id == 4294967295:
+                    # Mumble uses -1 internally, but the field on the message
+                    # is a uint32, so we get that instead. We'll use -1 too.
+                    user_id = -1
+                old_user_id = user.user_id
+                user.user_id = user_id
+                if user_id >= 0:
+                    self.log.info("User was registered: {} by {}",
+                                  user, user_id, actor)
+                    event = mumble_events.UserRegistered(self, user,
+                                                         user_id, actor)
+                    event_type = "Mumble/UserRegistered"
+                else:
+                    self.log.info("User was unregistered: {} by {}",
+                                  user, user_id, actor)
+                    event = mumble_events.UserUnregistered(self, user,
+                                                           old_user_id, actor)
+                    event_type = "Mumble/UserUnregistered"
+                self.event_manager.run_callback(event_type, event)
 
     def handle_msg_textmessage(self, message):
         if message.actor in self.users:
@@ -799,32 +901,84 @@ class Protocol(SingleChannelProtocol):
                     "MessageReceived", second_event
                 )
 
-            # TODO: Remove this before proper release. An admin plugin with the
-            #       same functionality should be created.
-            # if msg.startswith('!'):
-            #     cmd = msg[1:].lower().split(" ")[0]
-            #     if cmd == "users":
-            #         self.print_users()
-            #     elif cmd == "channels":
-            #         self.print_channels()
-            #     elif cmd == "msgme":
-            #         self.msg_user("msg_user() test using id", message.actor)
-            #         self.msg_user("msg_user() test using User object",
-            #                       self.users[message.actor])
-            #     elif cmd == "join":
-            #         channame = msg[6:]
-            #         chan = None
-            #         for _id, channel in self.channels.iteritems():
-            #             if channel.name.lower() == channame.lower():
-            #                 chan = _id
-            #                 break
-            #         if chan is None:
-            #             self.msg_user("Could not find channel",
-            #                           message.actor)
-            # NOTE: The weird indent is because of the stupid line length limit
-            #         else:
-            #             self.msg_user("Joining channel", message.actor)
-            #             self.join_channel(chan)
+    def handle_msg_userstats(self, message):
+        user = self.users[message.session]
+
+        # Not sure if this would ever go over UDP, but if it does, then it's
+        # possible to arrive after the user has disconnected.
+        if user is None:
+            self.log.warning(
+                "Received UserStats message for non-existent user"
+            )
+            return
+
+        # You'd think the stats_only flag would avoid us having to do all these
+        # HasField checks, but the server doesn't appear to ever send it.
+        # There are some fields that appear to exist or not in a group, but
+        # I'm not certain if that's always the case, and 3rd party
+        # implementations may do it differently anyway.
+
+        if len(message.certificates):
+            user.certificates = list(message.certificates)
+        if message.HasField("version"):
+            user.version = Version(
+                message.version.version,
+                message.version.release,
+                message.version.os,
+                message.version.os_version
+            )
+        if len(message.celt_versions):
+            user.celt_versions = list(message.celt_versions)
+        if message.HasField("address"):
+            user.address = message.address
+        if message.HasField("strong_certificate"):
+            user.strong_certificate = message.strong_certificate
+        if message.HasField("opus"):
+            user.opus = message.opus
+
+        if message.HasField("from_client"):
+            stats = user.packet_stats_from_client
+            if message.from_client.HasField("good"):
+                stats.good = message.from_client.good
+            if message.from_client.HasField("late"):
+                stats.late = message.from_client.late
+            if message.from_client.HasField("lost"):
+                stats.lost = message.from_client.lost
+            if message.from_client.HasField("resync"):
+                stats.resync = message.from_client.resync
+
+        if message.HasField("from_server"):
+            stats = user.packet_stats_from_server
+            if message.from_server.HasField("good"):
+                stats.good = message.from_server.good
+            if message.from_server.HasField("late"):
+                stats.late = message.from_server.late
+            if message.from_server.HasField("lost"):
+                stats.lost = message.from_server.lost
+            if message.from_server.HasField("resync"):
+                stats.resync = message.from_server.resync
+
+        if message.HasField("udp_packets"):
+            user.udp_packets_sent = message.udp_packets
+        if message.HasField("tcp_packets"):
+            user.tcp_packets_sent = message.tcp_packets
+
+        if message.HasField("udp_ping_avg"):
+            user.udp_ping_avg = message.udp_ping_avg
+        if message.HasField("udp_ping_var"):
+            user.udp_ping_var = message.udp_ping_var
+        if message.HasField("tcp_ping_avg"):
+            user.tcp_ping_avg = message.tcp_ping_avg
+        if message.HasField("tcp_ping_var"):
+            user.tcp_ping_var = message.tcp_ping_var
+
+        if message.HasField("onlinesecs"):
+            user.online_time = message.onlinesecs
+        if message.HasField("idlesecs"):
+            user.idle_time = message.idlesecs
+
+        event = mumble_events.UserStats(self, user)
+        self.event_manager.run_callback("Mumble/UserStats", event)
 
     def send_msg(self, target, message, target_type=None, use_event=True):
         if isinstance(target, int) or isinstance(target, str):
@@ -988,6 +1142,15 @@ class Protocol(SingleChannelProtocol):
     def leave_channel(self, channel=None, reason=None):
         return False
 
+    def request_userstats(self, user, stats_only=False):
+        self.log.debug(
+            "Requesting UserStats for {}, stats_only={}", user, stats_only
+        )
+        user_stats = Mumble_pb2.UserStats()
+        user_stats.session = user.session
+        user_stats.stats_only = stats_only
+        self.sendProtobuf(user_stats)
+
     def get_channel(self, name_or_id=None):
         if name_or_id is None:
             return self.ourselves.channel  # Yay
@@ -1078,3 +1241,14 @@ class Protocol(SingleChannelProtocol):
         for cid, chan in self.channels.iteritems():
             chans[cid] = get_children_channels(cid)
         print_channel(chans, 0)
+
+    def _print_message_field_info(self, message):
+        fields = message.ListFields()
+        self.log.debug("Contained fields:")
+        for field, value in fields:
+            value = str(value).replace("\n", ", ").replace("\r", "")
+            self.log.debug(" * {:20s} - {}", field.name, value)
+        self.log.debug("Missing fields:")
+        for f in {f.name for f in message.DESCRIPTOR.fields} - {f[0].name for
+                                                                f in fields}:
+            self.log.debug(" * {}", f)
