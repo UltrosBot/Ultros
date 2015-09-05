@@ -818,6 +818,7 @@ class Protocol(SingleChannelProtocol):
                     # Mumble uses -1 internally, but the field on the message
                     # is a uint32, so we get that instead. We'll use -1 too.
                     user_id = -1
+                old_user_id = user.user_id
                 user.user_id = user_id
                 if user_id >= 0:
                     self.log.info("User was registered: {} by {}",
@@ -829,7 +830,7 @@ class Protocol(SingleChannelProtocol):
                     self.log.info("User was unregistered: {} by {}",
                                   user, user_id, actor)
                     event = mumble_events.UserUnregistered(self, user,
-                                                           user_id, actor)
+                                                           old_user_id, actor)
                     event_type = "Mumble/UserUnregistered"
                 self.event_manager.run_callback(event_type, event)
 
