@@ -131,7 +131,7 @@ class Protocol(SingleChannelProtocol):
         self.should_mute_self = audio_conf.get("should_mute_self", True)
         self.should_deafen_self = audio_conf.get("should_deafen_self", True)
 
-        self.userstats_request_rate = config.get("userstats_request_rate", 15)
+        self.userstats_request_rate = config.get("userstats_request_rate", 60)
 
         event = general_events.PreConnectEvent(self, config)
         self.event_manager.run_callback("PreConnect", event)
@@ -903,17 +903,6 @@ class Protocol(SingleChannelProtocol):
 
     def handle_msg_userstats(self, message):
         user = self.users[message.session]
-
-        _fields = message.ListFields()
-        self.log.debug(_fields)
-        for field, value in _fields:
-            _value = value
-            if type(_value).__name__ == "Stats":
-                _value = str(_value).replace("\n", ", ").replace("\r", "")
-            self.log.debug("{:20s} - {}", field.name, _value)
-        self.log.debug("Missing fields:")
-        for _f in {_f.name for _f in message.DESCRIPTOR.fields} - {_f[0].name for _f in _fields}:
-            self.log.debug(" * {}", _f)
 
         # Not sure if this would ever go over UDP, but if it does, then it's
         # possible to arrive after the user has disconnected.
