@@ -947,7 +947,6 @@ class Protocol(SingleChannelProtocol):
             if message.from_client.HasField("resync"):
                 stats.resync = message.from_client.resync
 
-
         if message.HasField("from_server"):
             stats = user.packet_stats_from_server
             if message.from_server.HasField("good"):
