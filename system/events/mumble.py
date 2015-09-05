@@ -396,6 +396,62 @@ class UserRecordingToggle(UserStateToggleEvent):
     pass
 
 
+class UserStats(MumbleEvent):
+    """
+    User stats updated
+
+    user: User whose stats have been updated
+    """
+
+    def __init__(self, caller, user):
+        """
+        Initialise the event object.
+        """
+
+        self.user = user
+
+        super(UserStats, self).__init__(caller)
+
+
+class UserRegisteredEvent(MumbleEvent):
+    """
+    Base class for user [un]registered events
+
+    Don't use this directly; inherit it!
+    """
+
+    def __init__(self, caller, user, user_id, actor):
+        """
+        Initialise the event object.
+        """
+
+        self.user = user
+        self.user_id = user_id
+        self.actor = actor
+
+        super(UserRegisteredEvent, self).__init__(caller)
+
+
+class UserRegistered(UserRegisteredEvent):
+    """
+    User registered
+
+    user: User who has been registered
+    user_id: User's new ID
+    actor: User who registered `user`
+    """
+
+
+class UserUnregistered(UserRegisteredEvent):
+    """
+    User unregistered
+
+    user: User who has been unregistered
+    user_id: User's old ID
+    actor: User who unregistered `user`
+    """
+
+
 class ChannelCreated(MumbleEvent):
     """
     New channel - Sent when a channel is created
