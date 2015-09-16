@@ -160,6 +160,17 @@ class WebsiteHandler(URLHandler):
 
         content_type = response.headers["content-type"].lower()
 
+        if ";" in content_type:
+            parts = content_type.split(";")
+            content_type = parts[0]
+
+        if content_type not in self.urls_plugin.config["content_types"]:
+            self.plugin.logger.debug(
+                "Unsupported Content-Type: %s"
+                % response.headers["content-type"]
+            )
+            return response, None  # Not a supported content-type
+
         # If the response specifies a charset in the header, let requests
         # attempt to decode the contents. We can't use response.encoding as
         # it falls back to ISO-8859-1 in cases such as Content-Type: text/html.
@@ -219,19 +230,6 @@ class WebsiteHandler(URLHandler):
         if content is None:
             self.plugin.logger.debug("No content returned")
             return
-
-        content_type = response.headers["content-type"].lower()
-
-        if ";" in content_type:
-            parts = content_type.split(";")
-            content_type = parts[0]
-
-        if content_type not in context["config"]["content_types"]:
-            self.plugin.logger.debug(
-                "Unsupported Content-Type: %s"
-                % response.headers["content-type"]
-            )
-            return  # Not a supported content-type
 
         soup = BeautifulSoup(content)
 
