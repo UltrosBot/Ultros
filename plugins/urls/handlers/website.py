@@ -151,9 +151,9 @@ class WebsiteHandler(URLHandler):
         :param response:
         :return: response, content
         """
-        # TODO: Either set these as constants or config options
-        max_read = 1024 * 8
-        chunk_size = max_read
+        conns_conf = self.urls_plugin.config.get("connections", {})
+        max_read = conns_conf.get("max_read_size", 1024 * 16)
+        chunk_size = conns_conf.get("chunk_read_size", max_read)
 
         if "content-type" not in response.headers:
             response.headers["Content-Type"] = ""
@@ -185,27 +185,27 @@ class WebsiteHandler(URLHandler):
 
         chunks_left = max_read / chunk_size
         chunks = []
-        self.urls_plugin.logger.trace("Starting read...")
+        self.plugin.logger.trace("Starting read...")
         # We must close this when finished otherwise they'll hang if we don't
         # read everything
         with closing(response) as c_resp:
             for chunk in c_resp.iter_content(chunk_size=chunk_size,
                                              decode_unicode=decode_unicode):
                 chunks.append(chunk)
-                self.urls_plugin.logger.trace("Read a chunk")
+                self.plugin.logger.trace("Read a chunk")
                 chunks_left -= 1
                 if chunks_left <= 0:
-                    self.urls_plugin.logger.debug(
+                    self.plugin.logger.debug(
                         "Stopped reading response after {0} bytes", max_read)
                     break
-        self.urls_plugin.logger.trace("Done reading")
+        self.plugin.logger.trace("Done reading")
         # chunks can be bytes or unicode
         if decode_unicode:
             joiner = u""
         else:
             joiner = b""
         content = joiner.join(chunks)
-        self.urls_plugin.logger.trace("background_callback done")
+        self.plugin.logger.trace("background_callback done")
         return response, content
 
     def callback(self, result, url, context, session):

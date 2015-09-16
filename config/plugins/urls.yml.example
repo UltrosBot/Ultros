@@ -85,4 +85,7 @@ sessions:  # Sessions allow cookies to be stored during requests and retrieved l
 #    - 'youtube\.com'
 #    - '*\.youtube\.com'
 
+connection:
+  max_read_size: 16384
+
 version: 2  # This is used to detect whether your configuration is up-to-date. Change at your own risk.
