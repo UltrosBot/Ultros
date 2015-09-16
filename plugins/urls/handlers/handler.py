@@ -1,5 +1,3 @@
-import re
-
 from kitchen.text.converters import to_unicode
 from plugins.urls.matching import REGEX_TYPE
 

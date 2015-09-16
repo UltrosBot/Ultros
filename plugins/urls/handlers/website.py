@@ -1,3 +1,4 @@
+from contextlib import closing
 import os
 import re
 import requests
@@ -98,7 +99,8 @@ class WebsiteHandler(URLHandler):
                 .get("default", "en")
 
         session = self.get_session(url, context)
-        session.get(str(url), headers=headers) \
+        session.get(str(url), headers=headers, stream=True,
+                    background_callback=self.background_callback) \
             .addCallback(self.callback, url, context, session) \
             .addErrback(self.errback, url, context, session)
 
@@ -140,39 +142,96 @@ class WebsiteHandler(URLHandler):
         if session.session_type:
             session.cookies.save(ignore_discard=True)
 
-    def callback(self, response, url, context, session):
-        self.plugin.logger.trace(
-            "Headers: {0}", list(response.headers)
-        )
-        self.plugin.logger.trace("HTTP code: {0}", response.status_code)
+    def background_callback(self, session, response):
+        """
+        Does basic processing of the response in the background, including
+        reading the response's content. As such, response.content should not be
+        used.
+        :param session:
+        :param response:
+        :return: response, content
+        """
+        conns_conf = self.urls_plugin.config.get("connections", {})
+        max_read = conns_conf.get("max_read_size", 1024 * 16)
+        chunk_size = conns_conf.get("chunk_read_size", max_read)
 
         if "content-type" not in response.headers:
             response.headers["Content-Type"] = ""
 
         content_type = response.headers["content-type"].lower()
 
-        text = response.content
-
         if ";" in content_type:
             parts = content_type.split(";")
             content_type = parts[0]
 
-            if len(parts) > 1:
-                for x in parts[1:]:
-                    split = x.strip().split("=")
-                    if len(split) > 1:
-                        if split[0].lower() == "charset":
-                            text = response.text
-                            break
-
-        if content_type not in context["config"]["content_types"]:
+        if content_type not in self.urls_plugin.config["content_types"]:
             self.plugin.logger.debug(
                 "Unsupported Content-Type: %s"
                 % response.headers["content-type"]
             )
-            return  # Not a supported content-type
+            return response, None  # Not a supported content-type
 
-        soup = BeautifulSoup(text)
+        # If the response specifies a charset in the header, let requests
+        # attempt to decode the contents. We can't use response.encoding as
+        # it falls back to ISO-8859-1 in cases such as Content-Type: text/html.
+        # In those cases, we want BeautifulSoup to perform its satanic ritual
+        # to magically figure out the encoding.
+        decode_unicode = False
+        if ";" in content_type:
+            for x in content_type.split(";"):
+                split = x.strip().split("=")
+                if len(split) > 1:
+                    if split[0].lower() == "charset":
+                        charset = split[1].lower()
+                        if charset == "binary":
+                            # Not a webpage, so return None content
+                            self.urls_plugin.logger.debug(
+                                "Unsupported charset: {0}", charset)
+                            return response, None
+                        # Contains charset header - let requests decode
+                        decode_unicode = True
+                        self.urls_plugin.logger.trace(
+                            "Charset specified in header: {0}", charset)
+                        break
+
+        chunks_left = max_read / chunk_size
+        chunks = []
+        self.plugin.logger.trace("Starting read...")
+        # We must close this when finished otherwise they'll hang if we don't
+        # read everything
+        with closing(response) as c_resp:
+            for chunk in c_resp.iter_content(chunk_size=chunk_size,
+                                             decode_unicode=decode_unicode):
+                chunks.append(chunk)
+                self.plugin.logger.trace("Read a chunk")
+                chunks_left -= 1
+                if chunks_left <= 0:
+                    self.plugin.logger.debug(
+                        "Stopped reading response after {0} bytes", max_read)
+                    break
+        self.plugin.logger.trace("Done reading")
+        # chunks can be bytes or unicode
+        if decode_unicode:
+            joiner = u""
+        else:
+            joiner = b""
+        content = joiner.join(chunks)
+        self.plugin.logger.trace("background_callback done")
+        return response, content
+
+    def callback(self, result, url, context, session):
+        response = result[0]
+        content = result[1]
+        self.plugin.logger.trace(
+            "Headers: {0}", list(response.headers)
+        )
+        self.plugin.logger.trace("HTTP code: {0}", response.status_code)
+
+        if content is None:
+            self.plugin.logger.debug("No content returned")
+            return
+
+        soup = BeautifulSoup(content)
 
         if soup.title and soup.title.string:
             title = soup.title.string.strip()
