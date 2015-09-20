@@ -12,9 +12,11 @@ class URL(object):
     domain = None
     port = None
     path = None
+    query = None
+    fragment = None
 
     def __init__(self, plugin=None, protocol=None, auth=None, domain=None,
-                 port=None, path=None):
+                 port=None, path=None, query=None, fragment=None):
         self.plugin = plugin
 
         self.protocol = protocol
@@ -22,6 +24,8 @@ class URL(object):
         self.domain = idna.encode(to_unicode(domain))
         self.port = port
         self.path = path
+        self.query = query
+        self.fragment = fragment
 
     def shorten(self, shortener=None, shorten_for=None):
         pass

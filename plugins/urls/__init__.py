@@ -28,6 +28,9 @@ from utils.misc import str_to_regex_flags
 __author__ = 'Gareth Coles'
 
 
+HTTP_S_REGEX = re.compile("http|https", flags=str_to_regex_flags("iu"))
+
+
 class URLsPlugin(PluginObject):
     # Managers
     commands = None
@@ -321,7 +324,28 @@ class URLsPlugin(PluginObject):
                 if _domain[-1] == char:
                     _domain = _domain[:-1]
 
-        return URL(self, _protocol, _basic, _domain, _port, _path)
+        _query = None
+        _fragment = None
+
+        if HTTP_S_REGEX.match(_protocol):
+            # Parse out query/fragment from the http/s URL
+
+            if "#" in _path:
+                _path, _fragment = _path.split("#", 1)
+            if "?" in _path:
+                _path, _query_string = _path.split("?", 1)
+                _query = {}
+
+                for element in _query_string.split("&"):
+                    if "=" in element:
+                        left, right = element.split("=", 1)
+                        _query[left] = right
+                    else:
+                        _query[element] = None
+
+        return URL(
+            self, _protocol, _basic, _domain, _port, _path, _query, _fragment
+        )
 
     def urls_command(self, protocol, caller, source, command, raw_args, args):
         """
