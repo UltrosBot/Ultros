@@ -2,7 +2,7 @@ __author__ = 'Gareth Coles'
 
 from txrequests import Session
 
-from plugins.urls.shorteners.shortener import Shortener
+from plugins.urls.shorteners.base import Shortener
 
 
 class TinyURLShortener(Shortener):

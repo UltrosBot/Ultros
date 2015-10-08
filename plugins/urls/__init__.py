@@ -293,6 +293,9 @@ class URLsPlugin(PluginObject):
             })
 
     def match_to_url(self, match):
+        """
+        :rtype: URL
+        """
         # Expand the match to make it easier to work with
 
         # Input: ''http://x:y@tools.ietf.org:80/html/rfc1149''
