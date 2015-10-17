@@ -13,7 +13,6 @@ __author__ = 'Gareth Coles'
 
 
 import cgi
-import logging
 import os
 import platform
 import struct
@@ -36,8 +35,6 @@ from utils.switch import Switch
 
 from system.translations import Translations
 _ = Translations().get()
-
-log = logging.getLogger(__name__)
 
 
 class Protocol(SingleChannelProtocol):
