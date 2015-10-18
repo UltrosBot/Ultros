@@ -6,7 +6,7 @@ of things to the logging system that would have been a huge pain to do
 ourselves, and our new logging system allows plugins to modify various aspects
 of logging, as well as provide additional handlers.
 
-For custom handlers, you may either edit the `configuration` defined in this
+For custom handlers, you may either edit the *configuration* defined in this
 module with something loaded from your plugin's config, or you can require
 that your users do their configuration in the main **logging.yml** file. It's
 up to you.
