@@ -140,27 +140,7 @@ class URLsPlugin(PluginObject):
             if len(match) < 1:
                 return
 
-            match = match[0]
-
-            self.logger.trace("match: {0}", match)
-            # Expand the match to make it easier to work with
-
-            # Input: ''http://x:y@tools.ietf.org:80/html/rfc1149''
-            # Match: '', http, x:y, tools.ietf.org, :80, /html/rfc1149''
-            _prefix, _protocol, _basic, _domain, _port, _path = (
-                to_unicode(x) for x in match
-            )
-
-            _port = _port.lstrip(":")
-
-            try:
-                if _port:
-                    _port = int(_port)
-            except ValueError:
-                self.logger.warn("Invalid port: {0}", _port)
-                return
-
-            _url = URL(self, _protocol, _basic, _domain, _port, _path)
+            _url = self.match_to_url(match[0])
 
         if target is not None:
             shortener = self.get_shortener(target)
