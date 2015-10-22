@@ -35,7 +35,8 @@ class URL(object):
                "{u.protocol} :// " \
                "{u.auth} @ " \
                "{u.domain} : " \
-               "{u.port} / {u.path}" \
+               "{u.port} / {u.path} ? " \
+               "{u.query} # {u.fragment}"\
                ">".format(addr=id(self), u=self)
 
     def __str__(self):
@@ -50,5 +51,21 @@ class URL(object):
             _format += ":{url.port}"
 
         _format += "{url.path}"
+
+        if self.query:
+            _format += "?"
+            for k, v in self.query.iteritems():
+                if v:
+                    _format += "{}={}".format(k, v)
+                else:
+                    _format += k
+
+                _format += "&"
+
+            if _format.endswith("&"):
+                _format = _format[:-1]
+
+        if self.fragment:
+            _format += "#{url.fragment}"
 
         return _format.format(url=self)
