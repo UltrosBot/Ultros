@@ -561,6 +561,7 @@ class URLsPlugin(PluginObject):
 
     def add_handler(self, handler, priority=0):
         if not self.has_handler(handler.name):  # Only add if it's not there
+            self.logger.debug("Adding handler: {}".format(handler.name))
             handler.urls_plugin = self
 
             self.handlers[priority].append(handler)
