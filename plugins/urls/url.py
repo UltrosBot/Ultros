@@ -39,33 +39,45 @@ class URL(object):
                "{u.query} # {u.fragment}"\
                ">".format(addr=id(self), u=self)
 
-    def __str__(self):
-        _format = "{url.protocol}://"
+    def to_string(self, *omit):
+        return self.__str__(*omit)
 
-        if self.auth:
-            _format += "{url.auth}@"
+    def __str__(self, *omit):
+        _format = ""
 
-        _format += "{url.domain}"
+        if "protocol" not in omit:
+            _format += "{url.protocol}://"
 
-        if self.port:
-            _format += ":{url.port}"
+        if "auth" not in omit:
+            if self.auth:
+                _format += "{url.auth}@"
 
-        _format += "{url.path}"
+        if "domain" not in omit:
+            _format += "{url.domain}"
 
-        if self.query:
-            _format += "?"
-            for k, v in self.query.iteritems():
-                if v:
-                    _format += "{}={}".format(k, v)
-                else:
-                    _format += k
+        if "port" not in omit:
+            if self.port:
+                _format += ":{url.port}"
 
-                _format += "&"
+        if "path" not in omit:
+            _format += "{url.path}"
 
-            if _format.endswith("&"):
-                _format = _format[:-1]
+        if "query" not in omit:
+            if self.query:
+                _format += "?"
+                for k, v in self.query.iteritems():
+                    if v:
+                        _format += "{}={}".format(k, v)
+                    else:
+                        _format += k
 
-        if self.fragment:
-            _format += "#{url.fragment}"
+                    _format += "&"
+
+                if _format.endswith("&"):
+                    _format = _format[:-1]
+
+        if "fragment" not in omit:
+            if self.fragment:
+                _format += "#{url.fragment}"
 
         return _format.format(url=self)
