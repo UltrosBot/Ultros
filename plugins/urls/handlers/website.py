@@ -14,8 +14,9 @@ from twisted.web._newclient import ResponseNeverReceived
 from txrequests import Session
 
 from plugins.urls.constants import STATUS_CODES
-from plugins.urls.handlers.handler import URLHandler
 from plugins.urls.cookiejar import ChocolateCookieJar
+from plugins.urls.handlers.handler import URLHandler
+from plugins.urls.matching import extract_urls
 from plugins.urls.resolver import AddressResolver
 from utils.misc import str_to_regex_flags
 
@@ -51,16 +52,10 @@ class WebsiteHandler(URLHandler):
     def call(self, url, context):
         try:
             ip = yield self.resolver.get_host_by_name(url.domain)
-
-            if isinstance(ip, Failure):
-                self.plugin.logger.error("Error while checking DNS")
-                ip.printDetailedTraceback()
-                return
-
             ip = IPAddress(ip)
         except Exception as e:
             context["event"].target.respond(
-                'DNS failure: "{0}" at {1}'.format(e, url.domain)
+                'DNS failure: "{0}" at {1}'.format(e.message, url.domain)
             )
 
             self.plugin.logger.exception("Error while checking DNS")
@@ -222,10 +217,35 @@ class WebsiteHandler(URLHandler):
     def callback(self, result, url, context, session):
         response = result[0]
         content = result[1]
+
         self.plugin.logger.trace(
             "Headers: {0}", list(response.headers)
         )
+
         self.plugin.logger.trace("HTTP code: {0}", response.status_code)
+
+        new_url = urlparse.urlparse(response.url)
+
+        try:
+            ip = yield self.resolver.get_host_by_name(new_url.hostname)
+            ip = IPAddress(ip)
+        except Exception as e:
+            context["event"].target.respond(
+                u'DNS failure: "{0}" at {1}'.format(
+                    e.message,
+                    new_url.hostname
+                )
+            )
+
+            self.plugin.logger.exception("Error while checking DNS")
+            returnValue(False)
+            return
+
+        if ip.is_loopback() or ip.is_private() or ip.is_link_local() \
+                or ip.is_multicast():
+            self.plugin.logger.warn("Prevented a port-scan")
+            returnValue(False)
+            return
 
         if content is None:
             self.plugin.logger.debug("No content returned")
@@ -241,15 +261,14 @@ class WebsiteHandler(URLHandler):
             if response.status_code == requests.codes.ok:
                 context["event"].target.respond(
                     u'"{0}" at {1}'.format(
-                        title, urlparse.urlparse(response.url).hostname
+                        title, new_url.hostname
                     )
                 )
             else:
                 context["event"].target.respond(
                     u'[HTTP {0}] "{1}" at {2}'.format(
                         response.status_code,
-                        title,
-                        urlparse.urlparse(response.url).hostname
+                        title, new_url.hostname
                     )
                 )
 
@@ -259,7 +278,7 @@ class WebsiteHandler(URLHandler):
                     u'HTTP Error {0}: "{1}" at {2}'.format(
                         response.status_code,
                         STATUS_CODES.get(response.status_code, "Unknown"),
-                        urlparse.urlparse(response.url).hostname
+                        new_url.hostname
                     )
                 )
             else:
