@@ -214,6 +214,7 @@ class WebsiteHandler(URLHandler):
         self.plugin.logger.trace("background_callback done")
         return response, content
 
+    @inlineCallbacks
     def callback(self, result, url, context, session):
         response = result[0]
         content = result[1]
@@ -286,6 +287,7 @@ class WebsiteHandler(URLHandler):
 
         self.save_session(session)
 
+    @inlineCallbacks
     def errback(self, error, url, context, session):
         self.plugin.logger.error("Error parsing URL")
 
