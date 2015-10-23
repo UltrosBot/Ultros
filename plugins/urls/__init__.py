@@ -10,7 +10,7 @@ from twisted.python.failure import Failure
 from txrequests import Session
 from plugins.urls.lazy import LazyRequest
 from plugins.urls.priority import Priority
-
+from plugins.urls.shorteners.exceptions import ShortenerDown
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
 from system.protocols.generic.channel import Channel
@@ -155,16 +155,21 @@ class URLsPlugin(PluginObject):
             (str(_url), shortener.lower())
         )
 
-        if isinstance(r, Failure):
-            returnValue(r)
-        elif len(r):
+        if len(r):
             returnValue(r[0][0])
         else:
             if shortener in self.shorteners:
-                result = yield self.shorteners[shortener].do_shorten(context)
-
-                if isinstance(result, Failure):
-                    returnValue(result)
+                try:
+                    result = yield self.shorteners[shortener].do_shorten(
+                        context
+                    )
+                except ShortenerDown as e:
+                    returnValue(
+                        "Shortener \"{}\" appears to be down -"
+                        " try again later. ({})".format(shortener, e.message)
+                    )
+                except Exception:
+                    raise
                 else:
                     self.shortened.runQuery(
                         "INSERT INTO urls VALUES (?, ?, ?)",

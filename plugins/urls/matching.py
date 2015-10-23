@@ -22,4 +22,8 @@ def extract_urls(text):
     return re.findall(_r, text)
 
 
+def is_url(text):
+    return re.match(_r, text)
+
+
 REGEX_TYPE = type(_r)
