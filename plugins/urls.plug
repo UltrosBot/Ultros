@@ -1,10 +1,11 @@
 core:
   name: URLs
   module: urls
-  dependencies: [Auth]
+  dependencies:
+  - Auth
 info:
   description: URL handler for working with URLs and page titles
-  author: Gareth Coles
-  version: 1.0.0
-  website: https://github.com/McBlockitHelpbot/Ultros/tree/master/plugins/urls
+  author: Gareth Coles, Sean Gordon
+  version: 2.0.0
+  website: https://github.com/UltrosBot/Ultros/tree/master/plugins/urls
   copyright: See Ultros' license
