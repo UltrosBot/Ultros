@@ -94,7 +94,7 @@ class WebsiteHandler(URLHandler):
                 .get("default", "en")
 
         session = self.get_session(url, context)
-        session.get(str(url), headers=headers, stream=True,
+        session.get(unicode(url), headers=headers, stream=True,
                     background_callback=self.background_callback) \
             .addCallback(self.callback, url, context, session) \
             .addErrback(self.errback, url, context, session)

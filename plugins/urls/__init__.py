@@ -11,12 +11,9 @@ from txrequests import Session
 from plugins.urls.lazy import LazyRequest
 from plugins.urls.priority import Priority
 from plugins.urls.shorteners.exceptions import ShortenerDown
-from system.command_manager import CommandManager
-from system.event_manager import EventManager
 from system.protocols.generic.channel import Channel
 from system.storage.formats import Formats
 from system.plugins.plugin import PluginObject
-from system.storage.manager import StorageManager
 from plugins.urls.constants import PREFIX_TRANSLATIONS
 from plugins.urls.events import URLsPluginLoaded
 from plugins.urls.handlers.website import WebsiteHandler
@@ -32,11 +29,6 @@ HTTP_S_REGEX = re.compile("http|https", flags=str_to_regex_flags("iu"))
 
 
 class URLsPlugin(PluginObject):
-    # Managers
-    commands = None
-    events = None
-    storage = None
-
     channels = None
     config = None
     shortened = None
@@ -45,10 +37,6 @@ class URLsPlugin(PluginObject):
     handlers = None
 
     def setup(self):
-        self.storage = StorageManager()
-        self.events = EventManager()
-        self.commands = CommandManager()
-
         self.shorteners = {}
         self.handlers = defaultdict(list)
 
@@ -63,8 +51,8 @@ class URLsPlugin(PluginObject):
             return self._disable_self()
 
         if not self.config.exists:
-            self.logger.error("Unable to load configuration: File not found")
-            self.logger.error("Did you fill out `config/plugins/urls.yml`?")
+            self.logger.error("Unable to load configuration: File not found\n"
+                              "Did you fill out `config/plugins/urls.yml`?")
             return self._disable_self()
 
         if self.config.get("version", 1) < 2:
@@ -152,7 +140,7 @@ class URLsPlugin(PluginObject):
 
         r = yield self.shortened.runQuery(
             "SELECT result FROM urls WHERE url=? AND shortener=?",
-            (str(_url), shortener.lower())
+            (unicode(_url), shortener.lower())
         )
 
         if len(r):
@@ -173,7 +161,7 @@ class URLsPlugin(PluginObject):
                 else:
                     self.shortened.runQuery(
                         "INSERT INTO urls VALUES (?, ?, ?)",
-                        (str(_url), shortener.lower(), result)
+                        (unicode(_url), shortener.lower(), result)
                     )
 
                     returnValue(result)
@@ -219,9 +207,11 @@ class URLsPlugin(PluginObject):
         if not allowed:
             return
 
-        if self.channels.get(protocol.name, {}) \
-                .get(target.name, {}) \
-                .get("status", "on") == "off":
+        status = self.channels.get(protocol.name, {})\
+            .get(target.name, {})\
+            .get("status", True)
+
+        if not status or status == "off":
             return
 
         matches = extract_urls(message)
@@ -248,7 +238,7 @@ class URLsPlugin(PluginObject):
                 session = Session()
 
                 #: :type: requests.Response
-                r = yield session.get(str(_url), allow_redirects=False)
+                r = yield session.get(unicode(_url), allow_redirects=False)
 
                 if r.is_redirect:
                     # This only ever happens when we have a well-formed
@@ -263,11 +253,17 @@ class URLsPlugin(PluginObject):
                     )
 
                     _url = self.match_to_url(extract_urls(redirect_url)[0])
+                else:
+                    break
 
-            lazy_request = LazyRequest(req_args=[str(_url)])
+            if redirects >= max_redirects:
+                self.logger.debug("URL has exceeded the redirects limit")
+                return
+
+            lazy_request = LazyRequest(req_args=[unicode(_url)])
 
             self.channels.get(protocol.name, {}) \
-                .get(source.name, {})["last"] = str(_url)
+                .get(source.name, {})["last"] = unicode(_url)
 
             yield self.run_handlers(_url, {
                 "event": event,
@@ -335,7 +331,8 @@ class URLsPlugin(PluginObject):
             self, _protocol, _basic, _domain, _port, _path, _query, _fragment
         )
 
-    def urls_command(self, protocol, caller, source, command, raw_args, args):
+    def urls_command(self, protocol, caller, source, command, raw_args,
+                     parsed_args):
         """
         Command handler for the urls command
         """
@@ -343,7 +340,7 @@ class URLsPlugin(PluginObject):
         if not isinstance(source, Channel):
             caller.respond("This command can only be used in a channel.")
             return
-        if len(args) < 2:
+        if len(parsed_args) < 2:
             caller.respond("Usage: {CHARS}%s <setting> <value>" % command)
             caller.respond("Operations: set <on/off> - Enable or disable "
                            "title parsing for the current channel")
@@ -354,14 +351,14 @@ class URLsPlugin(PluginObject):
             )))
             return
 
-        operation = args[0].lower()
-        value = args[1].lower()
+        operation = parsed_args[0].lower()
+        value = parsed_args[1].lower()
 
         if protocol.name not in self.channels:
             with self.channels:
                 self.channels[protocol.name] = {
                     source.name: {
-                        "status": "on",
+                        "status": True,
                         "last": "",
                         "shortener": self.default_shortener
                     }
@@ -369,7 +366,7 @@ class URLsPlugin(PluginObject):
         elif source.name not in self.channels[protocol.name]:
             with self.channels:
                 self.channels[protocol.name][source.name] = {
-                    "status": "on",
+                    "status": True,
                     "last": "",
                     "shortener": self.default_shortener
                 }
@@ -379,7 +376,9 @@ class URLsPlugin(PluginObject):
                 caller.respond("Usage: {CHARS}urls set <on|off>")
             else:
                 with self.channels:
-                    self.channels[protocol.name][source.name]["status"] = value
+                    self.channels[protocol.name][source.name]["status"] = (
+                        value == "on"
+                    )
                 caller.respond("Title passing for %s turned %s."
                                % (source.name, value))
         elif operation == "shortener":
@@ -410,30 +409,31 @@ class URLsPlugin(PluginObject):
         Respond to a shorten command, after a failed Deferred
         """
 
-        source.respond("Error shortening url with handler %s: %s" % (
-            handler, failure
+        self.logger.error("Error shortening url with handler '{}': {}".format(
+            handler, failure.value
         ))
+        source.respond("Error shortening url; please notify the bot owner")
 
     def shorten_command(self, protocol, caller, source, command, raw_args,
-                        args):
+                        parsed_args):
         """
         Command handler for the shorten command
         """
 
         if not isinstance(source, Channel):
-            if len(args) == 0:
+            if len(parsed_args) == 0:
                 caller.respond("Usage: {CHARS}shorten [url]")
                 return
             else:
                 handler = self.default_shortener
-                _url = args[0]
+                _url = parsed_args[0]
                 try:
                     d = self.shorten(_url, handler)
                     d.addCallbacks(self._respond_shorten,
                                    self._respond_shorten_fail,
                                    callbackArgs=(source, handler),
                                    errbackArgs=(source, handler))
-                except Exception as e:
+                except Exception:
                     self.logger.exception("Error fetching short URL.")
                     caller.respond("Error fetching short URL.")
         else:
@@ -441,7 +441,7 @@ class URLsPlugin(PluginObject):
                     or source.name not in self.channels[protocol.name] \
                     or not len(
                         self.channels[protocol.name][source.name]["last"]):
-                caller.respond("Nobody's pasted a URL here yet!")
+                caller.respond("Nobody's linked anything here yet")
                 return
 
             handler = self.get_shortener(source)
@@ -453,8 +453,8 @@ class URLsPlugin(PluginObject):
 
             _url = self.channels[protocol.name][source.name]["last"]
 
-            if len(args) > 0:
-                _url = args[0]
+            if len(parsed_args) > 0:
+                _url = parsed_args[0]
 
             try:
                 d = self.shorten(_url, handler)
@@ -479,7 +479,7 @@ class URLsPlugin(PluginObject):
     @inlineCallbacks
     def run_handlers(self, _url, context):
         if self.check_blacklist(_url, context):
-            self.logger.warn(
+            self.logger.debug(
                 "URL {0} is blacklisted; ignoring...".format(_url)
             )
             return
@@ -550,6 +550,10 @@ class URLsPlugin(PluginObject):
             handler.urls_plugin = self
 
             self.handlers[priority].append(handler)
+        else:
+            self.logger.warn("Handler {} is already registered!".format(
+                handler.name
+            ))
 
     def has_handler(self, name):
         for priority in self.handlers.iterkeys():
