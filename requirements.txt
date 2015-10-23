@@ -21,4 +21,5 @@ logbook
 pytimeparse
 service_identity
 txrequests
+requests
 idna
