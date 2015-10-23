@@ -13,12 +13,14 @@ class AddressResolver(object):
         # unclosed ThreadPool leads to reactor hangs at shutdown
         # this is a problem in many situation, so better enforce pool stop here
         reactor.addSystemEventTrigger(
-            "before", "shutdown", lambda: self.pool.stop()
+            "before", "shutdown", self.pool.stop
         )
 
         self.pool.start()
 
     def get_host_by_name(self, address):
+        d = defer.Deferred()
+
         def func():
             try:
                 reactor.callFromThread(
@@ -27,7 +29,6 @@ class AddressResolver(object):
             except Exception as e:
                 reactor.callFromThread(d.errback, e)
 
-        d = defer.Deferred()
         self.pool.callInThread(func)
         return d
 

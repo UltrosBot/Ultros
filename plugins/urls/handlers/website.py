@@ -9,14 +9,12 @@ from bs4 import BeautifulSoup
 from kitchen.text.converters import to_unicode
 from netaddr import IPAddress
 from twisted.internet.defer import inlineCallbacks, returnValue
-from twisted.python.failure import Failure
 from twisted.web._newclient import ResponseNeverReceived
 from txrequests import Session
 
 from plugins.urls.constants import STATUS_CODES
 from plugins.urls.cookiejar import ChocolateCookieJar
 from plugins.urls.handlers.handler import URLHandler
-from plugins.urls.matching import extract_urls
 from plugins.urls.resolver import AddressResolver
 from utils.misc import str_to_regex_flags
 
@@ -64,7 +62,10 @@ class WebsiteHandler(URLHandler):
 
         if ip.is_loopback() or ip.is_private() or ip.is_link_local() \
                 or ip.is_multicast():
-            self.plugin.logger.warn("Prevented a port-scan")
+            self.plugin.logger.warn(
+                "Prevented connection to private/internal address"
+            )
+
             returnValue(False)
             return
 
@@ -244,7 +245,10 @@ class WebsiteHandler(URLHandler):
 
         if ip.is_loopback() or ip.is_private() or ip.is_link_local() \
                 or ip.is_multicast():
-            self.plugin.logger.warn("Prevented a port-scan")
+            self.plugin.logger.warn(
+                "Prevented connection to private/internal address"
+            )
+
             returnValue(False)
             return
 

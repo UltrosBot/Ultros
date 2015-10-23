@@ -42,47 +42,46 @@ class URL(object):
         )
 
     def to_string(self, *omit):
-        return self.__unicode__(*omit)
-
-    def __unicode__(self, *omit):
-        _format = u""
+        _format = [u""]
 
         if "protocol" not in omit:
-            _format += u"{url.protocol}://"
+            _format.append(u"{url.protocol}://")
 
         if "auth" not in omit:
             if self.auth:
-                _format += u"{url.auth}@"
+                _format.append(u"{url.auth}@")
 
         if "domain" not in omit:
-            _format += u"{url.domain}"
+            _format.append(u"{url.domain}")
 
         if "port" not in omit:
             if self.port:
-                _format += u":{url.port}"
+                _format.append(u":{url.port}")
 
         if "path" not in omit:
-            _format += u"{url.path}"
+            _format.append(u"{url.path}")
 
         if "query" not in omit:
             if self.query:
-                _format += u"?"
+                query_parts = []
+
+                _format.append(u"?")
                 for k, v in self.query.iteritems():
                     if v:
-                        _format += u"{}={}".format(k, v)
+                        query_parts.append(u"{}={}".format(k, v))
                     else:
-                        _format += k
+                        query_parts.append(k)
 
-                    _format += u"&"
-
-                if _format.endswith(u"&"):
-                    _format = _format[:-1]
+                _format.append(u"&".join(query_parts))
 
         if "fragment" not in omit:
             if self.fragment:
-                _format += u"#{url.fragment}"
+                _format.append(u"#{url.fragment}")
 
-        return _format.format(url=self)
+        return u"".join(_format).format(url=self)
+
+    def __unicode__(self):
+        return self.to_string()
 
     def __str__(self):
-        return to_bytes(self.__unicode__())
+        return to_bytes(self.to_string())
