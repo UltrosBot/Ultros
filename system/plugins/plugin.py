@@ -1,7 +1,11 @@
 # coding=utf-8
 __author__ = "Gareth Coles"
 
+
+from system.command_manager import CommandManager
+from system.event_manager import EventManager
 from system.translations import Translations
+from system.storage.manager import StorageManager
 _ = Translations().get()
 
 
@@ -16,10 +20,24 @@ class PluginObject(object):
     concise!
     """
 
+    #: :type: CommandManager
+    commands = None  # Command manager singleton
+
+    #: :type: EventManager
+    events = None  # Event manager singleton
+
+    #: :type: FactoryManager
     factory_manager = None  # Instance of the factory manager
+
     info = None  # Plugin info object
     logger = None  # Standard python Logger named appropriately
     module = ""  # Module the plugin exists in
+
+    #: :type: system.plugins.manager.PluginManager
+    plugins = None  # Plugin manager singleton
+
+    #: :type: StorageManager
+    storage = None  # Storage manager
 
     def add_variables(self, info, factory_manager):
         """
@@ -35,9 +53,15 @@ class PluginObject(object):
         :type factory_manager: Manager instance
         """
 
+        from system.plugins.manager import PluginManager
+
+        self.commands = CommandManager()
+        self.events = EventManager()
+        self.factory_manager = factory_manager
         self.info = info
         self.module = self.info.module
-        self.factory_manager = factory_manager
+        self.plugins = PluginManager()
+        self.storage = StorageManager()
 
     def deactivate(self):
         """
@@ -67,11 +91,16 @@ class PluginObject(object):
         This is used for setting up the plugin.
         Remember to override this function!
 
-        Remember, **self.info** and **self.factory** are only available once
-        this method is called.
+        Remember, **self.info**, **self.events**, **self.commands**,
+        **self.plugins** and **self.factory** are available here, but not in
+        **__init__**.
         """
 
         self.logger.warn(_("Setup method not defined!"))
 
     def _disable_self(self):
+        """
+        Convenience method for disabling the current plugin.
+        """
+
         self.factory_manager.plugman.unload_plugin(self.info.name)

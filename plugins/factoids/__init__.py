@@ -9,7 +9,7 @@ from system.command_manager import CommandManager
 from system.event_manager import EventManager
 from system.plugins.manager import PluginManager
 from system.protocols.generic.channel import Channel
-from system.storage.formats import DBAPI
+from system.storage.formats import DBAPI, YAML
 from system.storage.manager import StorageManager
 
 from utils import tokens
@@ -39,11 +39,14 @@ class FactoidsPlugin(plugin.PluginObject):
     PERM_SET = "factoids.set.%s"
     PERM_DEL = "factoids.delete.%s"
     PERM_GET = "factoids.get.%s"
+    PERM_SHORT = "factoids.short_command"
 
     (RES_INVALID_LOCATION,
      RES_INVALID_METHOD,  # _FOR_LOCATION - i.e. CHANNEL in PM
      RES_NO_PERMS,
      RES_MISSING_FACTOID) = xrange(4)
+
+    config = None
 
     def setup(self):
         # ## Grab important shit
@@ -51,6 +54,17 @@ class FactoidsPlugin(plugin.PluginObject):
         self.events = EventManager()
         self.storage = StorageManager()
         self.plugman = PluginManager()
+
+        try:
+            self.config = self.storage.get_file(self, "config", YAML,
+                                                "plugins/factoids.yml")
+        except Exception:
+            self.logger.exception(_("Error loading configuration!"))
+        else:
+            if not self.config.exists:
+                self.logger.warn(
+                    _("Unable to find config/plugins/factoids.yml")
+                )
 
         # ## Set up database
         self.database = self.storage.get_file(
@@ -118,6 +132,12 @@ class FactoidsPlugin(plugin.PluginObject):
                                                    source,
                                                    protocol)
         return allowed
+
+    def _config_get(self, key, default=None):
+        if self.config:
+            return self.config.get(key, default)
+        else:
+            return default
 
     def _parse_args(self, raw_args):
         """
@@ -566,6 +586,12 @@ class FactoidsPlugin(plugin.PluginObject):
                 factoid = msg[pos + 1:pos2].strip()
                 args = msg[pos2 + 1:].strip()
         if command in handlers:
+            if self._config_get("permissions", {}).get("enable_short_perm",
+                                                       False):
+                if not self.__check_perm(self.PERM_SHORT, event.source,
+                                         event.target, event.caller):
+                    self.logger.debug("Short command permission missing")
+                    return
             handlers[command](command, factoid, args, event, split)
 
     # ## Getting "commands"

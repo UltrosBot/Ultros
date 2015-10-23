@@ -225,6 +225,8 @@ class ManagementPlugin(plugin.PluginObject):
                                % command)
                 return
 
+            self.factory_manager.plugman.scan()
+
             name = args[1]
             result = self.factory_manager.plugman.load_plugin(name)
             info = self.factory_manager.plugman.get_plugin_info(name)

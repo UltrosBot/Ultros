@@ -17,7 +17,7 @@ SCRIPT_PATH=`pwd`;
 popd  > /dev/null
 cd $SCRIPT_PATH/../
 
-mkdirs -p logs/update/
+mkdir -p logs/update/
 
 echo "Pulling changes.."
 

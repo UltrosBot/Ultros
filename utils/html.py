@@ -67,3 +67,7 @@ def html_to_text(html, newlines=False):
     s = HTMLTextExtractor(newlines)
     s.feed(html)
     return s.get_text()
+
+
+def unescape_html_entities(text):
+    return HTMLParser().unescape(text)

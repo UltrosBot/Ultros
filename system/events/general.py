@@ -167,14 +167,14 @@ class PreMessageReceived(GeneralEvent):
 
         super(PreMessageReceived, self).__init__(caller)
 
-    def __str__(self):
-        return "<%s at %s | type: %s | target: %s | source: %s | " \
-               "printable: %s | message: %s>" % (self.__class__.__name__,
-                                                 hex(id(self)), self.type,
-                                                 str(self.target),
-                                                 str(self.source),
-                                                 self.printable,
-                                                 repr(self.message))
+    # def __str__(self):
+    #     return "<%s at %s | type: %s | target: %s | source: %s | " \
+    #            "printable: %s | message: %s>" % (self.__class__.__name__,
+    #                                              hex(id(self)), self.type,
+    #                                              str(self.target),
+    #                                              str(self.source),
+    #                                              self.printable,
+    #                                              repr(self.message))
 
 
 class MessageReceived(GeneralEvent):
@@ -202,11 +202,11 @@ class MessageReceived(GeneralEvent):
 
         super(MessageReceived, self).__init__(caller)
 
-    def __str__(self):
-        return "<%s at %s | type: %s | target: %s | source: %s | " \
-               "message: %s>" % (self.__class__.__name__, hex(id(self)),
-                                 self.type, str(self.target),
-                                 str(self.source), repr(self.message))
+    # def __str__(self):
+    #     return "<%s at %s | type: %s | target: %s | source: %s | " \
+    #            "message: %s>" % (self.__class__.__name__, hex(id(self)),
+    #                              self.type, str(self.target),
+    #                              str(self.source), repr(self.message))
 
 
 class MessageSent(GeneralEvent):
@@ -241,11 +241,11 @@ class MessageSent(GeneralEvent):
 
         super(MessageSent, self).__init__(caller)
 
-    def __str__(self):
-        return "<%s at %s | type: %s | target: %s | message: %s | " \
-               "printable: %s>" % (self.__class__.__name__, hex(id(self)),
-                                   self.type, str(self.target),
-                                   repr(self.message), self.printable)
+    # def __str__(self):
+    #     return "<%s at %s | type: %s | target: %s | message: %s | " \
+    #            "printable: %s>" % (self.__class__.__name__, hex(id(self)),
+    #                                self.type, str(self.target),
+    #                                repr(self.message), self.printable)
 
 
 class NameChangedSelf(GeneralEvent):
@@ -348,11 +348,11 @@ class PreCommand(GeneralEvent):
 
         super(PreCommand, self).__init__(caller)
 
-    def __str__(self):
-        return "<%s at %s | command: %s | args: %s | source: %s | target: " \
-               "%s | printable: %s>" % (self.__class__.__name__, hex(id(self)),
-                                        self.command, self.args, self.source,
-                                        self.target, self.printable)
+    # def __str__(self):
+    #     return "<%s at %s | command: %s | args: %s | source: %s | target: " \
+#            "%s | printable: %s>" % (self.__class__.__name__, hex(id(self)),
+    #                                     self.command, self.args, self.source,
+    #                                     self.target, self.printable)
 
 
 class UnknownCommand(GeneralEvent):
@@ -382,11 +382,11 @@ class UnknownCommand(GeneralEvent):
 
         super(UnknownCommand, self).__init__(caller)
 
-    def __str__(self):
-        return "<%s at %s | protocol: %s | command: %s | args: %s | source: " \
-               "%s | target: %s>" % (self.__class__.__name__, hex(id(self)),
-                                     self.protocol, self.command, self.args,
-                                     self.source, self.target)
+    # def __str__(self):
+#     return "<%s at %s | protocol: %s | command: %s | args: %s | source: " \
+    #            "%s | target: %s>" % (self.__class__.__name__, hex(id(self)),
+    #                                  self.protocol, self.command, self.args,
+    #                                  self.source, self.target)
 
 
 class ActionSent(GeneralEvent):
@@ -419,11 +419,11 @@ class ActionSent(GeneralEvent):
 
         super(ActionSent, self).__init__(caller)
 
-    def __str__(self):
-        return "<%s at %s | target: %s | message: %s | " \
-               "printable: %s>" % (self.__class__.__name__, hex(id(self)),
-                                   str(self.target),
-                                   repr(self.message), self.printable)
+    # def __str__(self):
+    #     return "<%s at %s | target: %s | message: %s | " \
+    #            "printable: %s>" % (self.__class__.__name__, hex(id(self)),
+    #                                str(self.target),
+    #                                repr(self.message), self.printable)
 
 
 class ActionReceived(GeneralEvent):
@@ -451,8 +451,8 @@ class ActionReceived(GeneralEvent):
 
         super(ActionReceived, self).__init__(caller)
 
-    def __str__(self):
-        return "<%s at %s | target: %s | source: %s | " \
-               "message: %s>" % (self.__class__.__name__, hex(id(self)),
-                                 str(self.target), str(self.source),
-                                 repr(self.message))
+    # def __str__(self):
+    #     return "<%s at %s | target: %s | source: %s | " \
+    #            "message: %s>" % (self.__class__.__name__, hex(id(self)),
+    #                              str(self.target), str(self.source),
+    #                              repr(self.message))

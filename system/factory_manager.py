@@ -53,6 +53,9 @@ class Manager(object):
     #: Whether the manager is already running or not
     running = False
 
+    #: Configuration for logging stuff
+    logging_config = {}
+
     def __init__(self):
         self.commands = CommandManager()
         self.event_manager = EventManager()
@@ -70,7 +73,7 @@ class Manager(object):
     def loaded_plugins(self):
         return self.plugman.plugin_objects
 
-    def setup_logging(self):
+    def setup_logging(self, args):
         """
         Set up logging.
         """
@@ -102,8 +105,10 @@ class Manager(object):
                 "- using defaults"
             )
             return False
+
+        logger.configure(self.logging_config, args)
+
         return True
-        logger.configure(self.logging_config)
 
     def setup(self):
         signal.signal(signal.SIGINT, self.signal_callback)

@@ -1,0 +1,4 @@
+version: 1  # This is used to detect whether your configuration is up-to-date. Change at your own risk.
+
+permissions:
+  enable_short_perm: false  # Whether or not the ??-style factoid commands require the factoids.short_command permission.

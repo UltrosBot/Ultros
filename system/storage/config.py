@@ -17,6 +17,7 @@ import datetime
 import json
 import pprint
 import os
+import re
 import yaml
 
 from system.storage import formats
@@ -275,9 +276,6 @@ class YamlConfig(Config):
     def __iter__(self):
         return self.data.__iter__()
 
-    def __reversed__(self):
-        return self.data.__reversed__()
-
     def __nonzero__(self):
         return True
 
@@ -431,9 +429,6 @@ class JSONConfig(Config):
     def __iter__(self):
         return self.data.__iter__()
 
-    def __reversed__(self):
-        return self.data.__reversed__()
-
     def __nonzero__(self):
         return True
 
@@ -527,8 +522,99 @@ class MemoryConfig(Config):
     def __iter__(self):
         return self.data.__iter__()
 
-    def __reversed__(self):
-        return self.data.__reversed__()
+    def __nonzero__(self):
+        return True
+
+
+class ConfigDirectory(Config):
+    editable = False
+
+    directory = ""
+    pattern = re.compile(".*")
+    recursive = False
+
+    data = {}
+    files = []
+
+    def __init__(self, filename, pattern=".*", recursive=False,
+                 extension_map=None):
+        if extension_map is None:
+            extension_map = {
+                ".json": JSONConfig,
+                ".js": JSONConfig,
+                ".yml": YamlConfig,
+            }
+
+        self.directory = filename
+        self.pattern = re.compile(pattern)
+        self.recursive = recursive
+
+        matches = []
+
+        if recursive:
+            for root, dirs, files in os.walk(filename):
+                for _file in files:
+                    if self.pattern.match(_file):
+                        path = os.path.join(root, _file)
+
+                        if os.path.isfile(path):
+                            matches.append(os.path.join(root, _file))
+        else:
+            for _file in os.listdir(filename):
+                if self.pattern.match(_file):
+                    path = os.path.join(filename, _file)
+
+                    if os.path.isfile(path):
+                        matches.append(os.path.join(filename, _file))
+
+        for match in matches:
+            match = match.replace("\\", "/")  # Windows..
+            _, ext = os.path.splitext(match)
+
+            clazz = extension_map.get(ext.lower())
+
+            if clazz is not None:
+                instance = clazz(match)
+
+                self.data[match] = instance
+
+    def keys(self):
+        return self.data.keys()
+
+    def items(self):
+        return self.data.items()
+
+    def iteritems(self):
+        return self.data.iteritems()
+
+    def iterkeys(self):
+        return self.data.iterkeys()
+
+    def itervalues(self):
+        return self.data.itervalues()
+
+    def values(self):
+        return self.data.values()
+
+    def get(self, key, default):
+        return self.data.get(key, default)
+
+    keys.__doc__ = data.keys.__doc__
+    items.__doc__ = data.items.__doc__
+    values.__doc__ = data.values.__doc__
+    get.__doc__ = data.get.__doc__
+
+    def __getitem__(self, y):
+        return self.data.__getitem__(y)
+
+    def __len__(self):
+        return self.data.__len__()
+
+    def __contains__(self, item):
+        return self.data.__contains__(item)
+
+    def __iter__(self):
+        return self.data.__iter__()
 
     def __nonzero__(self):
         return True

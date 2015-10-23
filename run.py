@@ -37,6 +37,11 @@ from system.translations import Translations
 from system.versions import VersionManager
 from utils import log  # noqa
 
+from twisted.python import log as twisted_log
+
+observer = twisted_log.PythonLoggingObserver(loggerName='Twisted')
+observer.start()
+
 
 DESC = "Ultros - that squidoctopus bot thing"
 
@@ -55,6 +60,12 @@ p.add_argument("-prd", "--pycharm-remote-debug",
                     "Takes a hostname as an argument. This requires you to "
                     "have pycharm-debug.egg in your Python PATH. If you don't "
                     "know what this means, then you don't need to use this.")
+p.add_argument(
+    "-d", "--debug", help="Force-enable debug logging", action="store_true"
+)
+p.add_argument(
+    "-t", "--trace", help="Force-enable trace logging", action="store_true"
+)
 
 args = p.parse_args()
 trans = Translations(args.language, args.mlanguage)
@@ -109,7 +120,7 @@ def main():
 
     manager = Manager()
 
-    manager.setup_logging()
+    manager.setup_logging(args)
 
     versions = VersionManager()
 

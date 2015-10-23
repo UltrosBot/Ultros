@@ -109,7 +109,7 @@ class Tokens(object):
 if __name__ == "__main__":
     t = Tokens()
 
-    def token_add(args):
+    def token_add(*args):
         done = 0
 
         for string in args:
@@ -117,7 +117,7 @@ if __name__ == "__main__":
 
         return done
 
-    def token_concat(args):
+    def token_concat(*args):
         done = ""
 
         for arg in args:

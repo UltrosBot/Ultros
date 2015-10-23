@@ -94,7 +94,7 @@ class User(user.User):
         if user is not None:
             other_rank = user.get_highest_rank_in_channel(channel)
         if other_rank is None:
-            other_rank = 0
+            return self.protocol.ranks.is_hop(rank, True)
         return self.protocol.ranks.is_hop(rank, True) and rank >= other_rank
 
     def can_ban(self, user, channel):

@@ -22,6 +22,10 @@ audio:  # Audio (voice comm) settings
   should_mute_self: True
   should_deafen_self: True
 
+# How often user stats (idle time, ping information, etc.) should be requested.
+# If you're unsure what this means or what to set it to, leave it commented out.
+# userstats_request_rate: 60
+
 control_chars: "." # What messages must be prefixed with to count as a command.
                    # This doesn't have to be just one character!
                    # You can also use {NICK} in place of the bot's current nick.

@@ -1,5 +1,6 @@
 # coding=utf-8
 from system.protocols.mumble.acl import Perms
+from system.protocols.mumble.structs import Stats
 
 __author__ = 'Sean'
 
@@ -20,6 +21,33 @@ class User(user.User):
         self.self_deaf = self_deaf
         self.priority_speaker = priority_speaker
         self.recording = recording
+
+        self.comment = None
+        self.comment_hash = None
+        self.avatar = None
+        self.avatar_hash = None
+
+        self.user_id = None
+
+        self.certificate_hash = None
+
+        self.certificates = []
+        self.packet_stats_from_client = Stats()
+        self.packet_stats_from_server = Stats()
+        self.udp_packets_sent = 0
+        self.tcp_packets_sent = 0
+        self.udp_ping_avg = 0
+        self.udp_ping_var = 0
+        self.tcp_ping_avg = 0
+        self.tcp_ping_var = 0
+        self.version = None
+        self.celt_versions = []
+        self.address = None
+        self.bandwidth = 0
+        self.online_time = 0
+        self.idle_time = 0
+        self.strong_certificate = False
+        self.opus = False
 
     def __str__(self):
         return "%s (%s)" % (self.nickname, self.session)
@@ -45,3 +73,7 @@ class User(user.User):
         return self.protocol.has_permission(0, Perms.BAN)
 
     # endregion
+
+    @property
+    def is_registered(self):
+        return self.user_id >= 0

@@ -3,7 +3,8 @@
 ### The only squid that connects communities
 
 [![Code Health](https://landscape.io/github/UltrosBot/Ultros/master/landscape.png)](https://landscape.io/github/UltrosBot/Ultros/master)
-[![Build Status](https://travis-ci.org/UltrosBot/Ultros.png?branch=master)](https://travis-ci.org/UltrosBot/Ultros)
+
+Builds: [On Bamboo](http://bamboo.gserv.me/browse/ULTROS-MAIN/latest)
 
 -------------------
 

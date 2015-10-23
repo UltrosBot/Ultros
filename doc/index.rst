@@ -1,7 +1,4 @@
-.. Ultros documentation master file, created by
-   sphinx-quickstart on Mon Mar 17 17:25:27 2014.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. Ultros documentation index file.
 
 Ultros - That squidoctopus bot thing
 ====================================
@@ -9,23 +6,25 @@ Ultros - That squidoctopus bot thing
 Ultros is a multi-protocol IRC bot designed from the ground up with
 extensibility and ease-of-use in mind.
 
-There's not a lot here right now, but keep an eye out, this will be fleshed
-out very soon!
+This site will serve as your usage documentation. We'll try to keep this up
+to date, but please bear in mind that writing documentation is time-consuming
+and that nobody on the team enjoys doing it.
 
-Are you a developer? Maybe you're looking for the api_
+Are you a developer? Maybe you're looking for the api_.
+
+This documentation is **under heavy development** right now. If you get stuck,
+please feel free to `join us on IRC`_ (**irc://irc.esper.net/Ultros**).
 
 .. toctree::
    :includehidden:
    :maxdepth: 1
 
-   installation/index
-   installation/configuration
+   installation
+..   configuration
 
-   plugins/index
+..   plugins/index
 
-   usage/commands
-
-.. development/index
+..   usage/index
 
 Indexes
 =======
@@ -38,6 +37,7 @@ Indexes
 
 .. _site: https://ultros.io
 .. _api: http://apidocs.ultros.io
+.. _join us on IRC: http://webchat.esper.net/?nick=&channels=Ultros
 
 .. |br| raw:: html
 

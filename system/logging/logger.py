@@ -6,7 +6,7 @@ of things to the logging system that would have been a huge pain to do
 ourselves, and our new logging system allows plugins to modify various aspects
 of logging, as well as provide additional handlers.
 
-For custom handlers, you may either edit the `configuration` defined in this
+For custom handlers, you may either edit the *configuration* defined in this
 module with something loaded from your plugin's config, or you can require
 that your users do their configuration in the main **logging.yml** file. It's
 up to you.
@@ -14,6 +14,7 @@ up to you.
 
 __author__ = 'Gareth Coles'
 
+from kitchen.text.converters import to_unicode
 
 # This does the magic - let's make logbook more suitable for us
 import system.logging.shim as shim
@@ -54,9 +55,9 @@ defaults = [
 
 #: Storage for the configuration of each handler
 configuration = {
-    "format_string": "{record.time:%b %d %Y - %H:%M:%S} | "
-                     "{record.channel:>25} | {record.level_name:<8} | "
-                     "{record.message}",
+    "format_string": u"{record.time:%b %d %Y - %H:%M:%S} | "
+                     u"{record.channel:>25} | {record.level_name:<8} | "
+                     u"{record.message}",
     "handlers": {
         "boxcar": False,
         "email": False,
@@ -71,9 +72,9 @@ configuration = {
         "file": [
             "logs/output.log", "a", "utf-8", INFO,
             (
-                "{record.time:%b %d %Y - %H:%M:%S} | "
-                "{record.channel:>25} | {record.level_name:<8} | "
-                "{record.message}"
+                u"{record.time:%b %d %Y - %H:%M:%S} | "
+                u"{record.channel:>25} | {record.level_name:<8} | "
+                u"{record.message}"
             ), "%Y-%m-%d", 30, None, True
         ],
         "metrics": True,
@@ -276,7 +277,7 @@ def redo_all_handlers():
         redo_handlers(logger)
 
 
-def configure(config):
+def configure(config, args=None):
     """
     For internal use, loads the configuration from a dict.
 
@@ -288,14 +289,25 @@ def configure(config):
 
     if config is not None:
         configuration["format_string"] = config.get(
-            "format_string", configuration["format_string"]
+            "format_string", to_unicode(configuration["format_string"])
         )
         configuration["handlers"] = config.get(
             "handlers", configuration["handlers"]
         )
-        configuration["level"] = get_level_from_name(
-            config.get("level", configuration["level"])
-        )
+
+        if args is not None:
+            if args.trace:
+                configuration["level"] = get_level_from_name("trace")
+            elif args.debug:
+                configuration["level"] = get_level_from_name("debug")
+            else:
+                configuration["level"] = get_level_from_name(
+                    config.get("level", configuration["level"])
+                )
+        else:
+            configuration["level"] = get_level_from_name(
+                config.get("level", configuration["level"])
+            )
 
         configuration["handlers"].update({
             # Constants
