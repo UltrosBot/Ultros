@@ -9,6 +9,9 @@ part of. By default, all this plugin will do is attempt to find the page title
 of a standard http or https URL, but other plugins (such as `URL-tools`_) may
 add special handling for specific sites.
 
+This plugin requires that the **Auth** plugin be loaded and available, and that
+a permissions manager be set up.
+
 Getting started
 ---------------
 
@@ -28,6 +31,7 @@ can set a different user-agent string for specific domains, or use the default o
 setting this to **False** - This is necessary for sites like Soundcloud, which use Javascript
 to set the page title when a real browser is detected, but simply places it in the HTML otherwise.
 
+----
 
 .. literalinclude:: ../../config/plugins/urls.yml.example
     :language: yaml
@@ -37,6 +41,7 @@ to set the page title when a real browser is detected, but simply places it in t
 Further to this, you may set the default user-agent string to use for all websites that
 haven't been placed in the spoofing setting above. The default is Firefox's user-agent string.
 
+----
 
 .. literalinclude:: ../../config/plugins/urls.yml.example
     :language: yaml
@@ -51,6 +56,7 @@ any redirects presented by URL shortening services and other sites.
 * **max**: The maximum number of redirects to follow before giving up. Set this to a reasonably low amount.
 * **domains**: A whitelist of domains to follow redirects for before handlers are run. Regular expressions are not used.
 
+----
 
 .. literalinclude:: ../../config/plugins/urls.yml.example
     :language: yaml
@@ -61,6 +67,7 @@ For the default website handler only: The maximum length of a title to be sent t
 As the configuration states, note that this is the length of the title as shown on the page - the
 actual message sent to the chat network will be slightly larger to accommodate the domain info.
 
+----
 
 .. literalinclude:: ../../config/plugins/urls.yml.example
     :language: yaml
@@ -80,6 +87,7 @@ Please also note that when you're writing regular expressions in YAML, you shoul
 them with 'single quotes', so that YAML will not try to directly handle any regex escapes
 you use.
 
+----
 
 .. literalinclude:: ../../config/plugins/urls.yml.example
     :language: yaml
@@ -94,6 +102,7 @@ you may use here instead.
 Note that this doesn't override the per-channel shorteners (which will be covered
 later) unless they're missing.
 
+----
 
 .. literalinclude:: ../../config/plugins/urls.yml.example
     :language: yaml
@@ -106,6 +115,7 @@ may set the default language requested here, as well as specifying specific lang
 for separate domains, if you so wish. This may be of particular interest to users that
 aren't native English speakers.
 
+----
 
 .. literalinclude:: ../../config/plugins/urls.yml.example
     :language: yaml
@@ -138,6 +148,7 @@ Please also note that when you're writing regular expressions in YAML, you shoul
 them with 'single quotes', so that YAML will not try to directly handle any regex escapes
 you use.
 
+----
 
 .. literalinclude:: ../../config/plugins/urls.yml.example
     :language: yaml
@@ -152,6 +163,7 @@ pages or maliciously-crafted URLs from taking too long to parse or using up all 
 We recommend you keep the default of **16384** bytes - or 16 KiB. Feel free to change this if
 you know what you're doing.
 
+----
 
 .. literalinclude:: ../../config/plugins/urls.yml.example
     :language: yaml
@@ -160,6 +172,43 @@ you know what you're doing.
 
 The last line in the file is the version of your configuration. Do not change this or you
 will likely break your configuration as we start adding versions.
+
+----
+
+Once you're all set up and ready to go, don't forget to open **config/settings.yml** and add
+**URLs** to your list of plugins!
+
+Permissions and commands
+------------------------
+
+**Command: urls**
+
+* **Permission**: *urls.manage*
+* **Usage**: *urls <setting> <value>*
+    * **Setting**: *set <on/off>* - Enable or disable handling URLs for the current channel
+    * **Setting**: *shortener <name>* - Set which URL shortener to use for the current channel
+    * Run this command without arguments for help text and a list of shorteners
+
+----
+
+**Command: shorten**
+
+* **Permission**: *urls.shorten*
+* **Usage**: *shorten [url]*
+    * You may specify a URL to shorten, or omit it to use the last URL that was sent to the channel
+    * This will use the channel's configured shortener, or the default shortener when that isn't configured, the shortener is missing, or the command is used in a private message
+
+----
+
+**Permission**: *urls.trigger*
+
+* This is used to determine whether a user is allowed to trigger the URLs plugin with a URL
+    * This is a default permission, but you may use it to deny access to specific users, channels or protocols if needed
+
+Known extension plugins
+-----------------------
+
+* `URL-tools`_
 
 .. Footnote links, etc
 
