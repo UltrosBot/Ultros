@@ -13,7 +13,9 @@ and that nobody on the team enjoys doing it.
 Are you a developer? Maybe you're looking for the api_.
 
 This documentation is **under heavy development** right now. If you get stuck,
-please feel free to `join us on IRC`_ (**irc://irc.esper.net/Ultros**).
+please feel free to `join us on IRC`_ (**irc://irc.esper.net/Ultros**). Likewise,
+if you use Ultros a lot and are good at writing documentation, come talk to us
+or submit some pull requests. We'd appreciate it.
 
 .. toctree::
    :includehidden:
