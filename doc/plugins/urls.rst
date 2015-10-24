@@ -128,17 +128,24 @@ but provides quite a lot of flexibility. This part of the plugin uses regular ex
 
 * **enable**: Set this to False to completely disable cookie support for this plugin. Note that plugins that add handlers are free to ignore this setting.
 * **cookies**: What to do with cookies, depending on how they're categorised.
+
   * **Categories**:
+
     * **group**: Domains that you've grouped together, as shown below.
     * **global**: Any domains that you haven't included in a group.
+
   * **Settings**:
+
     * **session**: Accept all cookies and hold onto them until the plugin is reloaded. Never save them to file.
     * **save**: Save all cookies to file.
     * **update**: Discard any new cookies, but update any others that already exist.
     * **discard**: Discard all cookies, don't save anything.
+
 * **never**: Regular expressions for domains that should never have cookies stored for them
 * **group**: Groups of domains that should share their cookies, but keep them separate from all other domains.
+
   * **example_group**: Set this to a name that you'll remember, as it's used as the name of the cookie jar.
+
     * All domains in this list should be proper regular expressions to match.
 
 If you don't understand regular expressions, we recommend the excellent
