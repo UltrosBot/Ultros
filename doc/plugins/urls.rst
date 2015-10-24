@@ -16,8 +16,10 @@ Getting started
 ---------------
 
 The first thing you'll want to do is head into **config/plugins** and copy
-**urls.yml.example** to **urls.yml**. Open the file, and configure it to your
-liking, following the guidelines below.
+**urls.yml.example** to **urls.yml**. The configuration has sensible defaults,
+so you're free to stop here if you just want to plug-and-go.
+
+If not, open the file and configure it to your liking, following the guidelines below.
 
 ----
 
@@ -28,7 +30,7 @@ liking, following the guidelines below.
 
 This section is all about user-agent spoofing. Spoofing is necessary so that websites
 respond to us as if we're a real web browser - Firefox by default. In this section, you
-can set a different user-agent string for specific domains, or use the default one by
+can set a different user-agent string for specific domains, or disable spoofing by
 setting this to **False** - This is necessary for sites like Soundcloud, which use Javascript
 to set the page title when a real browser is detected, but simply places it in the HTML otherwise.
 
@@ -168,8 +170,8 @@ This section is about advanced connection settings. Right now it only contains o
 specified number of bytes before attempting to find the title. This prevents excessively large
 pages or maliciously-crafted URLs from taking too long to parse or using up all of Ultros' memory.
 
-We recommend you keep the default of **16384 bytes** - or **16 KiB**. You may make it bigger
-if required, but don't make it too small or you won't get any titles.
+We recommend you keep the default of **16384 bytes** (that's **16 KiB**). You may change it if required,
+but setting it too high may make the plugin sluggish, and setting it too low may miss some titles.
 
 ----
 
@@ -179,7 +181,7 @@ if required, but don't make it too small or you won't get any titles.
     :lines: 93
 
 The last line in the file is the version of your configuration. Do not change this or you
-will likely break your configuration as we start adding versions.
+will likely break your configuration as we add newer versions.
 
 ----
 

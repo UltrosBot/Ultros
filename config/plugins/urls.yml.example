@@ -82,8 +82,8 @@ sessions:  # Sessions allow cookies to be stored during requests and retrieved l
   group:  # Groups of domains that should share session stores and never use the global store
           # These are checked after grouped domains - Any not matched after this stage use the global store
     example_group:
-    - 'soundcloud\.com'
-    - '*\.soundcloud\.com'
+    - 'google\.com'
+    - '*\.google\.com'
     - 'youtube\.com'
     - '*\.youtube\.com'
 
