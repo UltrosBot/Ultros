@@ -202,7 +202,7 @@ class URLsPlugin(PluginObject):
         target = event.target
         message = event.message
 
-        allowed = self.commands.perm_handler.check("urls.title", source,
+        allowed = self.commands.perm_handler.check("urls.trigger", source,
                                                    target, protocol)
 
         if not allowed:

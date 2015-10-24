@@ -57,7 +57,7 @@ class permissionsHandler(object):
                                         "bridge.relay",
                                         "factoids.get.*",
                                         "urls.shorten",
-                                        "urls.title"])
+                                        "urls.trigger"])
 
     def find_username(self, username):
         """
