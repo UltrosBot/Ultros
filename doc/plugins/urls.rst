@@ -193,9 +193,10 @@ Permissions and commands
 
 * **Permission**: *urls.manage*
 * **Usage**: *urls <setting> <value>*
-    * **Setting**: *set <on/off>* - Enable or disable handling URLs for the current channel
-    * **Setting**: *shortener <name>* - Set which URL shortener to use for the current channel
-    * Run this command without arguments for help text and a list of shorteners
+
+  * **Setting**: *set <on/off>* - Enable or disable handling URLs for the current channel
+  * **Setting**: *shortener <name>* - Set which URL shortener to use for the current channel
+  * Run this command without arguments for help text and a list of shorteners
 
 ----
 
@@ -203,15 +204,17 @@ Permissions and commands
 
 * **Permission**: *urls.shorten*
 * **Usage**: *shorten [url]*
-    * You may specify a URL to shorten, or omit it to use the last URL that was sent to the channel
-    * This will use the channel's configured shortener, or the default shortener when that isn't configured, the shortener is missing, or the command is used in a private message
+
+  * You may specify a URL to shorten, or omit it to use the last URL that was sent to the channel
+  * This will use the channel's configured shortener, or the default shortener when that isn't configured, the shortener is missing, or the command is used in a private message
 
 ----
 
 **Permission**: *urls.trigger*
 
 * This is used to determine whether a user is allowed to trigger the URLs plugin with a URL
-    * This is a default permission, but you may use it to deny access to specific users, channels or protocols if needed
+
+  * This is a default permission, but you may use it to deny access to specific users, channels or protocols if needed
 
 Known extension plugins
 -----------------------
