@@ -21,7 +21,7 @@ The main configuration deals with the plugins and protocols you want to use with
 As mentioned, Ultros supports connecting to multiple protocols, multiple instances of the same protocol, and even multiple
 connections to the same server.
 
-The exerpts below are taken from the **config/settings.yml.example** file. If you need to redownload that file,
+The excerpts below are taken from the **config/settings.yml.example** file. If you need to redownload that file,
 you can find it here: :download:`settings.yml.example <../../config/settings.yml.example>`
 
 .. Protocols
