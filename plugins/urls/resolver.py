@@ -1,3 +1,5 @@
+# coding=utf-8
+
 import socket
 from twisted.internet import defer, reactor
 from twisted.python.threadpool import ThreadPool

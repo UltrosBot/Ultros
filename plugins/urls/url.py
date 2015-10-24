@@ -1,3 +1,5 @@
+# coding=utf-8
+
 import idna
 from kitchen.text.converters import to_unicode, to_bytes
 

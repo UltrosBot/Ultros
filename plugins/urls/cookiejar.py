@@ -1,3 +1,5 @@
+# coding=utf-8
+
 from cookielib import LWPCookieJar
 from plugins.urls.constants import COOKIE_MODES, COOKIE_MODE_DISCARD, \
     COOKIE_MODE_SESSION, COOKIE_MODE_SAVE, COOKIE_MODE_UPDATE
