@@ -168,8 +168,8 @@ This section is about advanced connection settings. Right now it only contains o
 specified number of bytes before attempting to find the title. This prevents excessively large
 pages or maliciously-crafted URLs from taking too long to parse or using up all of Ultros' memory.
 
-We recommend you keep the default of **16384** bytes - or 16 KiB. Feel free to change this if
-you know what you're doing.
+We recommend you keep the default of **16384 bytes** - or **16 KiB**. You may make it bigger
+if required, but don't make it too small or you won't get any titles.
 
 ----
 
