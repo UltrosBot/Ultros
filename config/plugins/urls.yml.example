@@ -29,7 +29,7 @@ redirects:
   - "goo.gl"
   - "is.gd"
   - "mcaf.ee"
-  - "nazr.in"
+  - "nazr.in"  # Pssh
   - "owl.ly"
   - "redd.it"
   - "su.pr"
@@ -37,18 +37,20 @@ redirects:
   - "tinyurl.com"
   - "turl.ca"
   - "vurl.com"
-  - "waa.ai"  # Pssh
+  - "waa.ai"
   - "youtu.be"
 
+max_title_length: 150  # Truncate titles that are longer than this - note that this only applies
+                       # to the title itself, not the message containing it
 
 blacklist: []  # List of patterns to match against URLs; if matched then the URL will be ignored.
 # This uses regex! You've been warned!
 # Use 'single quotes' - if you use "double quotes" then YAML will try to validate your regex escapes.
 # You'll need to match the "http://" and "https://" parts yourself, too!
-# - '.*\/\/yahoo\.com($|\/).*'  # Everything under yahoo.com
-# - '.*\/\/youtube\.com\/watch\?.*'  # Youtube watch URLs
-# - '.*\/\/vimeo\.com\/.*\/staffpicks\/[^\/]'  # Vimeo staff picks
-# - '.*\/\/bad-site\.com\/.{5,}\/.*'  # Dirs that are 5 chars long have massive titles
+# - '.*//yahoo\.com($|/).*'  # Everything under yahoo.com
+# - '.*//youtube\.com/watch\?.*'  # Youtube watch URLs
+# - '.*//vimeo\.com/.*/staffpicks/[^/]'  # Vimeo staff picks
+# - '.*//bad-site\.com/.{5,}/.*'  # Dirs that are 5 chars long
 
 default_shortener: tinyurl  # The default shortener for channels without one set
                             # This will revert to tinyurl if the shortener doesn't exist
