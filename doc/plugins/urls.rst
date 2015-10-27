@@ -1,7 +1,7 @@
 .. Ultros documentation on the URLs plugin.
 
-Ultros - URLs plugin
-====================
+URLs
+====
 
 One of Ultros' most-used plugins is the URLs plugin. This plugin is in charge
 of handling URLs (aka links) that are shared within any channels Ultros is a

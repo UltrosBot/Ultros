@@ -1,5 +1,3 @@
-.. _installation:
-
 Installation
 ============
 
@@ -11,10 +9,8 @@ other platforms below.
 If you're just looking to set up your bot, please refer to the :ref:`configuration`
 page.
 
-.. _installation_requirements:
-
 Requirements
-============
+------------
 
 Ultros' optimal environment requires the following.
 
@@ -28,10 +24,8 @@ Please read the `Virtualenv docs`_ for more info. While setting one up is an
 optional step, we feel that it's a good idea to keep sets of packages separate
 from other system applications, so we do recommend using it.
 
-.. _installation_windows:
-
 Windows
-=======
+-------
 
 .. highlight:: bat
    :linenothreshold: 1
@@ -76,10 +70,9 @@ within this simple batch script ::
     :: Finally, set up requirements
     pip install -r requirements.txt
 
-.. _installation_linux:
 
 Linux
-=====
+-----
 
 .. highlight:: sh
    :linenothreshold: 1
@@ -119,10 +112,8 @@ see the :ref:`configuration` page for more information on this.
              for Ultros, which will also provide you with a convenient
              location to store it.
 
-.. _installation_mac:
-
 Mac OSX
-=======
+-------
 
 .. note:: These instructions are for Mavericks (10.9), and may differ slightly for
           different versions of OSX.

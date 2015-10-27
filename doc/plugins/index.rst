@@ -1,7 +1,7 @@
 .. Ultros documentation on included plugins.
 
-Ultros - Plugin documentation
-=============================
+Plugins
+=======
 
 This section of the documentation will serve as your information on how
 to set up and use the plugins that are included with Ultros. This does not
@@ -10,7 +10,6 @@ those, as each package has its documentation in the repo for the time being.
 
 .. toctree::
    :includehidden:
-   :maxdepth: 1
 
    urls
 

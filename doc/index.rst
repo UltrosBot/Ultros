@@ -19,14 +19,10 @@ or submit some pull requests. We'd appreciate it.
 
 .. toctree::
    :includehidden:
-   :maxdepth: 1
+   :maxdepth: 2
 
    installation
-..   configuration
-
-..   plugins/index
-
-..   usage/index
+   plugins/index
 
 Indexes
 =======
