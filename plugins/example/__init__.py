@@ -1,7 +1,6 @@
 # coding=utf-8
 
-import system.plugin as plugin  # Import the plugin base class
-from system.command_manager import CommandManager  # Needed for commands
+import system.plugins.plugin as plugin  # Import the plugin base class
 
 """
 An example plugin for you to refer to when you're creating your own ones

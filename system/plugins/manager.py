@@ -8,6 +8,7 @@ generally looking after all things plugin.
 __author__ = 'Gareth Coles'
 
 import glob
+import hy
 import importlib
 import inspect
 import sys
