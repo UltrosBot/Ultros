@@ -12,7 +12,6 @@ gitdb
 async
 pyopenssl
 psutil
-clojure-py
 pymongo
 redis
 enum34
