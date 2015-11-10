@@ -3,8 +3,8 @@ core:
   module: hytest
   dependencies: []
 info:
-  description: ClojurePy testing plugin
+  description: Hy testing plugin
   author: Gareth Coles
   version: 0.0.1
-  website: https://github.com/McBlockitHelpbot/Ultros/tree/master/plugins/cljtest
+  website: https://github.com/McBlockitHelpbot/Ultros/tree/master/plugins/hytest
   copyright: See Ultros' license
