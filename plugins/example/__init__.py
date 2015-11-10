@@ -24,7 +24,7 @@ class ExamplePlugin(plugin.PluginObject):  # Create the plugin class
             "example",  # The name of the command
             self.example_command,  # The command's function
             self,  # This plugin
-            permission="example.example",  # Required permission for command
+            # permission="example.example",  # Required permission for command
             aliases=["example2"],  # Aliases for this command
             default=True  # Whether this command should be available to all
         )
