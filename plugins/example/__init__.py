@@ -1,14 +1,13 @@
 # coding=utf-8
 
+import system.plugin as plugin  # Import the plugin base class
+from system.command_manager import CommandManager  # Needed for commands
+
 """
 An example plugin for you to refer to when you're creating your own ones
 """
 
 __author__ = "Gareth Coles"  # Who are you?
-
-import system.plugin as plugin  # Import the plugin base class
-
-from system.command_manager import CommandManager  # Needed for commands
 
 
 class ExamplePlugin(plugin.PluginObject):  # Create the plugin class
@@ -16,27 +15,19 @@ class ExamplePlugin(plugin.PluginObject):  # Create the plugin class
     Example plugin object
     """
 
-    commands = None
-
     def setup(self):
         """
         Called when the plugin is loaded. Performs initial setup.
         """
-
-        # Get an instance of the command manager
-        self.commands = CommandManager()
 
         # Register the command in our system
         self.commands.register_command(
             "example",  # The name of the command
             self.example_command,  # The command's function
             self,  # This plugin
-            # permission="example.example",  # Required permission for command
+            permission="example.example",  # Required permission for command
+            aliases=["example2"],  # Aliases for this command
             default=True  # Whether this command should be available to all
-        )
-
-        self.commands.register_command(  # Another example command
-            "example2", self.example_command, self, default=True
         )
 
     def example_command(self, protocol, caller, source, command, raw_args,
@@ -58,4 +49,4 @@ class ExamplePlugin(plugin.PluginObject):  # Create the plugin class
         caller.respond("Parsed arguments: %s" % args)
 
         # Send directly through the protocol
-        protocol.send_msg(source.name, "Message through the protocol!")
+        protocol.send_msg(source, "Message through the protocol!")
