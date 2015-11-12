@@ -8,7 +8,6 @@ generally looking after all things plugin.
 __author__ = 'Gareth Coles'
 
 import glob
-import hy  # noqa
 import importlib
 import inspect
 import sys
@@ -48,6 +47,12 @@ class PluginManager(object):
 
         self.module = module
         self.path = path
+
+        try:
+            import hy  # noqa
+        except ImportError:
+            self.log.warn("Unable to find Hy - Hy plugins will not load")
+            self.log.warn("Install Hy with pip if you need this support")
 
     def scan(self, output=True):
         """

@@ -19,4 +19,3 @@ weakreflist
 logbook
 pytimeparse
 requests
-hy
