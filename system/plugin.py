@@ -1,7 +1,7 @@
 # coding=utf-8
-__author__ = "Gareth Coles"
-
 import system.plugins.plugin
+
+__author__ = "Gareth Coles"
 
 PluginObject = system.plugins.plugin.PluginObject
 

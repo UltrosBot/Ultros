@@ -1,13 +1,9 @@
-import urllib
-
-__author__ = 'Gareth Coles'
-
 import json
 import platform
 import psutil
 import sys
 import traceback
-import urllib2
+import requests
 
 from twisted.internet.task import LoopingCall
 
@@ -24,6 +20,7 @@ from utils.packages.packages import Packages
 from system.translations import Translations
 _ = Translations().get()
 
+__author__ = 'Gareth Coles'
 
 warning = """
                                  .i;;;;i.
@@ -325,17 +322,16 @@ class Metrics(object):
                 del exc_info, t
 
     def post(self, url, data):
-        data = json.dumps(data)
+        data = {"data": json.dumps(data)}
         self.log.debug("Posting data: %s" % data)
 
-        data = urllib.urlencode({"data": data})
-        req = urllib2.Request(
-            url, data, {'Content-Type': 'application/json'}
+        req = requests.post(
+            url, data, headers={'Content-Type': 'application/json'}
         )
 
-        result = urllib2.urlopen(req).read()
+        result = req.text
         self.log.debug("Result: %s" % result)
         return result
 
     def get(self, url):
-        return urllib2.urlopen(url).read()
+        return requests.get(url).text
