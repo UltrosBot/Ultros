@@ -77,15 +77,15 @@ sessions:  # Sessions allow cookies to be stored during requests and retrieved l
   never: []  # Domains that should never store their sessions
              # These are checked first, before the rest
 #  - 'facebook\.com'
-#  - '*\.facebook\.com'
+#  - '.*\.facebook\.com'
 
   group:  # Groups of domains that should share session stores and never use the global store
           # These are checked after grouped domains - Any not matched after this stage use the global store
     example_group:
     - 'google\.com'
-    - '*\.google\.com'
+    - '.*\.google\.com'
     - 'youtube\.com'
-    - '*\.youtube\.com'
+    - '.*\.youtube\.com'
 
 connection:
   max_read_size: 16384
