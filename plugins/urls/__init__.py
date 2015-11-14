@@ -469,7 +469,7 @@ class URLsPlugin(PluginObject):
 
     def check_blacklist(self, _url, context):
         for entry in context["config"]["blacklist"]:
-            if re.match(entry, _url, flags=str_to_regex_flags("ui")):
+            if re.match(entry, _url.to_string(), flags=str_to_regex_flags("ui")):
                 self.logger.debug(
                     "Matched blacklist regex: %s" % entry
                 )
