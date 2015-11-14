@@ -1,168 +1,198 @@
 # coding=utf-8
-"""
-A plugin to provide various URL-related tools and services.
 
-This plugin does quite a lot of things - URL title parsing, URL shortening,
-URL logging to database, specialized URL handlers.. Its partner plugin,
-URL-tools (in the contrib repo) extends its functionality using the API it
-exposes.
-"""
+import re
+
+from copy import copy
+from collections import defaultdict
+
+from kitchen.text.converters import to_unicode
+from twisted.internet.defer import Deferred, inlineCallbacks, returnValue
+from twisted.python.failure import Failure
+from txrequests import Session
+from plugins.urls.lazy import LazyRequest
+from plugins.urls.priority import Priority
+from plugins.urls.shorteners.exceptions import ShortenerDown
+from system.protocols.generic.channel import Channel
+from system.storage.formats import Formats
+from system.plugins.plugin import PluginObject
+from plugins.urls.constants import PREFIX_TRANSLATIONS, CASCADE, STOP_HANDLING
+from plugins.urls.events import URLsPluginLoaded
+from plugins.urls.handlers.website import WebsiteHandler
+from plugins.urls.matching import extract_urls
+from plugins.urls.shorteners.tinyurl import TinyURLShortener
+from plugins.urls.url import URL
+from utils.misc import str_to_regex_flags
 
 __author__ = 'Gareth Coles'
 
-import fnmatch
-import re
-import socket
-import urlparse
-import urllib
-import urllib2
 
-from httplib import IncompleteRead
-
-from bs4 import BeautifulSoup
-from kitchen.text.converters import to_unicode
-from netaddr import all_matching_cidrs
-
-from system.command_manager import CommandManager
-from system.decorators.threads import run_async_threadpool
-from system.event_manager import EventManager
-from system.events.general import MessageReceived
-
-import system.plugin as plugin
-
-from system.protocols.generic.channel import Channel
-from system.protocols.generic.user import User
-
-from system.storage.formats import YAML, DBAPI
-from system.storage.manager import StorageManager
-
-from .catcher import Catcher
-
-from system.translations import Translations
-_ = Translations().get()
-__ = Translations().get_m()
+HTTP_S_REGEX = re.compile("http|https", flags=str_to_regex_flags("iu"))
 
 
-class URLsPlugin(plugin.PluginObject):
-    """
-    URLs plugin object
-    """
-
-    catcher = None
+class URLsPlugin(PluginObject):
     channels = None
-    commands = None
     config = None
-    events = None
     shortened = None
-    storage = None
 
-    blacklist = []
-    handlers = {}
-    shorteners = {}
-    spoofing = {}
-
-    content_types = ["text/html", "text/webviewhtml", "message/rfc822",
-                     "text/x-server-parsed-html", "application/xhtml+xml"]
+    shorteners = None
+    handlers = None
 
     def setup(self):
-        """
-        Called when the plugin is loaded. Performs initial setup.
-        """
+        self.shorteners = {}
+        self.handlers = defaultdict(list)
 
-        self.logger.trace(_("Entered setup method."))
-        self.storage = StorageManager()
+        # Load up the configuration
+
         try:
-            self.config = self.storage.get_file(self, "config", YAML,
-                                                "plugins/urls.yml")
+            self.config = self.storage.get_file(
+                self, "config", Formats.YAML, "plugins/urls.yml"
+            )
         except Exception:
-            self.logger.exception(_("Error loading configuration!"))
-        else:
-            if not self.config.exists:
-                self.logger.warn(_("Unable to find config/plugins/urls.yml"))
-            else:
-                self.content_types = self.config["content_types"]
-                self.spoofing = self.config["spoofing"]
+            self.logger.exception("Error loading configuration")
+            return self._disable_self()
 
-        self.logger.debug(_("Spoofing: %s") % self.spoofing)
+        if not self.config.exists:
+            self.logger.error("Unable to load configuration: File not found\n"
+                              "Did you fill out `config/plugins/urls.yml`?")
+            return self._disable_self()
 
-        self.channels = self.storage.get_file(self, "data", YAML,
-                                              "plugins/urls/channels.yml")
+        if self.config.get("version", 1) < 2:
+            self.logger.warn(
+                "========================================================= \n"
+                " It appears that you haven't updated your configuration.  \n"
+                " Please check the example configuration and update your   \n"
+                " file to match.                                           \n"
+                "========================================================= \n"
+            )
+
+        self.channels = self.storage.get_file(
+            self, "data", Formats.YAML, "plugins/urls/channels.yml"
+        )
+
         self.shortened = self.storage.get_file(
             self,
             "data",
-            DBAPI,
+            Formats.DBAPI,
             "sqlite3:data/plugins/urls/shortened.sqlite",
             "data/plugins/urls/shortened.sqlite",
             check_same_thread=False
         )
 
-        self.commands = CommandManager()
-        self.events = EventManager()
-
+        self.config.add_callback(self.reload)
         self.reload()
 
-        def message_event_filter(event=MessageReceived):
-            target = event.target
-            type_ = event.type
-
-            return type_ == "message" \
-                or isinstance(target, Channel) \
-                or isinstance(target, User)
-
-        self.add_shortener("tinyurl", self.tinyurl)
+        def message_event_filter(event):
+            return event.type == "message"
 
         self.events.add_callback("MessageReceived", self, self.message_handler,
                                  1, message_event_filter)
+
+        self.add_handler(WebsiteHandler(self), Priority.MONITOR)
+        self.add_shortener(TinyURLShortener(self))
+
         self.commands.register_command("urls", self.urls_command, self,
                                        "urls.manage")
         self.commands.register_command("shorten", self.shorten_command, self,
                                        "urls.shorten", default=True)
 
-    def reload(self):
-        """
-        Reload files and create tables as necessary
-        """
+        if not self.factory_manager.running:
+            self.events.add_callback(
+                "ReactorStarted", self, self.send_event, 0
+            )
+        else:
+            self.send_event()
 
+    @property
+    def default_shortener(self):
+        shortener = self.config.get("default_shortener", "tinyurl")
+
+        return shortener if self.has_shortener(shortener) else "tinyurl"
+
+    def send_event(self, _=None):
+        self.events.run_callback("URLs/PluginLoaded", URLsPluginLoaded(self))
+
+    def reload(self):
         self.shortened.runQuery("CREATE TABLE IF NOT EXISTS urls ("
                                 "url TEXT, "
                                 "shortener TEXT, "
                                 "result TEXT)")
 
-        self.catcher = Catcher(self, self.config, self.storage, self.logger)
+        for handler_list in self.handlers.itervalues():
+            for handler in handler_list:
+                handler.reload()
 
-        self.blacklist = []
-        blacklist = self.config.get("blacklist", [])
+    @inlineCallbacks
+    def shorten(self, _url, shortener=None, target=None):
+        if isinstance(_url, basestring):
+            match = extract_urls(_url)
 
-        for element in blacklist:
-            try:
-                self.blacklist.append(re.compile(element))
-            except Exception:
-                self.logger.exception("Unable to compile regex '%s'" % element)
+            if len(match) < 1:
+                return
 
-    def check_blacklist(self, url):
-        """
-        Check whether a URL is in the user-defined blacklist
+            _url = self.match_to_url(match[0])
 
-        :param url: The URL to check
-        :type url: str
+        if target is not None:
+            shortener = self.get_shortener(target)
 
-        :return: Whether the URL is in the blacklist
-        :rtype: bool
-        """
+        if shortener is None:
+            shortener = self.default_shortener
 
-        for pattern in self.blacklist:
-            try:
-                self.logger.debug(_("Checking pattern '%s' against URL '%s'")
-                                  % (pattern, url))
-                if re.match(pattern, url):
-                    return True
-            except Exception as e:
-                self.logger.debug(_("Error in pattern matching: %s") % e)
-                return False
-        return False
+        context = {"url": _url}
 
-    @run_async_threadpool
-    def message_handler(self, event=MessageReceived):
+        r = yield self.shortened.runQuery(
+            "SELECT result FROM urls WHERE url=? AND shortener=?",
+            (unicode(_url), shortener.lower())
+        )
+
+        if len(r):
+            returnValue(r[0][0])
+        else:
+            if shortener in self.shorteners:
+                try:
+                    result = yield self.shorteners[shortener].do_shorten(
+                        context
+                    )
+                except ShortenerDown as e:
+                    returnValue(
+                        "Shortener \"{}\" appears to be down -"
+                        " try again later. ({})".format(shortener, e.message)
+                    )
+                except Exception:
+                    raise
+                else:
+                    self.shortened.runQuery(
+                        "INSERT INTO urls VALUES (?, ?, ?)",
+                        (unicode(_url), shortener.lower(), result)
+                    )
+
+                    returnValue(result)
+
+    def get_shortener(self, target):
+        shortener = (
+            self.channels.get(target.protocol.name, {})
+                .get(target.name, {})
+                .get("shortener", self.default_shortener)
+        )
+
+        if self.has_shortener(shortener):
+            return shortener
+
+        return self.default_shortener
+
+    def deactivate(self):
+        for handler_list in self.handlers.itervalues():
+            for handler in handler_list:
+                try:
+                    handler.teardown()
+                except Exception:
+                    self.logger.exception(
+                        "Error tearing down handler {0}".format(handler.name)
+                    )
+
+        self.handlers = defaultdict(list)
+
+    @inlineCallbacks
+    def message_handler(self, event):
         """
         Event handler for general messages
         """
@@ -172,99 +202,135 @@ class URLsPlugin(plugin.PluginObject):
         target = event.target
         message = event.message
 
-        allowed = self.commands.perm_handler.check("urls.title", source,
+        allowed = self.commands.perm_handler.check("urls.trigger", source,
                                                    target, protocol)
 
         if not allowed:
             return
 
-        # PEP = wat sometimes
-        if self.channels.get(protocol.name,
-                             {}).get(target.name,
-                                     {}).get("status", "on") == "off":
+        status = self.channels.get(protocol.name, {})\
+            .get(target.name, {})\
+            .get("status", True)
+
+        if not status or status == "off":
             return
 
-        # Strip formatting characters if possible
-        message_stripped = message
+        matches = extract_urls(message)
+
+        for match in matches:
+            self.logger.trace("match: {0}", match)
+
+            _url = self.match_to_url(match)
+
+            if _url is None:
+                continue
+
+            # Check redirects, following as necessary
+
+            redirects = 0
+            max_redirects = self.config.get("redirects", {}).get("max", 15)
+            domains = self.config.get("redirects", {}).get("domains", [])
+
+            self.logger.debug("Checking redirects...")
+
+            while _url.domain in domains and redirects < max_redirects:
+                redirects += 1
+
+                session = Session()
+
+                #: :type: requests.Response
+                r = yield session.get(unicode(_url), allow_redirects=False)
+
+                if r.is_redirect:
+                    # This only ever happens when we have a well-formed
+                    # redirect that could have been handled automatically
+
+                    redirect_url = r.headers["location"]
+
+                    self.logger.debug(
+                        "Redirect [{0:03d}] {1}".format(
+                            redirects, redirect_url
+                        )
+                    )
+
+                    _url = self.match_to_url(extract_urls(redirect_url)[0])
+                else:
+                    break
+
+            if redirects >= max_redirects:
+                self.logger.debug("URL has exceeded the redirects limit")
+                return
+
+            lazy_request = LazyRequest(req_args=[unicode(_url)])
+
+            self.channels.get(protocol.name, {}) \
+                .get(source.name, {})["last"] = unicode(_url)
+
+            yield self.run_handlers(_url, {
+                "event": event,
+                "config": self.config,
+                "get_request": lazy_request,
+                "redirects": redirects,
+                "max_redirects": max_redirects
+            })
+
+    def match_to_url(self, match):
+        """
+        :rtype: URL
+        """
+        # Expand the match to make it easier to work with
+
+        # Input: ''http://x:y@tools.ietf.org:80/html/rfc1149''
+        # Match: '', http, x:y, tools.ietf.org, :80, /html/rfc1149''
+
+        _prefix, _protocol, _basic, _domain, _port, _path = (
+            to_unicode(x) for x in match
+        )
+
+        _port = _port.lstrip(":")  # Remove this as the regex captures it
+
         try:
-            message_stripped = event.caller.utils.strip_formatting(message)
-        except AttributeError:
-            pass
+            if _port:
+                _port = int(_port)
+        except ValueError:
+            self.logger.warn("Invalid port: {0}", _port)
+            return None
 
-        for word in message_stripped.split(" "):
-            pos = word.lower().find("http://")
-            if pos == -1:
-                pos = word.lower().find("https://")
-            if pos > -1:
-                end = word.lower().find(" ", pos)
-                if end > -1:
-                    url = word[pos:end]
-                else:
-                    url = word[pos:]
+        _translated = self.translate_prefix(_prefix)
 
-                if url in ["http://", "https://"]:
-                    self.logger.trace(_("URL is not actually a URL, just %s"
-                                        % url))
-                    return
+        if len(_path) > 0 and len(_translated) > 0:
+            # Remove translated prefix chars.
+            for char in reversed(_translated):
+                if _path[-1] == char:
+                    _path = _path[:-1]
+        elif len(_domain) > 0 and len(_translated) > 0:
+            # Remove translated prefix chars.
+            for char in reversed(_translated):
+                if _domain[-1] == char:
+                    _domain = _domain[:-1]
 
-                if self.check_blacklist(url):
-                    self.logger.debug(_("Not parsing, URL is blacklisted."))
-                    return
+        _query = None
+        _fragment = None
 
-                if isinstance(target, Channel):
-                    try:
-                        self.catcher.insert_url(url, source.nickname,
-                                                target.name, protocol.name)
-                    except Exception:
-                        self.logger.exception(_("Error catching URL"))
+        if HTTP_S_REGEX.match(_protocol):
+            # Parse out query/fragment from the http/s URL
 
-                title, domain = self.parse_title(url)
+            if "#" in _path:
+                _path, _fragment = _path.split("#", 1)
+            if "?" in _path:
+                _path, _query_string = _path.split("?", 1)
+                _query = {}
 
-                self.logger.trace(_("Title: %s") % title)
-
-                if isinstance(target, Channel):
-                    if protocol.name not in self.channels:
-                        with self.channels:
-                            self.channels[protocol.name] = {
-                                target.name: {"last": url,
-                                              "status": "on",
-                                              "shortener":
-                                              "tinyurl"}
-                            }
-                    if target.name not in self.channels[protocol.name]:
-                        with self.channels:
-                            self.channels[protocol.name][target.name] = {
-                                "last": url,
-                                "status": "on",
-                                "shortener":
-                                "tinyurl"
-                            }
+                for element in _query_string.split("&"):
+                    if "=" in element:
+                        left, right = element.split("=", 1)
+                        _query[left] = right
                     else:
-                        with self.channels:
-                            self.channels[protocol.name][target.name]["last"] \
-                                = url
-                    if title is None:
-                        return
+                        _query[element] = None
 
-                    if domain is not None and "/" in domain:
-                        domain = domain.split("/")[0]
-                    if domain is None:
-                        target.respond(title)
-                    else:
-                        target.respond("\"%s\" at %s" % (title, domain))
-                elif isinstance(target, User):
-                    if title is None:
-                        return
-
-                    if domain is not None and "/" in domain:
-                        domain = domain.split("/")[0]
-                    if domain is None:
-                        source.respond(title)
-                    else:
-                        source.respond("\"%s\" at %s" % (title, domain))
-                else:
-                    self.logger.warn(_("Unknown target type: %s [%s]")
-                                     % (target, target.__class__))
+        return URL(
+            self, _protocol, _basic, _domain, _port, _path, _query, _fragment
+        )
 
     def urls_command(self, protocol, caller, source, command, raw_args,
                      parsed_args):
@@ -272,64 +338,61 @@ class URLsPlugin(plugin.PluginObject):
         Command handler for the urls command
         """
 
-        args = raw_args.split()  # Quick fix for new command handler signature
         if not isinstance(source, Channel):
-            caller.respond(__("This command can only be used in a channel."))
+            caller.respond("This command can only be used in a channel.")
             return
-        if len(args) < 2:
-            caller.respond(__("Usage: {CHARS}urls <setting> <value>"))
-            caller.respond(__("Operations: set <on/off> - Enable or disable "
-                              "title parsing for the current channel"))
-            caller.respond("            %s" % __("shortener <name> - Set "
-                                                 "which URL shortener to use "
-                                                 "for the current channel"))
-            caller.respond("            %s" % __("Shorteners: %s")
-                           % ", ".join(self.shorteners.keys()))
+        if len(parsed_args) < 2:
+            caller.respond("Usage: {CHARS}%s <setting> <value>" % command)
+            caller.respond("Operations: set <on/off> - Enable or disable "
+                           "title parsing for the current channel")
+            caller.respond("  shortener <name> - Set which URL shortener to "
+                           "use for the current channel")
+            caller.respond("  Shorteners: {0}".format(", ".join(
+                self.shorteners.keys()
+            )))
             return
 
-        operation = args[0].lower()
-        value = args[1].lower()
+        operation = parsed_args[0].lower()
+        value = parsed_args[1].lower()
 
         if protocol.name not in self.channels:
             with self.channels:
                 self.channels[protocol.name] = {
                     source.name: {
-                        "status": "on",
+                        "status": True,
                         "last": "",
-                        "shortener": "tinyurl"
+                        "shortener": self.default_shortener
                     }
                 }
-        if source.name not in self.channels[protocol.name]:
+        elif source.name not in self.channels[protocol.name]:
             with self.channels:
                 self.channels[protocol.name][source.name] = {
-                    "status": "on",
+                    "status": True,
                     "last": "",
-                    "shortener": "tinyurl"
+                    "shortener": self.default_shortener
                 }
 
         if operation == "set":
-            if value not in [__("on"), __("off")]:
-                caller.respond(__("Usage: {CHARS}urls set <on|off>"))
+            if value not in ["on", "off"]:
+                caller.respond("Usage: {CHARS}urls set <on|off>")
             else:
                 with self.channels:
-                    if value == __("on"):
-                        value = "on"
-                    elif value == __("off"):
-                        value = "off"
-                    self.channels[protocol.name][source.name]["status"] = value
-                caller.respond(__("Title passing for %s turned %s.")
-                               % (source.name, __(value)))
+                    self.channels[protocol.name][source.name]["status"] = (
+                        value == "on"
+                    )
+                caller.respond("Title passing for %s turned %s."
+                               % (source.name, value))
         elif operation == "shortener":
             if value.lower() in self.shorteners:
                 with self.channels:
                     self.channels[protocol.name][source.name]["shortener"] \
                         = value.lower()
-                caller.respond(__("URL shortener for %s set to %s.")
+                caller.respond("URL shortener for %s set to %s."
                                % (source.name, value))
             else:
-                caller.respond(__("Unknown shortener: %s") % value)
+                caller.respond("Unknown shortener: %s." % value)
         else:
-            caller.respond(__("Unknown operation: '%s'.") % operation)
+            caller.respond("Unknown operation: '%s'." % operation)
 
     def _respond_shorten(self, result, source, handler):
         """
@@ -338,17 +401,19 @@ class URLsPlugin(plugin.PluginObject):
 
         if result is not None:
             return source.respond(result)
-        return source.respond(__("Unable to shorten using handler %s. Poke the"
-                                 "bot owner!")
-                              % handler)
+
+        source.respond("Unable to shorten using handler %s. Poke the bot "
+                       "owner!" % handler)
 
     def _respond_shorten_fail(self, failure, source, handler):
         """
         Respond to a shorten command, after a failed Deferred
         """
 
-        return source.respond(__("Error shortening url with handler %s: %s")
-                              % (handler, failure))
+        self.logger.error("Error shortening url with handler '{}': {}".format(
+            handler, failure.value
+        ))
+        source.respond("Error shortening url; please notify the bot owner")
 
     def shorten_command(self, protocol, caller, source, command, raw_args,
                         parsed_args):
@@ -356,338 +421,175 @@ class URLsPlugin(plugin.PluginObject):
         Command handler for the shorten command
         """
 
-        args = parsed_args  # Quick fix for new command handler signature
         if not isinstance(source, Channel):
-            if len(args) == 0:
-                caller.respond(__("Usage: {CHARS}shorten [url]"))
+            if len(parsed_args) == 0:
+                caller.respond("Usage: {CHARS}shorten [url]")
                 return
             else:
-                handler = "tinyurl"
-                url = args[0]
+                handler = self.default_shortener
+                _url = parsed_args[0]
                 try:
-                    d = self.shorten_url(url, handler)
+                    d = self.shorten(_url, handler)
                     d.addCallbacks(self._respond_shorten,
                                    self._respond_shorten_fail,
                                    callbackArgs=(source, handler),
                                    errbackArgs=(source, handler))
-                except Exception as e:
-                    self.logger.exception(_("Error fetching short URL."))
-                    caller.respond(__("Error: %s") % e)
-                    return
+                except Exception:
+                    self.logger.exception("Error fetching short URL.")
+                    caller.respond("Error fetching short URL.")
         else:
             if protocol.name not in self.channels \
-               or source.name not in self.channels[protocol.name] \
-               or not len(self.channels[protocol.name][source.name]["last"]):
-                caller.respond(__("Nobody's pasted a URL here yet!"))
-                return
-            handler = self.channels[protocol.name][source.name]["shortener"]
-            if len(handler) == 0:
-                with self.channels:
-                    self.channels[protocol.name][source.name]["shortener"]\
-                        = "tinyurl"
-                handler = "tinyurl"
-            if handler not in self.shorteners:
-                caller.respond(__("Shortener '%s' not found - please set a "
-                                  "new one!") % handler)
+                    or source.name not in self.channels[protocol.name] \
+                    or not len(
+                        self.channels[protocol.name][source.name]["last"]):
+                caller.respond("Nobody's linked anything here yet")
                 return
 
-            url = self.channels[protocol.name][source.name]["last"]
+            handler = self.get_shortener(source)
 
-            if len(args) > 0:
-                url = args[0]
+            if not self.has_shortener(handler):  # Shouldn't happen
+                caller.respond("Shortener '%s' not found - please set a "
+                               "new one!" % handler)
+                return
+
+            _url = self.channels[protocol.name][source.name]["last"]
+
+            if len(parsed_args) > 0:
+                _url = parsed_args[0]
 
             try:
-                d = self.shorten_url(url, handler)
+                d = self.shorten(_url, handler)
                 d.addCallbacks(self._respond_shorten,
                                self._respond_shorten_fail,
                                callbackArgs=(source, handler),
                                errbackArgs=(source, handler))
             except Exception as e:
-                self.logger.exception(_("Error fetching short URL."))
-                caller.respond(__("Error: %s") % e)
-                return
+                self.logger.exception("Error fetching short URL.")
+                caller.respond("Error fetching short URL.")
 
-    def tinyurl(self, url):
-        """
-        Shorten a URL with TinyURL. Don't use this directly.
-        """
-
-        return urllib2.urlopen("http://tinyurl.com/api-create.php?url=" +
-                               urllib.quote_plus(url)).read()
-
-    def parse_title(self, url, use_handler=True):
-        """
-        Get and return the page title for a URL, or the title from a
-        specialized handler, if one is registered.
-
-        This function returns a tuple which may be one of these forms..
-
-        * (title, None) if the title was fetched by a specialized handler
-        * (title, domain) if the title was parsed from the HTML
-        * (None, None) if fetching the title was entirely unsuccessful.
-            This occurs in each of the following cases..
-
-            * When a portscan is detected and stopped
-            * When the page simply has no title
-            * When there is an exception in the chain somewhere
-
-        :param url: The URL to check
-        :param use_handler: Whether to use specialized handlers
-
-        :type url: str
-        :type use_handler: bool
-
-        :returns: A tuple containing the result
-        :rtype: tuple(None, None), tuple(str, str), tuple(str, None)
-        """
-
-        domain = ""
-        self.logger.trace(_("Url: %s") % url)
-        try:
-            parsed = urlparse.urlparse(url)
-            domain = parsed.hostname
-
-            ip = socket.gethostbyname(domain)
-
-            matches = all_matching_cidrs(ip, ["10.0.0.0/8", "0.0.0.0/8",
-                                              "172.16.0.0/12",
-                                              "192.168.0.0/16", "127.0.0.0/8"])
-
-            if matches:
-                self.logger.warn(_("Prevented a portscan: %s") % url)
-                return None, None
-
-            if domain.startswith("www."):
-                domain = domain[4:]
-
-            if use_handler:
-                for pattern in self.handlers:
-                    if fnmatch.fnmatch(domain, pattern):
-                        try:
-                            result = self.handlers[domain](url)
-                            if result:
-                                return to_unicode(result), None
-                        except Exception:
-                            self.logger.exception(_("Error running handler, "
-                                                    "parsing title normally."))
-
-            self.logger.trace(_("Parsed domain: %s") % domain)
-
-            request = urllib2.Request(url)
-            if domain in self.spoofing:
-                self.logger.debug(_("Custom spoofing for this domain found."))
-                user_agent = self.spoofing[domain]
-                if user_agent:
-                    self.logger.debug(_("Spoofing user-agent: %s")
-                                      % user_agent)
-                    request.add_header("User-agent", user_agent)
-                else:
-                    self.logger.debug(_("Not spoofing user-agent."))
-            else:
-                self.logger.debug(_("Spoofing Firefox as usual."))
-                request.add_header('User-agent', 'Mozilla/5.0 (X11; U; Linux '
-                                                 'i686; en-US; rv:1.9.0.1) '
-                                                 'Gecko/2008071615 Fedora/3.0.'
-                                                 '1-1.fc9-1.fc9 Firefox/3.0.1')
-
-            # Deal with Accept-Language
-            language_value = None
-            language = self.config.get("accept_language", {})
-            language_domains = language.get("domains", {})
-            if domain in language_domains:
-                language_value = language_domains[domain]
-            elif domain.lower() in language_domains:
-                language_value = language_domains[domain.lower()]
-            elif "default" in language:
-                language_value = language["default"]
-
-            if language_value is not None:
-                request.add_header("Accept-Language", language_value)
-
-            response = urllib2.urlopen(request)
-
-            self.logger.trace(_("Info: %s") % response.info())
-
-            headers = response.info().headers
-            new_url = response.geturl()
-
-            _domain = domain
-
-            parsed = urlparse.urlparse(new_url)
-            domain = parsed.hostname
-
-            if _domain != domain:
-                self.logger.info(_("URL: %s") % new_url)
-                self.logger.info(_("Domain: %s") % domain)
-
-                if self.check_blacklist(new_url):
-                    self.logger.debug(_("Not parsing, URL is blacklisted."))
-                    return
-
-                ip = socket.gethostbyname(domain)
-
-                matches = all_matching_cidrs(ip, ["10.0.0.0/8", "0.0.0.0/8",
-                                                  "172.16.0.0/12",
-                                                  "192.168.0.0/16",
-                                                  "127.0.0.0/8"])
-
-                if matches:
-                    self.logger.warn(_("Prevented a portscan: %s") % new_url)
-                    return None, None
-
-                if domain.startswith("www."):
-                    domain = domain[4:]
-
-                if domain in self.handlers and use_handler:
-                    try:
-                        result = self.handlers[domain](new_url)
-                        if result:
-                            return to_unicode(result), None
-                    except Exception:
-                        self.logger.exception(_("Error running handler,"
-                                                " parsing title normally."))
-
-            headers_dict = {}
-
-            for x in headers:
-                _split_header = x.split(": ", 1)
-                k = _split_header[0]
-                v = _split_header[1] if len(_split_header) > 1 else ""
-
-                headers_dict[k.lower()] = v.strip("\r\n")
-
-            status_code = response.getcode()
-
-            if status_code in [301, 302, 303, 307, 308]:
-                return self.parse_title(headers["location"])
-
-            ct = headers_dict["content-type"]
-            if ";" in ct:
-                ct = ct.split(";")[0]
-
-            self.logger.trace(_("Content-type: %s") % repr(ct))
-
-            if ct not in self.content_types:
-                self.logger.debug(_("Content-type is not allowed."))
-                return None, None
-
-            page = response.read()
-            soup = BeautifulSoup(page)
-
-            if soup.title is None:
-                soup = BeautifulSoup(
-                    page.replace("<!–[if IE]><![endif]–>", "")
+    def check_blacklist(self, _url, context):
+        for entry in context["config"]["blacklist"]:
+            if re.match(entry, _url, flags=str_to_regex_flags("ui")):
+                self.logger.debug(
+                    "Matched blacklist regex: %s" % entry
                 )
+                return True
 
-            if soup.title and soup.title.string:
-                title = soup.title.string.strip()
-                title = re.sub("\s+", " ", title)
-                title = to_unicode(title)
-                domain = to_unicode(domain)
-                return title, domain
-            else:
-                return None, None
-        except IncompleteRead as e:
-            partial = e.partial
-            self.logger.exception(_("Error parsing title."))
-            self.logger.debug("Data: {}".format(partial))
-            return str(e), domain
-        except Exception as e:
-            if not str(e).lower() == "not viewing html":
-                self.logger.exception(_("Error parsing title."))
-                return str(e), domain
-            return None, None
-
-    def _shorten(self, txn, url, handler):
-        """
-        Shorten a URL, checking the database in case it's already been
-        done. This is a database interaction and uses Deferreds.
-        """
-
-        txn.execute("SELECT * FROM urls WHERE url=? AND shortener=?",
-                    (url, handler.lower()))
-        r = txn.fetchone()
-
-        self.logger.trace(_("Result (SQL): %s") % repr(r))
-
-        if r is not None:
-            return r[2]
-
-        if handler in self.shorteners:
-            result = self.shorteners[handler](url)
-
-            txn.execute("INSERT INTO urls VALUES (?, ?, ?)",
-                        (url, handler.lower(), result))
-            return result
-        return None
-
-    def shorten_url(self, url, handler):
-        """
-        Shorten a URL using the specified handler. This returns a Deferred.
-
-        :param url: The URL to shorten
-        :param handler: The name of the handler to shorten with
-
-        :type url: str
-        :type handler: str
-
-        :returns: Deferred which will fire with the result or None
-        :rtype: Deferred
-        """
-
-        self.logger.trace(_("URL: %s") % url)
-        self.logger.trace(_("Handler: %s") % handler)
-
-        return self.shortened.runInteraction(self._shorten, url, handler)
-
-    def add_handler(self, domain, handler):
-        """
-        API method to add a specialized URL handler.
-
-        This will fail if there's already a handler there for that domain.
-
-        :param domain: The domain to handle, without the 'www.'.
-        :param handler: The callable handler
-
-        :type domain: str
-        :type handler: callable
-
-        :returns: Whether the handler was registered
-        :rtype: bool
-        """
-
-        if domain.startswith("www."):
-            raise ValueError(_("Domain should not start with 'www.'"))
-        if domain not in self.handlers:
-            self.logger.trace(_("Handler registered for '%s': %s")
-                              % (domain, handler))
-            self.handlers[domain] = handler
-            return True
         return False
 
-    def add_shortener(self, name, handler):
-        """
-        API method to add a URL shortener. This is the same as
-        `add_handler`, but for URL shortening.
-        """
+    @inlineCallbacks
+    def run_handlers(self, _url, context):
+        if self.check_blacklist(_url, context):
+            self.logger.debug(
+                "URL {0} is blacklisted; ignoring...".format(_url)
+            )
+            return
 
-        if name not in self.shorteners:
-            self.logger.trace(_("Shortener '%s' registered: %s")
-                              % (name, handler))
-            self.shorteners[name] = handler
-            return True
+        for priority in reversed(sorted(self.handlers.iterkeys())):
+            for handler in self.handlers[priority]:
+                try:
+                    d = handler.match(_url, context)
+                except Exception:
+                    self.logger.exception(
+                        "Error caught while attempting to match "
+                        "handler {0}".format(
+                            handler.name
+                        )
+                    )
+
+                    continue
+
+                if isinstance(d, Deferred):
+                    r = yield d
+                else:
+                    r = d
+
+                if isinstance(r, Failure):
+                    self.logger.error(
+                        "Error caught while attempting to match "
+                        "handler {0}".format(
+                            handler.name
+                        )
+                    )
+
+                    r.printTraceback()
+                    continue
+
+                if r:
+                    try:
+                        d = handler.call(_url, context)
+                    except Exception:
+                        self.logger.exception(
+                            "Error caught while attempting to call "
+                            "handler {0}".format(
+                                handler.name
+                            )
+                        )
+
+                        continue
+
+                    if isinstance(d, Deferred):
+                        r = yield d
+                    else:
+                        r = d
+                    if isinstance(r, Failure):
+                        self.logger.error(
+                            "Error caught while attempting to call "
+                            "handler {0}".format(
+                                handler.name
+                            )
+                        )
+
+                        r.printTraceback()
+                        continue
+                    elif r == STOP_HANDLING:
+                        return
+
+    def add_handler(self, handler, priority=0):
+        if not self.has_handler(handler.name):  # Only add if it's not there
+            self.logger.debug("Adding handler: {}".format(handler.name))
+            handler.urls_plugin = self
+
+            self.handlers[priority].append(handler)
+        else:
+            self.logger.warn("Handler {} is already registered!".format(
+                handler.name
+            ))
+
+    def has_handler(self, name):
+        for priority in self.handlers.iterkeys():
+            for handler in self.handlers[priority]:
+                if name == handler.name:
+                    return True
+
         return False
 
-    def remove_handler(self, domain):
-        if domain.startswith("www."):
-            raise ValueError(_("Domain should not start with 'www.'"))
-        if domain in self.handlers:
-            del self.handlers[domain]
-            return True
-        return False
+    def remove_handler(self, handler):
+        for handler_list in self.handlers.itervalues():
+            for _handler in copy(handler_list):
+                if handler == _handler.name:
+                    handler_list.remove(_handler)
 
-    def remove_shortener(self, name):
-        if name in self.shorteners:
-            del self.shorteners[name]
-            return True
-        return False
+    def add_shortener(self, shortener):
+        if not self.has_handler(shortener.name):
+            shortener.urls_plugin = self
+            self.shorteners[shortener.name] = shortener
+
+    def has_shortener(self, shortener):
+        return shortener in self.shorteners
+
+    def remove_shortener(self, shortener):
+        if self.has_shortener(shortener):
+            del self.shorteners[shortener]
+
+    def translate_prefix(self, prefix):
+        # We translate some characters that are likely to be matched with
+        # different ones at the end of the path here, which is about the
+        # most we can do to fix this.
+
+        prefix = to_unicode(prefix)
+
+        for key, value in PREFIX_TRANSLATIONS.iteritems():
+            prefix = prefix.replace(key, value)
+
+        return prefix

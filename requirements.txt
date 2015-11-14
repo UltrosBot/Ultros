@@ -18,4 +18,6 @@ enum34
 weakreflist
 logbook
 pytimeparse
-requests
+service_identity
+txrequests
+idna

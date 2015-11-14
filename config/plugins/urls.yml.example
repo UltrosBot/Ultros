@@ -1,5 +1,9 @@
 spoofing:  # Sites to spoof differently. Normally we spoof Firefox, you can set an alternative string for user-agent spoofing, or disable it entirely with False.
   soundcloud.com: False
+
+# The default user-agent to use for all domains that don't have custom spoofing
+default_user_agent: "Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0"
+
 content_types:  # Content-types to parse the title from. Be careful when modifying this!
   - text/html
   - text/webviewhtml
@@ -7,53 +11,83 @@ content_types:  # Content-types to parse the title from. Be careful when modifyi
   - text/x-server-parsed-html
   - application/xhtml+xml
 
+
+redirects:
+  max: 15
+
+  domains:  # Only these domains will be allowed for pre-handler redirects
+  - "5z8.info"  # shadyurl.com
+  - "bit.ly"
+  - "cli.gs"
+  - "db.tt"
+  - "deck.ly"
+  - "dickensurl.com"
+  - "fb.me"
+  - "fur.ly"
+  - "gg.gg"
+  - "git.io"
+  - "goo.gl"
+  - "is.gd"
+  - "mcaf.ee"
+  - "nazr.in"  # Pssh
+  - "owl.ly"
+  - "redd.it"
+  - "su.pr"
+  - "t.co"
+  - "tinyurl.com"
+  - "turl.ca"
+  - "vurl.com"
+  - "waa.ai"
+  - "youtu.be"
+
+max_title_length: 150  # Truncate titles that are longer than this - note that this only applies
+                       # to the title itself, not the message containing it
+
 blacklist: []  # List of patterns to match against URLs; if matched then the URL will be ignored.
 # This uses regex! You've been warned!
 # Use 'single quotes' - if you use "double quotes" then YAML will try to validate your regex escapes.
 # You'll need to match the "http://" and "https://" parts yourself, too!
-# - '.*\/\/yahoo\.com($|\/).*'  # Everything under yahoo.com
-# - '.*\/\/youtube\.com\/watch\?.*'  # Youtube watch URLs
-# - '.*\/\/vimeo\.com\/.*\/staffpicks\/[^\/]'  # Vimeo staff picks
-# - '.*\/\/bad-site\.com\/.{5,}\/.*'  # Dirs that are 5 chars long have massive titles
+# - '.*//yahoo\.com($|/).*'  # Everything under yahoo.com
+# - '.*//youtube\.com/watch\?.*'  # Youtube watch URLs
+# - '.*//vimeo\.com/.*/staffpicks/[^/]'  # Vimeo staff picks
+# - '.*//bad-site\.com/.{5,}/.*'  # Dirs that are 5 chars long
 
-catcher:
-  # This is an advanced feature for people that run websites.
-  # If you don't need /every URL in a database/ or are technically challenged, then don't enable this.
-  use: no
-
-  table_prefix: "bot"  # All tables created will be prefixed with this.
-  dialect: "mysql"  # mysql or postgresql by default; you can define your own too if you want.
-
-  # Which database adapter to use for your database.
-  # We recommend PyMySQL for MySQL databases and Psychopg for PostgreSQL.
-  # You should install these separately with pip.
-  adapter: "pymysql"
-
-  params:  # These will be passed directly into the database connection contructor
-    # These params serve as an example for PyMySQL..
-    host: "127.0.0.1"
-    port: 3306
-    user: "ultros"
-    passwd: "password"
-    db: "ultros"
-    # And these params are an example for Psychopg..
-    ### host: "127.0.0.1"
-    ### port: 5432
-    ### user: "ultros"
-    ### password: "password"
-    ### database: "ultros"
-
-  # The desciptor is used to refer to the file internally, but is also used for logging.
-  # This should be in the form "user@host/database". We would love to generate this for you
-  # but each database adapter takes different params!
-  descriptor: "ultros@127.0.0.1/ultros"
-
-  ignored:  # A list of channels to ignore links from
-            # Channels are in the format "protocol:channel"
-  - "irc-esper:#staff"
+default_shortener: tinyurl  # The default shortener for channels without one set
+                            # This will revert to tinyurl if the shortener doesn't exist
 
 accept_language:
   # This section is entirely optional
   # default: "en"  # Sent for any site not in the list below
   domains:  # Leave out the starting "www."
     "example.com": "en-GB,en;q=0.9"
+
+sessions:  # Sessions allow cookies to be stored during requests and retrieved later on
+           # All matching is done using regular expressions - https://docs.python.org/2/library/re.html
+           # This sessions config doesn't apply to extra URL handlers - they're in charge of their own.
+  enable: True  # The global switch - Set to False to disable session support entirely
+
+  cookies:  # What to do with cookies in each session type
+            # session | Accept all cookies, but don't save anything to file
+            # save    | Save any cookies set by websites to the cookie jar
+            # update  | Discard any new cookies, but update any old ones that already exist
+            # discard | Discard all new cookies, don't save anything
+    group: save
+    global: discard
+
+  never: []  # Domains that should never store their sessions
+             # These are checked first, before the rest
+#  - 'facebook\.com'
+#  - '*\.facebook\.com'
+
+  group:  # Groups of domains that should share session stores and never use the global store
+          # These are checked after grouped domains - Any not matched after this stage use the global store
+    example_group:
+    - 'google\.com'
+    - '*\.google\.com'
+    - 'youtube\.com'
+    - '*\.youtube\.com'
+
+connection:
+  max_read_size: 16384
+
+version: 2  # This is used to detect whether your configuration is up-to-date. Change at your own risk.
