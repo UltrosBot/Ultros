@@ -25,6 +25,7 @@ pull request or otherwise get in contact with us - we'd love your help!
 """
 
 import argparse
+import locale
 import logging
 import os
 import sys
@@ -42,6 +43,8 @@ from twisted.python import log as twisted_log
 observer = twisted_log.PythonLoggingObserver(loggerName='Twisted')
 observer.start()
 
+# Attempt to guess the locale
+locale.setlocale(locale.LC_ALL, "")
 
 DESC = "Ultros - that squidoctopus bot thing"
 

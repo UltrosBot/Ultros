@@ -15,7 +15,7 @@ from plugins.urls.shorteners.exceptions import ShortenerDown
 from system.protocols.generic.channel import Channel
 from system.storage.formats import Formats
 from system.plugins.plugin import PluginObject
-from plugins.urls.constants import PREFIX_TRANSLATIONS
+from plugins.urls.constants import PREFIX_TRANSLATIONS, CASCADE, STOP_HANDLING
 from plugins.urls.events import URLsPluginLoaded
 from plugins.urls.handlers.website import WebsiteHandler
 from plugins.urls.matching import extract_urls
@@ -542,7 +542,7 @@ class URLsPlugin(PluginObject):
 
                         r.printTraceback()
                         continue
-                    elif not r:
+                    elif r == STOP_HANDLING:
                         return
 
     def add_handler(self, handler, priority=0):
@@ -567,7 +567,7 @@ class URLsPlugin(PluginObject):
     def remove_handler(self, handler):
         for handler_list in self.handlers.itervalues():
             for _handler in copy(handler_list):
-                if handler.name == _handler.name:
+                if handler == _handler.name:
                     handler_list.remove(_handler)
 
     def add_shortener(self, shortener):

@@ -83,8 +83,8 @@ class URLHandler(object):
         :type url: plugins.urls.url.URL
         :type context: dict
 
-        :return: True to cascade to other handlers, False otherwise
-        :rtype: bool
+        :return: constants.STOP_HANDLING or constants.CASCADE
+        :rtype: int
         """
 
         raise NotImplementedError()

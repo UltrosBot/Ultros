@@ -14,7 +14,7 @@ from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.web._newclient import ResponseNeverReceived
 from txrequests import Session
 
-from plugins.urls.constants import STATUS_CODES
+from plugins.urls.constants import STATUS_CODES, STOP_HANDLING
 from plugins.urls.cookiejar import ChocolateCookieJar
 from plugins.urls.handlers.handler import URLHandler
 from plugins.urls.resolver import AddressResolver
@@ -59,7 +59,7 @@ class WebsiteHandler(URLHandler):
             )
 
             self.plugin.logger.exception("Error while checking DNS")
-            returnValue(False)
+            returnValue(STOP_HANDLING)
             return
 
         if ip.is_loopback() or ip.is_private() or ip.is_link_local() \
@@ -68,7 +68,7 @@ class WebsiteHandler(URLHandler):
                 "Prevented connection to private/internal address"
             )
 
-            returnValue(False)
+            returnValue(STOP_HANDLING)
             return
 
         headers = {}
@@ -102,7 +102,7 @@ class WebsiteHandler(URLHandler):
             .addCallback(self.callback, url, context, session) \
             .addErrback(self.errback, url, context, session)
 
-        returnValue(False)
+        returnValue(STOP_HANDLING)
 
     def teardown(self):
         # Save all our cookie stores
