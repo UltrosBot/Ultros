@@ -277,7 +277,7 @@ class WebsiteHandler(URLHandler):
             title_limit = self.urls_plugin.config.get("max_title_length", 150)
 
             if len(title) > title_limit:
-                title = title[:title_limit-15] + u"... (truncated)"
+                title = title[:title_limit - 15] + u"... (truncated)"
 
             if response.status_code == requests.codes.ok:
                 context["event"].target.respond(

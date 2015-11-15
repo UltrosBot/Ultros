@@ -15,13 +15,12 @@ from plugins.urls.shorteners.exceptions import ShortenerDown
 from system.protocols.generic.channel import Channel
 from system.storage.formats import Formats
 from system.plugins.plugin import PluginObject
-from plugins.urls.constants import PREFIX_TRANSLATIONS, CASCADE, STOP_HANDLING
+from plugins.urls.constants import PREFIX_TRANSLATIONS, STOP_HANDLING
 from plugins.urls.events import URLsPluginLoaded
 from plugins.urls.handlers.website import WebsiteHandler
 from plugins.urls.matching import extract_urls
 from plugins.urls.shorteners.tinyurl import TinyURLShortener
 from plugins.urls.url import URL
-from utils.irc import strip_formatting
 from utils.misc import str_to_regex_flags
 
 __author__ = 'Gareth Coles'
@@ -473,7 +472,9 @@ class URLsPlugin(PluginObject):
 
     def check_blacklist(self, _url, context):
         for entry in context["config"]["blacklist"]:
-            if re.match(entry, _url.to_string(), flags=str_to_regex_flags("ui")):
+            if re.match(
+                    entry, _url.to_string(), flags=str_to_regex_flags("ui")
+            ):
                 self.logger.debug(
                     "Matched blacklist regex: %s" % entry
                 )
