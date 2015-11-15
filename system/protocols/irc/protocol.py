@@ -86,7 +86,6 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
     ssl = False
 
-    @property
     def get_nickname(self):
         if self.ourselves:
             return self.ourselves.nickname
