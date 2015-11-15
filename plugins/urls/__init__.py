@@ -21,6 +21,7 @@ from plugins.urls.handlers.website import WebsiteHandler
 from plugins.urls.matching import extract_urls
 from plugins.urls.shorteners.tinyurl import TinyURLShortener
 from plugins.urls.url import URL
+from utils.irc import strip_formatting
 from utils.misc import str_to_regex_flags
 
 __author__ = 'Gareth Coles'
@@ -201,6 +202,9 @@ class URLsPlugin(PluginObject):
         source = event.source
         target = event.target
         message = event.message
+
+        if protocol.TYPE == "irc":
+            message = strip_formatting(message)
 
         allowed = self.commands.perm_handler.check("urls.trigger", source,
                                                    target, protocol)
