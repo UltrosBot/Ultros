@@ -86,6 +86,12 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
     ssl = False
 
+    @property
+    def nickname(self):
+        if self.ourselves:
+            return self.ourselves.nickname
+        return self._nickname
+
     def __init__(self, name, factory, config):
         # TODO: Replace this with a super if we ever fully replace twisted irc
         # - and no longer inherit from it
@@ -137,7 +143,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             self.log.warning(_("Config doesn't contain network/password "
                                "entry"))
 
-        self.nickname = self.identity["nick"]
+        self._nickname = self.identity["nick"]
 
         self.invite_join = self.config.get("invite_join", False)
 
