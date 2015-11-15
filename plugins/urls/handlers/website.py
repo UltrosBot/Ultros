@@ -151,7 +151,12 @@ class WebsiteHandler(URLHandler):
         """
         conns_conf = self.urls_plugin.config.get("connections", {})
         max_read = conns_conf.get("max_read_size", 1024 * 16)
-        chunk_size = conns_conf.get("chunk_read_size", max_read)
+        # iter_content seems to only use chunk_size as a suggestion, so a large
+        # value (such as full value of max_read) can give a far large result
+        # than expected. Using max_read / 16 seems to give us a decent level of
+        # accuracy.
+        chunk_size = conns_conf.get("chunk_read_size",
+                                    max(1024, int(max_read / 16)))
 
         if "content-type" not in response.headers:
             response.headers["Content-Type"] = ""
@@ -192,7 +197,7 @@ class WebsiteHandler(URLHandler):
                             "Charset specified in header: {0}", charset)
                         break
 
-        chunks_left = max_read / chunk_size
+        amount_read = 0
         chunks = []
         self.plugin.logger.trace("Starting read...")
         # We must close this when finished otherwise they'll hang if we don't
@@ -200,12 +205,16 @@ class WebsiteHandler(URLHandler):
         with closing(response) as c_resp:
             for chunk in c_resp.iter_content(chunk_size=chunk_size,
                                              decode_unicode=decode_unicode):
+                # See comment beside chunk_size def - it's not a fixed limit
                 chunks.append(chunk)
-                self.plugin.logger.trace("Read a chunk")
-                chunks_left -= 1
-                if chunks_left <= 0:
+                amount_read += len(chunk)
+                self.plugin.logger.trace("Read a chunk of {0} bytes",
+                                         len(chunk))
+                if amount_read >= max_read:
                     self.plugin.logger.debug(
-                        "Stopped reading response after {0} bytes", max_read)
+                        "Stopped reading response after {0} bytes",
+                        amount_read
+                    )
                     break
         self.plugin.logger.trace("Done reading")
         # chunks can be bytes or unicode
