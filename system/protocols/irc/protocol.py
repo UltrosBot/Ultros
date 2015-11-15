@@ -261,7 +261,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
             if perform:
                 for line in perform:
-                    self.sendLine(line.replace("{NICK}", self.get_nickname),
+                    self.sendLine(line.replace("{NICK}", self.get_nickname()),
                                   output=True)
 
             reactor.callLater(5, do_channel_joins)
@@ -353,7 +353,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             self.log.trace(_("Message from irregular user: %s") % user)
             user_obj = User(self, nickname=user)
 
-        if self.utils.compare_nicknames(channel, self.get_nickname):
+        if self.utils.compare_nicknames(channel, self.get_nickname()):
             channel_obj = user_obj
         else:
             channel_obj = self.get_channel(channel)
@@ -371,7 +371,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         if not event.cancelled:
             result = self.command_manager.process_input(
                 event.message, user_obj, channel_obj, self,
-                self.control_chars, self.get_nickname
+                self.control_chars, self.get_nickname()
             )
 
             for case, default in Switch(result[0]):
@@ -419,7 +419,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             self.log.trace(_("Notice from irregular user: %s") % user)
             user_obj = User(self, nickname=user, is_tracked=False)
 
-        if self.utils.compare_nicknames(channel, self.get_nickname):
+        if self.utils.compare_nicknames(channel, self.get_nickname()):
             channel_obj = user_obj
         else:
             channel_obj = self.get_channel(channel)
@@ -480,7 +480,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             self.log.trace(_("CTCP from irregular user: %s") % user)
             user_obj = User(self, nickname=user, is_tracked=False)
 
-        if self.utils.compare_nicknames(channel, self.get_nickname):
+        if self.utils.compare_nicknames(channel, self.get_nickname()):
             channel_obj = user_obj
         else:
             channel_obj = self.get_channel(channel)
@@ -597,7 +597,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         # the target is ourself, rather than a user object. Perhaps this should
         # be changed for clarity?
         channel_obj = None
-        if not self.utils.compare_nicknames(self.get_nickname, channel):
+        if not self.utils.compare_nicknames(self.get_nickname(), channel):
             channel_obj = self.get_channel(channel)
 
         # Handle the mode changes
@@ -682,7 +682,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                                           host,
                                           channel_obj)
 
-        if self.utils.compare_nicknames(nickname, self.get_nickname):
+        if self.utils.compare_nicknames(nickname, self.get_nickname()):
             # User-tracking stuff
             if self.ourselves is None:
                 self.ourselves = user_obj
