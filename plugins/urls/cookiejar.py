@@ -68,5 +68,6 @@ class ChocolateCookieJar(MozillaCookieJar):
 
     def save(self, filename=None, ignore_discard=False, ignore_expires=False):
         if self.mode not in ("discard", "session"):
-            return LWPCookieJar.save(self, filename, ignore_discard,
-                                     ignore_expires)
+            return MozillaCookieJar.save(
+                self, filename, ignore_discard, ignore_expires
+            )
