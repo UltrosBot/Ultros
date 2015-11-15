@@ -250,7 +250,7 @@ class YamlConfig(Config):
     def values(self):
         return self.data.values()
 
-    def get(self, key, default):
+    def get(self, key, default=None):
         return self.data.get(key, default)
 
     keys.__doc__ = data.keys.__doc__
@@ -403,7 +403,7 @@ class JSONConfig(Config):
     def values(self):
         return self.data.values()
 
-    def get(self, key, default):
+    def get(self, key, default=None):
         return self.data.get(key, default)
 
     keys.__doc__ = data.keys.__doc__
@@ -496,7 +496,7 @@ class MemoryConfig(Config):
     def values(self):
         return self.data.values()
 
-    def get(self, key, default):
+    def get(self, key, default=None):
         return self.data.get(key, default)
 
     keys.__doc__ = data.keys.__doc__
@@ -596,7 +596,7 @@ class ConfigDirectory(Config):
     def values(self):
         return self.data.values()
 
-    def get(self, key, default):
+    def get(self, key, default=None):
         return self.data.get(key, default)
 
     keys.__doc__ = data.keys.__doc__

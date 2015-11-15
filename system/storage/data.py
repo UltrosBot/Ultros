@@ -303,7 +303,7 @@ class YamlData(Data):
     def values(self):
         return self.data.values()
 
-    def get(self, key, default):
+    def get(self, key, default=None):
         return self.data.get(key, default)
 
     keys.__doc__ = data.keys.__doc__
@@ -431,7 +431,7 @@ class MemoryData(Data):
     def values(self):
         return self.data.values()
 
-    def get(self, key, default):
+    def get(self, key, default=None):
         return self.data.get(key, default)
 
     keys.__doc__ = data.keys.__doc__
@@ -637,7 +637,7 @@ class JSONData(Data):
     def values(self):
         return self.data.values()
 
-    def get(self, key, default):
+    def get(self, key, default=None):
         return self.data.get(key, default)
 
     keys.__doc__ = data.keys.__doc__
