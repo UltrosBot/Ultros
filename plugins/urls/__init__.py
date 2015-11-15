@@ -204,7 +204,7 @@ class URLsPlugin(PluginObject):
         message = event.message
 
         if protocol.TYPE == "irc":
-            message = strip_formatting(message)
+            message = protocol.utils.strip_formatting(message)
 
         allowed = self.commands.perm_handler.check("urls.trigger", source,
                                                    target, protocol)
