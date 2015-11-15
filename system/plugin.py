@@ -5,4 +5,4 @@ __author__ = "Gareth Coles"
 
 PluginObject = system.plugins.plugin.PluginObject
 
-__all__ = ["PluginObject"]
+__all__ = ("PluginObject", )

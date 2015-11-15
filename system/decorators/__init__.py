@@ -24,7 +24,7 @@ run_async_threadpool = __deprecated("Import from decorators.threads")(
 run_async_threadpool_callback = __deprecated("Import from decorators.threads")(
     run_async_threadpool_callback)
 
-__all__ = ["threads",
+__all__ = ("threads",
            "filters",
            "ratelimit",
            "log",
@@ -33,4 +33,4 @@ __all__ = ["threads",
            "run_async",
            "run_async_daemon",
            "run_async_threadpool",
-           "run_async_threadpool_callback"]
+           "run_async_threadpool_callback")

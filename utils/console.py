@@ -15,7 +15,7 @@ _ = Translations().get()
 
 env = os.environ
 
-__all__ = ['getTerminalSize']
+__all__ = ('getTerminalSize', )
 
 
 def getTerminalSize():
