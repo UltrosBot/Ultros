@@ -1,13 +1,13 @@
 # coding=utf-8
 
-from cookielib import LWPCookieJar
+from cookielib import MozillaCookieJar
 from plugins.urls.constants import COOKIE_MODES, COOKIE_MODE_DISCARD, \
     COOKIE_MODE_SESSION, COOKIE_MODE_SAVE, COOKIE_MODE_UPDATE
 
 __author__ = 'Gareth Coles'
 
 
-class ChocolateCookieJar(LWPCookieJar):
+class ChocolateCookieJar(MozillaCookieJar):
     # Because chocolate cookies are /clearly/ better
 
     mode = "save"  # Save, update, discard?
