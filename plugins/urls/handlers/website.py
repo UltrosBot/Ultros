@@ -309,24 +309,16 @@ class WebsiteHandler(URLHandler):
 
     @inlineCallbacks
     def errback(self, error, url, context, session):
-        self.plugin.logger.error("Error parsing URL")
+        context["event"].target.respond(
+            u'[Error] Failed to handle URL: {}'.format(url.to_string())
+        )
 
         if isinstance(error.value, ResponseNeverReceived):
             for f in error.value.reasons:
                 f.printDetailedTraceback()
-                context["event"].target.respond(
-                    u'"{0}" at {1}'.format(
-                        to_unicode(f.getErrorMessage()),
-                        url.domain
-                    )
-                )
+                self.plugin.logger.error(f.getErrorMessage())
         else:
-            context["event"].target.respond(
-                u'"{0}" at {1}'.format(
-                    to_unicode(error.getErrorMessage()),
-                    url.domain
-                )
-            )
+            self.plugin.logger.error(error.getErrorMessage())
             error.printDetailedTraceback()
 
         self.save_session(session)
