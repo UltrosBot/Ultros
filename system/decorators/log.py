@@ -147,7 +147,7 @@ def deprecated_class(hint_message=None, logger=None):
         if hint_message is not None:
             msg += " - ".format(hint_message)
 
-        class WrapperClass(cls, DeprecatedClassMixin):
+        class WrapperClass(cls):
             def __init__(self, *args, **kwargs):
                 try:
                     logger.warning(
@@ -160,8 +160,3 @@ def deprecated_class(hint_message=None, logger=None):
 
         return WrapperClass
     return wrap_class
-
-
-class DeprecatedClassMixin(object):
-    def __init__(self, *args, **kwargs):
-        pass
