@@ -255,7 +255,7 @@ class PluginManager(object):
                             info.author
                         )
                     )
-                did_load.append(info)
+                did_load.append(info.name)
             elif result is PluginState.AlreadyLoaded:
                 if output:
                     self.log.warning("Plugin already loaded: %s" % info.name)
@@ -267,7 +267,7 @@ class PluginManager(object):
                 self.log.debug("DependencyMissing")
 
         self.log.info("Loaded {} plugins: {}".format(
-            len(did_load), ", ".join([x.name for x in did_load])
+            len(did_load), ", ".join(sorted(did_load))
         ))
 
     def load_plugin(self, name):
