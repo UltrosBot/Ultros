@@ -1,17 +1,17 @@
 # coding=utf-8
 
+import os
+import os.path
+import re
+
+from system.translations import Translations
+
 """
 Miscellaneous functions that are used all over the code.
 These are used both by the main bot, and the package manager.
 """
 
 __author__ = "Gareth Coles"
-
-import os
-import os.path
-
-import re
-from system.translations import Translations
 _ = Translations().get()
 
 

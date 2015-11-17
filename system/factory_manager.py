@@ -1,6 +1,4 @@
 # coding=utf-8
-__author__ = "Gareth Coles"
-
 import signal
 
 from twisted.internet import reactor
@@ -16,16 +14,18 @@ from system.logging import logger
 from system.metrics import Metrics
 from system.plugins.manager import PluginManager
 from system.singleton import Singleton
+
 from system.storage.formats import YAML
 from system.storage.config import Config
 from system.storage.manager import StorageManager
 
 from system.logging.logger import getLogger
-
 from system.translations import Translations
-_ = Translations().get()
 
 from utils.misc import valid_path
+
+__author__ = "Gareth Coles"
+_ = Translations().get()
 
 
 class Manager(object):

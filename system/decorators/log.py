@@ -2,6 +2,7 @@
 Logging-related decorators for wrapping functions. Also includes a way
 of deprecating things.
 """
+import inspect
 
 import logbook as logging
 import traceback
@@ -118,9 +119,49 @@ def deprecated(hint_message=None, logger=None):
                         traceback.extract_stack()[-2:-1]
                     )[0].strip()
                 )
-            except Exception:
+            except Exception as e:
                 # In case the traceback is derp and the index assumptions break
+                logger.trace("Exception: {}".format(e))
                 logger.warning(msg)
             return func(*args, **kwargs)
         return wrapper
     return wrap_func
+
+
+def deprecated_class(hint_message=None, logger=None):
+    """
+    Logs a warning message notifying the user that the wrapped class is
+    deprecated. A hint message may be supplied to append information on what
+    the new way is.
+
+    :param hint_message: Optional help message
+    :param logger: Logger to log to (default: generic logger)
+    """
+
+    if logger is None:
+        logger = _log
+
+    def wrap_class(cls):
+        msg = "Class usage deprecated: {}".format(cls.__name__)
+
+        if hint_message is not None:
+            msg += " - ".format(hint_message)
+
+        class WrapperClass(cls, DeprecatedClassMixin):
+            def __init__(self, *args, **kwargs):
+                try:
+                    logger.warning(
+                        msg + "\n    File: {}".format(inspect.getfile(cls))
+                    )
+                except Exception:
+                    logger.warning(msg)
+
+                super(WrapperClass, self).__init__(*args, **kwargs)
+
+        return WrapperClass
+    return wrap_class
+
+
+class DeprecatedClassMixin(object):
+    def __init__(self, *args, **kwargs):
+        pass
