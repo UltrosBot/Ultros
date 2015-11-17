@@ -263,6 +263,9 @@ class EventManager(object):
         :type threaded: bool
         :type from_thread: bool
         """
+        self.logger.trace(
+            "Running callbacks: {} -> {}".format(callback, event)
+        )
         if from_thread:
             # Mostly useful for DB async callbacks, which are not supposed
             # to do any work.

@@ -1,10 +1,10 @@
-"""
-General events that are not specific to any protocols.
-"""
+from system.events.base import BaseEvent
 
 __author__ = 'Gareth Coles'
 
-from system.events.base import BaseEvent
+"""
+General events that are not specific to any protocols.
+"""
 
 
 class GeneralEvent(BaseEvent):
@@ -39,6 +39,46 @@ class PluginsLoadedEvent(GeneralEvent):
         self.loaded_plugins = plugins
 
         super(PluginsLoadedEvent, self).__init__(caller)
+
+
+class PluginLoadedEvent(GeneralEvent):
+    """
+    This event is fired every time a plugin is loaded.
+
+    The caller will be the plugin manager instead of a protocol. It includes
+    the instance of the plugin that was loaded - You can get the name with
+    **plugin.name**.
+
+    Remember: Don't store a reference to the plugin! This *will* cause
+    memory leaks and unintended behavior!
+
+    This event is not cancellable.
+    """
+
+    plugin = None
+
+    def __init__(self, caller, plugin):
+        self.plugin = plugin
+
+        super(PluginLoadedEvent, self).__init__(caller)
+
+
+class PluginUnloadedEvent(PluginLoadedEvent):
+    """
+    This event is fired every time a plugin is unloaded.
+
+    The caller will be the plugin manager instead of a protocol. It includes
+    the instance of the plugin that was loaded - You can get the name with
+    **plugin.name**.
+
+    Remember: Don't store a reference to the plugin! This *will* cause
+    memory leaks and unintended behavior!
+
+    The plugin will be fully unloaded after this event has been fired, however,
+    **plugin.deactivate()** has already been called at this point.
+
+    This event is not cancellable.
+    """
 
 
 class ReactorStartedEvent(GeneralEvent):

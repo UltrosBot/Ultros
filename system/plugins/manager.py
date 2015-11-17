@@ -2,12 +2,14 @@ import glob
 import importlib
 import inspect
 import sys
-from copy import copy
-
 import yaml
 
+from copy import copy
 from distutils.version import StrictVersion
+
 from system.enums import PluginState
+from system.event_manager import EventManager
+from system.events.general import PluginLoadedEvent
 from system.plugins.info import Info
 from system.plugins.plugin import PluginObject
 from system.singleton import Singleton
@@ -51,6 +53,8 @@ class PluginManager(object):
 
     info_objects = {}
     plugin_objects = {}
+
+    events = EventManager()
 
     def __init__(self, factory_manager=None,
                  path="./plugins", module="plugins"):
@@ -383,6 +387,8 @@ class PluginManager(object):
                 self.log.exception("Error setting up plugin: %s" % info.name)
                 return PluginState.LoadError
             else:
+                event = PluginLoadedEvent(self, obj)
+                self.events.run_callback("PluginLoaded", event)
                 return PluginState.Loaded
 
     def unload_plugins(self, output=True):
@@ -440,6 +446,9 @@ class PluginManager(object):
             d = obj.deactivate()
         except Exception:
             self.log.exception("Error deactivating plugin: %s" % obj.info.name)
+
+        event = PluginLoadedEvent(self, obj)
+        self.events.run_callback("PluginUnloaded", event)
 
         del self.plugin_objects[name]
         return PluginState.Unloaded
