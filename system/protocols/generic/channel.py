@@ -6,14 +6,27 @@ _ = Translations().get()
 
 
 class Channel(object):
+    """
+    A channel - Represents a channel on a protocol. Subclass this!
 
-    name = ""
-    users = None
+    @ivar name The name of the channel
+    @ivar users A set containing all the User objects in the channel
+    """
 
     def __init__(self, name, protocol=None):
-        self.name = name
-        self.protocol = protocol
-        self.users = set()
+        """
+        Initialise the channel. Remember to call super in subclasses!
+
+        :arg name: The name of the channel
+        :type name: str
+
+        :arg protocol: The protocol object this channel belongs to
+        :type protocol: Protocol
+        """
+
+        self.name = name  # This is essential!
+        self.protocol = protocol  # May be None for one-off or fake channels
+        self.users = set()  # This is also essential!
 
     def respond(self, message):
         raise NotImplementedError(_("This method must be overridden"))
