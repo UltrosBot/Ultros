@@ -1,3 +1,20 @@
+import glob
+import importlib
+import inspect
+import sys
+from copy import copy
+
+import yaml
+
+from distutils.version import StrictVersion
+from system.enums import PluginState
+from system.plugins.info import Info
+from system.plugins.plugin import PluginObject
+from system.singleton import Singleton
+from system.logging.logger import getLogger
+
+__author__ = 'Gareth Coles'
+
 """
 The plugin manager. It manages plugins.
 
@@ -5,19 +22,18 @@ The manager is in charge of discovering, loading, unloading, reloading and
 generally looking after all things plugin.
 """
 
-__author__ = 'Gareth Coles'
+OPERATORS = {
+    ">": lambda x, y: x > y,
+    ">=": lambda x, y: x >= y,
+    "<": lambda x, y: x < y,
+    "<=": lambda x, y: x <= y,
+    "==": lambda x, y: x == y,
+    "!=": lambda x, y: x != y,
+}
 
-import glob
-import importlib
-import inspect
-import sys
-import yaml
 
-from system.enums import PluginState
-from system.plugins.info import Info
-from system.plugins.plugin import PluginObject
-from system.singleton import Singleton
-from system.logging.logger import getLogger
+def MISSING_OPERATOR(x, y):
+    return True
 
 
 class PluginManager(object):
@@ -150,19 +166,52 @@ class PluginManager(object):
             for x in xrange(len(to_load) - 1, -1, -1):
                 info = to_load[x][0]
                 deps = to_load[x][1]
+
                 self.log.trace(
                     "Checking dependencies for plugins: %s" % info.name
                 )
-                for loaded in load_order:
-                    # I know this isn't super efficient, but it doesn't matter,
-                    # it's a tiny list. This comment exists purely for myself.
-                    if loaded.name.lower() in deps:
-                        self.log.trace("To-load in deps")
-                        deps.remove(loaded.name.lower())
-                        if len(deps) == 0:
-                            self.log.trace("No more deps")
-                            break
-                        self.log.trace(deps)
+
+                for i, dep in enumerate(copy(deps)):
+                    if " " in dep:
+                        dep_name, dep_operator, dep_version = dep.split(" ")
+                    else:
+                        dep_name = dep
+                        dep_operator = None
+                        dep_version = None
+
+                    operator_func = OPERATORS.get(
+                        dep_operator, MISSING_OPERATOR
+                    )
+
+                    if dep_version:
+                        parsed_dep_version = StrictVersion(dep_version)
+                    else:
+                        parsed_dep_version = dep_version
+
+                    for loaded in load_order:
+                        # I know this isn't super efficient, but it doesn't
+                        # matter, it's a tiny list. This comment exists
+                        # purely for myself.
+
+                        if loaded.name.lower() == dep_name:
+                            self.log.trace("Found a dependency")
+                            loaded_version = StrictVersion(loaded.info.version)
+
+                            if not operator_func(
+                                    loaded_version, parsed_dep_version
+                            ):
+                                break
+
+                            deps[i] = None
+
+                            if deps.count(None) == len(deps):
+                                self.log.trace("No more deps")
+                                break
+                            self.log.trace(deps)
+
+                if None in deps:
+                    deps.remove(None)
+
                 if len(deps) == 0:
                     # No outstanding dependencies - safe to load
                     self.log.trace(
@@ -176,13 +225,15 @@ class PluginManager(object):
         if len(to_load) > 0:
             for plugin in to_load:
                 self.log.warning(
-                    'Unable to load plugin "%s" due to missing dependencies: '
+                    'Unable to load plugin "%s" due to failed dependencies: '
                     '%s' %
                     (
                         plugin[0].name,
                         ", ".join(plugin[1])
                     )
                 )
+
+        did_load = []
 
         # Deal with loadable plugins
         for info in load_order:
@@ -191,6 +242,7 @@ class PluginManager(object):
             result = self.load_plugin(info.name)
 
             if result is PluginState.LoadError:
+                self.log.debug("LoadError")
                 pass  # Already output by load_plugin
             elif result is PluginState.NotExists:  # Should never happen
                 self.log.warning("No such plugin: %s" % info.name)
@@ -203,6 +255,7 @@ class PluginManager(object):
                             info.author
                         )
                     )
+                did_load.append(info)
             elif result is PluginState.AlreadyLoaded:
                 if output:
                     self.log.warning("Plugin already loaded: %s" % info.name)
@@ -211,7 +264,11 @@ class PluginManager(object):
                 self.log.warn("This means the plugin disabled itself - did "
                               "it output anything on its own?")
             elif result is PluginState.DependencyMissing:
-                pass  # Already output by load_plugin
+                self.log.debug("DependencyMissing")
+
+        self.log.info("Loaded {} plugins: {}".format(
+            len(did_load), ", ".join([x.name for x in did_load])
+        ))
 
     def load_plugin(self, name):
         """
@@ -237,7 +294,29 @@ class PluginManager(object):
         for dep in info.core.dependencies:
             dep = dep.lower()
 
-            if dep not in self.plugin_objects:
+            if " " in dep:
+                dep_name, dep_operator, dep_version = dep.split(" ")
+            else:
+                dep_name = dep
+                dep_operator = None
+                dep_version = None
+
+            operator_func = OPERATORS.get(
+                dep_operator, MISSING_OPERATOR
+            )
+
+            if dep_version:
+                parsed_dep_version = StrictVersion(dep_version)
+            else:
+                parsed_dep_version = dep_version
+
+            if dep_name not in self.plugin_objects:
+                return PluginState.DependencyMissing
+
+            loaded = self.plugin_objects[dep_name]
+            loaded_version = StrictVersion(loaded.info.version)
+
+            if not operator_func(loaded_version, parsed_dep_version):
                 return PluginState.DependencyMissing
 
         module = info.get_module()
