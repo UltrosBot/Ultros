@@ -1,3 +1,11 @@
+# coding=utf-8
+
+from plugins.auth.crypto import get_algo
+from system.translations import Translations
+from utils.password import mkpasswd
+
+from weakreflist.weakreflist import WeakList
+
 """
 Authorization handler. This is in charge of logins and accounts.
 
@@ -13,13 +21,6 @@ documented methods.
 """
 
 __author__ = 'Gareth Coles'
-
-import hashlib
-
-from system.translations import Translations
-from utils.password import mkpasswd
-
-from weakreflist.weakreflist import WeakList
 _ = Translations().get()
 
 
@@ -42,8 +43,18 @@ class authHandler(object):
         self.blacklist = blacklist
         self.plugin = plugin
 
+        get_algo(self.algo)  # To be sure that it works
+
         self.create_superadmin_account()
         self.create_blacklisted_passwords()
+
+    @property
+    def algo(self):
+        return self.plugin.config.get("auth-algo", "bcrypt")
+
+    @property
+    def replace_hashes(self):
+        return self.plugin.config.get("replace-hashes", True)
 
     def add_logged_in_user(self, username, user):
         """
@@ -187,7 +198,7 @@ class authHandler(object):
         :rtype: str
         """
 
-        return hashlib.sha512(salt + password).hexdigest()
+        return get_algo(self.algo).hash(password, salt)
 
     def reload(self):
         """
@@ -215,12 +226,27 @@ class authHandler(object):
             if username not in self.data:
                 return False
             user_data = self.data[username]
-        calculated = self.hash(user_data["salt"], password)
-        real_hash = user_data["password"]
 
-        if calculated == real_hash:
-            return True
-        return False
+        algo = user_data.get("algo", "sha256")
+        algo_obj = get_algo(algo)
+
+        result = algo_obj.check(
+            user_data["password"], password, user_data["salt"]
+        )
+
+        if self.replace_hashes and algo != self.algo and result:
+            new_algo = get_algo(self.algo)
+            salt = new_algo.gen_salt()
+            hash = new_algo.hash(password, salt)
+
+            with self.data:
+                self.data[username] = {
+                    "algo": self.algo,
+                    "salt": salt,
+                    "password": hash
+                }
+
+        return result
 
     def create_user(self, username, password):
         """
@@ -245,12 +271,14 @@ class authHandler(object):
             if username in self.data:
                 return False
 
-            salt = mkpasswd(64)
-            hashed = self.hash(salt, password)
+            algo = get_algo(self.algo)
+            salt = algo.gen_salt()
+            hashed = algo.hash(password, salt)
 
             self.data[username] = {
                 "password": hashed,
-                "salt": salt
+                "salt": salt,
+                "algo": self.algo
             }
 
         return True
@@ -277,20 +305,23 @@ class authHandler(object):
         """
 
         username = username.lower()
+
         with self.data:
             if username not in self.data:
                 return False
-            user_data = self.data[username]
-            calculated = self.hash(user_data["salt"], old)
-            real_hash = user_data["password"]
-            if calculated != real_hash:
+
+            if not self.check_login(username, old):
                 return False
 
-            salt = mkpasswd(64, 21, 22, 21)
-            hashed = self.hash(salt, new)
+            algo = get_algo(self.data[username]["algo"])
+            salt = algo.gen_salt()
+            hashed = algo.hash(new, salt)
 
-            self.data[username]["password"] = hashed
-            self.data[username]["salt"] = salt
+            self.data[username] = {
+                "password": hashed,
+                "salt": salt,
+                "algo": self.data[username]["algo"]
+            }
         return True
 
     def delete_user(self, username):
@@ -334,15 +365,7 @@ class authHandler(object):
         :rtype: bool
         """
 
-        username = username.lower()
-        with self.data:
-            if username not in self.data:
-                return False
-            user_data = self.data[username]
-        calculated = self.hash(user_data["salt"], password)
-        real_hash = user_data["password"]
-
-        if calculated == real_hash:
+        if self.check_login(username, password):
             user.authorized = True
             user.auth_name = username
 

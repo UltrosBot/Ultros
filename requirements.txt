@@ -21,3 +21,5 @@ pytimeparse
 service_identity
 txrequests
 idna
+pbkdf2
+bcrypt

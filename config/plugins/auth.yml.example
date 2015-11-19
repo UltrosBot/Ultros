@@ -1,10 +1,14 @@
 # Example settings of the basic password-based authentication plugin
 # If you're not using the auth or permissions from this, you may as well just
-#  disable this plugin.
+# disable this plugin.
 
 use-superuser: yes # Allow users to be set as superadmin?
 use-auth: yes # Use the authentication provider?
 use-permissions: yes # Use the permissions provider?
+
+# Supports bcrypt, pbkdf2, and all hashlib algos except for sha, sha1, md4 and md5
+auth-algo: bcrypt  # Considered the best, but is slowest
+replace-hashes: true  # Replace hashes and salts that don't use the algo specified above
 
 # Permissions themselves are not defined in this file;
 #  see data/plugins/auth/permissions.yml for that.
