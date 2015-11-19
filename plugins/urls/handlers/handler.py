@@ -27,7 +27,8 @@ class URLHandler(object):
     ...     "auth": lambda x: x is not None
     ...     "domain": re.compile(u"[a-zA-Z]+"),
     ...     "port": lambda x: x > 8080,
-    ...     "path": lambda x: len(x) > 10
+    ...     "path": lambda x: len(x) > 10,
+    ...     "permission": "urls.trigger.example"  # If you need one
     ... }
     ...
     >>>
@@ -48,7 +49,10 @@ class URLHandler(object):
         "auth": None,
         "domain": None,
         "port": None,
-        "path": None
+        "path": None,
+
+        # Check the user and source for a permission - This is not a URL field
+        "permission": None,
     }
 
     def __init__(self, plugin):
@@ -107,6 +111,15 @@ class URLHandler(object):
 
         for key in self.criteria.iterkeys():
             value = self.criteria.get(key)
+
+            if key == "permission":
+                event = context["event"]
+                result = self.plugin.commands.perm_handler.check(
+                    value, event.source, event.target, event.protocol
+                )
+                if not result:
+                    return False
+                continue
 
             if callable(value):  # Function, lambda, etc
                 if value(getattr(url, key)):
