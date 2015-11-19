@@ -227,7 +227,7 @@ class authHandler(object):
                 return False
             user_data = self.data[username]
 
-        algo = user_data.get("algo", "sha256")
+        algo = user_data.get("algo", "sha512")
         algo_obj = get_algo(algo)
 
         result = algo_obj.check(
