@@ -115,7 +115,7 @@ class URLHandler(object):
             if key == "permission":
                 event = context["event"]
                 result = self.plugin.commands.perm_handler.check(
-                    value, event.source, event.target, event.protocol
+                    value, event.source, event.target, event.caller
                 )
                 if not result:
                     return False
