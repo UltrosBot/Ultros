@@ -174,39 +174,6 @@ exception
 
     # Password
 
-    def test_password_conforms(self):
-        """
-        UTILS | Test whether passwords conform to defined specifications
-        """
-
-        digits = "0123456789"
-        lower = "abcdefghijklmnopqrstuvwxyz"
-        upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-        num_digits = 0
-        num_lower = 0
-        num_upper = 0
-        num_invalid = 0
-
-        passw = password.mkpasswd(10, 3, 3, 3)
-        nosetools.eq_(10, len(passw))
-
-        for char in passw:
-            if char in digits:
-                num_digits += 1
-            elif char in lower:
-                num_lower += 1
-            elif char in upper:
-                num_upper += 1
-            else:
-                num_invalid += 1
-
-        nosetools.assert_true(num_digits > 2)
-        nosetools.assert_true(num_lower > 2)
-        nosetools.assert_true(num_upper > 2)
-
-        nosetools.eq_(0, num_invalid)
-
     def test_password_short_password_uniqueness(self):
         """
         UTILS | Test uniqueness of short generated passwords

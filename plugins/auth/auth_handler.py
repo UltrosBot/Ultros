@@ -146,7 +146,7 @@ class authHandler(object):
         self.plugin.logger.info(_("Remember to delete this account when "
                                   "you've created your own admin account!"))
 
-        password = mkpasswd(32, 11, 11, 10)
+        password = mkpasswd(32)
 
         self.create_user(_("superadmin"), password)
 
@@ -245,7 +245,7 @@ class authHandler(object):
             if username in self.data:
                 return False
 
-            salt = mkpasswd(64, 21, 22, 21)
+            salt = mkpasswd(64)
             hashed = self.hash(salt, password)
 
             self.data[username] = {
