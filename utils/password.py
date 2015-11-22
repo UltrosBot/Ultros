@@ -7,9 +7,6 @@ This is a convenience function for generating random passwords.
 You can also run this file directly if you want a 32-length password.
 """
 
-import string
-from time import time
-from itertools import chain
 from random import SystemRandom
 
 
