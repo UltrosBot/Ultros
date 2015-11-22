@@ -269,8 +269,8 @@ class WebsiteHandler(URLHandler):
 
         soup = BeautifulSoup(content)
 
-        if soup.title and soup.title.string:
-            title = soup.title.string.strip()
+        if soup.title and soup.title.text:
+            title = soup.title.text.strip()
             title = re.sub("\s+", " ", title)
             title = to_unicode(title)
 
