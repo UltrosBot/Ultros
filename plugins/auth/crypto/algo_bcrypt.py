@@ -1,8 +1,8 @@
 # coding=utf-8
+import bcrypt
+from kitchen.text.converters import to_bytes
 
 from plugins.auth.crypto.algo_base import BaseAlgorithm
-
-import bcrypt
 
 __author__ = 'Gareth Coles'
 
@@ -13,7 +13,7 @@ class BcryptAlgo(BaseAlgorithm):
 
     def hash(self, value, salt):
         return bcrypt.hashpw(
-            value, salt=salt
+            to_bytes(value), salt=salt
         )
 
     def gen_salt(self):
