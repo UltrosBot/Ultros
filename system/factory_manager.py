@@ -4,9 +4,9 @@ import signal
 from twisted.internet import reactor
 
 from system.command_manager import CommandManager
-from system.constants import *
+# from system.constants import *
 from system.decorators.log import deprecated
-from system.enums import PluginState
+from system.enums import PluginState, ProtocolState
 from system.event_manager import EventManager
 from system.events.general import PluginsLoadedEvent, ReactorStartedEvent
 from system.factory import Factory
@@ -263,16 +263,16 @@ class Manager(object):
             conf_location = "protocols/%s.yml" % protocol
             result = self.load_protocol(protocol, conf_location)
 
-            if result is not PROTOCOL_LOADED:
-                if result is PROTOCOL_ALREADY_LOADED:
+            if result is not ProtocolState.Loaded:
+                if result is ProtocolState.AlreadyLoaded:
                     self.logger.warn(_("Protocol is already loaded."))
-                elif result is PROTOCOL_CONFIG_NOT_EXISTS:
+                elif result is ProtocolState.ConfigNotExists:
                     self.logger.warn(_("Unable to find protocol "
                                        "configuration."))
-                elif result is PROTOCOL_LOAD_ERROR:
+                elif result is ProtocolState.LoadError:
                     self.logger.warn(_("Error detected while loading "
                                        "protocol."))
-                elif result is PROTOCOL_SETUP_ERROR:
+                elif result is ProtocolState.SetupError:
                     self.logger.warn(_("Error detected while setting up "
                                        "protocol."))
 
@@ -296,7 +296,7 @@ class Manager(object):
         """
 
         if name in self.factories:
-            return PROTOCOL_ALREADY_LOADED
+            return ProtocolState.AlreadyLoaded
 
         config = conf_location
         if not isinstance(conf_location, Config):
@@ -313,23 +313,23 @@ class Manager(object):
                 config = self.storage.get_file(self, "config", YAML,
                                                conf_location)
                 if not config.exists:
-                    return PROTOCOL_CONFIG_NOT_EXISTS
+                    return ProtocolState.ConfigNotExists
             except Exception:
                 self.logger.exception(
                     _("Unable to load configuration for the '%s' protocol.")
                     % name)
-                return PROTOCOL_LOAD_ERROR
+                return ProtocolState.LoadError
         try:
             self.factories[name] = Factory(name, config, self)
             self.factories[name].setup()
-            return PROTOCOL_LOADED
+            return ProtocolState.Loaded
         except Exception:
             if name in self.factories:
                 del self.factories[name]
             self.logger.exception(
                 _("Unable to create factory for the '%s' protocol!")
                 % name)
-            return PROTOCOL_SETUP_ERROR
+            return ProtocolState.SetupError
 
     # Reload stuff
 

@@ -1,3 +1,7 @@
+import datetime
+
+from system.enums import ProtocolState
+
 __author__ = 'Gareth Coles'
 
 #: The current version. This gets replaced if you're using git.
@@ -11,10 +15,9 @@ version_info = {
     "commit": None
 }
 
-import datetime
-
 try:
     from git import repo
+
     r = repo.Repo(".")
     heads = r.heads
     master = heads[0]
@@ -30,30 +33,7 @@ try:
 
     version_info["hash"] = str(commit)
     version_info["commit"] = commit.summary.replace("\n", " / ")
-except Exception as e:
+except Exception:
     if __version__ is None:
         __version__ = "1.1.0"
         __version_info__ = "Unable to get last commit."
-
-# Constants related to (un)loading protocols
-
-#: This means there was a problem setting up the protocol.
-PROTOCOL_SETUP_ERROR = -3
-
-#: This means there was a problem loading the protocol and its config.
-PROTOCOL_LOAD_ERROR = -2
-
-#: This means that the configuration file for the protocol doesn't exit.
-PROTOCOL_CONFIG_NOT_EXISTS = -1
-
-#: This means that the protocol doesn't exit.
-PROTOCOL_NOT_EXISTS = 0
-
-#: This means that the protocol was loaded successfully.
-PROTOCOL_LOADED = 1
-
-#: This means that the protocol was already loaded.
-PROTOCOL_ALREADY_LOADED = 2
-
-#: This means that the protocol was unloaded successfully.
-PROTOCOL_UNLOADED = 3
