@@ -6,5 +6,5 @@ info:
   description: Adds pagination for other plugins
   author: Gareth Coles
   version: 0.0.1
-  website: https://github.com/McBlockitHelpbot/Ultros/tree/master/plugins/pages
+  website: https://github.com/UltrosBot/Ultros/tree/master/plugins/pages
   copyright: See Ultros' license
