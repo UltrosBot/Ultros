@@ -9,13 +9,13 @@ from utils.misc import str_to_regex_flags
 # Want to play with the regex?
 # See https://regex101.com/r/bD7xH7/2
 
-_regex = """(?P<prefix>[^\w\s\\n]+|)
+_regex = r"""(?P<prefix>[^\w\s\n]+|)
 (?P<protocol>[\w]+)
-:/[/]{1,}
+:/[/]+
 (?P<basic>[\w]+:[\w]+|)(?:@|)
-(?P<domain>[^/:\\n\s]+|)
+(?P<domain>[^/:\n\s]+|)
 (?P<port>:[0-9]+|)
-(?P<url>[^\s\\n]+|)"""
+(?P<url>[^\s\n]+|)"""
 
 _r = re.compile(_regex, str_to_regex_flags("iux"))
 
