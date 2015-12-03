@@ -41,7 +41,7 @@ redirects:
   - "youtu.be"
 
 max_title_length: 150  # Truncate titles that are longer than this - note that this only applies
-                       # to the title itself, not the message containing it
+                         # to the title itself, not the message containing it
 
 blacklist: []  # List of patterns to match against URLs; if matched then the URL will be ignored.
 # This uses regex! You've been warned!
@@ -53,7 +53,7 @@ blacklist: []  # List of patterns to match against URLs; if matched then the URL
 # - '.*//bad-site\.com/.{5,}/.*'  # Dirs that are 5 chars long
 
 default_shortener: tinyurl  # The default shortener for channels without one set
-                            # This will revert to tinyurl if the shortener doesn't exist
+                              # This will revert to tinyurl if the shortener doesn't exist
 
 accept_language:
   # This section is entirely optional
@@ -62,25 +62,25 @@ accept_language:
     "example.com": "en-GB,en;q=0.9"
 
 sessions:  # Sessions allow cookies to be stored during requests and retrieved later on
-           # All matching is done using regular expressions - https://docs.python.org/2/library/re.html
-           # This sessions config doesn't apply to extra URL handlers - they're in charge of their own.
+            # All matching is done using regular expressions - https://docs.python.org/2/library/re.html
+            # This sessions config doesn't apply to extra URL handlers - they're in charge of their own.
   enable: True  # The global switch - Set to False to disable session support entirely
 
   cookies:  # What to do with cookies in each session type
-            # session | Accept all cookies, but don't save anything to file
-            # save    | Save any cookies set by websites to the cookie jar
-            # update  | Discard any new cookies, but update any old ones that already exist
-            # discard | Discard all new cookies, don't save anything
+             # session | Accept all cookies, but don't save anything to file
+             # save    | Save any cookies set by websites to the cookie jar
+             # update  | Discard any new cookies, but update any old ones that already exist
+             # discard | Discard all new cookies, don't save anything
     group: save
     global: discard
 
   never: []  # Domains that should never store their sessions
-             # These are checked first, before the rest
+              # These are checked first, before the rest
 #  - 'facebook\.com'
 #  - '.*\.facebook\.com'
 
   group:  # Groups of domains that should share session stores and never use the global store
-          # These are checked after grouped domains - Any not matched after this stage use the global store
+           # These are checked after grouped domains - Any not matched after this stage use the global store
     example_group:
     - 'google\.com'
     - '.*\.google\.com'
@@ -90,20 +90,22 @@ sessions:  # Sessions allow cookies to be stored during requests and retrieved l
 connection:
   max_read_size: 16384
 
-proxies:
-  global: {}
+proxies:  # For proxying requests through http proxies
+           # Note that these proxies do not support the pre-handler redirects
+           # in the "redirects" section above
+  global: {}  # For all URLs that don't match below
 #    http: ""
 #    https: ""
-  groups: {}
+  groups: {}  # As defined for sessions above; takes priority over per-domain handlers below
 #    example_group:
 #      http: ""
 #      https: ""
-  domains: {}
-#    '.*\.onion':  # (Using Privoxy, for example)
+  domains: {}  # Matched with refular expressions - https://docs.python.org/2/library/re.html
+#    '.*\.onion':  # Tor: (Using Privoxy socks5t proxy forwarding, for example)
 #      http: "http://127.0.0.1:8118"
 #      https: "http://127.0.0.1:8118"
-#    '.*.i2p':
+#    '.*.i2p':  # i2p: i2p uses http proxies by default
 #      http: "http://127.0.0.1:4444"
-#      https: "https://127.0.0.1:4445"
+#      https: "http://127.0.0.1:4445"
 
 version: 2  # This is used to detect whether your configuration is up-to-date. Change at your own risk.
