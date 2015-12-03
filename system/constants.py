@@ -1,7 +1,5 @@
 import datetime
 
-from system.enums import ProtocolState
-
 __author__ = 'Gareth Coles'
 
 #: The current version. This gets replaced if you're using git.
