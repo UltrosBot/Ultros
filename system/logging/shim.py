@@ -8,20 +8,21 @@ Your all-access-pass to Logbookdom includes:
     * A small amount of duck-punching so TRACE can be imported from the logbook
       packages
 * A custom logger that includes a .trace() method and simple handlers list, as
-  well as a .setLevel() that works with Python's standard logging levels
+  well as a .setLevel() that works with Python's standard logging levels and a
+  .failure(message, Failure) for logging Twisted Failures
 * A logger forwarder so that loggers can be recreated without modules having
   to grab the new instances
 """
 
-__author__ = 'Gareth Coles'
+import logging
+import logbook.base
+
+from logbook import Logger
 
 from kitchen.text.converters import to_bytes
+from twisted.python.failure import Failure
 
-# So we can translate logging levels
-import logging
-
-# Logbook stores its levels and their info here
-import logbook.base
+__author__ = 'Gareth Coles'
 
 # Bump up all the logging levels and add our own at the bottom
 our_CRITICAL = logbook.base.CRITICAL + 1
@@ -75,8 +76,6 @@ setattr(logbook, "TRACE", our_TRACE)
 setattr(logbook.base, "_level_names", level_names)
 setattr(logbook.base, "_reverse_level_names", reverse_level_names)
 
-from logbook import Logger
-
 
 # This is our own Logger, which also has a .trace()
 class OurLogger(Logger):
@@ -95,6 +94,30 @@ class OurLogger(Logger):
 
         if not self.disabled and logbook.TRACE >= self.level:
             self._log(logbook.TRACE, args, kwargs)
+
+    def failure(self, message, failure, *args, **kwargs):
+        """
+        Used for logging Twisted Failures via the standard exception() handler,
+        which submits errors to metrics
+        """
+
+        e = failure.value
+        f = failure
+
+        while isinstance(e, Failure):
+            try:
+                f = e
+                e = f.value
+            except Exception:
+                # If we have a broken Failure instance with no value
+                f = failure
+                break
+
+        kwargs["exc_info"] = (
+            f.type, e, f.tb
+        )
+
+        self.exception(message, *args, **kwargs)
 
     def setLevel(self, level):
         """
