@@ -90,4 +90,20 @@ sessions:  # Sessions allow cookies to be stored during requests and retrieved l
 connection:
   max_read_size: 16384
 
+proxies:
+  global: {}
+#    http: ""
+#    https: ""
+  groups: {}
+#    example_group:
+#      http: ""
+#      https: ""
+  domains: {}
+#    '.*\.onion':  # (Using Privoxy, for example)
+#      http: "http://127.0.0.1:8118"
+#      https: "http://127.0.0.1:8118"
+#    '.*.i2p':
+#      http: "http://127.0.0.1:4444"
+#      https: "https://127.0.0.1:4445"
+
 version: 2  # This is used to detect whether your configuration is up-to-date. Change at your own risk.

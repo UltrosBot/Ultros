@@ -482,6 +482,29 @@ class URLsPlugin(PluginObject):
 
         return False
 
+    def get_proxy(self, _url=None, group=None):
+        """
+        :type _url: URL
+        :type group: basestring
+        """
+
+        if group is not None:
+            proxy = self.config.get(
+                    "proxies", {}
+            ).get("groups", {}).get(group, None)
+
+            if proxy:
+                return proxy
+
+        if _url is not None:
+            domain_proxies = self.config.get("proxies", {}).get("domains", {})
+
+            for pattern in domain_proxies.iterkeys():
+                if re.match(pattern, _url.domain, str_to_regex_flags("iu")):
+                    return domain_proxies[pattern]
+
+        return self.config.get("proxies", {}).get("global", None)
+
     @inlineCallbacks
     def run_handlers(self, _url, context):
         if self.check_blacklist(_url, context):

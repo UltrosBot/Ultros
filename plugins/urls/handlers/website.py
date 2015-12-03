@@ -17,6 +17,7 @@ from txrequests import Session
 from plugins.urls.constants import STATUS_CODES, STOP_HANDLING
 from plugins.urls.cookiejar import ChocolateCookieJar
 from plugins.urls.handlers.handler import URLHandler
+from plugins.urls.proxy_session import ProxySession
 from plugins.urls.resolver import AddressResolver
 from utils.misc import str_to_regex_flags
 
@@ -48,28 +49,38 @@ class WebsiteHandler(URLHandler):
 
         self.reload()
 
+    def url_can_resolve(self, url):
+        return not re.match(
+                ".*\.onion|.*\.i2p",
+                url.domain,
+                str_to_regex_flags("iu")
+        )
+
     @inlineCallbacks
     def call(self, url, context):
-        try:
-            ip = yield self.resolver.get_host_by_name(url.domain)
-            ip = IPAddress(ip)
-        except Exception as e:
-            context["event"].target.respond(
-                'DNS failure: "{0}" at {1}'.format(e.message, url.domain)
-            )
+        if self.url_can_resolve(url):
+            try:
+                ip = yield self.resolver.get_host_by_name(url.domain)
+                ip = IPAddress(ip)
+            except Exception:
+                context["event"].target.respond(
+                        u'[Error] Failed to handle URL: {}'.format(
+                                url.to_string()
+                        )
+                )
 
-            self.plugin.logger.exception("Error while checking DNS")
-            returnValue(STOP_HANDLING)
-            return
+                self.plugin.logger.exception("Error while checking DNS")
+                returnValue(STOP_HANDLING)
+                return
 
-        if ip.is_loopback() or ip.is_private() or ip.is_link_local() \
-                or ip.is_multicast():
-            self.plugin.logger.warn(
-                "Prevented connection to private/internal address"
-            )
+            if ip.is_loopback() or ip.is_private() or ip.is_link_local() \
+                    or ip.is_multicast():
+                self.plugin.logger.warn(
+                    "Prevented connection to private/internal address"
+                )
 
-            returnValue(STOP_HANDLING)
-            return
+                returnValue(STOP_HANDLING)
+                return
 
         headers = {}
 
@@ -122,7 +133,13 @@ class WebsiteHandler(URLHandler):
         self.group_sessions = {}
         self.resolver = AddressResolver()
 
-        self.global_session = Session()
+        proxy = self.plugin.get_proxy()
+
+        if not proxy:
+            self.global_session = Session()
+        else:
+            self.global_session = ProxySession(proxy)
+
         try:
             self.global_session.cookies = self.get_cookie_jar("/global.txt")
             self.global_session.session_type = "global"
@@ -239,29 +256,29 @@ class WebsiteHandler(URLHandler):
 
         new_url = urlparse.urlparse(response.url)
 
-        try:
-            ip = yield self.resolver.get_host_by_name(new_url.hostname)
-            ip = IPAddress(ip)
-        except Exception as e:
-            context["event"].target.respond(
-                u'DNS failure: "{0}" at {1}'.format(
-                    e.message,
-                    new_url.hostname
+        if self.url_can_resolve(url):
+            try:
+                ip = yield self.resolver.get_host_by_name(new_url.hostname)
+                ip = IPAddress(ip)
+            except Exception:
+                context["event"].target.respond(
+                        u'[Error] Failed to handle URL: {}'.format(
+                                url.to_string()
+                        )
                 )
-            )
 
-            self.plugin.logger.exception("Error while checking DNS")
-            returnValue(False)
-            return
+                self.plugin.logger.exception("Error while checking DNS")
+                returnValue(False)
+                return
 
-        if ip.is_loopback() or ip.is_private() or ip.is_link_local() \
-                or ip.is_multicast():
-            self.plugin.logger.warn(
-                "Prevented connection to private/internal address"
-            )
+            if ip.is_loopback() or ip.is_private() or ip.is_link_local() \
+                    or ip.is_multicast():
+                self.plugin.logger.warn(
+                    "Prevented connection to private/internal address"
+                )
 
-            returnValue(False)
-            return
+                returnValue(False)
+                return
 
         if content is None:
             self.plugin.logger.debug("No content returned")
@@ -344,7 +361,14 @@ class WebsiteHandler(URLHandler):
 
         if not sessions.get("enable", False):
             self.urls_plugin.logger.debug("Sessions are disabled.")
-            s = Session()
+
+            proxy = self.urls_plugin.get_proxy(url)
+
+            if not proxy:
+                s = Session()
+            else:
+                s = ProxySession(proxy)
+
             s.session_type = None
 
             return s
@@ -356,7 +380,13 @@ class WebsiteHandler(URLHandler):
                         url.domain
                     )
                 )
-                s = Session()
+                proxy = self.urls_plugin.get_proxy(url)
+
+                if not proxy:
+                    s = Session()
+                else:
+                    s = ProxySession(proxy)
+
                 s.session_type = None
 
                 return s
@@ -374,8 +404,14 @@ class WebsiteHandler(URLHandler):
                         )
 
                         if group not in self.group_sessions:
-                            self.group_sessions[group] = Session()
-                            self.group_sessions[group].cookies = (
+                            proxy = self.urls_plugin.get_proxy(group=group)
+
+                            if not proxy:
+                                s = Session()
+                            else:
+                                s = ProxySession(proxy)
+
+                            s.cookies = (
                                 self.get_cookie_jar(
                                     "/groups/{0}.txt".format(
                                         group
@@ -383,13 +419,15 @@ class WebsiteHandler(URLHandler):
                                 )
                             )
 
-                            self.group_sessions[group].session_type = "group"
-                            self.group_sessions[group].cookies.set_mode(
+                            s.session_type = "group"
+                            s.cookies.set_mode(
                                 context.get("config")
                                 .get("sessions")
                                 .get("cookies")
                                 .get("group")
                             )
+
+                            self.group_sessions[group] = s
 
                         return self.group_sessions[group]
                 except ValueError as e:
@@ -404,4 +442,18 @@ class WebsiteHandler(URLHandler):
             )
         )
 
-        return self.global_session
+        proxy = self.urls_plugin.get_proxy(url)
+
+        if not proxy:
+            return self.global_session
+        else:
+            s = ProxySession(proxy)
+            s.cookies = self.get_cookie_jar("/global.txt")
+            s.session_type = "global"
+            s.cookies.set_mode(
+                self.plugin.config.get("sessions", {})
+                    .get("cookies", {})
+                    .get("global", "discard")
+            )
+
+            return s
