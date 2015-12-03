@@ -448,11 +448,6 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         message = messages[0]
         action, data = message[0].upper(), message[1]
 
-        if action == "ACTION":
-            self.log.info("* %s:%s %s" % (user, channel, data))
-        else:
-            self.log.info("[%s] %s" % (user, messages))
-
         should_block = False
         if self._ctcp_flood_enabled and action != "ACTION":
             if self._ctcp_flood_last + self._ctcp_flood_time < time.time():
@@ -492,6 +487,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         self.event_manager.run_callback("IRC/CTCPQueryReceived", event)
 
         if action.upper() == "ACTION":
+            self.log.info("* %s:%s %s" % (user_obj, channel_obj, data))
+
             e = general_events.ActionReceived(
                 self, user_obj, channel_obj, data
             )
@@ -499,6 +496,9 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             e.cancelled = event.cancelled
 
             self.event_manager.run_callback("ActionReceived", e)
+        else:
+            self.log.info("[%s] %s" % (user, messages))
+
         if not event.cancelled:
             # Call super() to handle specific commands appropriately
             irc.IRCClient.ctcpQuery(self, user, channel, messages)
