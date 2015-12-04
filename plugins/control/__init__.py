@@ -10,6 +10,7 @@ from system.plugins.plugin import PluginObject
 from system.translations import Translations
 
 __author__ = "Gareth Coles"
+__all__ = ["ControlPlugin"]
 
 _ = Translations().get()
 __ = Translations().get_m()

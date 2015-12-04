@@ -13,6 +13,7 @@ from system.plugins.plugin import PluginObject
 from system.translations import Translations
 
 __ = Translations().get_m()
+__all__ = ["PagesPlugin"]
 
 
 class PagesPlugin(PluginObject):

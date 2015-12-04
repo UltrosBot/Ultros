@@ -19,6 +19,8 @@ from system.plugins.plugin import PluginObject
 from system.translations import Translations
 
 __author__ = 'Gareth Coles'
+__all__ = ["DebugPlugin"]
+
 __ = Translations().get_m()
 
 PyCF_DONT_IMPLY_DEDENT = 0x200

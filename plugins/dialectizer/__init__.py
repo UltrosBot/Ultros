@@ -26,6 +26,8 @@ from plugins.dialectizer.reverse import Reverse
 from plugins.dialectizer.upper import Upper
 
 __author__ = "Gareth Coles"
+__all__ = ["DialectizerPlugin"]
+
 __ = Translations().get_m()
 
 

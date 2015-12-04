@@ -18,6 +18,10 @@ _ = Translations().get()
 __ = Translations().get_m()
 
 __author__ = 'Sean'
+__all__ = [
+    "FactoidsPlugin", "FactoidsError", "InvalidLocationError",
+    "InvalidMethodError", "MissingFactoidError", "NoPermissionError"
+]
 
 # Remember kids:
 # * Stay in drugs

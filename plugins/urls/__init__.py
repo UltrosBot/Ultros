@@ -24,6 +24,7 @@ from plugins.urls.url import URL
 from utils.misc import str_to_regex_flags
 
 __author__ = 'Gareth Coles'
+__all__ = ["URLsPlugin"]
 
 
 HTTP_S_REGEX = re.compile("http|https", flags=str_to_regex_flags("iu"))

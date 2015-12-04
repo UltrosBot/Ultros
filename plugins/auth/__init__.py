@@ -20,6 +20,8 @@ from system.storage.formats import YAML
 from system.translations import Translations
 
 __author__ = 'Gareth Coles'
+__all__ = ["AuthPlugin"]
+
 _ = Translations().get()
 __ = Translations().get_m()
 

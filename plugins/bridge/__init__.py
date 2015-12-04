@@ -24,6 +24,7 @@ from system.translations import Translations
 
 
 __author__ = 'Gareth Coles'
+__all__ = ["BridgePlugin"]
 
 _ = Translations().get()
 __ = Translations().get_m()
