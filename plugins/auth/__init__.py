@@ -65,7 +65,7 @@ class AuthPlugin(PluginObject):
         if self.config["use-permissions"]:
             try:
                 self.permissions = self.storage.get_file(
-                    self, "data", YAML, "plugins/auth/", "permissions.yml"
+                    self, "data", YAML, "plugins/auth/permissions.yml"
                 )
             except Exception:
                 self.logger.exception(_("Unable to load permissions. They "
