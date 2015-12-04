@@ -10,39 +10,31 @@ The API use of this plugin is.. debatable, but we've still decided to document
 it.
 """
 
-__author__ = 'Gareth Coles'
-
-from system.command_manager import CommandManager
-from system.event_manager import EventManager
 from system.events.general import MessageReceived, MessageSent, PreCommand, \
     UserDisconnected, ActionSent
-
 from system.events.irc import UserJoinedEvent, UserKickedEvent, \
     UserPartedEvent, UserQuitEvent, CTCPQueryEvent
 from system.events.mumble import UserJoined, UserMoved, UserRemove
 
-import system.plugin as plugin
-
+from system.plugins.plugin import PluginObject
 from system.protocols.generic.channel import Channel
 from system.protocols.generic.user import User
-
 from system.storage.formats import YAML
-from system.storage.manager import StorageManager
-
 from system.translations import Translations
+
+
+__author__ = 'Gareth Coles'
+
 _ = Translations().get()
 __ = Translations().get_m()
 
 
-class BridgePlugin(plugin.PluginObject):
+class BridgePlugin(PluginObject):
     """
     Message bridging plugin object
     """
 
     config = None
-    events = None
-    commands = None
-    storage = None
 
     rules = {}
 
@@ -60,7 +52,6 @@ class BridgePlugin(plugin.PluginObject):
         """
 
         self.logger.trace(_("Entered setup method."))
-        self.storage = StorageManager()
 
         try:
             self.config = self.storage.get_file(self, "config", YAML,
@@ -75,9 +66,6 @@ class BridgePlugin(plugin.PluginObject):
             self.logger.error(_("Disabling.."))
             self._disable_self()
             return
-
-        self.commands = CommandManager()
-        self.events = EventManager()
 
         # General
 

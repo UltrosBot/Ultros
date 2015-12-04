@@ -9,15 +9,13 @@ it will ensure that things work as users expect them to work.
 
 __author__ = "Gareth Coles"
 
-import system.plugin as plugin
-
-from system.command_manager import CommandManager
+from system.plugins.plugin import PluginObject
 from system.translations import Translations
-# _ = Translations().get()
+
 __ = Translations().get_m()
 
 
-class PagesPlugin(plugin.PluginObject):
+class PagesPlugin(PluginObject):
     """
     Pages plugin object
     """
@@ -25,16 +23,14 @@ class PagesPlugin(plugin.PluginObject):
     lines_per_page = 5
     stored_pages = {}
 
-    commands = None
-
     def setup(self):
         """
         Called when the plugin is loaded. Performs initial setup.
         """
 
-        self.commands = CommandManager()
-        self.commands.register_command("page", self.page_command, self,
-                                       default=True)
+        self.commands.register_command(
+            "page", self.page_command, self, default=True
+        )
 
     def send_page(self, pageset, pagenum, target):
         """
@@ -127,6 +123,7 @@ class PagesPlugin(plugin.PluginObject):
             return
 
         pagenum = args[0]
+
         try:
             pagenum = int(pagenum)
         except Exception:

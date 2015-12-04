@@ -8,30 +8,26 @@ all your files!
 This also does a few different monitoring tasks.
 """
 
-__author__ = 'Gareth Coles'
-
 import code
 
 from kitchen.text.converters import to_bytes
 
-import system.plugin as plugin
-from system.command_manager import CommandManager
+from plugins.debug.interpreter import Interpreter
+from plugins.debug.monitors import UncollectableMonitor
 
-from .interpreter import Interpreter
-from .monitors import UncollectableMonitor
-
+from system.plugins.plugin import PluginObject
 from system.translations import Translations
+
+__author__ = 'Gareth Coles'
 __ = Translations().get_m()
 
 PyCF_DONT_IMPLY_DEDENT = 0x200
 
 
-class DebugPlugin(plugin.PluginObject):
+class DebugPlugin(PluginObject):
     """
     Debug plugin object
     """
-
-    commands = None
 
     interpreter = None
 
@@ -46,11 +42,11 @@ class DebugPlugin(plugin.PluginObject):
         The list of bridging rules
         """
 
-        self.commands = CommandManager()
         self.reload()
 
-        self.commands.register_command("debug", self.debug_cmd,
-                                       self, "debug.debug", aliases=["dbg"])
+        self.commands.register_command(
+            "debug", self.debug_cmd, self, "debug.debug", aliases=["dbg"]
+        )
 
     def output(self, message):
         """
@@ -84,6 +80,7 @@ class DebugPlugin(plugin.PluginObject):
 
         self.interpreter = Interpreter(locals())
         self.interpreter.set_output(self.output)
+
         return True
 
     def debug_cmd(self, protocol, caller, source, command, raw_args,

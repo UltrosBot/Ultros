@@ -5,7 +5,8 @@ __author__ = 'Gareth Coles'
 
 
 class ProxySession(Session):
-    def __init__(self, proxies, pool=None, minthreads=1, maxthreads=4, **kwargs):
+    def __init__(self, proxies, pool=None, minthreads=1, maxthreads=4,
+                 **kwargs):
         super(ProxySession, self).__init__(pool, minthreads, maxthreads,
                                            **kwargs)
 

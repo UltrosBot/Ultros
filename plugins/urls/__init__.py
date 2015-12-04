@@ -490,7 +490,7 @@ class URLsPlugin(PluginObject):
 
         if group is not None:
             proxy = self.config.get(
-                    "proxies", {}
+                "proxies", {}
             ).get("groups", {}).get(group, None)
 
             if proxy:

@@ -8,31 +8,28 @@ It's just for fun, and can be extended by adding entries to the *dialectizers*
 dict.
 """
 
-__author__ = "Gareth Coles"
-
 from system.command_manager import CommandManager
 from system.event_manager import EventManager
 from system.events.general import MessageSent
-
-import system.plugin as plugin
-
+from system.plugins.plugin import PluginObject
 from system.protocols.generic.user import User
 from system.storage.formats import YAML
 from system.storage.manager import StorageManager
-
-from chef import Chef
-from dialectizer import Dialectizer
-from fudd import Fudd
-from lower import Lower
-from olde import Olde
-from reverse import Reverse
-from upper import Upper
-
 from system.translations import Translations
+
+from plugins.dialectizer.chef import Chef
+from plugins.dialectizer.dialectizer import Dialectizer
+from plugins.dialectizer.fudd import Fudd
+from plugins.dialectizer.lower import Lower
+from plugins.dialectizer.olde import Olde
+from plugins.dialectizer.reverse import Reverse
+from plugins.dialectizer.upper import Upper
+
+__author__ = "Gareth Coles"
 __ = Translations().get_m()
 
 
-class DialectizerPlugin(plugin.PluginObject):
+class DialectizerPlugin(PluginObject):
     """Dialectizer plugin object"""
 
     commands = None
@@ -55,14 +52,17 @@ class DialectizerPlugin(plugin.PluginObject):
         self.events = EventManager()
         self.storage = StorageManager()
 
-        self.data = self.storage.get_file(self, "data", YAML,
-                                          "plugins/dialectizer/settings.yml")
+        self.data = self.storage.get_file(
+            self, "data", YAML, "plugins/dialectizer/settings.yml"
+        )
 
-        self.events.add_callback("MessageSent", self, self.handle_msg_sent,
-                                 1)
-        self.commands.register_command("dialectizer", self.dialectizer_command,
-                                       self, "dialectizer.set",
-                                       aliases=["dialectiser"])
+        self.events.add_callback(
+            "MessageSent", self, self.handle_msg_sent, 1
+        )
+        self.commands.register_command(
+            "dialectizer", self.dialectizer_command,
+            self, "dialectizer.set", aliases=["dialectiser"]
+        )
 
     def handle_msg_sent(self, event=MessageSent):
         """Handler for general message sent event"""

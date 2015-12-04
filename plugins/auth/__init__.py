@@ -2,34 +2,29 @@
 Authorization plugin. Handles logins and permissions.
 
 If you want any real control over permissions, you'll need to be using this
-plugin. Most plugins don't require it, however, due to the new "default"
+plugin. Most plugins don't require it, however, due to the "default"
 commands system.
 
 If you need to work directly with the auth handler or permissions handler,
 this is the plugin you want to get from the plugin manager.
 """
 
-__author__ = 'Gareth Coles'
+from plugins.auth import auth_handler
+from plugins.auth import permissions_handler
 
-import auth_handler
-import permissions_handler
-
-from system.command_manager import CommandManager
-from system.event_manager import EventManager
 from system.events.general import PreCommand
-
-import system.plugin as plugin
-
+from system.plugins.plugin import PluginObject
 from system.protocols.generic.channel import Channel
 from system.storage.formats import YAML
-from system.storage.manager import StorageManager
 
 from system.translations import Translations
+
+__author__ = 'Gareth Coles'
 _ = Translations().get()
 __ = Translations().get_m()
 
 
-class AuthPlugin(plugin.PluginObject):
+class AuthPlugin(PluginObject):
     """
     Auth plugin. In charge of logins and permissions.
     """
@@ -38,10 +33,6 @@ class AuthPlugin(plugin.PluginObject):
     passwords = None
     permissions = None
     blacklist = None
-
-    commands = None
-    events = None
-    storage = None
 
     auth_h = None
     perms_h = None
@@ -56,10 +47,10 @@ class AuthPlugin(plugin.PluginObject):
 
         self.logger.trace(_("Entered setup method."))
 
-        self.storage = StorageManager()
         try:
-            self.config = self.storage.get_file(self, "config", YAML,
-                                                "plugins/auth.yml")
+            self.config = self.storage.get_file(
+                self, "config", YAML, "plugins/auth.yml"
+            )
         except Exception:
             self.logger.exception(_("Error loading configuration!"))
             self.logger.error(_("Disabling.."))
@@ -71,14 +62,11 @@ class AuthPlugin(plugin.PluginObject):
             self._disable_self()
             return
 
-        self.commands = CommandManager()
-        self.events = EventManager()
-
         if self.config["use-permissions"]:
             try:
-                self.permissions = self.storage.get_file(self, "data", YAML,
-                                                         "plugins/auth/"  # PEP
-                                                         "permissions.yml")
+                self.permissions = self.storage.get_file(
+                    self, "data", YAML, "plugins/auth/", "permissions.yml"
+                )
             except Exception:
                 self.logger.exception(_("Unable to load permissions. They "
                                         "will be unavailable!"))
@@ -106,18 +94,29 @@ class AuthPlugin(plugin.PluginObject):
                 result = self.commands.set_auth_handler(self.auth_h)
                 if not result:
                     self.logger.warn(_("Unable to set auth handler!"))
+                else:
+                    self.logger.debug(_("Registering commands and events"))
 
-        self.logger.debug(_("Registering commands."))
-        self.commands.register_command("login", self.login_command,
-                                       self, "auth.login", default=True)
-        self.commands.register_command("logout", self.logout_command,
-                                       self, "auth.login", default=True)
-        self.commands.register_command("register", self.register_command,
-                                       self, "auth.register", default=True)
-        self.commands.register_command("passwd", self.passwd_command, self,
-                                       "auth.passwd", default=True)
+                    self.commands.register_command(
+                        "login", self.login_command, self, "auth.login",
+                        default=True
+                    )
+                    self.commands.register_command(
+                        "logout", self.logout_command, self, "auth.login",
+                        default=True
+                    )
+                    self.commands.register_command(
+                        "register", self.register_command, self,
+                        "auth.register", default=True
+                    )
+                    self.commands.register_command(
+                        "passwd", self.passwd_command, self, "auth.passwd",
+                        default=True
+                    )
 
-        self.events.add_callback("PreCommand", self, self.pre_command, 10000)
+                    self.events.add_callback(  # To redact passwords from logs
+                        "PreCommand", self, self.pre_command, 10000
+                    )
 
     def pre_command(self, event=PreCommand):
         """

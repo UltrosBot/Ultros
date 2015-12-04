@@ -51,9 +51,9 @@ class WebsiteHandler(URLHandler):
 
     def url_can_resolve(self, url):
         return not re.match(
-                ".*\.onion|.*\.i2p",
-                url.domain,
-                str_to_regex_flags("iu")
+            ".*\.onion|.*\.i2p",
+            url.domain,
+            str_to_regex_flags("iu")
         )
 
     @inlineCallbacks
@@ -64,9 +64,9 @@ class WebsiteHandler(URLHandler):
                 ip = IPAddress(ip)
             except Exception:
                 context["event"].target.respond(
-                        u'[Error] Failed to handle URL: {}'.format(
-                                url.to_string()
-                        )
+                    u'[Error] Failed to handle URL: {}'.format(
+                        url.to_string()
+                    )
                 )
 
                 self.plugin.logger.exception("Error while checking DNS")
@@ -262,9 +262,9 @@ class WebsiteHandler(URLHandler):
                 ip = IPAddress(ip)
             except Exception:
                 context["event"].target.respond(
-                        u'[Error] Failed to handle URL: {}'.format(
-                                url.to_string()
-                        )
+                    u'[Error] Failed to handle URL: {}'.format(
+                        url.to_string()
+                    )
                 )
 
                 self.plugin.logger.exception("Error while checking DNS")

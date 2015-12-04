@@ -6,30 +6,24 @@ Control plugin - Allows various forms of direct bot control
 There's no API use here. But it's a useful plugin for users!
 """
 
-__author__ = "Gareth Coles"
-
-from system.command_manager import CommandManager
+from system.plugins.plugin import PluginObject
 from system.translations import Translations
 
-import system.plugin as plugin
+__author__ = "Gareth Coles"
 
 _ = Translations().get()
 __ = Translations().get_m()
 
 
-class ControlPlugin(plugin.PluginObject):
+class ControlPlugin(PluginObject):
     """
     Control plugin object
     """
-
-    commands = None
 
     def setup(self):
         """
         The list of bridging rules
         """
-
-        self.commands = CommandManager()
 
         self.commands.register_command("join", self.join_command,
                                        self, "control.join")

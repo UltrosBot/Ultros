@@ -1,23 +1,19 @@
-#TODO: Go over documentation
-
-import system.plugin as plugin
+# coding=utf-8
+# TODO: Go over documentation
 
 from kitchen.text.converters import to_unicode
 from twisted.internet import defer
 
-from system.command_manager import CommandManager
-from system.event_manager import EventManager
-from system.plugins.manager import PluginManager
+from plugins.factoids.events import FactoidAddedEvent, FactoidDeletedEvent, \
+    FactoidUpdatedEvent
+
+from system.plugins.plugin import PluginObject
 from system.protocols.generic.channel import Channel
 from system.storage.formats import DBAPI, YAML
-from system.storage.manager import StorageManager
+from system.translations import Translations
 
 from utils import tokens
 
-# Hah, eat it, line length limit.
-from .events import FactoidAddedEvent, FactoidDeletedEvent, FactoidUpdatedEvent
-
-from system.translations import Translations
 _ = Translations().get()
 __ = Translations().get_m()
 
@@ -29,7 +25,7 @@ __author__ = 'Sean'
 # * Don't do vegetables
 
 
-class FactoidsPlugin(plugin.PluginObject):
+class FactoidsPlugin(PluginObject):
 
     CHANNEL = "channel"
     PROTOCOL = "protocol"
@@ -49,12 +45,6 @@ class FactoidsPlugin(plugin.PluginObject):
     config = None
 
     def setup(self):
-        # ## Grab important shit
-        self.commands = CommandManager()
-        self.events = EventManager()
-        self.storage = StorageManager()
-        self.plugman = PluginManager()
-
         try:
             self.config = self.storage.get_file(self, "config", YAML,
                                                 "plugins/factoids.yml")
@@ -537,7 +527,7 @@ class FactoidsPlugin(plugin.PluginObject):
         self.logger.info(_("Registering web route.."))
 
         #: :type: WebPlugin
-        web = self.plugman.get_plugin("Web")
+        web = self.plugins.get_plugin("Web")
 
         if web is None:
             self.logger.debug("Web plugin not found.")

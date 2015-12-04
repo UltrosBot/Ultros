@@ -8,22 +8,17 @@ the chat networks they're connected to. See the ManagementPlugin docstring
 for more information on that.
 """
 
-__author__ = "Gareth Coles"
-
-import system.plugin as plugin
-
-from system.command_manager import CommandManager
-from system.constants import *
-from system.enums import PluginState
+from system.enums import PluginState  # , ProtocolState
+from system.plugins.plugin import PluginObject
 from system.translations import Translations
 
-from utils.switch import Switch as switch
+__author__ = "Gareth Coles"
 
 _ = Translations().get()
 __ = Translations().get_m()
 
 
-class ManagementPlugin(plugin.PluginObject):
+class ManagementPlugin(PluginObject):
     """
     A plugin designed for on-the-fly management and configuration.
 
@@ -63,8 +58,6 @@ class ManagementPlugin(plugin.PluginObject):
         * Allow management of blacklisted passwords
     """
 
-    commands = None
-
     @property
     def pages(self):
         return self.factory_manager.plugman.get_plugin("Pages")
@@ -73,8 +66,6 @@ class ManagementPlugin(plugin.PluginObject):
         """
         Called when the plugin is loaded. Performs initial setup.
         """
-
-        self.commands = CommandManager()
 
         self.commands.register_command("storage", self.storage_command, self,
                                        "management.storage",
@@ -128,14 +119,10 @@ class ManagementPlugin(plugin.PluginObject):
             caller.respond(__("Usage: {CHARS}%s <operation> [params]")
                            % command)
             caller.respond(__("Operations: None yet"))
-            # caller.respond("Operations: help, list, [...]")
+            # caller.respond("Operations: help, list, load, unload, reload")
 
         operation = args[0]
-        for case, default in switch(operation):
-
-            if default:
-                caller.respond(__("Unknown operation: %s") % operation)
-                break
+        caller.respond(__("Unknown operation: %s") % operation)
 
     def plugins_command(self, protocol, caller, source, command, raw_args,
                         args):
