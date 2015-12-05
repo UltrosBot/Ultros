@@ -1,6 +1,6 @@
 __author__ = 'Gareth Coles'
 
-from system.command_manager import CommandManager
+from system.commands.manager import CommandManager
 from system.help.topics.generic import Topic
 
 

@@ -19,7 +19,7 @@ import struct
 
 from twisted.internet import reactor, ssl, task
 
-from system.command_manager import CommandManager
+from system.commands.manager import CommandManager
 from system.enums import CommandState
 from system.events.manager import EventManager
 from system.events import general as general_events

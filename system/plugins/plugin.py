@@ -1,7 +1,7 @@
 # coding=utf-8
 __author__ = "Gareth Coles"
 
-from system.command_manager import CommandManager
+from system.commands.manager import CommandManager
 from system.events.manager import EventManager
 from system.storage.manager import StorageManager
 from system.translations import Translations

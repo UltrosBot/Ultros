@@ -6,7 +6,7 @@ from kitchen.text.converters import to_bytes, to_unicode
 from twisted.internet import reactor
 from twisted.words.protocols import irc
 
-from system.command_manager import CommandManager
+from system.commands.manager import CommandManager
 from system.decorators.log import deprecated
 from system.enums import CommandState
 from system.events import general as general_events
