@@ -4,7 +4,6 @@ import signal
 from twisted.internet import reactor
 
 from system.command_manager import CommandManager
-# from system.constants import *
 from system.decorators.log import deprecated
 from system.enums import PluginState, ProtocolState
 from system.event_manager import EventManager
@@ -28,7 +27,7 @@ __author__ = "Gareth Coles"
 _ = Translations().get()
 
 
-class Manager(object):
+class FactoryManager(object):
     """
     Manager for keeping track of multiple factories - one per protocol.
 

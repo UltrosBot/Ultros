@@ -114,14 +114,14 @@ def main():
         os.chdir(os.path.dirname(sys.argv[0]))
 
     from system.logging.logger import getLogger
-    from system.factory_manager import Manager
+    from system.factory_manager import FactoryManager
     from system import constants
     from system.decorators import threads
 
     sys.stdout = getwriter('utf-8')(sys.stdout)
     sys.stderr = getwriter('utf-8')(sys.stderr)
 
-    manager = Manager()
+    manager = FactoryManager()
 
     manager.setup_logging(args)
 
