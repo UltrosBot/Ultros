@@ -21,7 +21,7 @@ from twisted.internet import reactor, ssl, task
 
 from system.command_manager import CommandManager
 from system.enums import CommandState
-from system.event_manager import EventManager
+from system.events.manager import EventManager
 from system.events import general as general_events
 from system.events import mumble as mumble_events
 from system.protocols.generic.protocol import SingleChannelProtocol

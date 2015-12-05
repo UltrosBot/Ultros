@@ -10,7 +10,7 @@ import cProfile
 
 from profiling.fakes import FakePlugin, FakePluginEvent
 
-from system.event_manager import EventManager
+from system.events.manager import EventManager
 
 events = EventManager()
 

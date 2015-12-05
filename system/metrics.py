@@ -1,23 +1,22 @@
 import json
 import platform
-import psutil
 import sys
 import traceback
-import requests
 
+import psutil
+import requests
 from twisted.internet.task import LoopingCall
 
 from system.constants import version_info
 from system.decorators.threads import run_async_threadpool
-from system.event_manager import EventManager
+from system.events.manager import EventManager
+from system.logging.logger import getLogger
 from system.singleton import Singleton
 from system.storage.formats import JSON
 from system.storage.manager import StorageManager
-
-from system.logging.logger import getLogger
+from system.translations import Translations
 from utils.packages.packages import Packages
 
-from system.translations import Translations
 _ = Translations().get()
 
 __author__ = 'Gareth Coles'

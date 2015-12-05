@@ -9,20 +9,18 @@ from twisted.words.protocols import irc
 from system.command_manager import CommandManager
 from system.decorators.log import deprecated
 from system.enums import CommandState
-from system.event_manager import EventManager
-from system.events import irc as irc_events
 from system.events import general as general_events
+from system.events import irc as irc_events
+from system.events.manager import EventManager
+from system.logging.logger import getLogger
 from system.protocols.generic.protocol import ChannelsProtocol
 from system.protocols.irc import constants
 from system.protocols.irc.channel import Channel
 from system.protocols.irc.rank import Ranks
 from system.protocols.irc.user import User
-
-from utils.irc import IRCUtils
-from system.logging.logger import getLogger
-from utils.switch import Switch
-
 from system.translations import Translations
+from utils.irc import IRCUtils
+from utils.switch import Switch
 _ = Translations().get()
 
 

@@ -6,21 +6,18 @@ from twisted.internet import reactor
 from system.command_manager import CommandManager
 from system.decorators.log import deprecated
 from system.enums import PluginState, ProtocolState
-from system.event_manager import EventManager
+from system.events.manager import EventManager
 from system.events.general import PluginsLoadedEvent, ReactorStartedEvent
 from system.factory import Factory
 from system.logging import logger
+from system.logging.logger import getLogger
 from system.metrics import Metrics
 from system.plugins.manager import PluginManager
 from system.singleton import Singleton
-
-from system.storage.formats import YAML
 from system.storage.config import Config
+from system.storage.formats import YAML
 from system.storage.manager import StorageManager
-
-from system.logging.logger import getLogger
 from system.translations import Translations
-
 from utils.misc import valid_path
 
 __author__ = "Gareth Coles"

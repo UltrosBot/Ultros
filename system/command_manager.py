@@ -7,11 +7,9 @@ from system.decorators.log import deprecated
 from system.decorators.ratelimit import RateLimitExceededError
 from system.enums import CommandState
 from system.events import general as events
-from system.event_manager import EventManager
-from system.singleton import Singleton
-
+from system.events.manager import EventManager
 from system.logging.logger import getLogger
-
+from system.singleton import Singleton
 from system.translations import Translations
 _ = Translations().get()
 

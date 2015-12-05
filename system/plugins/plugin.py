@@ -1,11 +1,11 @@
 # coding=utf-8
 __author__ = "Gareth Coles"
 
-
 from system.command_manager import CommandManager
-from system.event_manager import EventManager
-from system.translations import Translations
+from system.events.manager import EventManager
 from system.storage.manager import StorageManager
+from system.translations import Translations
+
 _ = Translations().get()
 
 

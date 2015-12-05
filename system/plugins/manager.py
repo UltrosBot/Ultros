@@ -2,18 +2,18 @@ import glob
 import importlib
 import inspect
 import sys
-import yaml
-
 from copy import copy
 from distutils.version import StrictVersion
 
+import yaml
+
 from system.enums import PluginState
-from system.event_manager import EventManager
+from system.events.manager import EventManager
 from system.events.general import PluginLoadedEvent
+from system.logging.logger import getLogger
 from system.plugins.info import Info
 from system.plugins.plugin import PluginObject
 from system.singleton import Singleton
-from system.logging.logger import getLogger
 
 __author__ = 'Gareth Coles'
 
