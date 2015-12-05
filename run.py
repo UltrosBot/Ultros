@@ -33,12 +33,12 @@ import sys
 import lib  # noqa
 
 from kitchen.text.converters import getwriter
+from twisted.python import log as twisted_log
 
+from system.core import Ultros
 from system.translations import Translations
 from system.versions import VersionManager
-from utils import log  # noqa
 
-from twisted.python import log as twisted_log
 
 observer = twisted_log.PythonLoggingObserver(loggerName='Twisted')
 observer.start()
@@ -114,17 +114,13 @@ def main():
         os.chdir(os.path.dirname(sys.argv[0]))
 
     from system.logging.logger import getLogger
-    from system.factory_manager import FactoryManager
     from system import constants
     from system.decorators import threads
 
     sys.stdout = getwriter('utf-8')(sys.stdout)
     sys.stderr = getwriter('utf-8')(sys.stderr)
 
-    manager = FactoryManager()
-
-    manager.setup_logging(args)
-
+    ultros = Ultros(args)
     versions = VersionManager()
 
     if not os.path.exists("logs"):
@@ -148,8 +144,7 @@ def main():
 
     try:
         logger.debug("Starting..")
-        manager.setup()
-        manager.run()
+        ultros.start()
 
     except Exception:
         logger.critical(_("Runtime error - process cannot continue!"))
@@ -166,7 +161,7 @@ def main():
     finally:
         try:
             logger.debug("Unloading manager..")
-            manager.unload()
+            ultros.stop()
 
             logger.debug("Stopping threadpool..")
             threads.pool.stop()
