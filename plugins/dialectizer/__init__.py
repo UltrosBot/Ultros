@@ -8,15 +8,6 @@ It's just for fun, and can be extended by adding entries to the *dialectizers*
 dict.
 """
 
-from system.command_manager import CommandManager
-from system.event_manager import EventManager
-from system.events.general import MessageSent
-from system.plugins.plugin import PluginObject
-from system.protocols.generic.user import User
-from system.storage.formats import YAML
-from system.storage.manager import StorageManager
-from system.translations import Translations
-
 from plugins.dialectizer.chef import Chef
 from plugins.dialectizer.dialectizer import Dialectizer
 from plugins.dialectizer.fudd import Fudd
@@ -24,6 +15,11 @@ from plugins.dialectizer.lower import Lower
 from plugins.dialectizer.olde import Olde
 from plugins.dialectizer.reverse import Reverse
 from plugins.dialectizer.upper import Upper
+from system.events.general import MessageSent
+from system.plugins.plugin import PluginObject
+from system.protocols.generic.user import User
+from system.storage.formats import YAML
+from system.translations import Translations
 
 __author__ = "Gareth Coles"
 __all__ = ["DialectizerPlugin"]
@@ -34,10 +30,7 @@ __ = Translations().get_m()
 class DialectizerPlugin(PluginObject):
     """Dialectizer plugin object"""
 
-    commands = None
     data = None
-    events = None
-    storage = None
 
     dialectizers = {"chef": Chef(),
                     "fudd": Fudd(),
@@ -49,10 +42,6 @@ class DialectizerPlugin(PluginObject):
 
     def setup(self):
         """The list of bridging rules"""
-
-        self.commands = CommandManager()
-        self.events = EventManager()
-        self.storage = StorageManager()
 
         self.data = self.storage.get_file(
             self, "data", YAML, "plugins/dialectizer/settings.yml"
