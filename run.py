@@ -111,7 +111,7 @@ def update(git=True):
             import ensurepip
             ensurepip.bootstrap()
         except RuntimeError:
-            print _("It looks like ensurepip is diabled, continuing..")
+            print _("It looks like ensurepip is disabled, continuing..")
 
         import pip
         pip.main(["install", "-r", "requirements.txt", "--upgrade"])
