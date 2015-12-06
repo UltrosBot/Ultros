@@ -107,8 +107,11 @@ def update(git=True):
                 print _("It looks like git failed to run - do you have it "
                         "installed?")
 
-        import ensurepip
-        ensurepip.bootstrap()
+        try:
+            import ensurepip
+            ensurepip.bootstrap()
+        except RuntimeError:
+            print _("It looks like ensurepip is diabled, continuing..")
 
         import pip
         pip.main(["install", "-r", "requirements.txt", "--upgrade"])
