@@ -128,7 +128,7 @@ if __name__ == "__main__":
     t.tokens["ADD"] = token_add
     t.tokens["CONCAT"] = token_concat
 
-    print t.replace(
+    print(t.replace(
         "{ADD:1:2:3:4:5}, {ADD:1:2:3}, {CONCAT:abc:def:\:: letters} :other "
         "stuff that shouldn't be parsed: {}"
-    )
+    ))

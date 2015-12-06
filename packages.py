@@ -55,8 +55,8 @@ try:
     import pip
 except ImportError:
     url = "https://raw.github.com/pypa/pip/master/contrib/get-pip.py"
-    print _("Installing pip..")
-    print ""
+    print(_("Installing pip.."))
+    print("")
     r = urllib.urlopen(url)
     d = r.read()
 
@@ -69,7 +69,7 @@ except ImportError:
 
     sys.argv = _args
     import pip  # flake8: noqa
-    print ""
+    print("")
 
 try:
     from utils.packages.packages import Packages
@@ -81,19 +81,19 @@ from utils.misc import string_split_readable
 
 def get_packages(get=True):
     if Packages is None:
-        print _(">> You need to run the setup steps first!")
+        print(_(">> You need to run the setup steps first!"))
         return exit(1)
     if get:
-        print _(">> Downloading package list..")
+        print(_(">> Downloading package list.."))
 
     try:
         _packages = Packages(get)
     except Exception as e:
-        print _(">> Error retrieving packages - %s") % e
+        print(_(">> Error retrieving packages - %s") % e)
         return exit(1)
 
     if get:
-        print _(">> Found %s package(s).") % len(_packages)
+        print(_(">> Found %s package(s).") % len(_packages))
 
     return _packages
 

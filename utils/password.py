@@ -34,4 +34,4 @@ def mkpasswd(length=8, allowed_chars="abcdefghijklmnopqrstuvwxyz"
 
 if __name__ == "__main__":
     pword = mkpasswd(32)
-    print "Random password: %s" % pword
+    print("Random password: %s" % pword)

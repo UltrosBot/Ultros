@@ -40,8 +40,8 @@ class Translations(object):
 
         if lang not in self.known:
             if self.logger is None:
-                print "Unknown language '%s', defaulting to '%s'" \
-                      % (lang, DEFAULT)
+                print("Unknown language '%s', defaulting to '%s'"
+                      % (lang, DEFAULT))
             else:
                 self.logger.warn("Unknown language '%s', defaulting to '%s'"
                                  % (lang, DEFAULT))
@@ -50,8 +50,8 @@ class Translations(object):
 
         if mlang not in self.known:
             if self.logger is None:
-                print "Unknown language '%s', defaulting to '%s'" \
-                      % (mlang, DEFAULT)
+                print("Unknown language '%s', defaulting to '%s'"
+                      % (mlang, DEFAULT))
             else:
                 self.logger.warn("Unknown language '%s', defaulting to '%s'"
                                  % (mlang, DEFAULT))

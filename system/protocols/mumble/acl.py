@@ -98,26 +98,26 @@ class Perms(object):
             user_perms |= perm
         return user_perms
 
-if __name__ == "__main__":
-    from pprint import pprint
-    user_perms = 134219582
-    print "\n=== binary perms ==="
-    print "user_perms".ljust(18), "{0:b}".format(user_perms).zfill(32)
-    for name, perm in Perms.NAME_TO_PERM.iteritems():
-        print name.ljust(18), "{0:b}".format(perm).zfill(32)
-
-    print "\n=== has_permission() ==="
-    for name, perm in Perms.NAME_TO_PERM.iteritems():
-        print name, Perms.has_permission(user_perms, perm)
-
-    print "\n=== get_permissions() ==="
-    pprint(Perms.get_permissions(user_perms))
-
-    print "\n=== get_permissions_names() ==="
-    pprint(Perms.get_permissions_names(user_perms))
-
-    print "\n=== get_permissions_int() ==="
-    print Perms.get_permissions_int(*Perms.get_permissions(user_perms))
-    print "Result is correct?", user_perms == Perms.get_permissions_int(
-        *Perms.get_permissions(user_perms)
-    )
+# if __name__ == "__main__":
+#     from pprint import pprint
+#     user_perms = 134219582
+#     print "\n=== binary perms ==="
+#     print "user_perms".ljust(18), "{0:b}".format(user_perms).zfill(32)
+#     for name, perm in Perms.NAME_TO_PERM.iteritems():
+#         print name.ljust(18), "{0:b}".format(perm).zfill(32)
+#
+#     print "\n=== has_permission() ==="
+#     for name, perm in Perms.NAME_TO_PERM.iteritems():
+#         print name, Perms.has_permission(user_perms, perm)
+#
+#     print "\n=== get_permissions() ==="
+#     pprint(Perms.get_permissions(user_perms))
+#
+#     print "\n=== get_permissions_names() ==="
+#     pprint(Perms.get_permissions_names(user_perms))
+#
+#     print "\n=== get_permissions_int() ==="
+#     print Perms.get_permissions_int(*Perms.get_permissions(user_perms))
+#     print "Result is correct?", user_perms == Perms.get_permissions_int(
+#         *Perms.get_permissions(user_perms)
+#     )

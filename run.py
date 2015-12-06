@@ -97,28 +97,28 @@ def is_virtualenv():
 
 def update(git=True):
     try:
-        print _("Attempting to update..")
+        print(_("Attempting to update.."))
 
         if git:
             import subprocess
 
             r_code = subprocess.call(["git", "pull"])
             if r_code:
-                print _("It looks like git failed to run - do you have it "
-                        "installed?")
+                print(_("It looks like git failed to run - do you have it "
+                        "installed?"))
 
         try:
             import ensurepip
             ensurepip.bootstrap()
         except RuntimeError:
-            print _("It looks like ensurepip is disabled, continuing..")
+            print(_("It looks like ensurepip is disabled, continuing.."))
 
         import pip
         pip.main(["install", "-r", "requirements.txt", "--upgrade"])
 
-        print _("Done!")
+        print(_("Done!"))
     except Exception as e:
-        print _("Error updating: %s") % e
+        print(_("Error updating: %s") % e)
         raise e
 
 
