@@ -63,6 +63,10 @@ p.add_argument("-prd", "--pycharm-remote-debug",
                     "Takes a hostname as an argument. This requires you to "
                     "have pycharm-debug.egg in your Python PATH. If you don't "
                     "know what this means, then you don't need to use this.")
+p.add_argument("-nu", "--no-upgrade",
+               help="Disable the automatic in-virtualenv update run every"
+                    "time the bot starts up in a virtualenv or pyenv",
+               action="store_true")
 p.add_argument(
     "-d", "--debug", help="Force-enable debug logging", action="store_true"
 )
@@ -83,23 +87,31 @@ if args.pycharm_remote_debug:
 _ = trans.get()
 
 
-def update():
+def is_virtualenv():
+    if hasattr(sys, "real_prefix"):
+        return True  # Virtualenv
+
+    # PyEnv
+    return hasattr(sys, "base_prefix") and sys.base_prefix == sys.prefix
+
+
+def update(git=True):
     try:
         print _("Attempting to update..")
 
+        if git:
+            import subprocess
+
+            r_code = subprocess.call(["git", "pull"])
+            if r_code:
+                print _("It looks like git failed to run - do you have it "
+                        "installed?")
+
+        import ensurepip
+        ensurepip.bootstrap()
+
         import pip
-
-        try:
-            from git import Git
-        except ImportError:
-            pip.main(["install", "gitpython==0.1.7", "gitdb", "async"])
-            from git import Git
-
-        g = Git(".")
-        g.pull()
-
-        import packages
-        packages.setup(True)
+        pip.main(["install", "-r", "requirements.txt", "--upgrade"])
 
         print _("Done!")
     except Exception as e:
@@ -110,6 +122,9 @@ def update():
 
 
 def main():
+    if (not args.no_upgrade) and is_virtualenv():
+        update(git=False)
+
     if os.path.dirname(sys.argv[0]):
         os.chdir(os.path.dirname(sys.argv[0]))
 
