@@ -121,8 +121,6 @@ def update(git=True):
         print _("Error updating: %s") % e
         raise e
 
-    exit(0)
-
 
 def main():
     if (not args.no_upgrade) and is_virtualenv():
