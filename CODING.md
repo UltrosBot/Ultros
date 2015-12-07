@@ -18,6 +18,7 @@ We recommend anyone committing code to setup a flake8 pre-commit hook.
 ### Ignored errors
 
 * Errors from the `flake8` base package:
+    * Code complexity is not checked.
     * `E265`: Block comment should start with `# ` (That is to say, a space must follow the `#`).
     * `E402`: Module level import not at top of file.
     * `F403`: `from module import *` used; unable to detect undefined names .
