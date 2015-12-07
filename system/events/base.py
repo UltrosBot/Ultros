@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Base events for you to base your events on.
 """

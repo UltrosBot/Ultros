@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Debug plugin - Used to debug internal parts of thh code from a chat network.
 

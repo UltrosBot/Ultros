@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Logging handler that sends exceptions to the Ultros metrics service, if
 enabled.

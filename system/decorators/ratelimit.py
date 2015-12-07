@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Rate-limiting decorators. This is for rate-limiting API methods, not
 commands!

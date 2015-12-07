@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Plugins - extensibility in bite-sized pieces!
 

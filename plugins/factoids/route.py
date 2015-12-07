@@ -1,9 +1,12 @@
-__author__ = 'Gareth Coles'
+# coding=utf-8
 
 from cyclone.web import asynchronous
 from xml.sax.saxutils import escape
 
 from plugins.web.request_handler import RequestHandler
+
+
+__author__ = 'Gareth Coles'
 
 
 class Route(RequestHandler):

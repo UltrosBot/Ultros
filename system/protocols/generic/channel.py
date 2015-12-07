@@ -1,3 +1,5 @@
+# coding=utf-8
+
 from system.translations import Translations
 
 __author__ = 'Sean'

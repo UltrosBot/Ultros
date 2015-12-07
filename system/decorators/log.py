@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Logging-related decorators for wrapping functions. Also includes a way
 of deprecating things.

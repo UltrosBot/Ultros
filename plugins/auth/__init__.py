@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Authorization plugin. Handles logins and permissions.
 

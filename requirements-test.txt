@@ -5,3 +5,4 @@ sphinx
 sphinx_rtd_theme
 pydoctor
 pylint
+flake8-coding

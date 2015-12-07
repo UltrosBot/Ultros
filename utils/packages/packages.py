@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Classes for working with the Ultros-contrib repository
 

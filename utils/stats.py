@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Utilities for recording and aggregating stats
 """

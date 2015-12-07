@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # coding=utf-8
 from system.protocols.mumble.acl import Perms
 from system.protocols.mumble.structs import Version
@@ -1195,57 +1194,3 @@ class Protocol(SingleChannelProtocol):
         return Perms.has_permission(self._acls[channel], *perms)
 
     # endregion
-
-    # def print_users(self):
-    #     # TODO: Remove this debug function once user handling is complete
-    #     def print_indented(s, times=1):
-    #         print ("\t" * times), s
-    #     for user in self.users.itervalues():
-    #         print user
-    #         cn = user.channel.__str__()
-    #         print_indented(_("Channel: %s") % cn.encode('ascii', 'replace'))
-    #         print_indented(_("Mute: %s") % user.mute)
-    #         print_indented(_("Deaf: %s") % user.deaf)
-    #         print_indented(_("Suppressed: %s") % user.suppress)
-    #         print_indented(_("Self mute: %s") % user.self_mute)
-    #         print_indented(_("Self deaf: %s") % user.self_deaf)
-    #         print_indented(_("Priority speaker: %s") % user.priority_speaker)
-    #         print_indented(_("Recording: %s") % user.recording)
-
-    # def print_channels(self):
-    #     # TODO: Remove this debug function once channel handling is complete
-    #     def get_children_channels(channel_id):
-    #         children = []
-    #         for cid, channel in self.channels.iteritems():
-    #             if channel.parent == channel_id:
-    #                 children.append(cid)
-    #         return children
-    #
-    #     def print_channel(channels, channel_id, depth=0):
-    #         print "----" * depth,\
-    #             self.channels[channel_id].__str__().encode('ascii', 'replace')
-    #         # Print users, if any
-    #         if len(self.channels[channel_id].users) > 0:
-    #             print "    " * (depth + 1), _("Users {")
-    #             for user in self.channels[channel_id].users:
-    #                 print "    " * (depth + 2), user
-    #             print "    " * (depth + 1), "}"
-    #         # Print sub-channels
-    #         for chan in channels[channel_id]:
-    #             print_channel(channels, chan, depth + 1)
-    #
-    #     chans = {}  # Assumes root channel is 0 - not sure if this is ever not
-    #     for cid, chan in self.channels.iteritems():
-    #         chans[cid] = get_children_channels(cid)
-    #     print_channel(chans, 0)
-    #
-    # def _print_message_field_info(self, message):
-    #     fields = message.ListFields()
-    #     self.log.debug("Contained fields:")
-    #     for field, value in fields:
-    #         value = str(value).replace("\n", ", ").replace("\r", "")
-    #         self.log.debug(" * {:20s} - {}", field.name, value)
-    #     self.log.debug("Missing fields:")
-    #     for f in {f.name for f in message.DESCRIPTOR.fields} - {f[0].name for
-    #                                                             f in fields}:
-    #         self.log.debug(" * {}", f)

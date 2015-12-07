@@ -1,3 +1,5 @@
+# coding=utf-8
+
 from system.events.base import BaseEvent
 
 __author__ = 'Gareth Coles'

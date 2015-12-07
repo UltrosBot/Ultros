@@ -1,3 +1,5 @@
+# coding=utf-8
+
 from __builtin__ import staticmethod
 
 __author__ = 'Sean'

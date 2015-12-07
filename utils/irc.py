@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+# coding=utf-8
+
 # from system.protocols.irc import constants
 
 """

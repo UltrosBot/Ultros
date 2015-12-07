@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Events specific to Mumble-based protocols
 """

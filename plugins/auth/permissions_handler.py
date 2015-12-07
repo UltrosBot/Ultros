@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Permissions handler. In charge of deciding who can do what.
 

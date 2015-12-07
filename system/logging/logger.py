@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Logbook-based logging, modified a bit to suit our purposes.
 

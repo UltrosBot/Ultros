@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Various extremely useful decorators, covering a good deal of functionality.
 

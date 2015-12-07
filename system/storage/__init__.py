@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Config and data storage management - Use this if you need any data or config
 files

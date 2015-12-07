@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Exceptions related to storage of data and configuration files.
 """

@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Subclass of Logbook's ColorizedStderrHandler that provides better colours.
 """

@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Some handlers need factory functions to translate configurations. Essentially,
 this allows saner user-provided configurations.

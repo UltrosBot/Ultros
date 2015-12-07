@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Help manager. Long overdue!
 

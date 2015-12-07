@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Base storage file classes and utils
 

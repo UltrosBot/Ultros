@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """
 Semi-hacky stuff to make Logbook suitable for use with Ultros.
 

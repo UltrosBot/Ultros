@@ -1,3 +1,5 @@
+# coding=utf-8
+
 __author__ = 'Gareth Coles'
 
 # Found: http://stackoverflow.com/a/6798042/2524563

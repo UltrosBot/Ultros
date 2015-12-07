@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """Factoid-related events"""
 
 __author__ = 'Gareth Coles'
