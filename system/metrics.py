@@ -212,6 +212,11 @@ class Metrics(object):
                         nix[2] = "({})".format(nix[2])
 
                     _os = "{}: {}".format(_os, " ".join(filter(None, nix)))
+                else:
+                    release = platform.release()
+
+                    if release:
+                        _os = "{} {}".format(_os, release)
 
                 ram = psutil.virtual_memory().total / 1048576.0
 
