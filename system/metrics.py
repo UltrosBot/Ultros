@@ -206,7 +206,7 @@ class Metrics(object):
                 _os = platform.system()
 
                 if _os.lower() == "linux":
-                    nix = platform.linux_distribution()
+                    nix = list(platform.linux_distribution())
 
                     if nix[2]:
                         nix[2] = "({})".format(nix[2])
