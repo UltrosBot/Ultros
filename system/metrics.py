@@ -1,27 +1,27 @@
-# coding=utf-8
-
 import json
 import platform
+import psutil
 import sys
 import traceback
+import urllib
+import urllib2
 
-import psutil
-import requests
 from twisted.internet.task import LoopingCall
 
 from system.constants import version_info
 from system.decorators.threads import run_async_threadpool
-from system.events.manager import EventManager
+from system.event_manager import EventManager
 from system.logging.logger import getLogger
 from system.singleton import Singleton
 from system.storage.formats import JSON
 from system.storage.manager import StorageManager
 from system.translations import Translations
+
 from utils.packages.packages import Packages
 
+__author__ = 'Gareth Coles'
 _ = Translations().get()
 
-__author__ = 'Gareth Coles'
 
 warning = """
                                  .i;;;;i.
@@ -204,6 +204,15 @@ class Metrics(object):
 
                 cpu = platform.processor().strip() or "Unknown"
                 _os = platform.system()
+
+                if _os.lower() == "linux":
+                    nix = platform.linux_distribution()
+
+                    if nix[2]:
+                        nix[2] = "({})".format(nix[2])
+
+                    _os = "{}: {}".format(_os, " ".join(filter(None, nix)))
+
                 ram = psutil.virtual_memory().total / 1048576.0
 
                 python = "%s %s %s" % (
@@ -323,16 +332,17 @@ class Metrics(object):
                 del exc_info, t
 
     def post(self, url, data):
-        data = {"data": json.dumps(data)}
+        data = json.dumps(data)
         self.log.debug("Posting data: %s" % data)
 
-        req = requests.post(
-            url, data, headers={'Content-Type': 'application/json'}
+        data = urllib.urlencode({"data": data})
+        req = urllib2.Request(
+            url, data, {'Content-Type': 'application/json'}
         )
 
-        result = req.text
+        result = urllib2.urlopen(req).read()
         self.log.debug("Result: %s" % result)
         return result
 
     def get(self, url):
-        return requests.get(url).text
+        return urllib2.urlopen(url).read()
