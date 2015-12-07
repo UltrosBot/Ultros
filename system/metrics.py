@@ -1,9 +1,12 @@
+import urllib
+
+__author__ = 'Gareth Coles'
+
 import json
 import platform
 import psutil
 import sys
 import traceback
-import urllib
 import urllib2
 
 from twisted.internet.task import LoopingCall
@@ -11,15 +14,14 @@ from twisted.internet.task import LoopingCall
 from system.constants import version_info
 from system.decorators.threads import run_async_threadpool
 from system.event_manager import EventManager
-from system.logging.logger import getLogger
 from system.singleton import Singleton
 from system.storage.formats import JSON
 from system.storage.manager import StorageManager
-from system.translations import Translations
 
+from system.logging.logger import getLogger
 from utils.packages.packages import Packages
 
-__author__ = 'Gareth Coles'
+from system.translations import Translations
 _ = Translations().get()
 
 
@@ -204,15 +206,6 @@ class Metrics(object):
 
                 cpu = platform.processor().strip() or "Unknown"
                 _os = platform.system()
-
-                if _os.lower() == "linux":
-                    nix = platform.linux_distribution()
-
-                    if nix[2]:
-                        nix[2] = "({})".format(nix[2])
-
-                    _os = "{}: {}".format(_os, " ".join(filter(None, nix)))
-
                 ram = psutil.virtual_memory().total / 1048576.0
 
                 python = "%s %s %s" % (
