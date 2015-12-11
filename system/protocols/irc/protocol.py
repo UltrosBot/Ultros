@@ -1011,6 +1011,23 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
     # these instead of accessing them directly.                           #
     #######################################################################
 
+    def get_extra_groups(self, user, target=None):
+        if target:
+            if isinstance(user, basestring):
+                user = self.get_user(user)
+            if not user:
+                return []
+
+            rank = user.get_highest_rank_in_channel(target)
+
+            if not rank:
+                return []
+
+            self.log.debug("Rank for {}: {}".format(user, rank))
+            return ["{}-{}".format(self.TYPE, rank.symbol)]
+
+        return []
+
     def _get_user_from_user_string(self, user_string, create_temp=True):
         nick, ident, host = self.utils.split_hostmask(user_string)
         user = self.get_user(nickname=nick, ident=ident, host=host)

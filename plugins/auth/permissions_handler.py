@@ -160,9 +160,25 @@ class permissionsHandler(object):
                                             protocol, source,
                                             check_superadmin=superuser)
         else:
-            self.plugin.logger.debug(_("CHECK | Not authorized."))
-            return self.group_has_permission("default", permission, protocol,
-                                             source)
+            self.plugin.logger.debug(_("CHECK | Not logged in."))
+            r = self.group_has_permission(
+                    "default", permission, protocol, source
+            )
+
+            if not r:
+                if isinstance(protocol, basestring):
+                    _protocol = self.plugin.factory_manager.get_protocol(protocol)
+                else:
+                    _protocol = protocol
+
+                if not _protocol:
+                    return False
+
+                for group in _protocol.get_extra_groups(caller, source):
+                    if self.group_has_permission(group, permission,
+                                                 protocol, source):
+                        return True
+            return r
 
     # User operations
     #  Modification
@@ -477,8 +493,7 @@ class permissionsHandler(object):
             user_group = self.data["users"][user]["group"]
 
             if check_superadmin:
-                superadmin = self.get_user_option(user, "superadmin")
-                if superadmin:
+                if self.get_user_option(user, "superadmin"):
                     return True
 
             user_perms = self.data["users"][user]["permissions"]
@@ -502,6 +517,19 @@ class permissionsHandler(object):
                                                  protocol, source)
             if has_perm:
                 return True
+
+            if isinstance(protocol, basestring):
+                _protocol = self.plugin.factory_manager.get_protocol(protocol)
+            else:
+                _protocol = protocol
+
+            if not _protocol:
+                return False
+
+            for group in _protocol.get_extra_groups(user, source):
+                if self.group_has_permission(group, permission,
+                                             protocol, source):
+                    return True
         return False
 
     # Group operations
