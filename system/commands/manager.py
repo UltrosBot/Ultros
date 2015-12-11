@@ -59,6 +59,7 @@ class CommandManager(object):
     #: Permissions handlers are in charge of asserting whether a user has
     #: permission for a specified action. They work together with auth
     #: handlers to determine this.
+    #: :type: plugins.auth.permissions_handler.permissionsHandler
     perm_handler = None
 
     #: Storage for the factory manager, to avoid function call overhead.
@@ -352,7 +353,7 @@ class CommandManager(object):
         """Set the permissions handler, provided one hasn't already been set.
 
         :param handler: The handler to set
-        :type handler: object
+        :type handler: plugins.auth.permissions_handler.permissionsHandler
 
         :returns: Whether the handler was set or not
         :rtype: Boolean

@@ -211,6 +211,23 @@ class Protocol(protocol.Protocol):
 
         raise NotImplementedError(_("This function needs to be implemented."))
 
+    def get_extra_groups(self, user, target=None):
+        """
+        Get extra groups for a user (eg, based on channel or network rank)
+
+        If the protocol doesn't have channels, the target param can safely
+        be ignored. If there are no extra groups, return an empty list,
+        otherwise return a list of strings representing group names.
+
+        :param user: A string or User object
+        :param target: None, a string, User or Channel object
+
+        :return: A list of extra groups to check against
+        :rtype: list(str)
+        """
+
+        return []
+
 
 class ChannelsProtocol(Protocol):
     """
