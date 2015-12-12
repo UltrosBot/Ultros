@@ -43,7 +43,7 @@ class Factory(protocol.ClientFactory):
         self.manager = manager
         self.name = protocol_name
         self.ptype = config["main"]["protocol-type"]
-        self.protocol_class = None
+        self.protocol_module = None
         self.protocol = None
         manager_config = manager.main_config
         reconnections = manager_config["reconnections"]
@@ -55,7 +55,8 @@ class Factory(protocol.ClientFactory):
 
     def setup(self):
         """
-        This is called by Twisted, to tell the factory to set up a protocol.
+        This is called by the factory manager, to tell the factory to set up a
+        protocol.
 
         The default is usually okay, but we've overridden it here because
         we don't need the whole "multiple protocols per factory" thing, and
@@ -65,25 +66,25 @@ class Factory(protocol.ClientFactory):
         self.logger.debug(_("Entering setup method."))
 
         try:
-            if self.protocol_class is None:
+            if self.protocol_module is None:
                 self.logger.debug(_("First-time setup; not reloading."))
-                current_protocol = importlib.import_module(
+                current_module = importlib.import_module(
                     "system.protocols.%s.protocol" % self.ptype)
             else:
                 del self.protocol
                 self.logger.debug(_("Reloading module."))
-                current_protocol = reload(self.protocol_class)
+                current_module = reload(self.protocol_module)
 
-                if hasattr(current_protocol, "reload"):
-                    current_protocol.reload()
-            self.protocol_class = current_protocol
+                if hasattr(current_module, "reload"):
+                    current_module.reload()
+            self.protocol_module = current_module
         except ImportError:
             self.logger.exception(
                 _("Unable to import protocol %s for %s") %
                 (self.ptype, self.name))
         else:
-            if issubclass(current_protocol.Protocol, GenericProtocol):
-                self.protocol = current_protocol.Protocol(self.name,
+            if issubclass(current_module.Protocol, GenericProtocol):
+                self.protocol = current_module.Protocol(self.name,
                                                           self,
                                                           self.config)
             else:
