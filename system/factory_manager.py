@@ -57,7 +57,6 @@ class FactoryManager(object):
         self.event_manager = EventManager()
         self.logger = getLogger("Manager")
         self.plugman = PluginManager(self)
-        self.yapsy_logger = getLogger("yapsy")
 
         self.metrics = None
 
@@ -108,9 +107,6 @@ class FactoryManager(object):
 
     def setup(self):
         signal.signal(signal.SIGINT, self.signal_callback)
-
-        self.yapsy_logger.debug_ = self.yapsy_logger.debug
-        self.yapsy_logger.debug = self.yapsy_logger.trace
 
         self.main_config = self.storage.get_file(self, "config", YAML,
                                                  "settings.yml")
