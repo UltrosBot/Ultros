@@ -1,10 +1,12 @@
 # coding=utf-8
-__author__ = "Gareth Coles"
 
 from twisted.internet import protocol
 
 from system.decorators.log import deprecated
+from system.logging.logger import getLogger
 from system.translations import Translations
+
+__author__ = "Gareth Coles"
 _ = Translations().get()
 
 
@@ -119,6 +121,7 @@ class Protocol(protocol.Protocol):
         self.name = name
         self.factory = factory
         self.config = config
+        self.log = getLogger(self.name)
         # Default values for optional main config section
         try:
             self.can_flood = self.config["main"]["can-flood"]
