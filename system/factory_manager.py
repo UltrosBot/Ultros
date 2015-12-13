@@ -9,7 +9,6 @@ from system.decorators.log import deprecated
 from system.enums import PluginState, ProtocolState
 from system.events.general import PluginsLoadedEvent, ReactorStartedEvent
 from system.events.manager import EventManager
-from system.factory import Factory
 from system.logging import logger
 from system.logging.logger import getLogger
 from system.metrics import Metrics

@@ -1,16 +1,4 @@
 # coding=utf-8
-from system.protocols.mumble.acl import Perms
-from system.protocols.mumble.structs import Version
-from utils.protobuf import decode_varint
-
-__author__ = 'Gareth Coles'
-
-# This is a modified version of Chaosteil's open-domain Mumble library.
-# The original code can be found on GitHub, at the following link..
-# https://github.com/Chaosteil/rdiablo-mumble-bot/blob/master/
-# File: mumble_protocol.py
-
-
 import cgi
 import os
 import platform
@@ -19,20 +7,34 @@ import struct
 from twisted.internet import reactor, ssl, task
 
 from system.commands.manager import CommandManager
+
 from system.enums import CommandState
+
 from system.events.manager import EventManager
 from system.events import general as general_events
 from system.events import mumble as mumble_events
+
+from system.logging.logger import getLogger
+
 from system.protocols.generic.protocol import SingleChannelProtocol
+
 from system.protocols.mumble import Mumble_pb2
 from system.protocols.mumble.user import User
 from system.protocols.mumble.channel import Channel
-
-from utils.html import html_to_text
-from system.logging.logger import getLogger
-from utils.switch import Switch
+from system.protocols.mumble.acl import Perms
+from system.protocols.mumble.structs import Version
 
 from system.translations import Translations
+
+from utils.html import html_to_text
+from utils.protobuf import decode_varint
+from utils.switch import Switch
+__author__ = 'Gareth Coles'
+
+# This is a modified version of Chaosteil's open-domain Mumble library.
+# The original code can be found on GitHub, at the following link..
+# https://github.com/Chaosteil/rdiablo-mumble-bot/blob/master/
+# File: mumble_protocol.py
 _ = Translations().get()
 
 
@@ -128,26 +130,6 @@ class Protocol(SingleChannelProtocol):
         self.should_deafen_self = audio_conf.get("should_deafen_self", True)
 
         self.userstats_request_rate = config.get("userstats_request_rate", 60)
-
-        event = general_events.PreConnectEvent(self, config)
-        self.event_manager.run_callback("PreConnect", event)
-
-        context = self._get_client_context()
-        if context is None:
-            # Could not create a context (problem loading cert file)
-            self.factory.manager.remove_protocol(self.name)
-            return
-
-        reactor.connectSSL(
-            self.networking["address"],
-            self.networking["port"],
-            self.factory,
-            context,
-            120
-        )
-
-        event = general_events.PostConnectEvent(self, config)
-        self.event_manager.run_callback("PostConnect", event)
 
     def _get_client_context(self):
         # Check if a cert file is specified in config
