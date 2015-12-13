@@ -10,7 +10,7 @@ from system.logging.logger import getLogger
 __author__ = 'Gareth Coles'
 
 
-class Factory(ClientFactory):
+class BaseFactory(ClientFactory):
     """
     A Twisted factory, for producing protocols. Now with less fuckery!
 
@@ -75,7 +75,7 @@ class Factory(ClientFactory):
                 self.logger.debug("First-time setup, not reloading")
                 self.protocol_module = importlib.import_module(
                     "system.protocols.{}.protocol".format(
-                        self.config["main"]["protocol_type"]
+                        self.config["main"]["protocol-type"]
                     )
                 )
             else:
@@ -85,7 +85,7 @@ class Factory(ClientFactory):
             self.logger.exception(
                 "Unable to import protocol module '{}' "
                 "for protocol '{}'".format(
-                    self.config["main"]["protocol_type"],
+                    self.config["main"]["protocol-type"],
                     self.name
                 )
             )
@@ -94,7 +94,7 @@ class Factory(ClientFactory):
                 raise TypeError(
                     "Protocol '{}' does not subclass the generic protocol "
                     "class!".format(
-                        self.config["main"]["protocol_type"]
+                        self.config["main"]["protocol-type"]
                     )
                 )
 

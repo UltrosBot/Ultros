@@ -1,6 +1,7 @@
 # coding=utf-8
 import signal
 
+from django.utils import importlib
 from twisted.internet import reactor
 
 from system.commands.manager import CommandManager
@@ -39,6 +40,9 @@ class FactoryManager(object):
 
     #: Storage for all of our factories.
     factories = {}
+
+    #: Storage for each factory module, so we can reload them
+    factory_modules = {}
 
     #: Storage for all of the protocol configs.
     configs = {}
@@ -312,8 +316,19 @@ class FactoryManager(object):
                     % name)
                 return ProtocolState.LoadError
         try:
-            self.factories[name] = Factory(name, config, self)
-            self.factories[name].setup()
+            protocol_type = config["main"]["protocol-type"]
+
+            if protocol_type in self.factory_modules:
+                factory_module = reload(self.factory_modules[protocol_type])
+            else:
+                factory_module = importlib.import_module(
+                    "system.protocols.{}.factory".format(protocol_type)
+                )
+
+            self.factory_modules[protocol_type] = factory_module
+
+            self.factories[name] = factory_module.Factory(name, config, self)
+            self.factories[name].connect()
             return ProtocolState.Loaded
         except Exception:
             if name in self.factories:
