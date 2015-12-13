@@ -162,12 +162,14 @@ class permissionsHandler(object):
         else:
             self.plugin.logger.debug(_("CHECK | Not logged in."))
             r = self.group_has_permission(
-                    "default", permission, protocol, source
+                "default", permission, protocol, source
             )
 
             if not r:
                 if isinstance(protocol, basestring):
-                    _protocol = self.plugin.factory_manager.get_protocol(protocol)
+                    _protocol = self.plugin.factory_manager.get_protocol(
+                        protocol
+                    )
                 else:
                     _protocol = protocol
 
