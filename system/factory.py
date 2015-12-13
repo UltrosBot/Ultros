@@ -84,9 +84,9 @@ class Factory(protocol.ClientFactory):
                 (self.ptype, self.name))
         else:
             if issubclass(current_module.Protocol, GenericProtocol):
-                self.protocol = current_module.Protocol(self.name,
-                                                          self,
-                                                          self.config)
+                self.protocol = current_module.Protocol(
+                    self.name, self, self.config
+                )
             else:
                 raise TypeError(_("Protocol does not subclass the generic "
                                   "protocol class!"))
