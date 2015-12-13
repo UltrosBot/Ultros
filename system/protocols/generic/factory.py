@@ -80,7 +80,7 @@ class Factory(ClientFactory):
                 )
             else:
                 self.logger.debug("Reloading module")
-                reload(self.protocol_module)
+                self.protocol_module = reload(self.protocol_module)
         except ImportError:
             self.logger.exception(
                 "Unable to import protocol module '{}' "
