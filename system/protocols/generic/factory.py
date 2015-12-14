@@ -2,6 +2,7 @@
 import importlib
 
 from twisted.internet import reactor
+from twisted.internet.error import AlreadyCancelled, AlreadyCalled
 from twisted.internet.protocol import ClientFactory
 
 from system.protocols.generic.protocol import Protocol
@@ -27,6 +28,7 @@ class BaseFactory(ClientFactory):
     reconnection_config = None
 
     shutting_down = False
+    task = None
 
     def __init__(self, protocol_name, config, factory_manager):
         self.name = protocol_name
@@ -107,6 +109,48 @@ class BaseFactory(ClientFactory):
                 )
             )
 
+    def get_reconnect_config(self):
+        if "reconnections" in self.config:
+            return self.config["reconnections"]
+        return self.reconnection_config
+
+    def maybe_reconnect(self, connector, reason):
+        reconnection_config = self.get_reconnect_config()
+
+        if self.shutting_down:
+            return
+
+        if reconnection_config.get("on-{}".format(reason), False):
+            if (
+                    self.reconnection_attempts >=
+                    reconnection_config["attempts"]
+            ):
+                self.logger.warn(
+                    "Unable to connect after {} attempts, aborting".format(
+                        self.reconnection_attempts
+                    )
+                )
+                return
+
+            self.reconnection_attempts += 1
+
+            max_delay = reconnection_config.get("max_delay", 300)
+
+            delay = reconnection_config["delay"]
+            delay *= self.reconnection_attempts
+
+            if delay > max_delay:
+                delay = max_delay
+
+            self.logger.info(
+                "Connecting after {} seconds (attempt {}/{}".format(
+                    delay, self.reconnection_attempts,
+                    reconnection_config["attempts"]
+                )
+            )
+
+            return reactor.callLater(delay, connector.connect)
+
     def shutdown(self):
         """
         Shut down the factory, and thus the protocol it's in charge of.
@@ -117,6 +161,14 @@ class BaseFactory(ClientFactory):
         """
 
         self.shutting_down = True
+
+        try:
+            if self.task is not None:
+                self.task.cancel()
+        except (AlreadyCalled, AlreadyCancelled):
+            pass
+        except Exception:
+            self.logger.exception("Failed to cancel task")
 
         if self.protocol:
             try:
@@ -171,35 +223,9 @@ class BaseFactory(ClientFactory):
         automatically handles reconnections as appropriate.
         """
 
-        if self.shutting_down:
-            return
-
         self.logger.warn("Connection failed: {}".format(reason))
 
-        if self.reconnection_config["on-failure"]:
-            if (
-                    self.reconnection_attempts >=
-                    self.reconnection_config["attempts"]
-            ):
-                self.logger.warn(
-                    "Unable to connect after {} attempts, aborting".format(
-                        self.reconnection_attempts
-                    )
-                )
-            return
-
-        self.reconnection_attempts += 1
-        delay = self.reconnection_config["delay"]
-        delay *= self.reconnection_attempts
-
-        self.logger.info(
-            "Connecting after {} seconds (attempt {}/{}".format(
-                delay, self.reconnection_attempts,
-                self.reconnection_config["attempts"]
-            )
-        )
-
-        reactor.callLater(delay, connector.connect)
+        self.task = self.maybe_reconnect(connector)
 
     def clientConnectionLost(self, connector, reason):
         """
@@ -210,32 +236,6 @@ class BaseFactory(ClientFactory):
         automatically handles reconnections as appropriate.
         """
 
-        if self.shutting_down:
-            return
-
         self.logger.warn("Connection lost: {}".format(reason))
 
-        if self.reconnection_config["on-drop"]:
-            if (
-                    self.reconnection_attempts >=
-                    self.reconnection_config["attempts"]
-            ):
-                self.logger.warn(
-                    "Unable to reconnect after {} attempts, aborting".format(
-                        self.reconnection_attempts
-                    )
-                )
-                return
-
-            self.reconnection_attempts += 1
-            delay = self.reconnection_config["delay"]
-            delay *= self.reconnection_attempts
-
-            self.logger.info(
-                "Reconnecting after {} seconds (attempt {}/{}".format(
-                    delay, self.reconnection_attempts,
-                    self.reconnection_config["attempts"]
-                )
-            )
-
-            reactor.callLater(delay, connector.connect)
+        self.task = self.maybe_reconnect(connector)
