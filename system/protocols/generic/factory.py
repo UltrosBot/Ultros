@@ -121,16 +121,17 @@ class BaseFactory(ClientFactory):
             return
 
         if reconnection_config.get("on-{}".format(reason), False):
-            if (
-                    self.reconnection_attempts >=
-                    reconnection_config["attempts"]
-            ):
-                self.logger.warn(
-                    "Unable to connect after {} attempts, aborting".format(
-                        self.reconnection_attempts
+            if reconnection_config["attempts"] > 0:
+                if (
+                        self.reconnection_attempts >=
+                        reconnection_config["attempts"]
+                ):
+                    self.logger.warn(
+                        "Unable to connect after {} attempts, aborting".format(
+                            self.reconnection_attempts
+                        )
                     )
-                )
-                return
+                    return
 
             self.reconnection_attempts += 1
 
@@ -145,7 +146,7 @@ class BaseFactory(ClientFactory):
             self.logger.info(
                 "Connecting after {} seconds (attempt {}/{}".format(
                     delay, self.reconnection_attempts,
-                    reconnection_config["attempts"]
+                    reconnection_config["attempts"] or "infinite"
                 )
             )
 
