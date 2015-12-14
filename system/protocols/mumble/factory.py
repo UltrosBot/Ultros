@@ -15,8 +15,7 @@ class Factory(BaseFactory):
         context = self._get_client_context()
 
         if context is None:
-            self.factory_manager.remove_protocol(self.name)
-            return
+            return False
 
         reactor.connectSSL(
             networking["address"],
@@ -25,6 +24,8 @@ class Factory(BaseFactory):
             context,
             120
         )
+
+        return True
 
     def _get_client_context(self):
         # Check if a cert file is specified in config

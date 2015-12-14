@@ -1,7 +1,7 @@
 # coding=utf-8
+import importlib
 import signal
 
-from django.utils import importlib
 from twisted.internet import reactor
 
 from system.commands.manager import CommandManager
@@ -327,7 +327,19 @@ class FactoryManager(object):
             self.factory_modules[protocol_type] = factory_module
 
             self.factories[name] = factory_module.Factory(name, config, self)
-            self.factories[name].connect()
+            r = self.factories[name].connect()
+
+            if not r:
+                if name in self.factories:
+                    del self.factories[name]
+
+                self.logger.error(
+                    "Factory setup for the '{}' protocol failed.".format(
+                        name
+                    )
+                )
+                return ProtocolState.SetupError
+
             return ProtocolState.Loaded
         except Exception:
             if name in self.factories:

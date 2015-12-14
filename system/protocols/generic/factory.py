@@ -70,33 +70,42 @@ class BaseFactory(ClientFactory):
         reside in *system.protocols.[name].protocol*.
         """
 
-        try:
-            if self.protocol_module is None:
-                self.logger.debug("First-time setup, not reloading")
-                self.protocol_module = importlib.import_module(
-                    "system.protocols.{}.protocol".format(
-                        self.config["main"]["protocol-type"]
-                    )
-                )
-            else:
-                self.logger.debug("Reloading module")
-                self.protocol_module = reload(self.protocol_module)
-        except ImportError:
-            self.logger.exception(
-                "Unable to import protocol module '{}' "
-                "for protocol '{}'".format(
-                    self.config["main"]["protocol-type"],
-                    self.name
+        if "main" not in self.config:
+            raise KeyError(
+                "Protocol configuration is missing a 'main' section"
+            )
+
+        if "protocol-type" not in self.config["main"]:
+            raise KeyError(
+                "Protocol configuration is missing a 'protocol-type' value in "
+                "the 'main' section"
+            )
+
+        protocol_type = self.config["main"]["protocol-type"]
+
+        if self.protocol_module is None:
+            self.logger.debug("First-time setup, not reloading")
+            self.protocol_module = importlib.import_module(
+                "system.protocols.{}.protocol".format(
+                    protocol_type
                 )
             )
         else:
-            if not issubclass(self.protocol_module.Protocol, Protocol):
-                raise TypeError(
-                    "Protocol '{}' does not subclass the generic protocol "
-                    "class!".format(
-                        self.config["main"]["protocol-type"]
-                    )
+            self.logger.debug("Reloading module")
+            try:
+                self.protocol_module = reload(self.protocol_module)
+            except:
+                self.protocol_module = None
+                raise
+
+        if not issubclass(self.protocol_module.Protocol, Protocol):
+            self.protocol_module = None
+            raise TypeError(
+                "Protocol '{}' does not subclass the generic protocol "
+                "class!".format(
+                    protocol_type
                 )
+            )
 
     def shutdown(self):
         """
@@ -115,6 +124,8 @@ class BaseFactory(ClientFactory):
             except Exception:
                 self.logger.exception("Error shutting down protocol")
 
+            self.protocol = None
+
     # Base Twisted functions - override if necessary
 
     def buildProtocol(self, addr):
@@ -126,11 +137,16 @@ class BaseFactory(ClientFactory):
         for that function are **(*name*, *factory*, *config*)**.
         """
 
-        self.load_module()
-        self.protocol = self.protocol_module.Protocol(
-            self.name, self, self.config
-        )
-        return self.protocol
+        try:
+            self.load_module()
+            self.protocol = self.protocol_module.Protocol(
+                self.name, self, self.config
+            )
+            return self.protocol
+        except Exception:
+            self.protocol = None
+            self.factory_manager.remove_protocol(self.name)
+            raise
 
     # Base Twisted functions - override if necessary and call superclass
 

@@ -7,15 +7,13 @@ __author__ = 'Gareth Coles'
 
 
 class Factory(BaseFactory):
-    ssl = False
-
     def connect(self):
         try:
             from twisted.internet import ssl
-            self.ssl = True
+            use_ssl = True
         except ImportError:
             ssl = None
-            self.ssl = False
+            use_ssl = False
             self.logger.exception(
                 "Unable to import the SSL library. SSL will not be available."
             )
@@ -28,7 +26,7 @@ class Factory(BaseFactory):
         if binding:
             bindaddr = (binding, 0)
 
-        if networking["ssl"] and not ssl:
+        if networking["ssl"] and not use_ssl:
             self.logger.error(
                 "SSL is not available but was requested in the configuration."
             )
@@ -37,8 +35,7 @@ class Factory(BaseFactory):
                 "disable it in the configuration."
             )
 
-            self.factory_manager.remove_protocol(self.name)
-            return
+            return False
 
         if networking["ssl"]:
             self.logger.debug("Connecting with SSL")
@@ -61,3 +58,5 @@ class Factory(BaseFactory):
                 120,
                 bindAddress=bindaddr
             )
+
+        return True
