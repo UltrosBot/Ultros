@@ -226,7 +226,7 @@ class BaseFactory(ClientFactory):
 
         self.logger.warn("Connection failed: {}".format(reason))
 
-        self.task = self.maybe_reconnect(connector)
+        self.task = self.maybe_reconnect(connector, "failure")
 
     def clientConnectionLost(self, connector, reason):
         """
@@ -239,4 +239,4 @@ class BaseFactory(ClientFactory):
 
         self.logger.warn("Connection lost: {}".format(reason))
 
-        self.task = self.maybe_reconnect(connector)
+        self.task = self.maybe_reconnect(connector, "drop")
