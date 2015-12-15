@@ -32,7 +32,6 @@ control_chars: "." # What messages must be prefixed with to count as a command.
 
 reconnections: # Settings for reconnecting on connection failures. This is optional, but will override
                # the section in settings.yml if you provide it.
-               # This is the same as the section in settings.yml and overrides it
   delay: 10
   max-delay: 300
   attempts: 5

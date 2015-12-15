@@ -54,3 +54,12 @@ perform:  # Raw lines to send to the server after we've identified but before we
 - "PRIVMSG ChanServ :INVITE #staff"
 
 invite_join: no  # Whether to automatically join channels on invite
+
+reconnections: # Settings for reconnecting on connection failures. This is optional, but will override
+               # the section in settings.yml if you provide it.
+  delay: 10
+  max-delay: 300
+  attempts: 5
+  on-drop: yes
+  on-failure: yes
+  reset-on-success: yes
