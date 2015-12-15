@@ -30,13 +30,28 @@ class BaseFactory(ClientFactory):
     shutting_down = False
     task = None
 
+    sent_warning = False
+
+    @property
+    def reconnection_config(self):
+        c = self.factory_manager.main_config
+
+        if "reconnections" in c:
+            return self.factory_manager.main_config["reconnections"]
+        elif not self.sent_warning:
+            self.sent_warning = True
+            self.logger.warn(
+                "Unable to find a \"reconnections\" section in settings.yml - "
+                "Please add one and ensure that it is configured to your needs"
+            )
+            return {}
+
     def __init__(self, protocol_name, config, factory_manager):
         self.name = protocol_name
         self.config = config
         self.factory_manager = factory_manager
 
         self.logger = getLogger("F: {}".format(self.name))
-        self.reconnection_config = factory_manager.main_config["reconnections"]
 
     # Custom Ultros functions - must be overridden
 
@@ -74,13 +89,13 @@ class BaseFactory(ClientFactory):
 
         if "main" not in self.config:
             raise KeyError(
-                "Protocol configuration is missing a 'main' section"
+                "Protocol configuration is missing a \"main\" section"
             )
 
         if "protocol-type" not in self.config["main"]:
             raise KeyError(
-                "Protocol configuration is missing a 'protocol-type' value in "
-                "the 'main' section"
+                "Protocol configuration is missing a \"protocol-type\" value "
+                "in the \"main\" section"
             )
 
         protocol_type = self.config["main"]["protocol-type"]
@@ -103,28 +118,48 @@ class BaseFactory(ClientFactory):
         if not issubclass(self.protocol_module.Protocol, Protocol):
             self.protocol_module = None
             raise TypeError(
-                "Protocol '{}' does not subclass the generic protocol "
+                "Protocol \"{}\" does not subclass the generic protocol "
                 "class!".format(
                     protocol_type
                 )
             )
 
-    def get_reconnect_config(self):
+    def get_reconnect_option(self, key, default=None):
+        """
+        Get a specific reconnect option from the configurations
+
+        This will try the protocol-specific config, falling back to the
+        global configuration, and then to the default value as supplied, in
+        that order.
+        """
+
         if "reconnections" in self.config:
-            return self.config["reconnections"]
-        return self.reconnection_config
+            d = self.config["reconnections"]
+
+            if key not in d:
+                d = self.reconnection_config
+        else:
+            d = self.reconnection_config
+
+        return d.get(key, default)
 
     def maybe_reconnect(self, connector, reason):
-        reconnection_config = self.get_reconnect_config()
+        """
+        Check whether a reconnection is appropriate, and perform it if so
+
+        This will check the configuration as specified in
+        `get_reconnect_option`, and conditionally reconnect (or not) as
+        configured.
+        """
 
         if self.shutting_down:
             return
 
-        if reconnection_config.get("on-{}".format(reason), False):
-            if reconnection_config["attempts"] > 0:
+        if self.get_reconnect_option("on-{}".format(reason), False):
+            if self.get_reconnect_option("attempts", 5) > 0:
                 if (
                         self.reconnection_attempts >=
-                        reconnection_config["attempts"]
+                        self.get_reconnect_option("attempts", 5)
                 ):
                     self.logger.warn(
                         "Unable to connect after {} attempts, aborting".format(
@@ -135,9 +170,9 @@ class BaseFactory(ClientFactory):
 
             self.reconnection_attempts += 1
 
-            max_delay = reconnection_config.get("max_delay", 300)
+            max_delay = self.get_reconnect_option("max_delay", 300)
 
-            delay = reconnection_config["delay"]
+            delay = self.get_reconnect_option("delay", 10)
             delay *= self.reconnection_attempts
 
             if delay > max_delay:
@@ -146,7 +181,7 @@ class BaseFactory(ClientFactory):
             self.logger.info(
                 "Connecting after {} seconds (attempt {}/{}".format(
                     delay, self.reconnection_attempts,
-                    reconnection_config["attempts"] or "infinite"
+                    self.get_reconnect_option("attempts", 5) or "infinite"
                 )
             )
 
