@@ -1,4 +1,5 @@
 # coding=utf-8
+import importlib
 import signal
 
 from twisted.internet import reactor
@@ -8,7 +9,6 @@ from system.decorators.log import deprecated
 from system.enums import PluginState, ProtocolState
 from system.events.general import PluginsLoadedEvent, ReactorStartedEvent
 from system.events.manager import EventManager
-from system.factory import Factory
 from system.logging import logger
 from system.logging.logger import getLogger
 from system.metrics import Metrics
@@ -39,6 +39,9 @@ class FactoryManager(object):
 
     #: Storage for all of our factories.
     factories = {}
+
+    #: Storage for each factory module, so we can reload them
+    factory_modules = {}
 
     #: Storage for all of the protocol configs.
     configs = {}
@@ -312,8 +315,31 @@ class FactoryManager(object):
                     % name)
                 return ProtocolState.LoadError
         try:
-            self.factories[name] = Factory(name, config, self)
-            self.factories[name].setup()
+            protocol_type = config["main"]["protocol-type"]
+
+            if protocol_type in self.factory_modules:
+                factory_module = reload(self.factory_modules[protocol_type])
+            else:
+                factory_module = importlib.import_module(
+                    "system.protocols.{}.factory".format(protocol_type)
+                )
+
+            self.factory_modules[protocol_type] = factory_module
+
+            self.factories[name] = factory_module.Factory(name, config, self)
+            r = self.factories[name].connect()
+
+            if not r:
+                if name in self.factories:
+                    del self.factories[name]
+
+                self.logger.error(
+                    "Factory setup for the '{}' protocol failed.".format(
+                        name
+                    )
+                )
+                return ProtocolState.SetupError
+
             return ProtocolState.Loaded
         except Exception:
             if name in self.factories:

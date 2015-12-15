@@ -20,13 +20,14 @@ plugins:
   - Factoids  # Create and retrieve factoids
   - URLs  # Tools for working with URLs, URL titles and URL shorteners
 
-reconnections: # Settings for reconnecting on connection failures.
-               # Reconnection counters are not shared between protocols.
-  delay: 10 # How long to wait between reconnection attempts, in seconds.
-  attempts: 5 # How many times to attempt reconnecting
-  on-drop: yes # Whether to reconnect if we lose connection
-  on-failure: yes # Whether to reconnect if we fail to connect
-  reset-on-success: yes # Whether to reset the counter if we successfully reconnect
+reconnections: # Settings for reconnecting on connection failures. Reconnection counters are not shared between protocols.
+  # You can add this section to a protocol config if you want to have per-protocol reconnection settings.
+  delay: 10 # How long to wait between reconnection attempts, in seconds. Delays are staggered between consecutive attempts.
+  max-delay: 300 # The largest possible acceptable delay.
+  attempts: 5 # How many times to attempt reconnecting. Set to 0 for infinite attempts.
+  on-drop: yes # Whether to reconnect if we lose connection.
+  on-failure: yes # Whether to reconnect if we fail to connect.
+  reset-on-success: yes # Whether to reset the counter if we successfully reconnect.
 
 # Simple metrics, for http://ultros.io/metrics
 

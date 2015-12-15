@@ -141,53 +141,7 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
                                "entry"))
 
         self.nickname = self.identity["nick"]
-
         self.invite_join = self.config.get("invite_join", False)
-
-        binding = self.networking.get("bindaddr", None)
-
-        if binding is None:
-            bindaddr = None
-        else:
-            self.log.warn(_("Binding to address: %s") % binding)
-            bindaddr = (binding, 0)
-
-        event = general_events.PreConnectEvent(self, config)
-        self.event_manager.run_callback("PreConnect", event)
-
-        if self.networking["ssl"] and not self.ssl:
-            self.log.error(_("SSL is not available but was requested in the "
-                             "configuration."))
-            self.log.error(_("IRC will be unavailable until SSL is fixed or "
-                             "is disabled in the configuration."))
-
-            # Clean up so everything can be garbage-collected
-            self.factory.manager.remove_protocol(self.name)
-
-            return
-
-        if self.networking["ssl"]:
-            self.log.trace(_("Connecting with SSL"))
-            reactor.connectSSL(
-                self.networking["address"],
-                self.networking["port"],
-                self.factory,
-                ssl.ClientContextFactory(),
-                120,
-                bindAddress=bindaddr  # ("192.168.1.2", 0)
-            )
-        else:
-            self.log.trace(_("Connecting without SSL"))
-            reactor.connectTCP(
-                self.networking["address"],
-                self.networking["port"],
-                self.factory,
-                120,
-                bindAddress=bindaddr  # ("192.168.1.2", 0)
-            )
-
-        event = general_events.PostConnectEvent(self, config)
-        self.event_manager.run_callback("PostConnect", event)
 
     def shutdown(self):
         self.sendLine("QUIT :%s" % _("Protocol shutdown"))

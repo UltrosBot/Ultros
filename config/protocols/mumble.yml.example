@@ -29,3 +29,12 @@ audio:  # Audio (voice comm) settings
 control_chars: "." # What messages must be prefixed with to count as a command.
                    # This doesn't have to be just one character!
                    # You can also use {NICK} in place of the bot's current nick.
+
+reconnections: # Settings for reconnecting on connection failures. This is optional, but will override
+               # the section in settings.yml if you provide it.
+  delay: 10
+  max-delay: 300
+  attempts: 5
+  on-drop: yes
+  on-failure: yes
+  reset-on-success: yes
