@@ -33,8 +33,7 @@ __author__ = 'Gareth Coles'
 
 # This is a modified version of Chaosteil's open-domain Mumble library.
 # The original code can be found on GitHub, at the following link..
-# https://github.com/Chaosteil/rdiablo-mumble-bot/blob/master/
-# File: mumble_protocol.py
+# https://github.com/Chaosteil/rdiablo-mumble-bot/
 _ = Translations().get()
 
 
