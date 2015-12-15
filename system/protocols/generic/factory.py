@@ -179,7 +179,7 @@ class BaseFactory(ClientFactory):
                 delay = max_delay
 
             self.logger.info(
-                "Connecting after {} seconds (attempt {}/{}".format(
+                "Connecting after {} seconds (attempt {}/{})".format(
                     delay, self.reconnection_attempts,
                     self.get_reconnect_option("attempts", 5) or "infinite"
                 )
