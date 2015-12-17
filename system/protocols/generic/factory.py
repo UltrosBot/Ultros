@@ -2,8 +2,10 @@
 import importlib
 
 from twisted.internet import reactor
-from twisted.internet.error import AlreadyCancelled, AlreadyCalled
+from twisted.internet.error import AlreadyCancelled, AlreadyCalled, \
+    ConnectionDone
 from twisted.internet.protocol import ClientFactory
+from twisted.python.failure import Failure
 
 from system.protocols.generic.protocol import Protocol
 from system.logging.logger import getLogger
@@ -272,6 +274,12 @@ class BaseFactory(ClientFactory):
         automatically handles reconnections as appropriate.
         """
 
-        self.logger.warn("Connection lost: {}".format(reason))
+        if isinstance(reason, Failure):
+            if isinstance(reason.value, ConnectionDone):
+                self.logger.info("Disconnected: Connection done")
+            else:
+                self.logger.warn("Connection lost: {}".format(reason.value))
+        else:
+            self.logger.warn("Connection lost: {}".format(reason))
 
         self.task = self.maybe_reconnect(connector, "drop")
