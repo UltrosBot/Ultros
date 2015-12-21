@@ -70,7 +70,7 @@ STATUS_CODES = {
     449: "Retry With",
 
     450: "Blocked by Windows Parental Controls",
-    451: "Redirect / Unavailable for Legal Reasons",
+    451: "Unavailable for Legal Reasons",
 
     494: "Request Header Too Large",
     495: "Cert Error",
