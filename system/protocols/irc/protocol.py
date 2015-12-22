@@ -692,11 +692,13 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         self.send_ctcp_reply(user_obj, "SOURCE", "http://ultros.io")
 
     def ctcpQuery_FINGER(self, user, channel, data):
-        if not self.fingers:
+        fingers = self.fingers
+
+        if not fingers:
             return
 
         user_obj = self._get_user_from_user_string(user, False)
-        self.send_ctcp_reply(user_obj, "FINGER", random.choice(self.fingers))
+        self.send_ctcp_reply(user_obj, "FINGER", random.choice(fingers))
 
     # endregion
 
