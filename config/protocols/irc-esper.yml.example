@@ -63,3 +63,26 @@ reconnections: # Settings for reconnecting on connection failures. This is optio
   on-drop: yes
   on-failure: yes
   reset-on-success: yes
+
+fingers:  # A list of reponses to return at random to CTCP FINGER requests
+          # Leave it empty or remove it from the config to disable this feature
+  - "You dirty, dirty thing."
+  - "Fingering squids? Splatoon has come a long way..."
+  - "No. Just, no."
+  - "Maybe you should do that with someone of your own species."
+  - "Do that again, and I'll eat it."
+  - "Nothing like Japan, right?"
+  - "I don't think that's how that works.."
+  - "Sorry, you're just not my type. Or species."
+  - "L-lewd!"
+  - "I'm pretty sure that's illegal."
+  - "Are you having fun down there?"
+  - "My tentacles are up *here*."
+  - "Trust me, there's nothing shiny up there."
+  - "https://i.imgur.com/38rBe36.jpg"
+  - "Yeah, I get that a lot."
+  - "You're not even going to take me out to dinner first?!"
+  - "We're doing this backwards; I'm the one with the tentacles."
+  - "H-h-hentai! B-baka hentai! >////<;"
+  - "Trust me, you don't want this ink all over your hands... Or do you?"
+  - "Well, whatever floats your boat, I guess."

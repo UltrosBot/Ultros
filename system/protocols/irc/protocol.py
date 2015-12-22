@@ -1,5 +1,5 @@
 # coding=utf-8
-
+import random
 import time
 
 from kitchen.text.converters import to_bytes, to_unicode
@@ -78,6 +78,10 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
     @property
     def num_channels(self):
         return len(self._channels)
+
+    @property
+    def fingers(self):
+        return self.config.get("fingers", [])
 
     # TODO: Make users a set()?
     _users = []
@@ -684,6 +688,13 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
     def ctcpQuery_SOURCE(self, user, channel, data_):
         user_obj = self._get_user_from_user_string(user, False)
         self.send_ctcp_reply(user_obj, "SOURCE", "http://ultros.io")
+
+    def ctcpQuery_FINGER(self, user, channel, data):
+        if not self.fingers:
+            return
+
+        user_obj = self._get_user_from_user_string(user, False)
+        self.send_ctcp_reply(user_obj, "FINGER", random.choice(self.fingers))
 
     # endregion
 
