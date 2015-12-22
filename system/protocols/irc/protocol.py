@@ -6,6 +6,7 @@ from kitchen.text.converters import to_bytes, to_unicode
 from twisted.internet import reactor
 from twisted.words.protocols import irc
 
+from system.constants import __version__
 from system.commands.manager import CommandManager
 from system.decorators.log import deprecated
 from system.enums import CommandState
@@ -677,12 +678,12 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
     def ctcpQuery_VERSION(self, user, channel, data_):
         user_obj = self._get_user_from_user_string(user, False)
-        self.send_ctcp_reply(user_obj, "VERSION", "Ultros v%s"
-                                                  % self.__version__)
+        self.send_ctcp_reply(
+            user_obj, "VERSION", "Ultros v{}".format(__version__))
 
     def ctcpQuery_SOURCE(self, user, channel, data_):
         user_obj = self._get_user_from_user_string(user, False)
-        self.send_ctcp_reply(user_obj, "VERSION", "http://ultros.io")
+        self.send_ctcp_reply(user_obj, "SOURCE", "http://ultros.io")
 
     # endregion
 
