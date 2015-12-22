@@ -454,7 +454,9 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
 
             self.event_manager.run_callback("ActionReceived", e)
         else:
-            self.log.info("[%s] %s" % (user, messages))
+            self.log.info(u"[{} {}] {}".format(
+                user.split("!", 1)[0], message[0], message[1]
+            ))
 
         if not event.cancelled:
             # Call super() to handle specific commands appropriately
