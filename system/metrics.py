@@ -213,7 +213,12 @@ class Metrics(object):
                     if nix[2]:
                         nix[2] = "({})".format(nix[2])
 
-                    _os = "{}: {}".format(_os, " ".join(filter(None, nix)))
+                    nix = filter(None, nix)
+
+                    if nix:
+                        _os = "{}: {}".format(_os, " ".join(nix))
+                    else:
+                        _os = "{}: Unknown".format(_os)
                 else:
                     release = platform.release()
 
