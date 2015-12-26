@@ -212,6 +212,9 @@ class URLsPlugin(PluginObject):
         if not allowed:
             return
 
+        if isinstance(source, Channel):
+            self.ensure_channel(protocol.name, source.name)
+
         status = self.channels.get(protocol.name, {})\
             .get(target.name, {})\
             .get("status", True)
@@ -267,8 +270,11 @@ class URLsPlugin(PluginObject):
 
             lazy_request = LazyRequest(req_args=[unicode(_url)])
 
-            self.channels.get(protocol.name, {}) \
-                .get(source.name, {})["last"] = unicode(_url)
+            if isinstance(source, Channel):
+                with self.channels:
+                    self.channels[protocol.name][source.name]["last"] = (
+                        unicode(_url)
+                    )
 
             yield self.run_handlers(_url, {
                 "event": event,
@@ -277,6 +283,13 @@ class URLsPlugin(PluginObject):
                 "redirects": redirects,
                 "max_redirects": max_redirects
             })
+
+    def ensure_channel(self, protocol_name, source_name):
+        with self.channels:
+            if protocol_name not in self.channels:
+                self.channels[protocol_name] = {}
+            if source_name not in self.channels[protocol_name]:
+                self.channels[protocol_name][source_name] = {}
 
     def match_to_url(self, match):
         """
@@ -442,10 +455,8 @@ class URLsPlugin(PluginObject):
                     self.logger.exception("Error fetching short URL.")
                     caller.respond("Error fetching short URL.")
         else:
-            if protocol.name not in self.channels \
-                    or source.name not in self.channels[protocol.name] \
-                    or not len(
-                        self.channels[protocol.name][source.name]["last"]):
+            self.ensure_channel(protocol.name, source.name)
+            if not self.channels[protocol.name][source.name]["last"]:
                 caller.respond("Nobody's linked anything here yet")
                 return
 
