@@ -1,11 +1,10 @@
 # coding=utf-8
-__author__ = "Gareth Coles"
-
 from system.commands.manager import CommandManager
 from system.events.manager import EventManager
 from system.storage.manager import StorageManager
 from system.translations import Translations
 
+__author__ = "Gareth Coles"
 _ = Translations().get()
 
 
@@ -50,7 +49,7 @@ class PluginObject(object):
         :type info: Info instance
 
         :param factory_manager: The factory manager
-        :type factory_manager: Manager instance
+        :type factory_manager: system.factory_manager.FactoryManager
         """
 
         from system.plugins.manager import PluginManager

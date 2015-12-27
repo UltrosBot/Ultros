@@ -8,7 +8,9 @@ the chat networks they're connected to. See the ManagementPlugin docstring
 for more information on that.
 """
 
-from system.enums import PluginState  # , ProtocolState
+import os
+
+from system.enums import PluginState, ProtocolState
 from system.plugins.plugin import PluginObject
 from system.translations import Translations
 
@@ -119,11 +121,180 @@ class ManagementPlugin(PluginObject):
         if len(args) < 1:
             caller.respond(__("Usage: {CHARS}%s <operation> [params]")
                            % command)
-            caller.respond(__("Operations: None yet"))
-            # caller.respond("Operations: help, list, load, unload, reload")
+            caller.respond("Operations: help, list, load, unload, reload")
 
-        operation = args[0]
-        caller.respond(__("Unknown operation: %s") % operation)
+        operation = args[0].lower()
+
+        if operation == "help":
+            lines = [
+                "{CHARS}%s <operation> [params] - The protocol management "
+                "command. Operations:" % command,
+
+                "> help - This help",
+                "> list - List all available protocols",
+                "> load <protocol> - Load a protocol that's available",
+                "> unload <protocol> - Unload a currently-loaded protocol",
+
+                "> reload <protocol> - Reload a protocol that's already "
+                "loaded",
+            ]
+
+            page_set = self.pages.get_pageset(protocol, source)
+            self.pages.page(page_set, lines)
+            self.pages.send_page(page_set, 1, source)
+        elif operation == "list":
+            lines = []
+            files = os.listdir("config/protocols")
+            names = []
+            loaded = self.factory_manager.factories.keys()
+
+            for f in files:
+                if f.endswith(".yml"):
+                    names.append(f.rsplit(".yml", 1)[0])
+
+            for name in loaded:
+                if name in names:
+                    names.remove(name)
+
+            for proto in sorted(loaded):
+                lines.append("{}: Loaded".format(proto))
+
+            for proto in sorted(names):
+                lines.append("{}: Unloaded".format(proto))
+
+            page_set = self.pages.get_pageset(protocol, source)
+            self.pages.page(page_set, lines)
+            self.pages.send_page(page_set, 1, source)
+        elif operation == "load":
+            if len(args) < 2:
+                caller.respond("Usage: {CHARS}%s load <protocol>"
+                               % command)
+                return
+
+            name = args[1]
+            result = self.factory_manager.load_protocol(
+                name, "protocols/{}.yml".format(name)
+            )
+
+            if result is ProtocolState.AlreadyLoaded:
+                source.respond(
+                    "Unable to load protocol \"{}\": Protocol is already "
+                    "loaded.".format(name)
+                )
+            elif result is ProtocolState.ConfigNotExists:
+                source.respond(
+                    "Unable to load protocol \"{}\": Configuration does not "
+                    "exist".format(name)
+                )
+            elif result is ProtocolState.Loaded:
+                source.respond(
+                    "Loaded protocol: \"{}\"".format(name)
+                )
+            elif result is ProtocolState.LoadError:
+                source.respond(
+                    "Unable to load protocol \"{}\": Loading error - see the "
+                    "console for more details".format(name)
+                )
+            elif result is ProtocolState.NotExists:
+                source.respond(
+                    "Unable to load protocol \"{}\": Protocol does not "
+                    "exist".format(name)
+                )
+            elif result is ProtocolState.SetupError:
+                source.respond(
+                    "Unable to load protocol \"{}\": Setup error - see the "
+                    "console for more details".format(name)
+                )
+            elif result is ProtocolState.Unloaded:
+                source.respond(
+                    "Unable to load protocol \"{}\": Protocol was unloaded "
+                    "immediately".format(name)
+                )
+            else:
+                self.logger.warn("Unknown protocol state: {}".format(result))
+                source.respond(
+                    "Unknown state for \"{}\": Got unknown protocol state "
+                    "code".format(name)
+                )
+
+        elif operation == "unload":
+            if len(args) < 2:
+                caller.respond("Usage: {CHARS}%s unload <protocol>"
+                               % command)
+                return
+
+            name = args[1]
+
+            if name not in self.factory_manager.factories:
+                source.respond("Unknown protocol: \"{}\"".format(name))
+                return
+
+            result = self.factory_manager.unload_protocol(name)
+
+            if name == protocol.name:
+                return
+
+            if result:
+                source.respond(
+                    "Unloaded protocol: \"{}\"".format(name)
+                )
+            else:
+                source.respond(
+                    "Failed to unload protocol: \"{}\"".format(name)
+                )
+        elif operation == "reload":
+            if len(args) < 2:
+                caller.respond("Usage: {CHARS}%s reload <protocol>"
+                               % command)
+                return
+            name = args[1]
+            result = self.factory_manager.reload_protocol(name)
+
+            if name == protocol.name:
+                return
+
+            if result is ProtocolState.AlreadyLoaded:
+                source.respond(
+                    "Unable to reload protocol \"{}\": Protocol is already "
+                    "loaded.".format(name)
+                )
+            elif result is ProtocolState.ConfigNotExists:
+                source.respond(
+                    "Unable to reload protocol \"{}\": Configuration does not "
+                    "exist".format(name)
+                )
+            elif result is ProtocolState.Loaded:
+                source.respond(
+                    "Reloaded protocol: \"{}\"".format(name)
+                )
+            elif result is ProtocolState.LoadError:
+                source.respond(
+                    "Unable to reload protocol \"{}\": Loading error - see "
+                    "the console for more details".format(name)
+                )
+            elif result is ProtocolState.NotExists:
+                source.respond(
+                    "Unable to reload protocol \"{}\": Protocol does not "
+                    "exist".format(name)
+                )
+            elif result is ProtocolState.SetupError:
+                source.respond(
+                    "Unable to reload protocol \"{}\": Setup error - see the "
+                    "console for more details".format(name)
+                )
+            elif result is ProtocolState.Unloaded:
+                source.respond(
+                    "Unable to reload protocol \"{}\": Protocol was unloaded "
+                    "immediately".format(name)
+                )
+            else:
+                self.logger.warn("Unknown protocol state: {}".format(result))
+                source.respond(
+                    "Unknown state for \"{}\": Got unknown protocol state "
+                    "code".format(name)
+                )
+        else:
+            caller.respond(__("Unknown operation: %s") % operation)
 
     def plugins_command(self, protocol, caller, source, command, raw_args,
                         args):
@@ -155,11 +326,11 @@ class ManagementPlugin(PluginObject):
                    "plugin"),
                 __("> list - List all available plugins"),
                 __("> load <plugin> - Load a plugin that's available"),
+                __("> unload <plugin> - Unload a currently-loaded plugin"),
                 __(  # Yeeeeeey, PEP
                     "> reload <plugin> - Reload a plugin that's already "
                     "loaded"
-                ),
-                __("> unload <plugin> - Unload a currently-loaded plugin"),
+                )
             ]
 
             page_set = self.pages.get_pageset(protocol, source)
