@@ -364,12 +364,10 @@ class FactoryManager(object):
         return self.plugman.reload_plugin(name)
 
     def reload_protocol(self, name):
-        factory = self.get_factory(name)
+        if self.unload_protocol(name):
+            return self.load_protocol(name, "protocols/{}.yml".format(name))
 
-        if name is not None:
-            factory.shutdown()
-            factory.setup()
-            return True
+        return False
 
     # Unload stuff
 
@@ -459,6 +457,7 @@ class FactoryManager(object):
         :type name: str
 
         :return: The factory, or None if it doesn't exist.
+        :rtype: system.protocols.generic.factory.BaseFactory
         """
 
         if name in self.factories:
