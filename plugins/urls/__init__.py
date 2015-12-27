@@ -270,9 +270,9 @@ class URLsPlugin(PluginObject):
 
             lazy_request = LazyRequest(req_args=[unicode(_url)])
 
-            if isinstance(source, Channel):
+            if isinstance(target, Channel):
                 with self.channels:
-                    self.channels[protocol.name][source.name]["last"] = (
+                    self.channels[protocol.name][target.name]["last"] = (
                         unicode(_url)
                     )
 
@@ -456,7 +456,8 @@ class URLsPlugin(PluginObject):
                     caller.respond("Error fetching short URL.")
         else:
             self.ensure_channel(protocol.name, source.name)
-            if not self.channels[protocol.name][source.name]["last"]:
+            ch = self.channels[protocol.name][source.name]
+            if "last" not in ch or not ch["last"]:
                 caller.respond("Nobody's linked anything here yet")
                 return
 
