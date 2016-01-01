@@ -324,7 +324,6 @@ class WebsiteHandler(URLHandler):
 
         self.save_session(session)
 
-    @inlineCallbacks
     def errback(self, error, url, context, session):
         context["event"].target.respond(
             u'[Error] Failed to handle URL: {}'.format(url.to_string())
