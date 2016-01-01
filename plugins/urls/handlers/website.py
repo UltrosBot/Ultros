@@ -10,6 +10,7 @@ from cookielib import LoadError
 from bs4 import BeautifulSoup
 from kitchen.text.converters import to_unicode
 from netaddr import IPAddress
+from requests.exceptions import SSLError
 from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.web._newclient import ResponseNeverReceived
 from txrequests import Session
@@ -325,9 +326,16 @@ class WebsiteHandler(URLHandler):
         self.save_session(session)
 
     def errback(self, error, url, context, session):
-        context["event"].target.respond(
-            u'[Error] Failed to handle URL: {}'.format(url.to_string())
-        )
+        if isinstance(error.value, SSLError):
+            context["event"].target.respond(
+                u'[Error] URL has SSL errors and may be unsafe: {}'.format(
+                    url.to_string()
+                )
+            )
+        else:
+            context["event"].target.respond(
+                u'[Error] Failed to handle URL: {}'.format(url.to_string())
+            )
 
         if isinstance(error.value, ResponseNeverReceived):
             for f in error.value.reasons:
