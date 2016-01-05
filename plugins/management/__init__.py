@@ -133,10 +133,10 @@ class ManagementPlugin(PluginObject):
                 "> help - This help",
                 "> list - List all available protocols",
                 "> load <protocol> - Load a protocol that's available",
-                "> unload <protocol> - Unload a currently-loaded protocol",
-
-                "> reload <protocol> - Reload a protocol that's already "
-                "loaded",
+                "> unload [protocol] - Unload a currently-loaded protocol "
+                "(Defaults to the current protocol)",
+                "> reload [protocol] - Reload a protocol that's already "
+                "loaded (Defaults to the current protocol)",
             ]
 
             page_set = self.pages.get_pageset(protocol, source)
@@ -219,11 +219,9 @@ class ManagementPlugin(PluginObject):
 
         elif operation == "unload":
             if len(args) < 2:
-                caller.respond("Usage: {CHARS}%s unload <protocol>"
-                               % command)
-                return
-
-            name = args[1]
+                name = protocol.name
+            else:
+                name = args[1]
 
             if name not in self.factory_manager.factories:
                 source.respond("Unknown protocol: \"{}\"".format(name))
@@ -244,10 +242,10 @@ class ManagementPlugin(PluginObject):
                 )
         elif operation == "reload":
             if len(args) < 2:
-                caller.respond("Usage: {CHARS}%s reload <protocol>"
-                               % command)
-                return
-            name = args[1]
+                name = protocol.name
+            else:
+                name = args[1]
+
             result = self.factory_manager.reload_protocol(name)
 
             if name == protocol.name:
