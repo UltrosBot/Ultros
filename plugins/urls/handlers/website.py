@@ -64,11 +64,11 @@ class WebsiteHandler(URLHandler):
                 ip = yield self.resolver.get_host_by_name(url.domain)
                 ip = IPAddress(ip)
             except Exception:
-                context["event"].target.respond(
-                    u'[Error] Failed to handle URL: {}'.format(
-                        url.to_string()
-                    )
-                )
+                # context["event"].target.respond(
+                #     u'[Error] Failed to handle URL: {}'.format(
+                #         url.to_string()
+                #     )
+                # )
 
                 self.plugin.logger.exception("Error while checking DNS")
                 returnValue(STOP_HANDLING)
@@ -262,14 +262,14 @@ class WebsiteHandler(URLHandler):
                 ip = yield self.resolver.get_host_by_name(new_url.hostname)
                 ip = IPAddress(ip)
             except Exception:
-                context["event"].target.respond(
-                    u'[Error] Failed to handle URL: {}'.format(
-                        url.to_string()
-                    )
-                )
+                # context["event"].target.respond(
+                #     u'[Error] Failed to handle URL: {}'.format(
+                #         url.to_string()
+                #     )
+                # )
 
                 self.plugin.logger.exception("Error while checking DNS")
-                returnValue(False)
+                returnValue(STOP_HANDLING)
                 return
 
             if ip.is_loopback() or ip.is_private() or ip.is_link_local() \
@@ -278,7 +278,7 @@ class WebsiteHandler(URLHandler):
                     "Prevented connection to private/internal address"
                 )
 
-                returnValue(False)
+                returnValue(STOP_HANDLING)
                 return
 
         if content is None:
@@ -326,16 +326,16 @@ class WebsiteHandler(URLHandler):
         self.save_session(session)
 
     def errback(self, error, url, context, session):
-        if isinstance(error.value, SSLError):
-            context["event"].target.respond(
-                u'[Error] URL has SSL errors and may be unsafe: {}'.format(
-                    url.to_string()
-                )
-            )
-        else:
-            context["event"].target.respond(
-                u'[Error] Failed to handle URL: {}'.format(url.to_string())
-            )
+        # if isinstance(error.value, SSLError):
+        #     context["event"].target.respond(
+        #         u'[Error] URL has SSL errors and may be unsafe: {}'.format(
+        #             url.to_string()
+        #         )
+        #     )
+        # else:
+        #     context["event"].target.respond(
+        #         u'[Error] Failed to handle URL: {}'.format(url.to_string())
+        #     )
 
         if isinstance(error.value, ResponseNeverReceived):
             for f in error.value.reasons:
