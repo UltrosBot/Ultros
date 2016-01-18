@@ -761,13 +761,17 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         I'm seriously wondering if we even need this. """
         data_ = nargs[1]
 
-        channel = data_[1]
-        ident = data_[2]  # Starts with a ~ if there's no identd present
-        host = data_[3]
-        server = data_[4]
-        nick = data_[5]
-        status = data_[6]  # .strip("G").strip("H").strip("*")
-        gecos = data_[7]  # Hops, realname
+        try:
+            channel = data_[1]
+            ident = data_[2]  # Starts with a ~ if there's no identd present
+            host = data_[3]
+            server = data_[4]
+            nick = data_[5]
+            status = data_[6]  # .strip("G").strip("H").strip("*")
+            gecos = data_[7]  # Hops, realname
+        except Exception:
+            self.log.exception("Unable to parse WHO reply")
+            return
 
         # User-tracking stuff
         try:
