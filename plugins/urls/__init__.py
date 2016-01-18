@@ -212,8 +212,8 @@ class URLsPlugin(PluginObject):
         if not allowed:
             return
 
-        if isinstance(source, Channel):
-            self.ensure_channel(protocol.name, source.name)
+        if isinstance(target, Channel):
+            self.ensure_channel(protocol.name, target.name)
 
         status = self.channels.get(protocol.name, {})\
             .get(target.name, {})\
@@ -289,7 +289,11 @@ class URLsPlugin(PluginObject):
             if protocol_name not in self.channels:
                 self.channels[protocol_name] = {}
             if source_name not in self.channels[protocol_name]:
-                self.channels[protocol_name][source_name] = {}
+                self.channels[protocol_name][source_name] = {
+                    "status": True,
+                    "last": "",
+                    "shortener": self.default_shortener
+                }
 
     def match_to_url(self, match):
         """
@@ -397,7 +401,7 @@ class URLsPlugin(PluginObject):
                     self.channels[protocol.name][source.name]["status"] = (
                         value == "on"
                     )
-                caller.respond("Title passing for %s turned %s."
+                caller.respond("Title parsing for %s turned %s."
                                % (source.name, value))
         elif operation == "shortener":
             if value.lower() in self.shorteners:
