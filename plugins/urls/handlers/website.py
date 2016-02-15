@@ -10,7 +10,6 @@ from cookielib import LoadError
 from bs4 import BeautifulSoup
 from kitchen.text.converters import to_unicode
 from netaddr import IPAddress
-from requests.exceptions import SSLError
 from twisted.internet.defer import inlineCallbacks, returnValue
 from twisted.web._newclient import ResponseNeverReceived
 from txrequests import Session
