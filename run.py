@@ -108,13 +108,18 @@ def update(git=True):
                         "installed?"))
 
         try:
-            import ensurepip
-            ensurepip.bootstrap()
-        except RuntimeError:
-            print(_("It looks like ensurepip is disabled, continuing.."))
+            import pip
+        except ImportError:
+            try:
+                import ensurepip
+                ensurepip.bootstrap()
+            except RuntimeError:
+                print(_("It looks like ensurepip is disabled, continuing.."))
 
-        import pip
-        pip.main(["install", "-r", "requirements.txt", "--upgrade"])
+            import pip
+            pip.main(["install", "-r", "requirements.txt", "--upgrade"])
+        else:
+            pip.main(["install", "-r", "requirements.txt", "--upgrade"])
 
         print(_("Done!"))
     except Exception as e:
