@@ -340,19 +340,7 @@ class PluginManager(object):
 
             self.log.trace("Module object: %s" % module_obj)
 
-            for name_, clazz in inspect.getmembers(module_obj):
-                self.log.trace("Member: %s" % name_)
-
-                if inspect.isclass(clazz):
-                    self.log.trace("It's a class!")
-
-                    if clazz.__module__ == module:
-                        self.log.trace("It's the right module!")
-
-                        for parent in clazz.__bases__:
-                            if parent == PluginObject:
-                                self.log.trace("It's the right subclass!")
-                                obj = clazz()
+            obj = self.find_plugin_class(module_obj)
 
             if obj is None:
                 self.log.error(
@@ -392,6 +380,34 @@ class PluginManager(object):
                 event = PluginLoadedEvent(self, obj)
                 self.events.run_callback("PluginLoaded", event)
                 return PluginState.Loaded
+
+    def find_plugin_class(self, module):
+        for name_, clazz in inspect.getmembers(module):
+            self.log.trace("Member: %s" % name_)
+            if inspect.isclass(clazz):
+                self.log.trace("It's a class!")
+                if clazz.__module__ == module.__name__:
+                    self.log.trace("It's the right module!")
+                    try:
+                        if self.is_plugin_class(clazz):
+                            return clazz()
+                    except RuntimeError:
+                        self.log.exception(
+                            "Recursion limit hit while trying to import: %s" %
+                            clazz.__name__
+                        )
+                        return None
+        return None
+
+    def is_plugin_class(self, clazz):
+        for parent in clazz.__bases__:
+            if parent == PluginObject:
+                self.log.trace("It's the right subclass!")
+                return True
+        for parent in clazz.__bases__:
+            if self.is_plugin_class(parent):
+                return True
+        return False
 
     def unload_plugins(self, output=True):
         """
