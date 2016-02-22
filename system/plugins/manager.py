@@ -215,7 +215,7 @@ class PluginManager(object):
                                 break
                             self.log.trace(deps)
 
-                if None in deps:
+                while None in deps:
                     deps.remove(None)
 
                 if len(deps) == 0:
