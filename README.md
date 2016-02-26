@@ -15,10 +15,6 @@ For more information, see the [site](http://ultros.io) and [documentation (beta)
 
 -------------------
 
-Using [GitTorrent](https://github.com/cjb/GitTorrent)? `git clone gittorrent://b5177a0bf3fdf17caaade5be2db5feb0818e0566/Ultros`
-
--------------------
-
 IRC: [irc://irc.esper.net/Ultros](irc://irc.esper.net/Ultros) ([webchat](https://webchat.esper.net/?nick=&channels=Ultros))
 
 Site (Currently under development): [ultros.io](https://ultros.io)
