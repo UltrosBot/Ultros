@@ -791,22 +791,6 @@ class DBAPIData(Data):
         self.pool = adbapi.ConnectionPool(self.parsed_module, *args,
                                           cp_reconnect=True, **kwargs)
 
-    def serialize(self, yielder):
-        """
-        Only used when we don't have a conventional serialization.
-
-        This should return a yielder containing some json/yaml that provides a
-        /SAMPLE/ of the data. It shouldn't return a full set of data -
-        database tables can be huge.
-
-        Remember, use the yielder - and remember to .close() it! Seriously,
-        use a try...finally block or the thread will loop forever. You have
-        been warned.
-        """
-
-        yielder.close()
-        return None
-
     def __enter__(self):
         return self.pool
 
@@ -851,7 +835,7 @@ class MongoDBData(Data):
         db = x.dbname
 
         # Second method - use this if your DB is named *representation`*,
-        # *format*, *client*, *info*, *reconnect*, *serialize*, or anything
+        # *format*, *client*, *info*, *reconnect*, or anything
         # else defined in this class. If you're not sure, use the second
         # method.
 
@@ -896,22 +880,6 @@ class MongoDBData(Data):
         args = self.args
         kwargs = self.kwargs
         self.client = pymongo.MongoClient(self.url, *args, **kwargs)
-
-    def serialize(self, yielder):
-        """
-        Only used when we don't have a conventional serialization.
-
-        This should return a yielder containing some json/yaml that provides a
-        /SAMPLE/ of the data. It shouldn't return a full set of data -
-        database collections can be huge.
-
-        Remember, use the yielder - and remember to .close() it! Seriously,
-        use a try...finally block or the thread will loop forever. You have
-        been warned.
-        """
-
-        yielder.close()
-        return None
 
     def __enter__(self):
         return self.client
@@ -988,16 +956,6 @@ class RedisData(Data):
         args = self.args
         kwargs = self.kwargs
         self.client = redis.StrictRedis(*args, **kwargs)
-
-    def serialize(self, yielder):
-        # Only used when we don't have a conventional serialization, this
-        # should return some json/yaml that provides a /SAMPLE/ of the data.
-        # It shouldn't return a full set of data - database tables can be huge.
-        # Remember, use the yielder - and remember to .close() it! Seriously,
-        # use a try...finally block or the thread will loop forever. You have
-        # been warned.
-        yielder.close()
-        return None
 
     def __enter__(self):
         return self.client
