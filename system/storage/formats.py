@@ -1,15 +1,29 @@
 # coding=utf-8
+from enum import Enum
 
 """
-Storage file format definitions
+Storage file format definitions.
 """
 
 __author__ = 'Gareth Coles'
 
-from enum import Enum
-
 
 class Formats(Enum):
+    """
+    An enum containing each supported file format
+
+    [C ] means that the format is supported for config files.
+    [ D] means that the format is supported for data files.
+    [CD] means that the format is supported for both.
+
+    * [*CD*] **Formats.YAML** - YaML
+    * [*CD*] **Formats.JSON** - JSON
+    * [*CD*] **Formats.MEMORY** - In-memory dictionary
+    * [* D*] **Formats.DBAPI** - Twisted ADBAPI database
+    * [* D*] **Formats.MONGO** - MongoDB
+    * [* D*] **Formats.REDIS** - Redis
+    """
+
     YAML = "Yaml"
     JSON = "JSON"
     MEMORY = "Memory"

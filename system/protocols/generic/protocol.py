@@ -93,6 +93,12 @@ class Protocol(protocol.Protocol):
               networks). It works much the same as send_msg but should be
               treated with different formatting (For example, on IRC,
               we would send a CTCP ACTION to the target).
+
+        * __json__(self):
+
+            * This method must return a json-compatible representation of the
+              protocol object, preferably a dict. This is used for
+              serialization in the web API, which returns JSON data.
     """
 
     __version__ = ""
@@ -230,6 +236,16 @@ class Protocol(protocol.Protocol):
         """
 
         return []
+
+    def __json__(self):  # TODO
+        """
+        Return a representation of your object that can be json-encoded
+
+        For example, a dict, or a JSON string that represents the data in
+        the object
+        """
+
+        raise NotImplementedError("This method must be overridden")
 
 
 class ChannelsProtocol(Protocol):

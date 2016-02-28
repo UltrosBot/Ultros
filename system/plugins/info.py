@@ -61,19 +61,12 @@ class Info(object):
             self.author = self.info.author
             self.website = self.info.website
             self.copyright = self.info.copyright
-
-    @property
-    @deprecated("Get the plugin object from the plugin manager directly!")
-    def plugin_object(self):
-        """
-        Get the plugin object
-
-        This is deprecated - use the plugin manager instead.
-        """
-
-        if hasattr(self, "_plugin_object"):
-            return self._plugin_object()
-        return None
+        else:
+            self.version = None
+            self.description = None
+            self.author = None
+            self.website = None
+            self.copyright = None
 
     def get_module(self):
         """
@@ -81,7 +74,7 @@ class Info(object):
         """
 
         if hasattr(self, "module"):
-            return "plugins.%s" % self.module
+            return "plugins.{}".format(self.module)
         return None
 
     def set_plugin_object(self, obj):
@@ -90,3 +83,24 @@ class Info(object):
         """
 
         self._plugin_object = weakref.ref(obj)
+
+    def __json__(self):
+        """
+        Return a representation of your object that can be json-encoded
+
+        For example, a dict, or a JSON string that represents the data in
+        the object
+        """
+
+        return {
+            "data": self.data,
+            "name": self.name,
+            "module": self.module,
+            "dependencies": self.dependencies,
+            "version": self.version,
+            "description": self.description,
+            "author": self.author,
+            "website": self.website,
+            "copyright": self.copyright
+        }
+

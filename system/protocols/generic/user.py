@@ -47,4 +47,13 @@ class User(object):
         return False
 
     # endregion
-    pass  # Because otherwise the region doesn't end
+
+    def __json__(self):  # TODO
+        """
+        Return a representation of your object that can be json-encoded
+
+        For example, a dict, or a JSON string that represents the data in
+        the object
+        """
+
+        raise NotImplementedError("This method must be overridden")
