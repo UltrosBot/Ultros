@@ -10,7 +10,6 @@ if it's loaded, but this is deprecated.
 
 __author__ = 'Gareth Coles'
 
-from system.decorators.log import deprecated
 import weakref
 
 
@@ -103,4 +102,3 @@ class Info(object):
             "website": self.website,
             "copyright": self.copyright
         }
-
