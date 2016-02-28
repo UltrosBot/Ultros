@@ -1,17 +1,16 @@
 # coding=utf-8
-
-__author__ = 'Gareth Coles'
-
-"""Tests for the command manager"""
-
 import logging
-
 import nose
 import nose.tools as nosetools
+
 from mock import MagicMock as Mock
 
 from system.commands.manager import CommandManager
 from system.enums import CommandState
+
+__author__ = 'Gareth Coles'
+
+"""Tests for the command manager"""
 
 
 class test_commands:

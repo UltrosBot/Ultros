@@ -1,4 +1,10 @@
 # coding=utf-8
+import time
+import sys
+
+import nose.tools as nosetools
+
+from utils import irc, misc, password, strings, html, console
 
 __author__ = 'Gareth Coles'
 
@@ -13,16 +19,6 @@ misc     - Uncategorised utilities
 password - Password generation utilities
 strings  - String manipulation utilities
 """
-
-# Imports
-
-import time
-import sys
-
-import nose.tools as nosetools
-
-from utils import irc, misc, password, strings, html, console
-# config, data, html,
 
 
 class test_utils:

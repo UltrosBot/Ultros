@@ -1,13 +1,4 @@
 # coding=utf-8
-
-__author__ = 'Gareth Coles'
-
-"""
-Tests for the permissions manager in the auth plugin.
-"""
-
-# Imports
-
 import os
 import tempfile
 import shutil
@@ -23,7 +14,12 @@ from system.storage.manager import StorageManager
 
 from system.logging.logger import getLogger
 
+__author__ = 'Gareth Coles'
 tmpdir = tempfile.mkdtemp()
+
+"""
+Tests for the permissions manager in the auth plugin.
+"""
 
 
 class TestPlugin(PluginObject):
