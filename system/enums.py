@@ -56,6 +56,7 @@ class PluginState(Enum):
     AlreadyLoaded = 2
     Unloaded = 3
     DependencyMissing = 4
+    UnknownType = 5
 
 
 class ProtocolState(Enum):

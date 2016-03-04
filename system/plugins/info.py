@@ -48,6 +48,12 @@ class Info(object):
         if self.core is not None:
             self.name = self.core.name
             self.module = self.core.module
+
+            if "type" in self.core:
+                self.type = self.core.type
+            else:
+                self.type = "python"
+
             if hasattr(self.core, "dependencies"):
                 self.dependencies = self.core.dependencies
             else:
