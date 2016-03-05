@@ -38,7 +38,7 @@ class PluginObject(object):
     #: :type: StorageManager
     storage = None  # Storage manager
 
-    def add_variables(self, info, factory_manager):
+    def add_variables(self, info):
         """
         Adds essential variables at load time and sets up logging
 
@@ -47,16 +47,14 @@ class PluginObject(object):
 
         :param info: The plugin info file
         :type info: Info instance
-
-        :param factory_manager: The factory manager
-        :type factory_manager: system.factory_manager.FactoryManager
         """
 
         from system.plugins.manager import PluginManager
+        from system.factory_manager import FactoryManager
 
         self.commands = CommandManager()
         self.events = EventManager()
-        self.factory_manager = factory_manager
+        self.factory_manager = FactoryManager()
         self.info = info
         self.module = self.info.module
         self.plugins = PluginManager()

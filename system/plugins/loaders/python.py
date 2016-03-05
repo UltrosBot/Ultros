@@ -4,7 +4,6 @@ import inspect
 import sys
 
 from system.enums import PluginState
-from system.factory_manager import FactoryManager
 from system.logging.logger import getLogger
 from system.plugins.loaders.base import BasePluginLoader
 from system.plugins.plugin import PluginObject
@@ -55,7 +54,7 @@ class PythonPluginLoader(BasePluginLoader):
         else:
             try:
                 info.set_plugin_object(obj)
-                obj.add_variables(info, FactoryManager())
+                obj.add_variables(info)
                 obj.logger = getLogger(info.name)
 
                 d = obj.setup()

@@ -70,7 +70,6 @@ class PluginManager(object):
         self.loaders = {}
 
         python_loader = PythonPluginLoader()
-        python_loader.setup()
         self.loaders["python"] = python_loader
 
         self.factory_manager = factory_manager
@@ -177,6 +176,8 @@ class PluginManager(object):
         :type output: bool
         """
 
+        self.loaders["python"].setup()
+
         # Plugins still needing loaded
         to_load = []
         # Final, ordered, list of plugins to load
@@ -233,7 +234,7 @@ class PluginManager(object):
 
                         if loaded.name.lower() == dep_name:
                             self.log.trace("Found a dependency")
-                            loaded_version = StrictVersion(loaded.info.version)
+                            loaded_version = StrictVersion(loaded.version)
 
                             if not operator_func(
                                     loaded_version, parsed_dep_version
@@ -330,7 +331,7 @@ class PluginManager(object):
 
         info = self.info_objects[name]
 
-        for dep in info.core.dependencies:
+        for dep in info.dependencies:
             dep = dep.lower()
 
             if " " in dep:
@@ -365,6 +366,8 @@ class PluginManager(object):
         if result is PluginState.Loaded:
             self.plugin_objects[name] = obj
 
+        returnValue(result)
+
     def unload_plugins(self, output=True):
         """
         Unload all loaded plugins
@@ -374,7 +377,9 @@ class PluginManager(object):
         """
 
         if output:
-            self.log.info("Unloading %s plugins.." % len(self.plugin_objects))
+            self.log.info(
+                "Unloading {} plugins..".format(len(self.plugin_objects))
+            )
 
         for key in self.plugin_objects.keys():
             result = self.unload_plugin(key)
@@ -382,14 +387,14 @@ class PluginManager(object):
             if result is PluginState.LoadError:
                 pass  # Should never happen
             elif result is PluginState.NotExists:
-                self.log.warning("No such plugin: %s" % key)
+                self.log.warning("No such plugin: {}".format(key))
             elif result is PluginState.Loaded:
                 pass  # Should never happen
             elif result is PluginState.AlreadyLoaded:
                 pass  # Should never happen
             elif result is PluginState.Unloaded:  # Should never happen
                 if output:
-                    self.log.info("Plugin unloaded: %s" % key)
+                    self.log.info("Plugin unloaded: {}".format(key))
             elif result is PluginState.DependencyMissing:
                 pass  # Should never happen
 

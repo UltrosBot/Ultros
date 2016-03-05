@@ -3,6 +3,7 @@ import importlib
 import signal
 
 from twisted.internet import reactor
+from twisted.internet.defer import inlineCallbacks
 
 from system.commands.manager import CommandManager
 from system.decorators.log import deprecated
@@ -124,13 +125,16 @@ class FactoryManager(object):
             self.logger.exception(_("Error setting up metrics."))
 
         self.plugman.scan()
-        self.load_plugins()  # Load the configured plugins
+        deferred = self.load_plugins()  # Load the configured plugins
+        deferred.addCallback(self.deferred_callback)
+
+    def deferred_callback(self, _=None):
         self.load_protocols()  # Load and set up the protocols
 
         if not len(self.factories):
             self.logger.info(_("It seems like no protocols are loaded. "
                                "Shutting down.."))
-            return
+            return self.unload()
 
     def run(self):
         if not self.running:
@@ -188,6 +192,7 @@ class FactoryManager(object):
             return False
         return True
 
+    @inlineCallbacks
     def load_plugins(self):
         """
         Attempt to load all of the plugins.
@@ -198,7 +203,7 @@ class FactoryManager(object):
         self.logger.trace(_("Configured plugins: %s")
                           % ", ".join(self.main_config["plugins"]))
 
-        self.plugman.load_plugins(self.main_config.get("plugins", []))
+        result = yield self.plugman.load_plugins(self.main_config.get("plugins", []))
 
         event = PluginsLoadedEvent(self, self.plugman.plugin_objects)
         self.event_manager.run_callback("PluginsLoaded", event)
@@ -463,18 +468,6 @@ class FactoryManager(object):
         if name in self.factories:
             return self.factories[name]
         return None
-
-    @deprecated("Use the plugin manager directly")
-    def get_plugin(self, name):
-        """
-        Get the insatnce of a plugin, by name.
-        :param name: The name of the plugin
-        :type name: str
-
-        :return: The plugin, or None if it isn't loaded.
-        """
-
-        return self.plugman.get_plugin(name)
 
     def remove_protocol(self, protocol):  # Removes without shutdown
         """
