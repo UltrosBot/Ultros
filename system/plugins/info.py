@@ -1,4 +1,5 @@
 # coding=utf-8
+import weakref
 
 """
 This module contains a class that represents plugin information
@@ -9,8 +10,6 @@ if it's loaded, but this is deprecated.
 """
 
 __author__ = 'Gareth Coles'
-
-import weakref
 
 
 class Info(object):
@@ -25,7 +24,7 @@ class Info(object):
 
     def __init__(self, yaml_data, plugin_object=None):
         """
-        Instanciate the class, initializing it with a dict of data loaded
+        Instantiate the class, initializing it with a dict of data loaded
         from a .plug file and optionally a plugin object
 
         :param yaml_data: The plugin's data as loaded
@@ -37,35 +36,28 @@ class Info(object):
         if plugin_object:
             self._plugin_object = weakref.ref(plugin_object)
 
-        for key in yaml_data.keys():
-            obj = yaml_data[key]
+        if "core" in self.data:
+            core = self.data["core"]
+            self.name = core["name"]
+            self.module = core["module"]
 
-            if isinstance(obj, dict):
-                setattr(self, key, Info(obj))
-            else:
-                setattr(self, key, obj)
-
-        if self.core is not None:
-            self.name = self.core.name
-            self.module = self.core.module
-
-            if "type" in self.core:
-                self.type = self.core.type
+            if "type" in core:
+                self.type = core["type"]
             else:
                 self.type = "python"
 
-            if hasattr(self.core, "dependencies"):
-                self.dependencies = self.core.dependencies
+            if "dependencies" in core:
+                self.dependencies = core["dependencies"]
             else:
-                self.core.dependencies = []
                 self.dependencies = []
 
-        if self.info is not None:
-            self.version = self.info.version
-            self.description = self.info.description
-            self.author = self.info.author
-            self.website = self.info.website
-            self.copyright = self.info.copyright
+        if "info" in self.data:
+            info = self.data["info"]
+            self.version = info["version"]
+            self.description = info["description"]
+            self.author = info["author"]
+            self.website = info["website"]
+            self.copyright = info["copyright"]
         else:
             self.version = None
             self.description = None
