@@ -4,16 +4,19 @@ import glob
 import importlib
 import inspect
 import sys
+import yaml
+
 from copy import copy
 from distutils.version import StrictVersion
 
-import yaml
+from twisted.internet.defer import inlineCallbacks, returnValue
 
 from system.enums import PluginState
 from system.events.manager import EventManager
 from system.events.general import PluginLoadedEvent
 from system.logging.logger import getLogger
 from system.plugins.info import Info
+from system.plugins.loaders.python import PythonPluginLoader
 from system.plugins.plugin import PluginObject
 from system.singleton import Singleton
 
@@ -64,6 +67,11 @@ class PluginManager(object):
             raise ValueError("Factory manager cannot be None!")
 
         self.log = getLogger("Plugins")
+        self.loaders = {}
+
+        python_loader = PythonPluginLoader()
+        python_loader.setup()
+        self.loaders["python"] = python_loader
 
         self.factory_manager = factory_manager
 
@@ -73,8 +81,31 @@ class PluginManager(object):
         try:
             import hy  # noqa
         except ImportError:
+            hy = None  # noqa
+
             self.log.warn("Unable to find Hy - Hy plugins will not load")
             self.log.warn("Install Hy with pip if you need this support")
+
+    def find_loader(self, info):
+        for loader in self.loaders.itervalues():
+            if loader.can_load_plugin(info):
+                return loader
+        return None
+
+    def add_loader(self, name, loader):
+        if name in self.loaders:
+            return False
+
+        self.loaders[name] = loader
+        return True
+
+    def remove_loader(self, name):
+        # TODO: Unload all associated plugins
+        if name not in self.loaders:
+            return False
+
+        del self.loaders[name]
+        return True
 
     def scan(self, output=True):
         """
@@ -129,6 +160,7 @@ class PluginManager(object):
             if extra > 1:
                 self.log.warning("%s plugins have disappeared." % extra)
 
+    @inlineCallbacks
     def load_plugins(self, plugins, output=True):
         """
         Attempt to load up all plugins specified in a list
@@ -245,7 +277,7 @@ class PluginManager(object):
         for info in load_order:
             self.log.debug("Loading plugin: %s" % info.name)
 
-            result = self.load_plugin(info.name)
+            result = yield self.load_plugin(info.name)
 
             if result is PluginState.LoadError:
                 self.log.debug("LoadError")
@@ -276,6 +308,7 @@ class PluginManager(object):
             len(did_load), ", ".join(sorted(did_load))
         ))
 
+    @inlineCallbacks
     def load_plugin(self, name):
         """
         Load a single plugin by its case-insensitive name
@@ -290,10 +323,10 @@ class PluginManager(object):
         name = name.lower()
 
         if name not in self.info_objects:
-            return PluginState.NotExists
+            returnValue(PluginState.NotExists)
 
         if name in self.plugin_objects:
-            return PluginState.AlreadyLoaded
+            returnValue(PluginState.AlreadyLoaded)
 
         info = self.info_objects[name]
 
@@ -317,97 +350,20 @@ class PluginManager(object):
                 parsed_dep_version = dep_version
 
             if dep_name not in self.plugin_objects:
-                return PluginState.DependencyMissing
+                returnValue(PluginState.DependencyMissing)
 
             loaded = self.plugin_objects[dep_name]
             loaded_version = StrictVersion(loaded.info.version)
 
             if not operator_func(loaded_version, parsed_dep_version):
-                return PluginState.DependencyMissing
+                returnValue(PluginState.DependencyMissing)
 
-        module = info.get_module()
+        loader = self.find_loader(info)
 
-        try:
-            self.log.trace("Module: %s" % module)
-            obj = None
+        result, obj = yield loader.load_plugin(info)
 
-            if module in sys.modules:
-                self.log.trace("Module exists, reloading..")
-                reload(sys.modules[module])
-                module_obj = sys.modules[module]
-            else:
-                module_obj = importlib.import_module(module)
-
-            self.log.trace("Module object: %s" % module_obj)
-
-            obj = self.find_plugin_class(module_obj)
-
-            if obj is None:
-                self.log.error(
-                    "Unable to find plugin class for plugin: %s" % info.name
-                )
-                return PluginState.LoadError
-
+        if result is PluginState.Loaded:
             self.plugin_objects[name] = obj
-        except ImportError:
-            self.log.exception("Unable to import plugin: %s" % info.name)
-            self.log.debug("Module: %s" % module)
-            return PluginState.LoadError
-        except Exception:
-            self.log.exception("Error loading plugin: %s" % info.name)
-            return PluginState.LoadError
-        else:
-            try:
-                self.plugin_objects[name] = obj
-
-                info.set_plugin_object(obj)
-
-                obj.add_variables(info, self.factory_manager)
-                obj.logger = getLogger(info.name)
-
-                # TODO: Handle deferreds here
-                d = obj.setup()
-
-                if not self.plugin_loaded(name):
-                    return PluginState.Unloaded
-            except Exception:
-                if name in self.plugin_objects:
-                    del self.plugin_objects[name]
-
-                self.log.exception("Error setting up plugin: %s" % info.name)
-                return PluginState.LoadError
-            else:
-                event = PluginLoadedEvent(self, obj)
-                self.events.run_callback("PluginLoaded", event)
-                return PluginState.Loaded
-
-    def find_plugin_class(self, module):
-        for name_, clazz in inspect.getmembers(module):
-            self.log.trace("Member: %s" % name_)
-            if inspect.isclass(clazz):
-                self.log.trace("It's a class!")
-                if clazz.__module__ == module.__name__:
-                    self.log.trace("It's the right module!")
-                    try:
-                        if self.is_plugin_class(clazz):
-                            return clazz()
-                    except RuntimeError:
-                        self.log.exception(
-                            "Recursion limit hit while trying to import: %s" %
-                            clazz.__name__
-                        )
-                        return None
-        return None
-
-    def is_plugin_class(self, clazz):
-        for parent in clazz.__bases__:
-            if parent == PluginObject:
-                self.log.trace("It's the right subclass!")
-                return True
-        for parent in clazz.__bases__:
-            if self.is_plugin_class(parent):
-                return True
-        return False
 
     def unload_plugins(self, output=True):
         """
