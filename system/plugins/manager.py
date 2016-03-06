@@ -13,7 +13,7 @@ from twisted.internet.defer import inlineCallbacks, returnValue
 
 from system.enums import PluginState
 from system.events.manager import EventManager
-from system.events.general import PluginLoadedEvent
+from system.events.general import PluginLoadedEvent, PluginUnloadedEvent
 from system.logging.logger import getLogger
 from system.plugins.info import Info
 from system.plugins.loaders.python import PythonPluginLoader
@@ -437,10 +437,12 @@ class PluginManager(object):
         except Exception:
             self.log.exception("Error deactivating plugin: %s" % obj.info.name)
 
-        event = PluginLoadedEvent(self, obj)
+        event = PluginUnloadedEvent(self, obj)
         self.events.run_callback("PluginUnloaded", event)
 
         del self.plugin_objects[name]
+
+        self.log.info("Unloaded plugin: {}".format(name))
         return PluginState.Unloaded
 
     def reload_plugins(self, output=True):

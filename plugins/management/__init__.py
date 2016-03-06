@@ -350,9 +350,8 @@ class ManagementPlugin(PluginObject):
             source.respond(  # Fucking PEP8
                 "%s v%s (%s): %s" % (
                     plug.name, plug.version, plug.author, (
-                        __("Loaded") if
-                        self.factory_manager.plugman.plugin_loaded(plug.name)
-                        is not None else __("Unloaded"))
+                        __("Loaded") if self.plugins.plugin_loaded(plug.name)
+                        else __("Unloaded"))
                 ))
 
             source.respond("> %s" % plug.description)
