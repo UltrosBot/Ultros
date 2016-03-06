@@ -15,9 +15,10 @@ __author__ = 'Gareth Coles'
 
 class PythonPluginLoader(BasePluginLoader):
     logger_name = "PythonLoader"
+    name = "python"
 
     @inlineCallbacks
-    def load_plugin(self, info):  # TODO: Logging
+    def load_plugin(self, info):
         module = info.get_module()
         self.logger.trace("Module: {}".format(module))
 
@@ -54,7 +55,7 @@ class PythonPluginLoader(BasePluginLoader):
         else:
             try:
                 info.set_plugin_object(obj)
-                obj.add_variables(info)
+                obj.add_variables(info, self)
                 obj.logger = getLogger(info.name)
 
                 d = obj.setup()

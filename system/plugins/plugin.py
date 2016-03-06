@@ -38,7 +38,7 @@ class PluginObject(object):
     #: :type: StorageManager
     storage = None  # Storage manager
 
-    def add_variables(self, info):
+    def add_variables(self, info, loader):
         """
         Adds essential variables at load time and sets up logging
 
@@ -59,6 +59,7 @@ class PluginObject(object):
         self.module = self.info.module
         self.plugins = PluginManager()
         self.storage = StorageManager()
+        self._loader = loader.name
 
     def deactivate(self):
         """

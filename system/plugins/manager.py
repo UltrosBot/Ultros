@@ -91,17 +91,28 @@ class PluginManager(object):
                 return loader
         return None
 
-    def add_loader(self, name, loader):
-        if name in self.loaders:
+    def add_loader(self, loader):
+        if loader.name in self.loaders:
             return False
 
-        self.loaders[name] = loader
+        self.loaders[loader.name] = loader
         return True
 
     def remove_loader(self, name):
-        # TODO: Unload all associated plugins
         if name not in self.loaders:
             return False
+
+        to_unload = []
+        loader = self.loaders[name]
+
+        for plugin in self.plugin_objects.itervalues():
+            if plugin._loader == loader.name:
+                to_unload.append(plugin.info.name)
+
+        del loader
+
+        for plugin in to_unload:
+            self.unload_plugin(plugin)
 
         del self.loaders[name]
         return True

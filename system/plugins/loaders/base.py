@@ -6,6 +6,8 @@ __author__ = 'Gareth Coles'
 
 class BasePluginLoader(object):
     logger_name = ""
+    name = ""
+
     factory_manager = None
     plugin_manager = None
 
