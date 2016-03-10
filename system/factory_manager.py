@@ -204,7 +204,9 @@ class FactoryManager(object):
         self.logger.trace(_("Configured plugins: %s")
                           % ", ".join(self.main_config["plugins"]))
 
-        result = yield self.plugman.load_plugins(self.main_config.get("plugins", []))
+        result = yield self.plugman.load_plugins(
+            self.main_config.get("plugins", [])
+        )
 
         event = PluginsLoadedEvent(self, self.plugman.plugin_objects)
         self.event_manager.run_callback("PluginsLoaded", event)

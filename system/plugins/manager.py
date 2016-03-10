@@ -1,9 +1,6 @@
 # coding=utf-8
 
 import glob
-import importlib
-import inspect
-import sys
 import yaml
 
 from copy import copy
@@ -13,11 +10,10 @@ from twisted.internet.defer import inlineCallbacks, returnValue, Deferred
 
 from system.enums import PluginState
 from system.events.manager import EventManager
-from system.events.general import PluginLoadedEvent, PluginUnloadedEvent
+from system.events.general import PluginUnloadedEvent, PluginLoadedEvent
 from system.logging.logger import getLogger
 from system.plugins.info import Info
 from system.plugins.loaders.python import PythonPluginLoader
-from system.plugins.plugin import PluginObject
 from system.singleton import Singleton
 
 __author__ = 'Gareth Coles'
@@ -92,6 +88,19 @@ class PluginManager(object):
         return None
 
     def add_loader(self, loader):
+        """
+        Add a plugin loader, for loading specific types of plugin
+
+        This will fail with a result of False if there's already a loader
+        with the same name.
+
+        :param loader: Instance of your plugin loader
+        :type loader: BasePluginLoader
+
+        :returns: Whether the loader was added
+        :rtype: bool
+        """
+
         if loader.name in self.loaders:
             return False
 
@@ -100,6 +109,19 @@ class PluginManager(object):
 
     @inlineCallbacks
     def remove_loader(self, name):
+        """
+        Remove a plugin loader by name
+
+        This will fail with a result of False if there isn't a loader
+        registered with the specified name.
+
+        :param name: Name of the loader to remove
+        :type name: str
+
+        :returns: A Deferred, resulting in whether the loader was removed
+        :rtype: Deferred(bool)
+        """
+
         if name not in self.loaders:
             returnValue(False)
 
@@ -186,6 +208,9 @@ class PluginManager(object):
 
         :type plugins: list
         :type output: bool
+
+        :returns: A Deferred, resulting in no value
+        :rtype: Deferred
         """
 
         self.loaders["python"].setup()
@@ -329,8 +354,9 @@ class PluginManager(object):
         :param name: The name of the plugin to load
         :type name: str
 
-        :return: A PluginState enum value representing the result
-        :rtype: PluginState
+        :return: A Deferred, resulting in a PluginState enum value representing
+                 the result
+        :rtype: Deferred(PluginState)
         """
 
         name = name.lower()
@@ -378,6 +404,9 @@ class PluginManager(object):
         if result is PluginState.Loaded:
             self.plugin_objects[name] = obj
 
+        event = PluginLoadedEvent(self, obj)
+        self.events.run_callback("PluginLoaded", event)
+
         returnValue(result)
 
     @inlineCallbacks
@@ -385,8 +414,9 @@ class PluginManager(object):
         """
         Unload all loaded plugins
 
-        :param output: Whether to output errors and other messages to the log
-        :type output: bool
+        :param output: A Deferred, resulting in whether to output errors and
+                       other messages to the log
+        :type output: Deferred(bool)
         """
 
         if output:
@@ -418,8 +448,9 @@ class PluginManager(object):
         :param name: The name of the plugin to unload
         :type name: str
 
-        :return: A PluginState enum value representing the result
-        :rtype: PluginState
+        :return: A Deferred, resulting in a PluginState enum value representing
+                 the result
+        :rtype: Deferred(PluginState)
         """
 
         name = name.lower()
@@ -487,8 +518,9 @@ class PluginManager(object):
         :param name: The name of the plugin to reload
         :type name: str
 
-        :return: A PluginState enum value representing the result
-        :rtype: PluginState
+        :return: A Deferred, resulting in a PluginState enum value representing
+                 the result
+        :rtype: Deferred(PluginState)
         """
 
         name = name.lower()

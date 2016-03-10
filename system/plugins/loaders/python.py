@@ -102,4 +102,3 @@ class PythonPluginLoader(BasePluginLoader):
 
     def can_load_plugin(self, info):
         return info.type == "python"
-
