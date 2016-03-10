@@ -12,7 +12,7 @@ class BasePluginLoader(object):
     plugin_manager = None
 
     def __init__(self, factory_manager, plugin_manager):
-        self.logger = getLogger(self.logger_name)
+        self.logger = getLogger(self.logger_name or self.__class__.__name__)
 
         self.factory_manager = factory_manager
         self.plugin_manager = plugin_manager
