@@ -450,6 +450,14 @@ class PluginManager(object):
                     "Plugin state: DependencyMissing (This should never "
                     "happen)"
                 )
+            else:
+                self.log.warning(
+                    "Unknown plugin state: {0} "
+                    "(This should never happen)".format(
+                        result
+                    )
+                )
+                self.log.warning("Bug the developer of '{0}'!".format(key))
 
     @inlineCallbacks
     def unload_plugin(self, name):
