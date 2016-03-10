@@ -405,9 +405,8 @@ class PluginManager(object):
                 pass  # Should never happen
             elif result is PluginState.AlreadyLoaded:
                 pass  # Should never happen
-            elif result is PluginState.Unloaded:  # Should never happen
-                if output:
-                    self.log.info("Plugin unloaded: {}".format(key))
+            elif result is PluginState.Unloaded:
+                pass  # Output by the unload_plugin function already
             elif result is PluginState.DependencyMissing:
                 pass  # Should never happen
 
