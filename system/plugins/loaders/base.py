@@ -1,20 +1,27 @@
 # coding=utf-8
+from system.logging.logger import getLogger
 
 __author__ = 'Gareth Coles'
 
 
 class BasePluginLoader(object):
+    logger_name = ""
+    name = ""
+
+    factory_manager = None
+    plugin_manager = None
+
+    def __init__(self, factory_manager, plugin_manager):
+        self.logger = getLogger(self.logger_name or self.__class__.__name__)
+
+        self.factory_manager = factory_manager
+        self.plugin_manager = plugin_manager
+
+    def setup(self):
+        pass
+
     def load_plugin(self, info):
         raise NotImplementedError()
 
-    def unload_plugin(self, name):
-        raise NotImplementedError()
-
-    def can_handle_plugin(self, info):
-        raise NotImplementedError()
-
-    def get_plugin(self, name):
-        raise NotImplementedError()
-
-    def plugin_is_loaded(self, name):
+    def can_load_plugin(self, info):
         raise NotImplementedError()

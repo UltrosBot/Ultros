@@ -10,6 +10,8 @@ for more information on that.
 
 import os
 
+from twisted.internet.defer import inlineCallbacks
+
 from system.enums import PluginState, ProtocolState
 from system.plugins.plugin import PluginObject
 from system.translations import Translations
@@ -294,6 +296,7 @@ class ManagementPlugin(PluginObject):
         else:
             caller.respond(__("Unknown operation: %s") % operation)
 
+    @inlineCallbacks
     def plugins_command(self, protocol, caller, source, command, raw_args,
                         args):
         """
@@ -350,9 +353,8 @@ class ManagementPlugin(PluginObject):
             source.respond(  # Fucking PEP8
                 "%s v%s (%s): %s" % (
                     plug.name, plug.version, plug.author, (
-                        __("Loaded") if
-                        self.factory_manager.plugman.plugin_loaded(plug.name)
-                        is not None else __("Unloaded"))
+                        __("Loaded") if self.plugins.plugin_loaded(plug.name)
+                        else __("Unloaded"))
                 ))
 
             source.respond("> %s" % plug.description)
@@ -385,7 +387,7 @@ class ManagementPlugin(PluginObject):
             self.factory_manager.plugman.scan()
 
             name = args[1]
-            result = self.factory_manager.plugman.load_plugin(name)
+            result = yield self.factory_manager.plugman.load_plugin(name)
             info = self.factory_manager.plugman.get_plugin_info(name)
 
             if result is PluginState.AlreadyLoaded:
@@ -416,7 +418,7 @@ class ManagementPlugin(PluginObject):
 
             name = args[1]
 
-            result = self.factory_manager.plugman.reload_plugin(name)
+            result = yield self.factory_manager.plugman.reload_plugin(name)
             info = self.factory_manager.plugman.get_plugin_info(name)
 
             if result is PluginState.NotExists:
@@ -446,7 +448,7 @@ class ManagementPlugin(PluginObject):
 
             name = args[1]
 
-            result = self.factory_manager.plugman.unload_plugin(name)
+            result = yield self.factory_manager.plugman.unload_plugin(name)
             info = self.factory_manager.plugman.get_plugin_info(name)
 
             if result is PluginState.NotExists:

@@ -1,20 +1,19 @@
 # coding=utf-8
 
 import glob
-import importlib
-import inspect
-import sys
+import yaml
+
 from copy import copy
 from distutils.version import StrictVersion
 
-import yaml
+from twisted.internet.defer import inlineCallbacks, returnValue, Deferred
 
 from system.enums import PluginState
 from system.events.manager import EventManager
-from system.events.general import PluginLoadedEvent
+from system.events.general import PluginUnloadedEvent, PluginLoadedEvent
 from system.logging.logger import getLogger
 from system.plugins.info import Info
-from system.plugins.plugin import PluginObject
+from system.plugins.loaders.python import PythonPluginLoader
 from system.singleton import Singleton
 
 __author__ = 'Gareth Coles'
@@ -64,6 +63,10 @@ class PluginManager(object):
             raise ValueError("Factory manager cannot be None!")
 
         self.log = getLogger("Plugins")
+        self.loaders = {}
+
+        python_loader = PythonPluginLoader(factory_manager, self)
+        self.loaders["python"] = python_loader
 
         self.factory_manager = factory_manager
 
@@ -73,8 +76,69 @@ class PluginManager(object):
         try:
             import hy  # noqa
         except ImportError:
+            hy = None  # noqa
+
             self.log.warn("Unable to find Hy - Hy plugins will not load")
             self.log.warn("Install Hy with pip if you need this support")
+
+    def find_loader(self, info):
+        for loader in self.loaders.itervalues():
+            if loader.can_load_plugin(info):
+                return loader
+        return None
+
+    def add_loader(self, loader):
+        """
+        Add a plugin loader, for loading specific types of plugin
+
+        This will fail with a result of False if there's already a loader
+        with the same name.
+
+        :param loader: Instance of your plugin loader
+        :type loader: BasePluginLoader
+
+        :returns: Whether the loader was added
+        :rtype: bool
+        """
+
+        if loader.name in self.loaders:
+            return False
+
+        self.loaders[loader.name] = loader
+        return True
+
+    @inlineCallbacks
+    def remove_loader(self, name):
+        """
+        Remove a plugin loader by name
+
+        This will fail with a result of False if there isn't a loader
+        registered with the specified name.
+
+        :param name: Name of the loader to remove
+        :type name: str
+
+        :returns: A Deferred, resulting in whether the loader was removed
+        :rtype: Deferred(bool)
+        """
+
+        if name not in self.loaders:
+            returnValue(False)
+
+        to_unload = []
+        loader = self.loaders[name]
+
+        for plugin in self.plugin_objects.itervalues():
+            if plugin._loader == loader.name:
+                to_unload.append(plugin.info.name)
+
+        del loader
+
+        for plugin in to_unload:
+            _ = yield self.unload_plugin(plugin)
+
+        del self.loaders[name]
+        returnValue(True)
 
     def scan(self, output=True):
         """
@@ -129,6 +193,7 @@ class PluginManager(object):
             if extra > 1:
                 self.log.warning("%s plugins have disappeared." % extra)
 
+    @inlineCallbacks
     def load_plugins(self, plugins, output=True):
         """
         Attempt to load up all plugins specified in a list
@@ -143,7 +208,12 @@ class PluginManager(object):
 
         :type plugins: list
         :type output: bool
+
+        :returns: A Deferred, resulting in no value
+        :rtype: Deferred
         """
+
+        self.loaders["python"].setup()
 
         # Plugins still needing loaded
         to_load = []
@@ -201,7 +271,7 @@ class PluginManager(object):
 
                         if loaded.name.lower() == dep_name:
                             self.log.trace("Found a dependency")
-                            loaded_version = StrictVersion(loaded.info.version)
+                            loaded_version = StrictVersion(loaded.version)
 
                             if not operator_func(
                                     loaded_version, parsed_dep_version
@@ -245,13 +315,15 @@ class PluginManager(object):
         for info in load_order:
             self.log.debug("Loading plugin: %s" % info.name)
 
-            result = self.load_plugin(info.name)
+            result = yield self.load_plugin(info.name)
 
             if result is PluginState.LoadError:
                 self.log.debug("LoadError")
                 pass  # Already output by load_plugin
-            elif result is PluginState.NotExists:  # Should never happen
-                self.log.warning("No such plugin: %s" % info.name)
+            elif result is PluginState.NotExists:
+                self.log.warning(
+                    "Plugin state: NotExists (This should never happen)"
+                )
             elif result is PluginState.Loaded:
                 if output:
                     self.log.info(
@@ -276,6 +348,7 @@ class PluginManager(object):
             len(did_load), ", ".join(sorted(did_load))
         ))
 
+    @inlineCallbacks
     def load_plugin(self, name):
         """
         Load a single plugin by its case-insensitive name
@@ -283,21 +356,22 @@ class PluginManager(object):
         :param name: The name of the plugin to load
         :type name: str
 
-        :return: A PluginState enum value representing the result
-        :rtype: PluginState
+        :return: A Deferred, resulting in a PluginState enum value representing
+                 the result
+        :rtype: Deferred(PluginState)
         """
 
         name = name.lower()
 
         if name not in self.info_objects:
-            return PluginState.NotExists
+            returnValue(PluginState.NotExists)
 
         if name in self.plugin_objects:
-            return PluginState.AlreadyLoaded
+            returnValue(PluginState.AlreadyLoaded)
 
         info = self.info_objects[name]
 
-        for dep in info.core.dependencies:
+        for dep in info.dependencies:
             dep = dep.lower()
 
             if " " in dep:
@@ -317,126 +391,75 @@ class PluginManager(object):
                 parsed_dep_version = dep_version
 
             if dep_name not in self.plugin_objects:
-                return PluginState.DependencyMissing
+                returnValue(PluginState.DependencyMissing)
 
             loaded = self.plugin_objects[dep_name]
             loaded_version = StrictVersion(loaded.info.version)
 
             if not operator_func(loaded_version, parsed_dep_version):
-                return PluginState.DependencyMissing
+                returnValue(PluginState.DependencyMissing)
 
-        module = info.get_module()
+        loader = self.find_loader(info)
 
-        try:
-            self.log.trace("Module: %s" % module)
-            obj = None
+        result, obj = yield loader.load_plugin(info)
 
-            if module in sys.modules:
-                self.log.trace("Module exists, reloading..")
-                reload(sys.modules[module])
-                module_obj = sys.modules[module]
-            else:
-                module_obj = importlib.import_module(module)
-
-            self.log.trace("Module object: %s" % module_obj)
-
-            obj = self.find_plugin_class(module_obj)
-
-            if obj is None:
-                self.log.error(
-                    "Unable to find plugin class for plugin: %s" % info.name
-                )
-                return PluginState.LoadError
-
+        if result is PluginState.Loaded:
             self.plugin_objects[name] = obj
-        except ImportError:
-            self.log.exception("Unable to import plugin: %s" % info.name)
-            self.log.debug("Module: %s" % module)
-            return PluginState.LoadError
-        except Exception:
-            self.log.exception("Error loading plugin: %s" % info.name)
-            return PluginState.LoadError
-        else:
-            try:
-                self.plugin_objects[name] = obj
 
-                info.set_plugin_object(obj)
+        event = PluginLoadedEvent(self, obj)
+        self.events.run_callback("PluginLoaded", event)
 
-                obj.add_variables(info, self.factory_manager)
-                obj.logger = getLogger(info.name)
+        returnValue(result)
 
-                # TODO: Handle deferreds here
-                d = obj.setup()
-
-                if not self.plugin_loaded(name):
-                    return PluginState.Unloaded
-            except Exception:
-                if name in self.plugin_objects:
-                    del self.plugin_objects[name]
-
-                self.log.exception("Error setting up plugin: %s" % info.name)
-                return PluginState.LoadError
-            else:
-                event = PluginLoadedEvent(self, obj)
-                self.events.run_callback("PluginLoaded", event)
-                return PluginState.Loaded
-
-    def find_plugin_class(self, module):
-        for name_, clazz in inspect.getmembers(module):
-            self.log.trace("Member: %s" % name_)
-            if inspect.isclass(clazz):
-                self.log.trace("It's a class!")
-                if clazz.__module__ == module.__name__:
-                    self.log.trace("It's the right module!")
-                    try:
-                        if self.is_plugin_class(clazz):
-                            return clazz()
-                    except RuntimeError:
-                        self.log.exception(
-                            "Recursion limit hit while trying to import: %s" %
-                            clazz.__name__
-                        )
-                        return None
-        return None
-
-    def is_plugin_class(self, clazz):
-        for parent in clazz.__bases__:
-            if parent == PluginObject:
-                self.log.trace("It's the right subclass!")
-                return True
-        for parent in clazz.__bases__:
-            if self.is_plugin_class(parent):
-                return True
-        return False
-
+    @inlineCallbacks
     def unload_plugins(self, output=True):
         """
         Unload all loaded plugins
 
-        :param output: Whether to output errors and other messages to the log
-        :type output: bool
+        :param output: A Deferred, resulting in whether to output errors and
+                       other messages to the log
+        :type output: Deferred(bool)
         """
 
         if output:
-            self.log.info("Unloading %s plugins.." % len(self.plugin_objects))
+            self.log.info(
+                "Unloading {} plugins..".format(len(self.plugin_objects))
+            )
 
         for key in self.plugin_objects.keys():
-            result = self.unload_plugin(key)
+            result = yield self.unload_plugin(key)
 
             if result is PluginState.LoadError:
-                pass  # Should never happen
+                self.log.warning(
+                    "Plugin state: LoadError (This should never happen)"
+                )
             elif result is PluginState.NotExists:
-                self.log.warning("No such plugin: %s" % key)
+                self.log.warning("No such plugin: {}".format(key))
             elif result is PluginState.Loaded:
-                pass  # Should never happen
+                self.log.warning(
+                    "Plugin state: Loaded (This should never happen)"
+                )
             elif result is PluginState.AlreadyLoaded:
-                pass  # Should never happen
-            elif result is PluginState.Unloaded:  # Should never happen
-                if output:
-                    self.log.info("Plugin unloaded: %s" % key)
+                self.log.warning(
+                    "Plugin state: Already Loaded (This should never happen)"
+                )
+            elif result is PluginState.Unloaded:
+                pass  # Output by the unload_plugin function already
             elif result is PluginState.DependencyMissing:
-                pass  # Should never happen
+                self.log.warning(
+                    "Plugin state: DependencyMissing (This should never "
+                    "happen)"
+                )
+            else:
+                self.log.warning(
+                    "Unknown plugin state: {0} "
+                    "(This should never happen)".format(
+                        result
+                    )
+                )
+                self.log.warning("Bug the developer of '{0}'!".format(key))
 
+    @inlineCallbacks
     def unload_plugin(self, name):
         """
         Unload a single loaded plugin by its case-insensitive name
@@ -444,14 +467,15 @@ class PluginManager(object):
         :param name: The name of the plugin to unload
         :type name: str
 
-        :return: A PluginState enum value representing the result
-        :rtype: PluginState
+        :return: A Deferred, resulting in a PluginState enum value representing
+                 the result
+        :rtype: Deferred(PluginState)
         """
 
         name = name.lower()
 
         if name not in self.plugin_objects:
-            return PluginState.NotExists
+            returnValue(PluginState.NotExists)
 
         obj = self.plugin_objects[name]
 
@@ -460,16 +484,20 @@ class PluginManager(object):
         self.factory_manager.storage.release_files(obj)
 
         try:
-            # TODO: Handle deferreds here
             d = obj.deactivate()
+
+            if isinstance(d, Deferred):
+                _ = yield d
         except Exception:
             self.log.exception("Error deactivating plugin: %s" % obj.info.name)
 
-        event = PluginLoadedEvent(self, obj)
+        event = PluginUnloadedEvent(self, obj)
         self.events.run_callback("PluginUnloaded", event)
 
         del self.plugin_objects[name]
-        return PluginState.Unloaded
+
+        self.log.info("Unloaded plugin: {}".format(name))
+        returnValue(PluginState.Unloaded)
 
     def reload_plugins(self, output=True):
         """
@@ -497,10 +525,13 @@ class PluginManager(object):
                 if output:
                     self.log.warning("Plugin already loaded: %s" % c_name)
             elif result is PluginState.Unloaded:
-                pass  # Should never happen
+                self.log.warning(
+                    "Plugin state: Unloaded (This should never happen)"
+                )
             elif result is PluginState.DependencyMissing:
                 pass  # Already output
 
+    @inlineCallbacks
     def reload_plugin(self, name):
         """
         Reload a single loaded plugin by its case-insensitive name
@@ -508,19 +539,20 @@ class PluginManager(object):
         :param name: The name of the plugin to reload
         :type name: str
 
-        :return: A PluginState enum value representing the result
-        :rtype: PluginState
+        :return: A Deferred, resulting in a PluginState enum value representing
+                 the result
+        :rtype: Deferred(PluginState)
         """
 
         name = name.lower()
 
-        # TODO: Handle deferreds here
-        result = self.unload_plugin(name)
+        result = yield self.unload_plugin(name)
 
         if result is not PluginState.Unloaded:
-            return result
+            returnValue(result)
+            r = yield self.load_plugin(name)
 
-        return self.load_plugin(name)
+            returnValue(r)
 
     def get_plugin(self, name):
         """
@@ -556,7 +588,7 @@ class PluginManager(object):
 
         if name in self.info_objects:
             return self.info_objects[name]
-        return False
+        return None
 
     def plugin_loaded(self, name):
         """
