@@ -320,8 +320,10 @@ class PluginManager(object):
             if result is PluginState.LoadError:
                 self.log.debug("LoadError")
                 pass  # Already output by load_plugin
-            elif result is PluginState.NotExists:  # Should never happen
-                self.log.warning("No such plugin: %s" % info.name)
+            elif result is PluginState.NotExists:
+                self.log.warning(
+                    "Plugin state: NotExists (This should never happen)"
+                )
             elif result is PluginState.Loaded:
                 if output:
                     self.log.info(
@@ -428,17 +430,26 @@ class PluginManager(object):
             result = yield self.unload_plugin(key)
 
             if result is PluginState.LoadError:
-                pass  # Should never happen
+                self.log.warning(
+                    "Plugin state: LoadError (This should never happen)"
+                )
             elif result is PluginState.NotExists:
                 self.log.warning("No such plugin: {}".format(key))
             elif result is PluginState.Loaded:
-                pass  # Should never happen
+                self.log.warning(
+                    "Plugin state: Loaded (This should never happen)"
+                )
             elif result is PluginState.AlreadyLoaded:
-                pass  # Should never happen
+                self.log.warning(
+                    "Plugin state: Already Loaded (This should never happen)"
+                )
             elif result is PluginState.Unloaded:
                 pass  # Output by the unload_plugin function already
             elif result is PluginState.DependencyMissing:
-                pass  # Should never happen
+                self.log.warning(
+                    "Plugin state: DependencyMissing (This should never "
+                    "happen)"
+                )
 
     @inlineCallbacks
     def unload_plugin(self, name):
@@ -506,7 +517,9 @@ class PluginManager(object):
                 if output:
                     self.log.warning("Plugin already loaded: %s" % c_name)
             elif result is PluginState.Unloaded:
-                pass  # Should never happen
+                self.log.warning(
+                    "Plugin state: Unloaded (This should never happen)"
+                )
             elif result is PluginState.DependencyMissing:
                 pass  # Already output
 
