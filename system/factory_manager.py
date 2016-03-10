@@ -148,10 +148,11 @@ class FactoryManager(object):
         else:
             raise RuntimeError(_("Manager is already running!"))
 
+    @inlineCallbacks
     def signal_callback(self, signum, frame):
         try:
             try:
-                self.unload()
+                __ = yield self.unload()
             except Exception:
                 self.logger.exception(_("Error while unloading!"))
                 try:
@@ -420,6 +421,7 @@ class FactoryManager(object):
             return True
         return False
 
+    @inlineCallbacks
     def unload(self):
         """
         Shut down and unload everything.
@@ -430,7 +432,7 @@ class FactoryManager(object):
             self.logger.info(_("Unloading protocol: %s") % name)
             self.unload_protocol(name)
 
-        self.plugman.unload_plugins()
+        __ = yield self.plugman.unload_plugins()
 
         if reactor.running:
             try:

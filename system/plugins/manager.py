@@ -9,7 +9,7 @@ import yaml
 from copy import copy
 from distutils.version import StrictVersion
 
-from twisted.internet.defer import inlineCallbacks, returnValue
+from twisted.internet.defer import inlineCallbacks, returnValue, Deferred
 
 from system.enums import PluginState
 from system.events.manager import EventManager
@@ -98,9 +98,10 @@ class PluginManager(object):
         self.loaders[loader.name] = loader
         return True
 
+    @inlineCallbacks
     def remove_loader(self, name):
         if name not in self.loaders:
-            return False
+            returnValue(False)
 
         to_unload = []
         loader = self.loaders[name]
@@ -112,10 +113,10 @@ class PluginManager(object):
         del loader
 
         for plugin in to_unload:
-            self.unload_plugin(plugin)
+            _ = yield self.unload_plugin(plugin)
 
         del self.loaders[name]
-        return True
+        returnValue(True)
 
     def scan(self, output=True):
         """
@@ -379,6 +380,7 @@ class PluginManager(object):
 
         returnValue(result)
 
+    @inlineCallbacks
     def unload_plugins(self, output=True):
         """
         Unload all loaded plugins
@@ -393,7 +395,7 @@ class PluginManager(object):
             )
 
         for key in self.plugin_objects.keys():
-            result = self.unload_plugin(key)
+            result = yield self.unload_plugin(key)
 
             if result is PluginState.LoadError:
                 pass  # Should never happen
@@ -409,6 +411,7 @@ class PluginManager(object):
             elif result is PluginState.DependencyMissing:
                 pass  # Should never happen
 
+    @inlineCallbacks
     def unload_plugin(self, name):
         """
         Unload a single loaded plugin by its case-insensitive name
@@ -423,7 +426,7 @@ class PluginManager(object):
         name = name.lower()
 
         if name not in self.plugin_objects:
-            return PluginState.NotExists
+            returnValue(PluginState.NotExists)
 
         obj = self.plugin_objects[name]
 
@@ -432,8 +435,10 @@ class PluginManager(object):
         self.factory_manager.storage.release_files(obj)
 
         try:
-            # TODO: Handle deferreds here
             d = obj.deactivate()
+
+            if isinstance(d, Deferred):
+                _ = yield d
         except Exception:
             self.log.exception("Error deactivating plugin: %s" % obj.info.name)
 
@@ -443,7 +448,7 @@ class PluginManager(object):
         del self.plugin_objects[name]
 
         self.log.info("Unloaded plugin: {}".format(name))
-        return PluginState.Unloaded
+        returnValue(PluginState.Unloaded)
 
     def reload_plugins(self, output=True):
         """
@@ -475,6 +480,7 @@ class PluginManager(object):
             elif result is PluginState.DependencyMissing:
                 pass  # Already output
 
+    @inlineCallbacks
     def reload_plugin(self, name):
         """
         Reload a single loaded plugin by its case-insensitive name
@@ -488,13 +494,13 @@ class PluginManager(object):
 
         name = name.lower()
 
-        # TODO: Handle deferreds here
-        result = self.unload_plugin(name)
+        result = yield self.unload_plugin(name)
 
         if result is not PluginState.Unloaded:
-            return result
+            returnValue(result)
+            r = yield self.load_plugin(name)
 
-        return self.load_plugin(name)
+            returnValue(r)
 
     def get_plugin(self, name):
         """
@@ -530,7 +536,7 @@ class PluginManager(object):
 
         if name in self.info_objects:
             return self.info_objects[name]
-        return False
+        return None
 
     def plugin_loaded(self, name):
         """

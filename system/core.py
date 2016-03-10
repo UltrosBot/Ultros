@@ -17,4 +17,4 @@ class Ultros(object):
         self.factory_manager.run()
 
     def stop(self):
-        self.factory_manager.unload()
+        return self.factory_manager.unload()
