@@ -61,8 +61,8 @@ class TestPlugin(PluginObject):
         self.handler = permissionsHandler(self, self.data)
 
         super(TestPlugin, self).__init__(
-            AttrDict(name = "test", module = "test_permissions"),
-            AttrDict(name = "python"),
+            AttrDict(name="test", module="test_permissions"),
+            AttrDict(name="python"),
         )
 
     @classmethod
