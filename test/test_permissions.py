@@ -8,11 +8,12 @@ import nose.tools as nosetools
 
 from plugins.auth.permissions_handler import permissionsHandler
 from system.logging.logger import configure
-from system.plugin import PluginObject
+from system.plugins.plugin import PluginObject
 from system.storage import formats
 from system.storage.manager import StorageManager
 
 from system.logging.logger import getLogger
+from utils.misc import AttrDict
 
 __author__ = 'Gareth Coles'
 tmpdir = tempfile.mkdtemp()
@@ -59,7 +60,10 @@ class TestPlugin(PluginObject):
 
         self.handler = permissionsHandler(self, self.data)
 
-        super(PluginObject, self).__init__()
+        super(TestPlugin, self).__init__(
+            AttrDict(name = "test", module = "test_permissions"),
+            AttrDict(name = "python"),
+        )
 
     @classmethod
     def teardown_class(cls):
