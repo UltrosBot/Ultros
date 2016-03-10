@@ -11,15 +11,14 @@ class BasePluginLoader(object):
     factory_manager = None
     plugin_manager = None
 
-    def __init__(self):
+    def __init__(self, factory_manager, plugin_manager):
         self.logger = getLogger(self.logger_name)
 
-    def setup(self):
-        from system.factory_manager import FactoryManager
-        from system.plugins.manager import PluginManager
+        self.factory_manager = factory_manager
+        self.plugin_manager = plugin_manager
 
-        self.factory_manager = FactoryManager()
-        self.plugin_manager = PluginManager()
+    def setup(self):
+        pass
 
     def load_plugin(self, info):
         raise NotImplementedError()

@@ -1,6 +1,8 @@
 # coding=utf-8
 from system.commands.manager import CommandManager
+from system.decorators.log import deprecated
 from system.events.manager import EventManager
+from system.logging.logger import getLogger
 from system.storage.manager import StorageManager
 from system.translations import Translations
 
@@ -38,6 +40,21 @@ class PluginObject(object):
     #: :type: StorageManager
     storage = None  # Storage manager
 
+    def __init__(self, info, loader):
+        from system.factory_manager import FactoryManager
+        from system.plugins.manager import PluginManager
+
+        self.commands = CommandManager()
+        self.events = EventManager()
+        self.factory_manager = FactoryManager()
+        self.info = info
+        self.logger = getLogger(info.name)
+        self.module = self.info.module
+        self.plugins = PluginManager()
+        self.storage = StorageManager()
+        self._loader = loader.name
+
+    @deprecated("This function does nothing - logic should go in __init__")
     def add_variables(self, info, loader):
         """
         Adds essential variables at load time and sets up logging
@@ -48,18 +65,7 @@ class PluginObject(object):
         :param info: The plugin info file
         :type info: Info instance
         """
-
-        from system.plugins.manager import PluginManager
-        from system.factory_manager import FactoryManager
-
-        self.commands = CommandManager()
-        self.events = EventManager()
-        self.factory_manager = FactoryManager()
-        self.info = info
-        self.module = self.info.module
-        self.plugins = PluginManager()
-        self.storage = StorageManager()
-        self._loader = loader.name
+        pass
 
     def deactivate(self):
         """

@@ -32,15 +32,17 @@ class PythonPluginLoader(BasePluginLoader):
 
             self.logger.trace("Module object: {}".format(module_obj))
 
-            obj = self.find_plugin_class(module_obj)
+            plugin_class = self.find_plugin_class(module_obj)
 
-            if obj is None:
+            if plugin_class is None:
                 self.logger.error(
                     "Unable to find plugin class for plugin: {}".format(
                         info.name
                     )
                 )
                 returnValue((PluginState.LoadError, None))
+
+            plugin = plugin_class(info, self)
 
         except ImportError:
             self.logger.exception("Unable to import plugin: {}".format(
@@ -54,11 +56,10 @@ class PythonPluginLoader(BasePluginLoader):
             returnValue((PluginState.LoadError, None))
         else:
             try:
-                info.set_plugin_object(obj)
-                obj.add_variables(info, self)
-                obj.logger = getLogger(info.name)
+                info.set_plugin_object(plugin)
+                plugin.logger = getLogger(info.name)
 
-                d = obj.setup()
+                d = plugin.setup()
 
                 if isinstance(d, Deferred):
                     _ = yield d
@@ -68,7 +69,7 @@ class PythonPluginLoader(BasePluginLoader):
                 ))
                 returnValue((PluginState.LoadError, None))
             else:
-                returnValue((PluginState.Loaded, obj))
+                returnValue((PluginState.Loaded, plugin))
 
     def find_plugin_class(self, module):
         for name_, clazz in inspect.getmembers(module):
@@ -79,7 +80,7 @@ class PythonPluginLoader(BasePluginLoader):
                     self.logger.trace("It's the right module!")
                     try:
                         if self.is_plugin_class(clazz):
-                            return clazz()
+                            return clazz
                     except RuntimeError:
                         self.logger.exception(
                             "Recursion limit hit while trying to import: "

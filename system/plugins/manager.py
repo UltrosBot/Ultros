@@ -65,7 +65,7 @@ class PluginManager(object):
         self.log = getLogger("Plugins")
         self.loaders = {}
 
-        python_loader = PythonPluginLoader()
+        python_loader = PythonPluginLoader(factory_manager, self)
         self.loaders["python"] = python_loader
 
         self.factory_manager = factory_manager
