@@ -398,6 +398,12 @@ class ManagementPlugin(PluginObject):
             elif result is PluginState.LoadError:
                 source.respond(__("Unable to load plugin %s: An error "
                                   "occurred.") % info.name)
+            elif result is PluginState.UnknownType:
+                source.respond(
+                    __(
+                        "Unable to load plugin {}: Unknown plugin type ({})"
+                    ).format(info.name, info.type)
+                )
             elif result is PluginState.DependencyMissing:
                 source.respond(__("Unable to load plugin %s: Another "
                                   "plugin this one depends on is "

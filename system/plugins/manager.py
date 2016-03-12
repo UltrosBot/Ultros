@@ -320,6 +320,9 @@ class PluginManager(object):
             if result is PluginState.LoadError:
                 self.log.debug("LoadError")
                 pass  # Already output by load_plugin
+            elif result is PluginState.UnknownType:
+                self.log.debug("UnknownType")
+                pass  # Already output by load_plugin
             elif result is PluginState.NotExists:
                 self.log.warning(
                     "Plugin state: NotExists (This should never happen)"
@@ -400,6 +403,15 @@ class PluginManager(object):
                 returnValue(PluginState.DependencyMissing)
 
         loader = self.find_loader(info)
+
+        if loader is None:
+            self.log.error(
+                "Unknown plugin type: {} (Plugin: {})".format(
+                    info.type, name
+                )
+            )
+
+            returnValue(PluginState.UnknownType)
 
         result, obj = yield loader.load_plugin(info)
 
