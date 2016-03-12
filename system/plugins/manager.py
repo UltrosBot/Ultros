@@ -491,6 +491,14 @@ class PluginManager(object):
 
         obj = self.plugin_objects[name]
 
+        if obj.sub_plugins is not None:
+            for o in obj.sub_plugins:
+                self.factory_manager.commands.unregister_commands_for_owner(o)
+                self.factory_manager.event_manager.remove_callbacks_for_plugin(
+                    o
+                )
+                self.factory_manager.storage.release_files(o)
+
         self.factory_manager.commands.unregister_commands_for_owner(obj)
         self.factory_manager.event_manager.remove_callbacks_for_plugin(obj)
         self.factory_manager.storage.release_files(obj)

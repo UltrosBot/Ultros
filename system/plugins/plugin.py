@@ -40,6 +40,9 @@ class PluginObject(object):
     #: :type: StorageManager
     storage = None  # Storage manager
 
+    #: :type: List
+    sub_plugins = None  # List of subobjects that have registered commands, etc
+
     def __init__(self, info, loader):
         from system.factory_manager import FactoryManager
         from system.plugins.manager import PluginManager
