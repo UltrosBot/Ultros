@@ -1,4 +1,7 @@
 # coding=utf-8
+from system.commands.exceptions import UsageError, NoPermissionError, \
+    CommandError
+
 __author__ = "Gareth Coles"
 
 import shlex
@@ -161,6 +164,74 @@ class CommandManager(object):
                         del self.aliases[k]
                         self.logger.debug(_("Unregistered alias: %s") % k)
 
+    def handle_input(self, in_str, caller, source, protocol,
+                     control_char=None, our_name=None):
+        """Process a set of inputs, to check if there's a command there,
+        action it, and give user feedback.
+
+        This is designed to be used from a protocol and is a wrapper for
+        process_input.
+
+        :param in_str: The entire message to parse
+        :param caller: The User that sent the message
+        :param source: The User or Channel that the message was sent to
+        :param protocol: The Protocol object the User belongs to
+        :param control_char: The control characters (prefix)
+        :param our_name: The name of the bot on Protocol
+
+        :type in_str: str
+        :type caller: User
+        :type source: User, Channel
+        :type protocol: Protocol
+        :type control_char: str
+        :type our_name: str
+
+        :return: Tuple containing CommandState representing the state of
+            the command, and either None or an Exception.
+        :rtype: tuple(CommandState, None or Exception)
+        """
+        state, err = self.process_input(in_str, caller, source, protocol,
+                                        control_char, our_name)
+
+        if state == CommandState.NotACommand:
+            self.logger.debug("Not a command")
+        elif state == CommandState.RateLimited:
+            self.logger.debug("Command rate-limited")
+            caller.respond("That command has been rate-limited,"
+                           " please try again later.")
+        elif state == CommandState.UnknownOverridden:
+            self.logger.debug("Unknown command overridden")
+        elif state == CommandState.Unknown:
+            self.logger.debug("Unknown command")
+        elif state == CommandState.Success:
+            self.logger.debug("Command ran successfully")
+        elif state == CommandState.NoPermission:
+            if self.perm_handler and self.perm_handler.check(
+                    "ultros.send_permission_error", caller, source, protocol):
+                caller.respond("You don't have permission to run that command.")  # noqa
+            msg = "No permission to run command"
+            if err and err.permission:
+                self.logger.debug('No permission to run command - '
+                                  'requires "%s" permission' % err.permission)
+            else:
+                self.logger.debug("No permission to run command")
+        elif state == CommandState.Error:
+            caller.respond("Error running command")
+        elif state == CommandState.UserVisibleError:
+            if err and err.message:
+                caller.respond("Error running command: %s" % err.message)
+            else:
+                caller.respond("Error running command")
+        elif state == CommandState.InvalidUsage:
+            if err and err.usage:
+                caller.respond("Usage: %s" % err.message)
+            else:
+                caller.respond("Invalid usage")
+        else:
+            self.logger.debug("Unknown command state: %s" % state)
+
+        return (state != CommandState.NotACommand), state, err
+
     def process_input(self, in_str, caller, source, protocol,
                       control_char=None, our_name=None):
         """Process a set of inputs, to check if there's a command there and
@@ -284,46 +355,32 @@ class CommandManager(object):
             parsed_args = list(lex)
         except ValueError:
             parsed_args = None
-        try:
-            if self.commands[command]["permission"]:
-                if not self.perm_handler:
-                    if not self.commands[command]["default"]:
-                        return CommandState.NoPermission, None
 
-                    try:
-                        self.commands[command]["f"](protocol, caller,
-                                                    source, command,
-                                                    raw_args,
-                                                    parsed_args)
-                    except RateLimitExceededError:
-                        # TODO: Proper decorator
-                        return CommandState.RateLimited, None
-                    except Exception as e:
-                        self.logger.exception("Error running command")
-                        return CommandState.Error, e
-                else:
-                    if self.perm_handler.check(self.commands
-                                               [command]["permission"],
+        # Check command permission if it has one
+        cmd_obj = self.commands[command]
+        if cmd_obj["permission"]:
+            # Use permission handler if there is one
+            if self.perm_handler:
+                if not self.perm_handler.check(cmd_obj["permission"],
                                                caller, source, protocol):
-                        try:
-                            self.commands[command]["f"](protocol, caller,
-                                                        source, command,
-                                                        raw_args,
-                                                        parsed_args)
-                        except RateLimitExceededError:
-                            # TODO: Proper decorator
-                            return CommandState.RateLimited, None
-                        except Exception as e:
-                            self.logger.exception("Error running command")
-                            return CommandState.Error, e
-                    else:
-                        return CommandState.NoPermission, None
+                    return CommandState.NoPermission, None
             else:
-                self.commands[command]["f"](protocol, caller, source, command,
-                                            raw_args, parsed_args)
+                # No perm handler, check if default-allowed
+                if not cmd_obj["default"]:
+                    return CommandState.NoPermission, None
+
+        # No permission problems, run the command!
+        try:
+            cmd_obj["f"](protocol, caller, source, command, raw_args,
+                         parsed_args)
+        except UsageError as e:
+            return CommandState.InvalidUsage, e
+        except NoPermissionError as e:
+            return CommandState.NoPermission, e
         except RateLimitExceededError:
-            # TODO: Proper decorator
             return CommandState.RateLimited, None
+        except CommandError as e:
+            return CommandState.UserVisibleError, e
         except Exception as e:
             self.logger.exception("Error running command")
             return CommandState.Error, e

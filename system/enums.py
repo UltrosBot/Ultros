@@ -40,6 +40,7 @@ class CommandState(Enum):
     instantiate the class!
     """
 
+    InvalidUsage = -5
     RateLimited = -4
     NotACommand = -3
     UnknownOverridden = -2
@@ -47,6 +48,7 @@ class CommandState(Enum):
     Success = 0
     NoPermission = 1
     Error = 2
+    UserVisibleError = 3
 
 
 class PluginState(Enum):
