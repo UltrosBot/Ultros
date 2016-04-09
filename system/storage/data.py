@@ -21,7 +21,8 @@ import os
 import pprint
 import pymongo
 import redis
-import yaml
+
+from ruamel import yaml
 
 from threading import Lock
 from twisted.enterprise import adbapi
@@ -236,7 +237,7 @@ class YamlData(Data):
         if not os.path.exists(self.filename):
             open(self.filename, "w").close()
         fh = open(self.filename, "r")
-        self.data = yaml.load(fh)
+        self.data = yaml.load(fh, version=(1, 1))
         fh.close()
         if not self.data:
             self.data = {}
@@ -252,7 +253,7 @@ class YamlData(Data):
             self._save()
 
     def _save(self):
-        data = yaml.dump(self.data, default_flow_style=False)
+        data = yaml.dump(self.data, default_flow_style=False, version=(1, 1))
         fh = open(self.filename, "w")
         fh.write(data)
         fh.flush()
@@ -260,7 +261,7 @@ class YamlData(Data):
 
     def validate(self, data):
         try:
-            yaml.load(data)
+            yaml.load(data, version=(1, 1))
         except yaml.YAMLError as e:
             problem = e.problem
             problem = problem.replace("could not found", "could not find")
@@ -288,7 +289,7 @@ class YamlData(Data):
         return success
 
     def read(self):
-        dumped = yaml.dump(self.data, default_flow_style=False)
+        dumped = yaml.dump(self.data, default_flow_style=False, version=(1, 1))
         return [
             self.editable,
             _("# This is the data in memory, and may not actually be what's "

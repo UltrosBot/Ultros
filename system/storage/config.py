@@ -18,7 +18,8 @@ import json
 import pprint
 import os
 import re
-import yaml
+
+from ruamel import yaml
 
 from system.storage import formats
 from system.logging.logger import getLogger
@@ -190,7 +191,7 @@ class YamlConfig(Config):
             self.logger.exception("")
             return False
         else:
-            self.data = yaml.safe_load(self.fh)
+            self.data = yaml.load(self.fh, version=(1, 1))
             if run_callbacks:
                 for callback in self.callbacks:
                     try:
@@ -208,7 +209,7 @@ class YamlConfig(Config):
 
     def validate(self, data):
         try:
-            yaml.load(data)
+            yaml.load(data, version=(1, 1))
         except yaml.YAMLError as e:
             mark = None
             problem = str(e)
