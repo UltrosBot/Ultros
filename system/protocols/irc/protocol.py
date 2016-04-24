@@ -1182,7 +1182,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             self.event_manager.run_callback("ActionSent", event)
 
             if not event.cancelled:
-                self.send_ctcp(target, "ACTION", message)
+                for line in message.split("\n"):
+                    self.send_ctcp(target, "ACTION", line)
                 return True
             return False
         return False
@@ -1350,7 +1351,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         elif isinstance(target, Channel):
             target = to_unicode(target.name)
 
-        self.sendLine(u"NOTICE %s :%s" % (target, msg))
+        for line in msg.split("\n"):
+            self.sendLine(u"NOTICE %s :%s" % (target, line))
 
     def send_notice_no_event(self, target, message):
         """
@@ -1364,7 +1366,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             target = to_unicode(target.name)
         msg = to_unicode(message)
 
-        self.sendLine(u"NOTICE %s :%s" % (target, msg))
+        for line in msg.split("\n"):
+            self.sendLine(u"NOTICE %s :%s" % (target, line))
 
     def send_privmsg(self, target, message, use_event=True):
         if not message:
@@ -1386,7 +1389,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         elif isinstance(target, Channel):
             target = to_unicode(target.name)
 
-        self.sendLine(u"PRIVMSG %s :%s" % (target, msg))
+        for line in msg.split("\n"):
+            self.sendLine(u"PRIVMSG %s :%s" % (target, line))
 
     def send_privmsg_no_event(self, target, message):
         """
@@ -1400,7 +1404,8 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             target = to_unicode(target.name)
         msg = to_unicode(message)
 
-        self.sendLine(u"PRIVMSG %s :%s" % (target, msg))
+        for line in msg.split("\n"):
+            self.sendLine(u"PRIVMSG %s :%s" % (target, line))
 
     def send_ctcp(self, target, command, args=None):
         if isinstance(target, User):

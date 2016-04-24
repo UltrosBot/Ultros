@@ -65,8 +65,7 @@ class PagesPlugin(PluginObject):
         page = self.stored_pages[pageset][index]
 
         target.respond(__("== Page %s/%s ==") % (pagenum, numpages + 1))
-        for line in page:
-            target.respond(line)
+        target.respond("    \n".join(page))
 
         target.respond(__("== Use {CHARS}page <page number> to see more. =="))
 

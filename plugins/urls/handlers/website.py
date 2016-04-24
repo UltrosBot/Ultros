@@ -288,7 +288,7 @@ class WebsiteHandler(URLHandler):
 
         if soup.title and soup.title.text:
             title = soup.title.text.strip()
-            title = re.sub("\s+", " ", title)
+            title = re.sub("[\n\s]+", " ", title)
             title = to_unicode(title)
 
             title_limit = self.urls_plugin.config.get("max_title_length", 150)
