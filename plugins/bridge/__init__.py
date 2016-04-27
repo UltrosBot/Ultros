@@ -11,7 +11,7 @@ it.
 """
 
 from system.events.general import MessageReceived, MessageSent, PreCommand, \
-    UserDisconnected, ActionSent
+    UserDisconnected, ActionSent, ActionReceived
 from system.events.irc import UserJoinedEvent, UserKickedEvent, \
     UserPartedEvent, UserQuitEvent, CTCPQueryEvent
 from system.events.mumble import UserJoined, UserMoved, UserRemove
@@ -82,6 +82,10 @@ class BridgePlugin(PluginObject):
         self.events.add_callback("ActionSent", self, self.handle_action_sent,
                                  0)
 
+        self.events.add_callback("ActionReceived", self,
+                                 self.handle_action_received, 0
+                                 )
+
         self.events.add_callback("UserDisconnected", self,
                                  self.handle_disconnect, 1000)
 
@@ -98,9 +102,6 @@ class BridgePlugin(PluginObject):
 
         self.events.add_callback("IRC/UserQuit", self,
                                  self.handle_irc_quit, 1000)
-
-        self.events.add_callback("IRC/CTCPQueryReceived", self,
-                                 self.handle_irc_action, 1000)
 
         # Mumble
 
@@ -149,15 +150,6 @@ class BridgePlugin(PluginObject):
         self.do_rules(event.message, event.caller, event.user, event.user,
                       f_str=["irc", "disconnect"],
                       tokens={"USER": event.user.nickname})
-
-    def handle_irc_action(self, event=CTCPQueryEvent):
-        """
-        Event handler for IRC CTCP query events
-        """
-
-        if event.action == "ACTION":
-            self.do_rules(event.data, event.caller, event.user,
-                          event.channel, f_str=["general", "action"])
 
     def handle_disconnect(self, event=UserDisconnected):
         """
@@ -214,6 +206,10 @@ class BridgePlugin(PluginObject):
 
         self.do_rules(event.message, event.caller, event.caller.ourselves,
                       event.target)
+
+    def handle_action_received(self, event=ActionReceived):
+        self.do_rules(event.message, event.caller, event.source, event.target,
+                      f_str=["general", "action"])
 
     def handle_action_sent(self, event=ActionSent):
         """
