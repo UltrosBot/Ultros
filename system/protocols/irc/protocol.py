@@ -444,8 +444,6 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
         self.event_manager.run_callback("IRC/CTCPQueryReceived", event)
 
         if action.upper() == "ACTION":
-            self.log.info("* %s:%s %s" % (user_obj, channel_obj, data))
-
             e = general_events.ActionReceived(
                 self, user_obj, channel_obj, data
             )
@@ -453,6 +451,9 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
             e.cancelled = event.cancelled
 
             self.event_manager.run_callback("ActionReceived", e)
+
+            if e.printable:
+                self.log.info(u"* %s:%s %s" % (user_obj, channel_obj, data))
         else:
             self.log.info(u"[{} {}] {}".format(
                 user.split("!", 1)[0], message[0], message[1] or ""
