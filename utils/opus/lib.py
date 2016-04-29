@@ -5,7 +5,6 @@
 
 import array
 import ctypes
-from ctypes import util
 
 from utils.opus.exceptions import OpusException
 

@@ -13,7 +13,7 @@ it.
 from system.events.general import MessageReceived, MessageSent, PreCommand, \
     UserDisconnected, ActionSent, ActionReceived
 from system.events.irc import UserJoinedEvent, UserKickedEvent, \
-    UserPartedEvent, UserQuitEvent, CTCPQueryEvent
+    UserPartedEvent, UserQuitEvent
 from system.events.mumble import UserJoined, UserMoved, UserRemove
 
 from system.plugins.plugin import PluginObject

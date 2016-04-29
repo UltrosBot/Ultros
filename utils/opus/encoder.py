@@ -48,7 +48,7 @@ class Encoder(object):
         kbps = min(128, max(16, int(kbps)))
 
         opus.opus_encoder_ctl(
-            self.encoder, CTL_SET_BITRATE, kbps*1024
+            self.encoder, CTL_SET_BITRATE, kbps * 1024
         )
 
         return kbps
