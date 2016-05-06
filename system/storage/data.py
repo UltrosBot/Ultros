@@ -12,6 +12,7 @@ of classes.
 * Relational (SQL databases)
 * Document-based (NoSQL databases)
 """
+import uuid
 
 __author__ = "Gareth Coles"
 
@@ -382,7 +383,11 @@ class MemoryData(Data):
     filename = ":memory:"  # So plugins can check for this easier
 
     def __init__(self, filename, data_dict):
-        self.filename = filename
+        if filename is None:
+            self.filename = ":memory:{}:".format(uuid.uuid4())
+        else:
+            self.filename = filename
+
         self.callbacks = []
 
         self.logger = getLogger("Data")

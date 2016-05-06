@@ -61,7 +61,11 @@ class StorageFile(object):
                               "files.")
                             % (type_, self.file_type))
 
-        self.path = "%s/%s" % (base_path, path)
+        if path is not None:
+            self.path = "%s/%s" % (base_path, path)
+        else:
+            self.path = None
+
         self.type_ = type_
         self.manager_class = manager_class
 

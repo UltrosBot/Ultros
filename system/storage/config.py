@@ -10,6 +10,7 @@ right now, so you'll have to split your plugin storage between data and
 configuration, and this is for a good reason - separating configuration
 and data is very, very important.
 """
+import uuid
 
 __author__ = "Gareth Coles"
 
@@ -468,7 +469,11 @@ class MemoryConfig(Config):
     filename = ":memory:"
 
     def __init__(self, filename, data_dict):
-        self.filename = filename
+        if filename is None:
+            self.filename = ":memory:{}:".format(uuid.uuid4())
+        else:
+            self.filename = filename
+
         self.callbacks = []
 
         self.logger = getLogger("MemoryConfig")

@@ -55,17 +55,20 @@ class StorageManager(object):
         :param storage_type: The type of storage file - "data" or "config"
         :param file_format: The file format, as defined in formats.py
         :param path: The path to the file, this also acts as the file's
-            identifier
+            identifier - Set to None if tracking is not required, but remember
+            that this will only work for storage formats that aren't backed
+            by files!
         :param args: Arguments to pass to the file's constructor
         :param kwargs: Keyword arguments to pass to the file's constructor
 
         :return: The storage file
         """
 
-        path = to_filename(path)
+        if path is not None:
+            path = to_filename(path)
 
-        if ".." in path:
-            path = path.replace("..", ".")
+            if ".." in path:
+                path = path.replace("..", ".")
 
         if storage_type == "data":
             if path in self.data_files:
@@ -77,7 +80,8 @@ class StorageManager(object):
             storage_file.make_ready(self)
             storage_file.load()
 
-            self.data_files[path] = storage_file
+            if path is not None:
+                self.data_files[path] = storage_file
 
             return storage_file.get()
 
@@ -91,7 +95,8 @@ class StorageManager(object):
             storage_file.make_ready(self)
             storage_file.load()
 
-            self.config_files[path] = storage_file
+            if path is not None:
+                self.config_files[path] = storage_file
 
             return storage_file.get()
 
