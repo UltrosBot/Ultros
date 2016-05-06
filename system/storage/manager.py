@@ -10,6 +10,7 @@ it wrong.
 Submit an issue or pull request if you need some other kind of storage
 format.
 """
+from utils.strings import to_filename
 
 __author__ = 'Gareth Coles'
 
@@ -60,6 +61,8 @@ class StorageManager(object):
 
         :return: The storage file
         """
+
+        path = to_filename(path)
 
         if ".." in path:
             path = path.replace("..", ".")

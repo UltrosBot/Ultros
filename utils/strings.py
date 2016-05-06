@@ -1,9 +1,15 @@
 # coding=utf-8
+import string
+from numbers import Number
 
 __author__ = 'Gareth Coles'
 
-import string
-from numbers import Number
+FILENAME_SAFE_CHARS = (
+    "/\\-_.()#" +
+    string.digits +
+    string.letters +
+    string.whitespace
+)
 
 
 class EmptyStringFormatter(string.Formatter):
@@ -27,3 +33,10 @@ class EmptyStringFormatter(string.Formatter):
                 return kwargs[key]
         except (KeyError, IndexError):
             return ""
+
+
+def to_filename(_string):
+    return filter(
+        lambda x: x in FILENAME_SAFE_CHARS,
+        _string
+    )
