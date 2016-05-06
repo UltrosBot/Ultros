@@ -446,12 +446,15 @@ class JSONConfig(Config):
 
 class MemoryConfig(Config):
     """
-    Just like the normal YamlConfig, but pass it a dict instead of a filename.
+    Just like the normal YamlConfig, but pass it a dict after the filename.
     That dict will be used to supply data, instead of a parsed YAML file.
 
     Aside from that, this object emulates the normal YamlConfig. This is
     intended to be used where Configs are required in the code but you need
     to supply one programmatically.
+
+    Your filename should be of the form **:memory:<name>:** to distinguish this
+    from normal config files. Be sure that the name you supply is unique!
     """
 
     representation = "json"
@@ -464,7 +467,8 @@ class MemoryConfig(Config):
 
     filename = ":memory:"
 
-    def __init__(self, data_dict):
+    def __init__(self, filename, data_dict):
+        self.filename = filename
         self.callbacks = []
 
         self.logger = getLogger("MemoryConfig")

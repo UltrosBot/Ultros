@@ -363,8 +363,11 @@ class MemoryData(Data):
     In-memory dict-like thread-safe storage.
 
     This is to be used as a shim where you may need to insert a data object
-    directly, without loading data from some kind of file. Pass a dictionary
-    instead of a filename to initialize this.
+    directly, without loading data from some kind of file. Supply a dict after
+    the filename to use as your initial data storage.
+
+    Your filename should be of the form **:memory:<name>:** to distinguish this
+    from normal data files. Be sure that the name you supply is unique!
     """
 
     editable = False
@@ -378,7 +381,8 @@ class MemoryData(Data):
 
     filename = ":memory:"  # So plugins can check for this easier
 
-    def __init__(self, data_dict):
+    def __init__(self, filename, data_dict):
+        self.filename = filename
         self.callbacks = []
 
         self.logger = getLogger("Data")
