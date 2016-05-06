@@ -367,8 +367,9 @@ class MemoryData(Data):
     directly, without loading data from some kind of file. Supply a dict after
     the filename to use as your initial data storage.
 
-    Your filename should be of the form **:memory:<name>:** to distinguish this
-    from normal data files. Be sure that the name you supply is unique!
+    If you do require storage manager file tracking, then please ensure that
+    the filename you pass can act as a unique identifier for your use-case.
+    Otherwise, just pass None and your MemoryData will not be tracked.
     """
 
     editable = False
@@ -386,7 +387,7 @@ class MemoryData(Data):
         if filename is None:
             self.filename = ":memory:{}:".format(uuid.uuid4())
         else:
-            self.filename = filename
+            self.filename = ":memory:{}:".format(filename)
 
         self.callbacks = []
 

@@ -454,8 +454,9 @@ class MemoryConfig(Config):
     intended to be used where Configs are required in the code but you need
     to supply one programmatically.
 
-    Your filename should be of the form **:memory:<name>:** to distinguish this
-    from normal config files. Be sure that the name you supply is unique!
+    If you do require storage manager file tracking, then please ensure that
+    the filename you pass can act as a unique identifier for your use-case.
+    Otherwise, just pass None and your MemoryConfig will not be tracked.
     """
 
     representation = "json"
@@ -472,7 +473,7 @@ class MemoryConfig(Config):
         if filename is None:
             self.filename = ":memory:{}:".format(uuid.uuid4())
         else:
-            self.filename = filename
+            self.filename = ":memory:{}:".format(filename)
 
         self.callbacks = []
 
