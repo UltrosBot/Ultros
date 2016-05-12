@@ -16,7 +16,7 @@ from system.events import mumble as mumble_events
 
 from system.logging.logger import getLogger
 
-from system.protocols import capabilities
+from system.protocols.capabilities import Capabilities
 
 from system.protocols.generic.protocol import SingleChannelProtocol
 
@@ -43,10 +43,10 @@ class Protocol(SingleChannelProtocol):
 
     TYPE = "mumble"
     CAPABILITIES = (
-        capabilities.MULTIPLE_CHANNELS,
-        capabilities.MULTILINE_MESSAGE,
-        capabilities.MESSAGE_UNJOINED_CHANNELS,
-        capabilities.VOICE,
+        Capabilities.MULTIPLE_CHANNELS,
+        Capabilities.MULTILINE_MESSAGE,
+        Capabilities.MESSAGE_UNJOINED_CHANNELS,
+        Capabilities.VOICE,
     )
 
     VERSION_MAJOR = 1
