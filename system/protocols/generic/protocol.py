@@ -105,6 +105,7 @@ class Protocol(protocol.Protocol):
 
     TYPE = "generic"
     CHANNELS = False
+    CAPABILITIES = ()
 
     factory = None
     config = None
@@ -236,6 +237,22 @@ class Protocol(protocol.Protocol):
         """
 
         return []
+
+    def has_capability(self, capability):
+        """
+        Check whether the protocol supports a given capability.
+
+        :param capability: A capability constant
+
+        :rtype: bool
+        """
+        return capability in self.CAPABILITIES
+
+    def get_capabilities(self):
+        """
+        Get all capabilities supported by this protocol.
+        """
+        return self.CAPABILITIES
 
     def __json__(self):  # TODO
         """

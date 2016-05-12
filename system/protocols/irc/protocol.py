@@ -14,6 +14,7 @@ from system.events import general as general_events
 from system.events import irc as irc_events
 from system.events.manager import EventManager
 from system.logging.logger import getLogger
+from system.protocols import capabilities
 from system.protocols.generic.protocol import ChannelsProtocol
 from system.protocols.irc import constants
 from system.protocols.irc.channel import Channel
@@ -50,6 +51,10 @@ class Protocol(irc.IRCClient, ChannelsProtocol):
     __version__ = "1.0.0"
 
     TYPE = "irc"
+    CAPABILITIES = (
+        capabilities.MULTIPLE_CHANNELS,
+        capabilities.MULTIPLE_CHANNELS_JOINED,
+    )
 
     factory = None
     config = None
