@@ -12,7 +12,7 @@ from system.events.general import PluginsLoadedEvent, ReactorStartedEvent
 from system.events.manager import EventManager
 from system.logging import logger
 from system.logging.logger import getLogger
-from system.metrics import Metrics
+from system.metrics.public import Metrics
 from system.plugins.manager import PluginManager
 from system.singleton import Singleton
 from system.storage.config import Config

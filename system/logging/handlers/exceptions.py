@@ -42,7 +42,7 @@ class MetricsHandler(Handler):
         try:
             if record.level_name.lower() == u"error":
                 if record.exc_info is not None:
-                    from system.metrics import Metrics
+                    from system.metrics.public import Metrics
 
                     metrics = Metrics()
                     metrics.submit_exception(record.exc_info)
