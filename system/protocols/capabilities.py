@@ -7,6 +7,25 @@ __all__ = ["Capabilities"]
 
 @unique
 class Capabilities(Enum):
+    """
+    An enum containing constants to declare what a protocol is capable of
+
+    You can use *protocol.get_capabilities()* or *protocol.has_capability(cap)*
+    to get all of a protocol's capabilities or check whether it has a specific
+    one respectively.
+
+    The current capabilities we have are as follows:
+
+    **MULTILINE_MESSAGE**: Messages can contain line-breaks
+    **MULTIPLE_CHANNELS**: Protocol supports the concept of separate channels
+    **MULTIPLE_CHANNELS_JOINED**: Protocol may be in more than one channel at
+                                  once
+    **VOICE**: Protocol support voice/audio communication
+    **MESSAGE_UNJOINED_CHANNELS**: Protocol is able to send messages to
+                                   channels that it hasn't joined
+    **INDEPENDENT_VOICE_CHANNELS**: Voice and text channels are separate; can't
+                                    send text to a voice channel and vice-versa
+    """
 
     #: Messages can contain linebreaks
     MULTILINE_MESSAGE = 0
