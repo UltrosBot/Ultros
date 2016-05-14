@@ -16,15 +16,16 @@ class Capabilities(Enum):
 
     The current capabilities we have are as follows:
 
-    **MULTILINE_MESSAGE**: Messages can contain line-breaks
-    **MULTIPLE_CHANNELS**: Protocol supports the concept of separate channels
-    **MULTIPLE_CHANNELS_JOINED**: Protocol may be in more than one channel at
-                                  once
-    **VOICE**: Protocol support voice/audio communication
-    **MESSAGE_UNJOINED_CHANNELS**: Protocol is able to send messages to
-                                   channels that it hasn't joined
-    **INDEPENDENT_VOICE_CHANNELS**: Voice and text channels are separate; can't
-                                    send text to a voice channel and vice-versa
+    MULTILINE_MESSAGE           Messages can contain line-breaks
+    MULTIPLE_CHANNELS           Protocol supports the concept of separate
+                                channels
+    MULTIPLE_CHANNELS_JOINED    Protocol may be in more than one channel at
+                                once
+    VOICE                       Protocol supports voice/audio communication
+    MESSAGE_UNJOINED_CHANNELS   Protocol is able to send messages to
+                                channels that it hasn't joined
+    INDEPENDENT_VOICE_CHANNELS  Voice and text channels are separate; can't
+                                send text to a voice channel and vice-versa
     """
 
     #: Messages can contain linebreaks
