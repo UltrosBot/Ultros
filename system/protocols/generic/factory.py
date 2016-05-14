@@ -75,6 +75,12 @@ class BaseFactory(ClientFactory):
         >>>
 
         You **must** override this method, or your factory will not work.
+
+        Return True if you were able to initiate the connection, or False
+        if not.
+
+        :returns: Whether the connnection was initiated or not
+        :rtype: bool
         """
         raise NotImplementedError()
 
