@@ -33,7 +33,7 @@ def do_profile():
 
 
 def run():
-    for i in xrange(0, 1000):
+    for i in xrange(0, 10000):
         e = FakePluginEvent()
         events.run_callback("Test", e)
 
