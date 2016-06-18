@@ -5,7 +5,7 @@ from numbers import Number
 __author__ = 'Gareth Coles'
 
 FILENAME_SAFE_CHARS = (
-    "/\\-_.()#" +
+    "/\\-_.()#:" +
     string.digits +
     string.letters +
     string.whitespace
