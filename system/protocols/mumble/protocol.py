@@ -101,6 +101,13 @@ class Protocol(SingleChannelProtocol):
     users = {}
     _acls = {}
 
+    # Server config - defaults from official Mumble client
+    max_bandwidth = -1
+    welcome_text = None
+    allow_html = True
+    message_length = 5000
+    image_message_length = 131072
+
     @property
     def num_channels(self):
         return len(self.channels)
@@ -388,39 +395,45 @@ class Protocol(SingleChannelProtocol):
         elif isinstance(message, Mumble_pb2.ServerSync):
             # session, max_bandwidth, welcome_text, permissions
             session = message.session
-            # TODO: Store this?
-            max_bandwidth = message.max_bandwidth
+            self.max_bandwidth = message.max_bandwidth
             permissions = message.permissions
             # TODO: Check this permissions relevancy - root chan? We don't know
             # what channel we're in yet, so it must be
             self.set_permissions(0, permissions)
-            welcome_text = html_to_text(message.welcome_text, True)
+            self.welcome_text = html_to_text(message.welcome_text, True)
             self.log.info(_("===   Welcome message   ==="))
             self.log.trace("ServerSync received: max_bandwidth: '%s', "
                            "permissions: '%s', welcome text: [below]" %
-                           (max_bandwidth,
+                           (self.max_bandwidth,
                             Perms.get_permissions_names(permissions)))
-            for line in welcome_text.split("\n"):
+            for line in self.welcome_text.split("\n"):
                 self.log.info(line)
             self.log.info(_("=== End welcome message ==="))
 
-            event = mumble_events.ServerSync(self, session, max_bandwidth,
-                                             welcome_text, permissions)
+            event = mumble_events.ServerSync(self, session, self.max_bandwidth,
+                                             self.welcome_text, permissions)
             self.event_manager.run_callback("Mumble/ServerSync", event)
         elif isinstance(message, Mumble_pb2.ServerConfig):
             # max_bandwidth, welcome_text, allow_html, message_length,
             # image_message_length
-            # TODO: Store these
-            max_bandwidth = message.max_bandwidth
-            welcome_text = message.welcome_text
-            self.allow_html = message.allow_html
-            message_length = message.message_length
-            image_message_length = message.image_message_length
+            if message.HasField("max_bandwidth"):
+                self.max_bandwidth = message.max_bandwidth
+            if message.HasField("welcome_text"):
+                self.welcome_text = message.welcome_text
+            if message.HasField("allow_html"):
+                self.allow_html = message.allow_html
+            if message.HasField("message_length"):
+                self.message_length = message.message_length
+            if message.HasField("image_message_length"):
+                self.image_message_length = message.image_message_length
 
-            event = mumble_events.ServerConfig(self, max_bandwidth,
-                                               welcome_text, self.allow_html,
-                                               message_length,
-                                               image_message_length)
+            # TODO: FIXME: Not all of these are necessarily set by this packet,
+            # but the event acts as if they are.
+            event = mumble_events.ServerConfig(self, self.max_bandwidth,
+                                               self.welcome_text,
+                                               self.allow_html,
+                                               self.message_length,
+                                               self.image_message_length)
             self.event_manager.run_callback("Mumble/ServerConfig", event)
         elif isinstance(message, Mumble_pb2.Ping):
             # timestamp, good, late, lost, resync, udp_packets, tcp_packets,
