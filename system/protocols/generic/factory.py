@@ -79,7 +79,7 @@ class BaseFactory(ClientFactory):
         Return True if you were able to initiate the connection, or False
         if not.
 
-        :returns: Whether the connnection was initiated or not
+        :returns: Whether the connection was initiated or not
         :rtype: bool
         """
         raise NotImplementedError()
