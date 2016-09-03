@@ -1,6 +1,6 @@
 ez_setup
 six>=1.6.1
-twisted
+twisted==15.5.0
 zope.interface
 kitchen
 pyyaml
