@@ -72,7 +72,7 @@ class Translations(object):
         self.translation = gettext.translation(DOMAIN, DIRECTORY,
                                                [self.language, DEFAULT])
 
-    def get(self, domain=None, lang=None):
+    def _get(self, domain=None, lang=None):
         if domain is None:
             domain = DOMAIN
         if lang is None:
@@ -83,6 +83,13 @@ class Translations(object):
 
         d = gettext.translation(domain, DIRECTORY, [lang, DEFAULT])
         return d.gettext
+    
+    def get(self, domain=None, lang=None):
+        _ = self._get(domain, lang)
+        
+        if _ is None:
+            return lambda x: x
+        return _
 
     def get_m(self, domain=None, lang=None):
         if domain is None:
