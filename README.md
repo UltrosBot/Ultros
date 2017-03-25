@@ -1,4 +1,4 @@
-![Ultros hugging Ultros, as interpreted by rakiru](https://dl.dropboxusercontent.com/u/7298729/drawings/ultros.png)
+![Ultros hugging Ultros, as interpreted by rakiru](https://www.rakiru.com/dropbox/drawings/ultros.png)
 
 ### The only squid that connects communities
 
