@@ -9,20 +9,6 @@
     "###": "Finally, check that none of the packages you're downloading prohibit this kind of distribution.",
     "packages": [
         {
-            "name": "SocksiPy",
-            "filename": "proxy/socks.py",
-            "module": "proxy.socks",
-            "url": "http://socksipy-branch.googlecode.com/svn/branches/1.00/socks.py",
-            "attrib": "[New BSD license] Dan Haim and the branch maintainers"
-        },
-        {
-            "name": "SocksiPyHandler",
-            "filename": "proxy/socksipyhandler.py",
-            "module": "proxy.socksipyhandler",
-            "url": "https://gist.githubusercontent.com/e000/869791/raw/7d579998d384ba72711f2ce0caf78e8566da5864/socksipyhandler.py",
-            "attrib": "[Gist, no license header] e000 <e@tr0ll.in>"
-        },
-        {
             "name": "NewBase60",
             "filename": "crypto/newbase60.py",
             "module": "crypto.newbase60",
