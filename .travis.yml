@@ -1,14 +1,15 @@
 language: python
 python:
-#  - "2.6"
   - "2.7"
-#  - "pypy"
 # command to install dependencies
 install:
-  - pip install -r requirements.txt
-  - pip install -r requirements-test.txt
+  - "pip install -r requirements.txt"
+  - "pip install -r requirements-test.txt"
 # command to run tests
 script:
-  - flake8 .
+  - "flake8 ."
   - "nosetests -v test/"
-sudo: false
+  - "sh docker/build.sh"
+sudo: required
+services:
+  - docker

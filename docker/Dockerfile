@@ -1,22 +1,14 @@
-FROM debian:stretch-slim
+FROM python:2.7.15-alpine3.7
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-       gcc \
-       git \
-       python-dev \
-       python-pip
+RUN apk add git gcc build-base linux-headers libffi libffi-dev openssl openssl-dev tini
+RUN mkdir /ultros
 
-RUN mkdir /etc/ultros
-WORKDIR /etc/ultros
+COPY . /ultros
+WORKDIR /ultros
 
-RUN git config --global http.sslVerify false \
-    && git clone https://github.com/UltrosBot/Ultros.git .
+RUN pip install -r requirements.txt
 
-RUN pip install setuptools \
-    && pip install wheel \
-    && pip install -r requirements.txt
+VOLUME ["/ultros/config", "/ultros/plugins"]
 
-VOLUME ["/etc/ultros/config", "/etc/ultros/plugins"]
-
+ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["python", "run.py"]

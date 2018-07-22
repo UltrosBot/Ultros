@@ -1,0 +1,14 @@
+version: "3"
+services:
+  ultros:
+    image: gdude2002/ultros:latest
+    container_name: ultros
+
+    volumes:
+      - /home/docker/volumes/ultros/config:/ultros/config
+      - /home/docker/volumes/ultros/plugins:/ultros/plugins
+
+    restart: always
+
+    ports:
+      - 8080:8080
