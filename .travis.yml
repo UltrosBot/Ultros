@@ -9,7 +9,8 @@ install:
 script:
   - "flake8 ."
   - "nosetests -v test/"
-  - "sh docker/build.sh"
+  - "chmod +x docker/build.sh"
+  - "./docker/build.sh"
 sudo: required
 services:
   - docker
