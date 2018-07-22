@@ -7,6 +7,7 @@ COPY . /ultros
 WORKDIR /ultros
 
 RUN pip install -r requirements.txt
+RUN pip install -r requirements-contrib.txt
 
 VOLUME ["/ultros/config", "/ultros/plugins"]
 

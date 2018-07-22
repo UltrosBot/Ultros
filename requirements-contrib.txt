@@ -1,0 +1,16 @@
+boltons
+cyclone
+feedparser
+futures
+goslate
+isodate
+lupa>1.2
+mako
+mcstatus
+pycrypto
+requests
+treq==0.2.1
+twilio
+txrequests
+wolframalpha
+wordnik
