@@ -10,6 +10,7 @@ class _Encoder(json.JSONEncoder):
             return o.__json__()
         return json.JSONEncoder.default(self, o)
 
+
 _our_encoder = _Encoder()
 
 
@@ -27,6 +28,7 @@ def dumps(obj, skipkeys=False, ensure_ascii=True, check_circular=True,
     return json.dumps(obj, skipkeys, ensure_ascii, check_circular,
                       allow_nan, _Encoder, indent, separators, encoding,
                       default, sort_keys, **kw)
+
 
 load = json.load
 loads = json.loads

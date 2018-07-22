@@ -33,6 +33,7 @@ class Formats(Enum):
 
 # TODO: Remove enum references below
 
+
 YAML = Formats.YAML
 JSON = Formats.JSON
 MEMORY = Formats.MEMORY

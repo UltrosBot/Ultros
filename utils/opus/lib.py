@@ -109,4 +109,5 @@ class OpusLibrary(object):
     def opus_encoder_destroy(self, encoder):
         return self.lib.opus_encoder_destroy(encoder)
 
+
 opus = OpusLibrary()

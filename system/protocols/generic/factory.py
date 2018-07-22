@@ -119,7 +119,7 @@ class BaseFactory(ClientFactory):
             self.logger.debug("Reloading module")
             try:
                 self.protocol_module = reload(self.protocol_module)
-            except:
+            except Exception:
                 self.protocol_module = None
                 raise
 

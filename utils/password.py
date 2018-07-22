@@ -32,6 +32,7 @@ def mkpasswd(length=8, allowed_chars="abcdefghijklmnopqrstuvwxyz"
 
     return "".join(_random.choice(allowed_chars) for x in xrange(length))
 
+
 if __name__ == "__main__":
     pword = mkpasswd(32)
     print("Random password: %s" % pword)

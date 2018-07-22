@@ -195,6 +195,7 @@ def main():
         except Exception:
             pass
 
+
 if args.update:
     update()
 else:

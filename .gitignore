@@ -57,3 +57,4 @@ version
 
 lib/*.py
 !lib/__init__.py
+.venv

@@ -83,10 +83,10 @@ class Translations(object):
 
         d = gettext.translation(domain, DIRECTORY, [lang, DEFAULT])
         return d.gettext
-    
+
     def get(self, domain=None, lang=None):
         _ = self._get(domain, lang)
-        
+
         if _ is None:
             return lambda x: x
         return _

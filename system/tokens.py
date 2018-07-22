@@ -108,6 +108,7 @@ class Tokens(object):
 
         return string
 
+
 if __name__ == "__main__":
     t = Tokens()
 
